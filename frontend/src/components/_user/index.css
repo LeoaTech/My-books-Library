@@ -1,0 +1,25 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: rgba(97, 10, 210, 0.427);
+}
+
+.arrow-btn {
+  color: #fff;
+  background: #9f1ea2;
+  border: none;
+  cursor: pointer;
+  outline: none;
+  margin: 0 10px;
+  float: right;
+}
+
+.book:hover {
+  transform: translateY(5%);
+  cursor: pointer;
+}
