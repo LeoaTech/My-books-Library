@@ -1,7 +1,13 @@
-import "./App.css";
-
+import "./App.css"
 function App() {
-  return <h1 className="text-3xl font-bold underline">Hello world!</h1>;
+ 
+  return (
+   <h2 className="text-meta-6 bg-blue text-3xl undeline">App Component</h2>
+  );
 }
+
+export const Header = () => {
+  return <nav>Header</nav>;
+};
 
 export default App;
