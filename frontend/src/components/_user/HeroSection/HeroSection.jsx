@@ -2,8 +2,8 @@ import { Link } from "react-router-dom";
 
 const HeroSection = () => {
   return (
-    <section className='hero relative flex flex-col h-full mb-8'>
-      <div className="relative py-24 overflow-hidden lg:mt-0 isolate sm:pt-32 sm:pb-16 h-full">
+    <section className='hero relative flex flex-col mb-8'>
+      <div className="relative py-24 overflow-hidden lg:mt-0 isolate sm:pt-32 sm:pb-16 h-4/5">
         <img
           src="https://ik.imagekit.io/pb97gg2as/E-Commerce-Assets/boksbg.png?updatedAt=1684597529803"
           alt="header-books"
@@ -37,7 +37,7 @@ const HeroSection = () => {
               <a
                 href="javascript:void(0)"
                 className={`flex items-center justify-center gap-x-1 py-2 px-4 text-white font-medium bg-purple-800 duration-150 
-                bg-purple-700 active:bg-purple rounded-full md:inline-flex`}>
+                hover:bg-white active:bg-purple-900 rounded-full md:inline-flex`}>
                 Shop Now
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 text-white">
                   <path fillRule="evenodd"
@@ -47,7 +47,7 @@ const HeroSection = () => {
                 </svg>
               </a>
               <a href="javascript:void(0)" className={`flex items-center justify-center gap-x-1 py-2 px-4 text-white bg-purple-800 duration-150 
-                bg-purple-700 active:bg-purple font-medium rounded-full md:inline-flex`}>
+                bg-purple-700 active:bg-purple-900 font-medium rounded-full md:inline-flex`}>
                 Explore
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 text-white">
                   <path fillRule="evenodd"
