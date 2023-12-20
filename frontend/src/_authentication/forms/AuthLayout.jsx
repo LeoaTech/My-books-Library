@@ -1,5 +1,5 @@
-import React from 'react'
 import { Outlet, Navigate } from "react-router-dom";
+import signin from "../../assets/signin.jpg";
 
 const AuthLayout = () => {
   const isSignedin = false;
@@ -9,15 +9,18 @@ const AuthLayout = () => {
         <Navigate to="/" />
       ) : (
         <>
-          <section className='flex flex-1 justify-center items-center flex-col '>
+          <section className="flex flex-1 justify-center items-center  ">
             <Outlet />
+            <img
+              src={signin}
+              alt="image"
+              className="hidden lg:block h-screen w-1/2 cover bg-no-repeat"
+            />
           </section>
-          <img src="/assets/signin.jpg" alt="image" className='hidden lg:block h-screen w-1/2 cover bg-no-repeat' />
         </>
       )}
-
     </>
-  )
-}
+  );
+};
 
-export default AuthLayout
+export default AuthLayout;
