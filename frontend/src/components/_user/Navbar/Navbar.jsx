@@ -1,18 +1,14 @@
-import React, { useState, useEffect } from "react";
-import { SignedOut } from "@gadgetinc/react";
-import {
-  HiMenu,
-  HiOutlineX,
-  HiOutlineShoppingCart,
-  HiShoppingCart,
-} from "react-icons/hi";
+import { useState, useEffect } from "react";
+import { useLogout } from "../../../hooks/useLogout";
+import { HiMenu, HiOutlineX, HiOutlineShoppingCart } from "react-icons/hi";
 import { Link } from "react-router-dom";
-import { useUser, useSignOut } from "@gadgetinc/react";
-import { api } from "../../../api";
+import { useAuthContext } from "../../../hooks/useAuthContext";
 
 const Navbar = () => {
-  const user = useUser(api);
-  const signOut = useSignOut();
+  const { logout } = useLogout();
+
+  // let user = true;
+  const { user } = useAuthContext();
   const [isMenuOpen, setMenuOpen] = useState(false);
   const [isSticky, setStickyNav] = useState(false);
   const onToggle = () => {
@@ -87,26 +83,6 @@ const Navbar = () => {
             </ul>
           </div>
 
-          {/* <ul className="md:flex space-x-8 hidden">
-          {headerLinks?.map(({ title, path }) => (
-            <Link
-              to={path}
-              key={path}
-              className="block text-base text-green-900 uppercase cursor-pointer hover:text-red-400"
-            >
-              {title}
-            </Link>
-          ))}
-        </ul> */}
-          {/* Right */}
-
-          {/* <div className="space-x-12 hidden lg:flex items-center">
-          <button className="w-5 hover:text-blue-600">
-            {" "}
-            <HiMenu />
-          </button>
-        </div> */}
-
           {/* Menu button for the small screen */}
           <div className="md:hidden">
             <button
@@ -132,21 +108,25 @@ const Navbar = () => {
             >
               <HiOutlineShoppingCart className="h-5 w-5 " />{" "}
             </Link>
-            <SignedOut>
-              <Link
-                to="/sign-in"
-                className="block text-base text-blue uppercase cursor-pointer hover:text-red-400"
-              >
-                Sign in
-              </Link>
-              <Link
-                to="/sign-up"
-                className="h-9 flex justify-center items-center px-4 ml-auto text-sm bg-meta-5 text-white rounded-lg text-center px-2 py-1 uppercase cursor-pointer hover:text-white hover:bg-secondary"
-              >
-                Sign up
-              </Link>
-            </SignedOut>
-            {user && <a onClick={signOut}>Sign Out</a>}
+
+            {!user && (
+              <>
+                <Link
+                  to="/signin"
+                  className="block text-base text-blue uppercase cursor-pointer hover:text-red-400"
+                >
+                  Sign in
+                </Link>
+                <Link
+                  to="/signup"
+                  className="h-9 flex justify-center items-center px-4 ml-auto text-sm bg-meta-5 text-white rounded-lg text-center px-2 py-1 uppercase cursor-pointer hover:text-white hover:bg-secondary"
+                >
+                  Sign up
+                </Link>
+              </>
+            )}
+
+            {user && <a onClick={logout}>Sign Out</a>}
           </div>
         </div>
 
@@ -178,23 +158,27 @@ const Navbar = () => {
             >
               <HiOutlineShoppingCart className="h-5 w-5 " /> Cart
             </Link>
-            <SignedOut>
-              <Link
-                to="/sign-in"
-                className="h-9 flex justify-center items-center px-4 ml-auto text-sm bg-transparent text-black rounded-lg   text-center px-2 py-1 uppercase cursor-pointer hover:bg-black hover:text-white"
-              >
-                Sign in
-              </Link>
-              <Link
-                to="/sign-up"
-                className="h-9 flex justify-center items-center px-4 ml-auto text-sm bg-blue-500 text-white rounded-lg text-white-900  text-center px-2 py-1 uppercase cursor-pointer hover:text-white-400 hover:bg-blue-300"
-              >
-                Sign up
-              </Link>
-            </SignedOut>
+
+            {!user && (
+              <>
+                <Link
+                  to="/signin"
+                  className="h-9 flex justify-center items-center px-4 ml-auto text-sm bg-transparent text-black rounded-lg   text-center px-2 py-1 uppercase cursor-pointer hover:bg-black hover:text-white"
+                >
+                  Sign in
+                </Link>
+                <Link
+                  to="/signup"
+                  className="h-9 flex justify-center items-center px-4 ml-auto text-sm bg-blue-500 text-white rounded-lg text-white-900  text-center px-2 py-1 uppercase cursor-pointer hover:text-white-400 hover:bg-blue-300"
+                >
+                  Sign up
+                </Link>
+              </>
+            )}
+
             {user && (
               <a
-                onClick={signOut}
+                onClick={logout}
                 className="h-9 mt-2 flex justify-center items-center px-4 ml-auto text-sm bg-blue-500 text-white rounded-lg text-white-900  text-center px-2 py-1 uppercase cursor-pointer hover:text-white-400 hover:bg-blue-300"
               >
                 Sign Out
