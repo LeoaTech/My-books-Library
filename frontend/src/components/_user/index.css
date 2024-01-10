@@ -5,18 +5,7 @@
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: rgba(97, 10, 210, 0.427);
-}
-
-.arrow-btn {
-  color: #fff;
-  background: #9f1ea2;
-  border: none;
-  cursor: pointer;
-  outline: none;
-  margin: 0 10px;
-  float: right;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .book:hover {
