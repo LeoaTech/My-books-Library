@@ -1,9 +1,7 @@
-import "./App.css"
+import Home from "./_root/pages/Home";
+
 function App() {
- 
-  return (
-   <h2 className="text-meta-6 bg-blue text-3xl undeline">App Component</h2>
-  );
+  return <Home />;
 }
 
 export const Header = () => {
