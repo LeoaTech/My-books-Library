@@ -4,24 +4,30 @@ import {
   Route,
 } from "react-router-dom";
 import App from "../App";
-import routes from "../utiliz";
-import { Suspense } from "react";
-import AdminLoader from "../components/_admin/Loader/Loader";
-import AdminLayout from "../_admin/Layout";
-import DashboardPage from "../_admin/pages/Home";
-import AuthLayout from "../_authentication/forms/AuthLayout";
-import {
-  ForgetPassword,
-  ResetPassword,
-  SignIn,
-  SignUp,
-} from "../_authentication/forms";
+// import routes from "../utiliz";
+// import { Suspense } from "react";
+// import AdminLoader from "../components/_admin/Loader/Loader";
+// import AdminLayout from "../_admin/Layout";
+// import DashboardPage from "../_admin/pages/Home";
+// import AuthLayout from "../_authentication/forms/AuthLayout";
+// import {
+//   ForgetPassword,
+//   ResetPassword,
+//   SignIn,
+//   SignUp,
+// } from "../_authentication/forms";
+import Shop from "../_root/pages/Shop";
+import Library from "../_root/pages/Library";
+import BookOverview from "../_root/pages/BookOverview";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route>
       <Route path="/" element={<App />}></Route>
-      <Route element={<AuthLayout />}>
+      <Route path="library" element={<Library />}></Route>
+      <Route path="shop" element={<Shop />}></Route>
+      <Route path="book" element={<BookOverview />}></Route>
+      {/* <Route element={<AuthLayout />}>
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/reset-password" element={<ResetPassword />} />
@@ -44,7 +50,7 @@ const router = createBrowserRouter(
             />
           );
         })}
-      </Route>
+      </Route> */}
     </Route>
   )
 );
