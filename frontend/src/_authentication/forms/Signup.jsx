@@ -1,55 +1,97 @@
-import React from "react";
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
 import GoogleIcon from "../../assets/google.svg";
+import { useSignup } from "../../hooks/useSignup";
+import { useEffect } from "react";
+import { BASE_URL } from "../../utiliz/baseAPIURL";
 
 const Signup = () => {
   const { search } = useLocation();
   const navigate = useNavigate();
-
+  const { isLoading, error, signup } = useSignup();
   const {
-    register,
+    register, //for tracking form state
     handleSubmit,
+    reset,
     watch,
-    isSubmitSuccessful,
-    isSubmitting,
-    formState: { errors },
-  } = useForm();
+    formState,
+  } = useForm({
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+    },
+    mode: "all",
+  });
 
-  const onSubmit = (data) => console.log(data);
 
-  console.log(watch("example")); // watch input value by passing the name of it
+  console.log(BASE_URL,"URL")
+
+  const { errors, isValid, isDirty, isSubmitting, isSubmitSuccessful } =
+    formState;
+
+  const onSubmit = async (data) => {
+    console.log(data);
+    const { email, name, password } = data;
+
+    await signup(email, password, name);
+  };
+
+  useEffect(() => {
+    if (isSubmitSuccessful) {
+      reset();
+      navigate("/signin")
+    }
+  }, [isSubmitSuccessful, reset]);
 
   return (
     <div className="py-40 h-screen flex flex-1 justify-center items-center ">
       <form className="custom-form" onSubmit={handleSubmit(onSubmit)}>
         <h1 className="form-title">Create account</h1>
         <div className="custom-form">
-          <a
+          {/* <a
             className="google-oauth-button"
             href={`/auth/google/start${search}`}
           >
             <img src={GoogleIcon} width={22} height={22} /> Continue with Google
-          </a>
+          </a> */}
+          <input
+            className="custom-input"
+            placeholder="Name"
+            {...register("name", {
+              required: { value: true, message: "Name is required" },
+            })}
+          />
+          {errors?.name?.message && (
+            <p className="format-message error">Name: {errors.name.message}</p>
+          )}
           <input
             className="custom-input"
             placeholder="Email"
-            {...register("email")}
+            {...register("email", {
+              pattern: {
+                value:
+                  /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/,
+                message: "Invalid email format",
+              },
+            })}
           />
-          {errors?.user?.email?.message && (
+          {errors?.email?.message && (
             <p className="format-message error">
-              Email: {errors.user.email.message}
+              Email: {errors.email.message}
             </p>
           )}
           <input
             className="custom-input"
             placeholder="Password"
             type="password"
-            {...register("password")}
+            {...register("password", {
+              required: { value: true, message: "Password is required" },
+            })}
           />
-          {errors?.user?.password?.message && (
+          {errors?.password?.message && (
             <p className="format-message error">
-              Password: {errors.user.password.message}
+              Password: {errors.password.message}
             </p>
           )}
           {errors?.root?.message && (
@@ -59,12 +101,13 @@ const Signup = () => {
             <p className="format-message success">Please check your inbox</p>
           )}
           <button
-            disabled={isSubmitting}
+            disabled={isSubmitting || !isDirty || !isValid}
             type="submit"
             className="border border-blue-500 bg-graydark text-white rounded-lg py-2 w-1/2 "
           >
-            Sign up
+            {isSubmitting || isLoading ? "Signing up...." : "Signup"}
           </button>
+          {error && <span className="text-meta-1 text-sm">{error}</span>}
           <p className="p-4 mt-2">
             Already have an Account?{" "}
             <span
