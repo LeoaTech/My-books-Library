@@ -28,5 +28,12 @@ router.get("/refresh", RefreshToken);
 router.post("/forgot-password", ForgetPassword);
 
 
+// Verify Reset Password Email Link Token
+router.get(`/forgotpassword/:id/:token`, VerifyUserAuth);
+
+
+// Reset Password with forgot Password Email Link
+router.post("/reset-password/:id/:token", ResetPassword);
+
 
 module.exports = router;
