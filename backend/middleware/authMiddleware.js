@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+require("dotenv").config();
 const { Client } = require("pg");
 const connectionUrl = process.env.CONNECTION_URL;
 
@@ -8,28 +9,29 @@ client.connect((err, res) => {
   if (err) {
     console.log(err);
   } else {
-    console.log("middlware connected");
+    console.log("auth-middlware connected");
   }
 });
 const requireAuth = async (req, res, next) => {
   // Verify Authorized access
 
-  const { authorization } = req.headers;
+  console.log(req.headers, "Headers");
+  // Bearer Token
+  const authorization =
+    req.headers?.Authorization || req.headers?.authorization;
 
-  if (!authorization) return res.status(401).json({ error: "Authorization" });
+  if (!authorization?.startsWith("Bearer "))
+    return res.status(401).json({ error: "Un-authorized" });
 
   const token = authorization.split(" ")[1];
 
   try {
-    const tokenId = jwt.verify(token, process.env.JWT_SECRET);
-
-    const { id } = tokenId;
-    const userExists = await client.query("SELECT * FROM users Where id = $1", [
-      id,
-    ]);
-
-    req.user = userExists;
-    next();
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+      if (err) return res.status(401).json({ error: "Invalid Token" });
+      console.log(decoded);
+      req.user = decoded?.UserInfo?.id;
+      next();
+    });
   } catch (error) {
     console.log(error);
     res.status(401).json({ error: "Request is not Authorized" });
