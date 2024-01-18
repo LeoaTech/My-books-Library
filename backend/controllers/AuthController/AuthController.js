@@ -90,6 +90,113 @@ const RegisterUser = asyncHanlder(async (req, res) => {
   }
 });
 
+// Authenticate user Credentials on Logged in
+const LoginUser = asyncHanlder(async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    if (!email || !password) {
+      res.status(400);
+      throw new Error("Please add all fields");
+    }
+    try {
+      // Verify user email in DB
+      const userEmail = await client.query(
+        `SELECT * from users where email= $1`,
+        [email]
+      );
+      let user = userEmail?.rows[0];
+
+      if (!user) {
+        return res.status(401).json({ message: "Invalid Email" });
+        // throw new Error("Invalid Email Address");
+      }
+      let matchPassword = await bcrypt.compare(password, user?.password);
+
+      if (!matchPassword) {
+        return res.status(401).json({ message: "Invalid Password" });
+        // throw new Error("Invalid Password");
+      }
+      // Email and password match
+
+      if (user && matchPassword) {
+        // Assign a Token to the user
+        const AccessToken = jwt.sign(
+          {
+            UserInfo: {
+              id: user.id,
+            },
+          },
+          process.env.JWT_SECRET,
+          { expiresIn: "30s" }
+        );
+
+        const refresh_token = refreshToken(user.id); //refresh token
+
+        // Check if user id exists in Tokens table or not
+        const isTokenExists = await client.query(
+          "SELECT * FROM tokens WHERE user_id=$1",
+          [user?.id]
+        );
+        const expired_at = new Date();
+        expired_at?.setDate(expired_at.getDate() + 1);
+        if (isTokenExists?.rowCount > 0) {
+          // Update Token info on sign in
+          try {
+            // create user
+            const dbToken = await client.query(
+              `Update tokens set token=$1, expired_at=$2 WHERE user_id=$3 RETURNING *`,
+              [refresh_token, expired_at, user?.id]
+            );
+          } catch (error) {
+            console.log(error, "User token update in db error");
+          }
+        } else {
+          try {
+            // create user refresh token in db on first login
+            const dbToken = await client.query(
+              `INSERT INTO tokens ( user_id, token, expired_at) VALUES ($1, $2, $3) RETURNING *`,
+              [user?.id, refresh_token, expired_at]
+            );
+          } catch (error) {
+            console.log(error, "User token insert in db error");
+          }
+        }
+
+        // Set the cookie with refresh token
+        res.cookie("refreshToken", refresh_token, {
+          httpOnly: true,
+          sameSite: "strict",
+          secure: false,
+          maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day max
+        });
+        return res.send({
+          AccessToken,
+          user: {
+            name: user?.name,
+            email: user?.email,
+            role: user?.role,
+          },
+          message: "success",
+        });
+      } else {
+        return res
+          .status(400)
+          .json({ error: "Invalid Credentials" });
+      }
+    } catch (error) {
+      console.log(error, "Signin");
+      
+      return res
+      .status(400)
+      .json({ error: "Invalid Credentials" });
+    }
+  } catch (err) {
+    console.log("err", "Sign in API");
+    return res.status(400).json({ message: err.message });
+  }
+});
+
 module.exports = {
   RegisterUser,
+  LoginUser,
 };
