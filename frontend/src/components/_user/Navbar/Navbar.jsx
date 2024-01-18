@@ -5,16 +5,17 @@ import { Link } from "react-router-dom";
 import { useAuthContext } from "../../../hooks/useAuthContext";
 
 const Navbar = () => {
-  const { logout } = useLogout();
+  const { logout, signout } = useLogout();
 
   // let user = true;
-  const { user } = useAuthContext();
+  const { auth } = useAuthContext();
   const [isMenuOpen, setMenuOpen] = useState(false);
   const [isSticky, setStickyNav] = useState(false);
   const onToggle = () => {
     setMenuOpen(!isMenuOpen);
   };
 
+  const googleAuth = localStorage.getItem("google-auth");
   useEffect(() => {
     const onScroll = () => {
       if (window.scrollY > 150) {
@@ -109,7 +110,7 @@ const Navbar = () => {
               <HiOutlineShoppingCart className="h-5 w-5 " />{" "}
             </Link>
 
-            {!user && (
+            {!auth?.role && (
               <>
                 <Link
                   to="/signin"
@@ -126,7 +127,10 @@ const Navbar = () => {
               </>
             )}
 
-            {user && <a onClick={logout}>Sign Out</a>}
+            {/* Sign Out for Email and Password Login */}
+            {auth?.role && <a onClick={logout}>Logout</a>}
+            {/* Sign out for Google Auth Login */}
+            {/* {auth?.role && <a onClick={signout}>Sign Out</a>} */}
           </div>
         </div>
 
@@ -159,7 +163,7 @@ const Navbar = () => {
               <HiOutlineShoppingCart className="h-5 w-5 " /> Cart
             </Link>
 
-            {!user && (
+            {!auth && (
               <>
                 <Link
                   to="/signin"
@@ -176,7 +180,7 @@ const Navbar = () => {
               </>
             )}
 
-            {user && (
+            {auth?.role && (
               <a
                 onClick={logout}
                 className="h-9 mt-2 flex justify-center items-center px-4 ml-auto text-sm bg-blue-500 text-white rounded-lg text-white-900  text-center px-2 py-1 uppercase cursor-pointer hover:text-white-400 hover:bg-blue-300"
@@ -192,52 +196,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-
-/* 
-
- // <Link
-            //   className="block text-base text-blue uppercase cursor-pointer hover:text-red-400"
-            //   to="/login"
-            // >
-            //   Login
-            // </Link>
-
-            // <Link
-            //   className="block text-base bg-blue-500 text-white-900  text-center px-2 py-1 uppercase cursor-pointer hover:text-red-400"
-            //   to="/signup"
-            // >
-            //   Get Started
-            // </Link>
-
-  // <Link
-              //   className="block text-base text-blue uppercase cursor-pointer hover:text-red-400"
-              //   to="/login"
-              // >
-              //   Login
-              // </Link>
-
-              // <Link
-              //   className="h-9 flex justify-center items-center ml-auto text-sm bg-blue-500 text-white rounded-lg text-white-900  text-center px-2 py-1 uppercase cursor-pointer hover:text-red-400"
-              //   to="/signup"
-              // >
-              //   Get Started
-              // </Link>
-              {/* <div className="w-full space-y-2 border-primary/10 dark:border-gray-700 flex flex-col -ml-1 sm:flex-row lg:space-y-0 md:w-max lg:border-l">
-            <a
-              href="#"
-              className="relative flex h-9 ml-auto items-center justify-center sm:px-6 before:absolute before:inset-0 before:rounded-full focus:before:bg-primary/10 dark:focus:before:bg-primaryLight/10 before:transition before:duration-300 hover:before:scale-105 active:duration-75 active:before:scale-95"
-            >
-              <span className="relative text-sm font-semibold text-primary dark:text-primaryLight">
-                Sign Up
-              </span>
-            </a>
-            <a
-              href="#"
-              className="relative flex h-9 ml-auto items-center justify-center sm:px-6 before:absolute before:inset-0 before:rounded-full before:bg-primary dark:before:bg-primaryLight before:transition before:duration-300 hover:before:scale-105 active:duration-75 active:before:scale-95"
-            >
-              <span className="relative text-sm font-semibold text-white dark:text-gray-900">
-                Login
-              </span>
-            </a>
-          </div> 
- */
