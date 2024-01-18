@@ -1,9 +1,9 @@
 const asyncHanlder = require("express-async-handler");
 const jwt = require("jsonwebtoken");
+require("dotenv").config();
 const bcrypt = require("bcryptjs");
 const validator = require("validator");
 const { Client } = require("pg");
-const sendEmails = require("../../utiliz/NodeEmail");
 const connectionUrl = process.env.CONNECTION_URL;
 const send_email = require("../../utiliz/sendEmail");
 
@@ -20,7 +20,7 @@ client.connect((err, res) => {
 // Generate Access JWT
 const generateToken = (id) => {
   //5m in production
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "10m" });
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "1m" });
 };
 
 // Refresh token Generate
@@ -328,9 +328,79 @@ const RefreshToken = async (req, res) => {
   }
 };
 
+// Forget And Reset Password
+
+// Forget Password
+const ForgetPassword = asyncHanlder(async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(401).json({ message: "Enter Email Address" });
+  }
+
+  try {
+    // check if user email exists
+    const userExists = await client.query(
+      "SELECT * FROM users WHERE email = $1",
+      [email]
+    );
+
+    let userData = userExists?.rows[0];
+    console.log(userExists?.rows[0], "User Found");
+
+    if (userExists?.rowCount > 0) {
+      // Send the Reset Password Email
+
+      let resetToken = generateToken(userData?.id);
+      // const salt = await bcrypt.genSalt(12);
+
+      // const hash = await bcrypt.hash(resetToken, salt);
+      // Store the Token in DB as email Verify Token
+      try {
+        const userUpdate = await client.query(
+          `update users set reset_password_token =$1 where email= $2 Returning *`,
+          [resetToken, email]
+        );
+
+        if (userUpdate?.rowCount > 0) {
+          let data = userUpdate?.rows[0];
+
+          const RESET_EMAIL_TXT = `Please Click the link to Reset your Password 
+          
+          ${process.env.CLIENT_URL}/forgotpassword/${data?.id}/${resetToken}
+          
+          
+          (Link will expire in 5 minutes)`;
+
+          console.log(data, "updated user");
+
+          // send Password Reset Email
+          try {
+            await send_email(email, "Reset Password ✔", RESET_EMAIL_TXT);
+
+            res.status(200).json({ message: "Check your  email " });
+          } catch (error) {
+            console.log(error, "mail not sent");
+          }
+        }
+      } catch (e) {
+        console.log(e.message, "Token not updated");
+        res.status(401).json({ message: "Invalid Email Id" });
+      }
+    } else {
+      return res.status(400).json({ message: "User not found" });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+
 module.exports = {
   RegisterUser,
   LoginUser,
   Logout,
   RefreshToken,
+  ForgetPassword,
+  
 };
