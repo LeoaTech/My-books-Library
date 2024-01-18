@@ -179,16 +179,12 @@ const LoginUser = asyncHanlder(async (req, res) => {
           message: "success",
         });
       } else {
-        return res
-          .status(400)
-          .json({ error: "Invalid Credentials" });
+        return res.status(400).json({ error: "Invalid Credentials" });
       }
     } catch (error) {
       console.log(error, "Signin");
-      
-      return res
-      .status(400)
-      .json({ error: "Invalid Credentials" });
+
+      return res.status(400).json({ error: "Invalid Credentials" });
     }
   } catch (err) {
     console.log("err", "Sign in API");
@@ -196,7 +192,72 @@ const LoginUser = asyncHanlder(async (req, res) => {
   }
 });
 
+// User Logout
+
+const Logout = asyncHanlder(async (req, res) => {
+  try {
+    const cookies = req.cookies;
+    if (!cookies["refreshToken"]) {
+      return res.status(401).json({ message: "unauthorized Cookie not found" });
+    }
+    if (cookies["refreshToken"]) {
+      const TokenRefresh = cookies["refreshToken"];
+
+      // Check if refresh token from cookie is same that we saved in db
+      const foundJWToken = await client.query(
+        "select * from tokens where token = $1",
+        [TokenRefresh]
+      );
+
+      console.log(foundJWToken?.rows[0]);
+      if (!foundJWToken) {
+        res.clearCookie("refreshToken", {
+          httpOnly: true,
+          sameSite: "none", //"strict",
+          secure: false,
+        });
+        return res.status(204).json({ message: "Cookie deleted" });
+      }
+
+      let expired_at = new Date();
+      // Delete the token from the db
+      try {
+        // Update Tokens table to remove the token data
+        const dbToken = await client.query(
+          `Update tokens set token=$1, expired_at=$2 where user_id= $3 RETURNING *`,
+          ["", expired_at, foundJWToken?.rows[0]?.user_id]
+        );
+
+        console.log(dbToken?.rows[0]);
+      } catch (error) {
+        console.log(error, "User token insert in db error");
+        return res.sendStatus(401);
+      }
+      // in production add the secure flag true with cookie
+
+      res.clearCookie("refreshToken", {
+        httpOnly: true,
+        sameSite: "None", // "strict",
+        secure: true,
+        maxAge: 24 * 60 * 60 * 1000, //1 day
+      });
+      res.clearCookie("refreshToken", {
+        path: "/",
+        httpOnly: true,
+        maxAge: 24 * 60 * 60 * 1000,
+        secure: true,
+      });
+
+      res.send({ message: "Logged out" });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.json({ message: "Credentials not Found to Logout" });
+  }
+});
+
 module.exports = {
   RegisterUser,
   LoginUser,
+  Logout,
 };
