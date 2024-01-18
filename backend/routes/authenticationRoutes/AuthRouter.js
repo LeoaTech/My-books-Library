@@ -4,6 +4,9 @@ const {
   LoginUser,
   Logout,
   RefreshToken,
+  ForgetPassword,
+  VerifyUserAuth,
+  ResetPassword,
 } = require("../../controllers/AuthController/AuthController.js");
 
 const router = express.Router();
@@ -20,5 +23,10 @@ router.get("/user/logout", Logout);
 // Refresh token after 5 min
 
 router.get("/refresh", RefreshToken);
+
+// Forgot Password Route
+router.post("/forgot-password", ForgetPassword);
+
+
 
 module.exports = router;
