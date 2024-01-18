@@ -20,7 +20,7 @@ client.connect((err, res) => {
 // Generate Access JWT
 const generateToken = (id) => {
   //5m in production
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "1m" });
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "5m" });
 };
 
 // Refresh token Generate
