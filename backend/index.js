@@ -9,7 +9,7 @@ const passport = require("passport");
 const cookieParser = require("cookie-parser");
 const authRouter = require("./routes/authenticationRoutes/AuthRouter.js");
 const booksRouter = require("./routes/booksRoutes/BooksRoutes.js");
-
+const googleOAuthRouter = require("./routes/authenticationRoutes/GoogleAuthRoute.js");
 const port = process.env.PORT || 8100;
 
 const app = express();
@@ -34,9 +34,10 @@ app.use(
 );
 app.use(passport.initialize());
 app.use(passport.session());
-
+app.use("/",googleOAuthRouter);
 app.use("/auth", authRouter);
 app.use("/books", booksRouter);
+
 app.use(notfound);
 app.use(errorHanlder);
 
