@@ -256,8 +256,81 @@ const Logout = asyncHanlder(async (req, res) => {
   }
 });
 
+// Get refersh token
+const RefreshToken = async (req, res) => {
+  try {
+    const cookies = req.cookies;
+    if (!cookies["refreshToken"]) {
+      return res.status(401).json({ message: "Unauthorized Access Denied" });
+    }
+
+    const TokenRefresh = cookies["refreshToken"];
+
+    // Check if refresh token from cookie is same that we saved in db
+    const foundJWToken = await client.query(
+      "select * from tokens where token = $1",
+      [TokenRefresh]
+    );
+
+    // Check if user id exists in table with this token user id
+    const foundUser = await client.query("select * from users where id =$1", [
+      foundJWToken?.rows[0]?.user_id,
+    ]);
+
+    console.log(foundJWToken, "db token found");
+
+    if (!foundJWToken) {
+      return res
+        .status(401)
+        .json({ message: "Invalid Token... User not found" });
+    }
+
+    let userData;
+    if (foundUser) {
+      userData = foundUser?.rows[0];
+    }
+    // Verify Refresh token to generate new access token
+    jwt.verify(
+      TokenRefresh,
+      process.env.JWT_REFRESH_SECRET,
+      asyncHanlder(async (err, decoded) => {
+        if (err)
+          return res.json({
+            error: err,
+            message: "Forbidden Access.. Invalid Token ",
+          });
+
+        // If verified the http only cookie, grant new access token
+        const accessToken = jwt.sign(
+          {
+            UserInfo: {
+              id: foundJWToken?.rows[0]?.id,
+            },
+          },
+          process.env.JWT_SECRET,
+          { expiresIn: "40s" } //production for 5 min
+        );
+
+        res.send({
+          accessToken,
+          user: {
+            name: userData?.name,
+            email: userData?.email,
+            role: userData?.role,
+          },
+          message: "Success to Authorized",
+        });
+      })
+    );
+  } catch (error) {
+    console.log(error);
+    return res.json({ message: "UnAuthorized" });
+  }
+};
+
 module.exports = {
   RegisterUser,
   LoginUser,
   Logout,
+  RefreshToken,
 };
