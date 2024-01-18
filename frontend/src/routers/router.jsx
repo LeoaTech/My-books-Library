@@ -11,7 +11,6 @@ import AdminLayout from "../_admin/Layout";
 import DashboardPage from "../_admin/pages/Home";
 import AuthLayout from "../_authentication/forms/AuthLayout";
 import {
-  EmailVerification,
   ForgetPassword,
   ResetPassword,
   SignIn,
@@ -30,10 +29,6 @@ const router = createBrowserRouter(
         <Route path="/signup" element={<SignUp />} />
         <Route path="/forgotpassword/:id/:token" element={<ResetPassword />} />
         <Route path="/forgot-password" element={<ForgetPassword />} />
-        <Route
-          path="/email-verification/:token"
-          element={<EmailVerification />}
-        />
       </Route>
 
       <Route path="/expired-link" element={<InvalidToken />} />
