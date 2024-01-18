@@ -395,6 +395,105 @@ const ForgetPassword = asyncHanlder(async (req, res) => {
   }
 });
 
+// Verify user Before Resetting Password and validate token expiration
+
+const VerifyUserAuth = asyncHanlder(async (req, res) => {
+  const { id, token } = req.params;
+
+  try {
+    // check if user exists with token and user_id
+    const userExists = await client.query(
+      "SELECT * FROM users Where id = $1 AND reset_password_token = $2 ",
+      [id, token]
+    );
+
+    const validateToken = jwt.verify(token, process.env.JWT_SECRET);
+
+    if (userExists?.rowCount > 0 && validateToken) {
+      return res.status(201).json({ message: "success" });
+    } else {
+      const updateResetToken = await client.query(
+        "UPDATE users set reset_password_token = $1 Where id = $2 ",
+        [token, id]
+      );
+
+      console.log(updateResetToken?.rows[0]);
+      return res.redirect(`${process.env.CLIENT_URL}/expired-link`);
+    }
+  } catch (error) {
+    res.status(401).json({
+      message: error.message,
+    });
+  }
+});
+
+// Reset Password on Forget Passowrd
+const ResetPassword = asyncHanlder(async (req, res) => {
+  // Get Token and ID from Params to Validate Reset password request
+  const { id, token } = req.params;
+  const { password, confirm_password } = req.body; // Password inputs
+
+  try {
+    // Validate Token
+    const validateToken = jwt.verify(token, process.env.JWT_SECRET);
+
+    console.log(validateToken);
+
+    if (!password) {
+      res.status(400);
+      throw Error("Please Enter Password");
+    }
+
+    const UserExists = await client.query("SELECT * FROM users Where id = $1", [
+      id,
+    ]);
+
+    // Token is Verified and User Exists with the Id
+
+    if (validateToken && UserExists?.rowCount > 0) {
+      // create hash password to save in db
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt?.hash(password, salt);
+
+      // Update User table with new Password;
+      try {
+        const userUpdate = await client.query(
+          `update users set password =$1 where id= $2 Returning *`,
+          [hashedPassword, id]
+        );
+
+        // Password Updated Successfully
+        if (userUpdate?.rowCount > 0) {
+          let data = userUpdate?.rows[0];
+
+          try {
+            await client.query(
+              `update users set reset_password_token =$1 where id= $2 Returning *`,
+              ["", id]
+            );
+          } catch (err) {
+            console.log(err);
+          }
+          res.status(201).json({ message: "Password updated Successfully" });
+        } else {
+          res.status(401).json({ message: "Password not Updated" });
+        }
+      } catch (error) {
+        res.status(401).json({ message: "Password not Updated" });
+      }
+    } else {
+      return res.redirect(`${process.env.CLIENT_URL}/expired-link`);
+
+      // res
+      //   .status(401)
+      //   .json({ message: "Invalid Token, Please genrate new Link " });
+    }
+  } catch (error) {
+    console.log(error, "Token expired error");
+    // res.status(401).json({ message: "Invalid Email Id" });
+    return res.redirect(`${process.env.CLIENT_URL}/expired-link`);
+  }
+});
 
 module.exports = {
   RegisterUser,
@@ -402,5 +501,6 @@ module.exports = {
   Logout,
   RefreshToken,
   ForgetPassword,
-  
+  VerifyUserAuth,
+  ResetPassword,
 };
