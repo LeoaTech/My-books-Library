@@ -1,5 +1,7 @@
 # .env file for Google OAuth 2.0
 
+### Please ADD these variables in your .env file 
+
 VITE_GOOGLE_CLIENT_ID
 
 
