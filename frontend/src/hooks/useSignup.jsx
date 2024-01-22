@@ -2,9 +2,11 @@ import { useState } from "react";
 import { useAuthContext } from "./useAuthContext";
 import { BASE_URL } from "../utiliz/baseAPIURL";
 
-console.log(BASE_URL)
+
+// Sign up Form Hook
 export const useSignup = () => {
   const [error, setError] = useState(null);
+  const [message, setMessage] = useState(false);
   const [isLoading, setIsLoading] = useState(null);
 
   const { dispatch } = useAuthContext();
@@ -19,28 +21,21 @@ export const useSignup = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password, name }),
     });
-    console.log(response, "Form Response");
+    // console.log(response, "Signup Form Response");
     const result = await response.json();
-    console.log(result, "Result");
+    // console.log(result, "Result");
 
     if (!response.ok) {
       setIsLoading(false);
-      setError(result.error);
+      setError(result.message || result.error);
+      setMessage(true);
     }
 
     if (response.ok) {
       setIsLoading(false);
-      setError(null);
-
-      //   save the json token to local storage;
-
-      localStorage.setItem("user", JSON.stringify(result));
-
-      dispatch({ type: "Login", payload: result });
-
-      setIsLoading(false);
+      setMessage(true);
     }
   };
 
-  return { signup, isLoading, error };
+  return { signup, isLoading, error, message };
 };

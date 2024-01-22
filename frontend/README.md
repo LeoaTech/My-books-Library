@@ -1,3 +1,17 @@
+# .env file for Google OAuth 2.0
+
+### Please ADD these variables in your .env file 
+
+VITE_GOOGLE_CLIENT_ID
+
+
+
+VITE_SERVER_ENDPOINT=http://localhost:8000
+
+
+VITE_GOOGLE_OAUTH_REDIRECT_URL=http://localhost:8000/oauth/google
+
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

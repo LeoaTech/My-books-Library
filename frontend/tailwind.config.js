@@ -18,6 +18,7 @@ export default {
         "title-sm": ["20px", "26px"],
         "title-xsm": ["18px", "24px"],
       },
+     
     },
     colors: {
       current: "currentColor",
