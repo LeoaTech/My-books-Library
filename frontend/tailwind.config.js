@@ -1,4 +1,3 @@
-
 // const defaultTheme = import("tailwindcss/defaultTheme");
 
 /** @type {import('tailwindcss').Config} */
@@ -6,7 +5,6 @@
 export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
-
     extend: {
       fontSize: {
         "title-xxl": ["44px", "55px"],
@@ -18,7 +16,6 @@ export default {
         "title-sm": ["20px", "26px"],
         "title-xsm": ["18px", "24px"],
       },
-     
     },
     colors: {
       current: "currentColor",
@@ -60,15 +57,16 @@ export default {
       danger: "#D34053",
       warning: "#FFA70B",
 
-    keyframes: {
-      infiniteSlider: {
-        "0%": { transform: "translateX(0)" },
-        "100%": { transform: "translateX(calc(-250px * 5))" },
+      keyframes: {
+        infiniteSlider: {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(calc(-250px * 5))" },
+        },
+      },
+      animation: {
+        ["infinite-slider"]: "infiniteSlider 40s linear infinite",
       },
     },
-    animation: {
-      ["infinite-slider"]: "infiniteSlider 40s linear infinite",
-    },
+    plugins: [],
   },
-  plugins: [],
 };
