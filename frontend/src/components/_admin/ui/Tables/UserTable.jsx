@@ -4,6 +4,15 @@ import Tables from "./Tables";
 import UpdatRolesModal from "../Modal/User/UpdatRolesModal";
 
 const UserTable = ({ users }) => {
+  const [openModal, setOpenModal] = useState(false);
+  const [values, setValues] = useState(null);
+
+  // To View User Details
+  const viewUserDetails = (userId) => {
+    const currentUser = users?.find((user) => user.id == userId);
+    setValues(currentUser);
+    setOpenModal(!openModal);
+  };
 
   return (
     <div className="rounded-lg border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
@@ -56,6 +65,7 @@ const UserTable = ({ users }) => {
                   <div className="flex items-center space-x-3.5">
                     <button
                       className="hover:text-meta-8"
+                      onClick={() => viewUserDetails(user?.id)}
                     >
                       <svg
                         className="fill-current"
@@ -109,7 +119,9 @@ const UserTable = ({ users }) => {
           </tbody>
         </table>
       </div>
-      
+      {openModal && (
+        <UpdatRolesModal currentUser={values} setOpenModal={setOpenModal} />
+      )}
     </div>
   );
 };
