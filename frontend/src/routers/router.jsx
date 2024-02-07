@@ -36,14 +36,13 @@ const router = createBrowserRouter(
         <Route path="/forgotpassword/:id/:token" element={<ResetPassword />} />
         <Route path="/forgot-password" element={<ForgetPassword />} />
       </Route>
-
       <Route path="/expired-link" element={<InvalidToken />} />
 
       <Route element={<PersistLogin />}>
         <Route path="/" element={<App />}></Route>
 
         {/* Protect Admin Routes */}
-        <Route element={<RequiredAuth allowedRoles={["admin"]} />}>
+        <Route element={<RequiredAuth allowedRoles={[1]} />}>
           <Route path="/dashboard" element={<AdminLayout />}>
             <Route index element={<DashboardPage />} />
             {routes.map((route, i) => {
@@ -65,7 +64,7 @@ const router = createBrowserRouter(
         </Route>
 
         {/* Librarian Routes */}
-        <Route element={<RequiredAuth allowedRoles={["admin", "librarian"]} />}>
+        <Route element={<RequiredAuth allowedRoles={[1,3]} />}>
           <Route
             path="/librarian/dashboard"
             element={<>Librarian Route</>}
@@ -75,7 +74,7 @@ const router = createBrowserRouter(
         {/* Moderator Routes */}
         <Route
           element={
-            <RequiredAuth allowedRoles={["admin", "moderator", "librarian"]} />
+            <RequiredAuth allowedRoles={[1,3]} />
           }
         >
           <Route
