@@ -1,11 +1,27 @@
 const express = require("express");
-const { FetchRoles } = require("../controllers/RolesAndPermissions/RolesController");
+const {
+  FetchRoles,
+  NewRole,
+  UpdateRole,
+  DeleteRole,
+} = require("../controllers/RolesAndPermissions/RolesController");
 
 const router = express.Router();
 
+router.get("/", FetchRoles);
 
-router.get("/", FetchRoles)
+// Add New Role
+router.post("/create", NewRole);
 
-// router.post(`/roles/:role_id/permissions`, UpdatePermissions);
+// Update Role
+
+router.put("/update/:role_id", UpdateRole);
+
+// Delete Role
+
+router.delete("/remove/:role_id", DeleteRole);
+
+
+
 
 module.exports = router;
