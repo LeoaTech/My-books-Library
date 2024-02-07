@@ -10,6 +10,7 @@ const Shipping = lazy(() => import("../_admin/pages/Shipping"));
 const QC = lazy(() => import("../_admin/pages/QualtyControl"));
 const Returns = lazy(() => import("../_admin/pages/Returns"));
 const Users = lazy(() => import("../_admin/pages/Users"));
+const Permissions = lazy(() => import("../_admin/pages/Permissions"));
 const Profile = lazy(() => import("../_admin/pages/Profile"));
 
 /**
@@ -68,6 +69,12 @@ const routes = [
 
     path: "/users",
     component: Users,
+  },
+  {
+    title: "Roles and Permissions",
+
+    path: "/roles-permissions",
+    component: Permissions,
   },
   {
     title: "Profile",
