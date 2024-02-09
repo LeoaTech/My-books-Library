@@ -42,7 +42,7 @@ const router = createBrowserRouter(
         <Route path="/" element={<App />}></Route>
 
         {/* Protect Admin Routes */}
-        <Route element={<RequiredAuth allowedRoles={[1]} />}>
+        <Route element={<RequiredAuth allowedRoles={["admin"]} />}>
           <Route path="/dashboard" element={<AdminLayout />}>
             <Route index element={<DashboardPage />} />
             {routes.map((route, i) => {
@@ -64,7 +64,7 @@ const router = createBrowserRouter(
         </Route>
 
         {/* Librarian Routes */}
-        <Route element={<RequiredAuth allowedRoles={[1,3]} />}>
+        <Route element={<RequiredAuth allowedRoles={["admin","moderator"]} />}>
           <Route
             path="/librarian/dashboard"
             element={<>Librarian Route</>}
@@ -74,7 +74,7 @@ const router = createBrowserRouter(
         {/* Moderator Routes */}
         <Route
           element={
-            <RequiredAuth allowedRoles={[1,3]} />
+            <RequiredAuth allowedRoles={["admin","moderator"]} />
           }
         >
           <Route

@@ -12,8 +12,10 @@ const RequiredAuth = ({ allowedRoles }) => {
     return <Navigate to="/signin" state={{ from: location }} replace />;
   }
 
+
+  console.log(rolesList, "auth name", auth?.role_name)
   // Check if the user's role is allowed
-  if (rolesList?.includes(auth.role)) {
+  if (rolesList?.includes(auth.role_name)) {
     // User has the required role, allow access
     return <Outlet />;
   } else {
