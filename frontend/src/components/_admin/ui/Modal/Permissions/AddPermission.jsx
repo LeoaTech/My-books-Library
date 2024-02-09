@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { usePermissions } from "../../../../../hooks/permissions/usePermissios";
+import { usePermissions } from "../../../../../hooks/permissions/usePermissions";
 
 const schema = z.object({
   name: z.string().min(2, { message: "Please Enter a Permission Name" }),
