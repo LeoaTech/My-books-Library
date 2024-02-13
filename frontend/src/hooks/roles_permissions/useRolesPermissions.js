@@ -27,12 +27,42 @@ export const useRolesPermissions = () => {
     console.log(result, "Result");
   };
 
-  
- 
+  /* Delete Permission */
+  const deleteRolesPermission = async (permissionsData) => {
+    setIsLoading(true);
+    setError(null);
+
+    // ... Destructure role_id and Permissions_ids from form
+    const { role_id, permission_id } = permissionsData;
+
+    const response = await fetch(
+      `${BASE_URL}/roles-permissions/permission/${role_id}`,
+      {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ permission_id: permission_id }),
+      }
+    );
+
+    console.log(response, "Permissions Form Response");
+
+    const result = await response.json(); //response?.data;
+    console.log(result, "Result");
+
+    if (response.status === 204) {
+      setIsLoading(false);
+      setDeletePermissionText(result?.message);
+    } else {
+      setIsLoading(false);
+    }
+  };
+
   return {
     isLoading,
     error,
     message,
+    deleteRolesPermission,
     deletePermissionText,
     addRolePermission,
   };
