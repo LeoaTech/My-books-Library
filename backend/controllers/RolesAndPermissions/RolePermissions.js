@@ -132,9 +132,38 @@ const NewRolePermissions = asyncHanlder(async (req, res) => {
   }
 });
 
+// Remove Existing Role Permissions
+
+const DeleteRolePermission = asyncHanlder(async (req, res) => {
+  try {
+    const { permission_id } = req.body;
+    const { role_id } = req.params;
+    const permissionsArray = permission_id?.map((p) => Number(p));
+
+    try {
+      const deletePermissions = await client.query(
+        `DELETE FROM role_permissions WHERE permission_id = ANY($1) AND role_id = $2 RETURNING *`,
+        [permissionsArray, role_id]
+      );
+      // console.log(deletePermissions?.rows);
+
+      res.status(200).json({ message: "Delete Permissions" });
+    } catch (err) {
+      console.log(err);
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({
+      message: "Error:Permissions cannot be Deleted",
+    });
+    return;
+  }
+});
+
 module.exports = {
   FetchRolePermissions,
   FetchPermissionsByRole,
   FetchPermissionsByRoleId,
   NewRolePermissions,
+  DeleteRolePermission,
 };
