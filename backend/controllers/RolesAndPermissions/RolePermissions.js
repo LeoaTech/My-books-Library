@@ -40,6 +40,38 @@ GROUP BY
   }
 });
 
+/* Fetch Permissions bases on Role */
+const FetchPermissionsByRole = asyncHanlder(async (req, res) => {
+  try {
+    const { roleId } = req.query;
+
+    const getUnassignedPermissionsQuery = `SELECT
+      p.permission_id,
+      p.name AS permission_name
+  FROM
+      public.permissions p
+  WHERE
+      NOT EXISTS (
+          SELECT 1
+          FROM public.role_permissions rp
+          WHERE rp.role_id = $1
+          AND rp.permission_id = p.permission_id
+      );
+`;
+
+    const unassignedPermissions = await client.query(
+      getUnassignedPermissionsQuery,
+      [roleId]
+    );
+    res.status(200).json({
+      permissions: unassignedPermissions?.rows,
+      message: "All Role Permissions Found ",
+    });
+  } catch (error) {
+    console.log(error);
+  }
+});
 module.exports = {
   FetchRolePermissions,
+  FetchPermissionsByRole,
 };
