@@ -10,26 +10,11 @@ client.connect((err, res) => {
   if (err) {
     console.log(err);
   } else {
-    console.log("Authentication API connected");
+    console.log("Users API connected");
   }
 });
 
 const getAllUsers = asyncHanlder(async (req, res) => {
-  const getUsersQuery = `SELECT
-  u.id AS user_id,
-  u.email,
-  u.role_id,
-  ARRAY_AGG(p.name) AS permissions
-FROM
-  public.users u
-JOIN
-  public.role_permissions rp ON u.role_id = rp.role_id
-JOIN
-  public.permissions p ON rp.permission_id = p.permission_id
-GROUP BY
-  u.id, u.email, u.role_id;
-`;
-
   const userQuery = `SELECT
 u.id AS user_id,
 u.email,
@@ -46,6 +31,7 @@ JOIN
 public.permissions p ON rp.permission_id = p.permission_id
 GROUP BY
 u.id, u.email, u.role_id, r.name ; `;
+
   const userExists = await client.query(userQuery);
 
   // console.log(userExists?.rows, "User Found");
@@ -58,7 +44,32 @@ u.id, u.email, u.role_id, r.name ; `;
 // Get user Profile Info
 
 const getUserProfile = asyncHanlder(async (req, res) => {
-  res.status(200).json({ message: "User Profile Info Successfully" });
+  const { userId } = req.query;
+  const getUserProfile = `SELECT
+  u.id AS user_id,
+  u.email,
+  u.role_id,
+  u.phone,
+  u.name,
+  u.address,
+  ARRAY_AGG(p.name) AS permissions
+FROM
+  public.users u
+JOIN
+  public.role_permissions rp ON u.role_id = rp.role_id
+JOIN
+  public.permissions p ON rp.permission_id = p.permission_id
+WHERE
+  u.id = $1
+GROUP BY
+  u.id, u.email, u.role_id;`;
+  const userExists = await client.query(getUserProfile, [userId]);
+
+  // console.log(userExists?.rows, "User Found");
+  res.status(200).json({
+    data: userExists?.rows[0],
+    message: "All users routes are available",
+  });
 });
 // Update User Profile
 
@@ -98,11 +109,30 @@ const UpdateRoles = asyncHanlder(async (req, res) => {
   }
 });
 
+// Delete a User
 
+const DeleteUser = asyncHanlder(async (req, res) => {
+  const { user_id } = req.params;
+  console.log(req.params);
+
+  try {
+    const deleteUserQuery = await client.query(
+      `DELETE FROM users WHERE id=$1`,
+      [user_id]
+    ); 
+
+    console.log(deleteUserQuery?.rowCount);
+
+    res.status(200).json({ message: "Delete. user Successfully" });
+
+  } catch (error) {
+    console.log(error);
+  }
+});
 
 module.exports = {
-  UpdatePermissions,
   UpdateRoles,
+  DeleteUser,
   updateUserPrfile,
   getUserProfile,
   getAllUsers,
