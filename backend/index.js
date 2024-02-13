@@ -12,7 +12,7 @@ const googleOAuthRouter = require("./routes/authenticationRoutes/GoogleAuthRoute
 const userRouter = require("./routes/UserRoutes.js");
 const rolesRouter = require("./routes/RolesRoute.js");
 const permissionsRouter = require("./routes/PermissionsRoutes.js")
-
+const rolePermissionsRouter = require("./routes/RolesPermissionRoute.js")
 const port = process.env.PORT || 8100;
 
 const app = express();
@@ -45,7 +45,7 @@ app.use("/books", booksRouter);
 app.use("/users", userRouter);
 app.use("/roles",rolesRouter);
 app.use("/permissions",permissionsRouter);
-
+app.use("/roles-permissions",rolePermissionsRouter);
 app.use(notfound);
 app.use(errorHanlder);
 
