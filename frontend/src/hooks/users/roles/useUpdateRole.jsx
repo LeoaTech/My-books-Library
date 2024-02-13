@@ -6,6 +6,7 @@ export const useChangeUserRole = () => {
   const [isLoading, setIsLoading] = useState(null);
   const [message, setMessage] = useState(null);
 
+  // Update Role For Each User
   const changeRole = async (roleData) => {
     setIsLoading(true);
     setError(null);
@@ -24,5 +25,25 @@ export const useChangeUserRole = () => {
     console.log(result, "Role Updated");
   };
 
-  return { isLoading, error, message, changeRole };
+  // Delete Any User
+
+  const deleteUser = async (userData) => {
+    setIsLoading(true);
+    setError(null);
+    console.log("Form Reached", userData);
+
+
+    const {user_id}  = userData;
+
+    const response = await fetch(`${BASE_URL}/users/${user_id}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+    });
+
+    const result = await response.json(); //response?.data;
+    console.log(result, "User Deleted");
+  };
+
+  return { isLoading, error, message, changeRole, deleteUser };
 };
