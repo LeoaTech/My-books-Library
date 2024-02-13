@@ -43,7 +43,7 @@ const AddRolePermission = ({ setOpenModal }) => {
   };
   return (
     <div className="flex justify-center items-center fixed inset-1 bg-opacity-75  bg-slate-400 transition-opacity">
-      <div className="mx-10 p-10  bg-white rounded-md flex flex-col justify-center items-center xs:w-full md:w-2/3 lg:w-1/2 md:mx-20 lg:mx-30">
+      <div className="mx-10 p-10  bg-white rounded-md flex flex-col justify-center items-center xs:w-full md:w-2/3 lg:w-1/3 md:mx-20 lg:mx-30">
         <div className="flex flex-col justify-between items-center gap-5">
           <h1 className="text-[17px] font-bold ">New Permission</h1>
           <form onSubmit={handleSubmit(onSubmit)} className="p-5">
@@ -97,13 +97,14 @@ const AddRolePermission = ({ setOpenModal }) => {
             <label className="mt-2.5 mb-2.5 block text-blue-500 dark:text-white">
               Permissions
             </label>
-            <div className=" h-[300px] w-full mt-2 m-3 p-10 overflow-hidden overflow-y-auto ">
+            <div className=" h-[270px] w-full mt-4 m-3 px-6 overflow-hidden overflow-y-auto ">
               {data?.permissions ? (
                 <div className="flex flex-wrap overflow-hidden overflow-y-auto justify-between gap-9 xs:flex-col ">
                   {data?.permissions &&
                     data?.permissions?.map((permission, index) => (
-                      <div key={index} className="flex justify-center gap-2">
+                      <div key={index} className="flex justify-center items-center gap-4">
                         <input
+                        className="h-4 w-4 border-"
                           type="checkbox"
                           name="permission_id"
                           id="permission_id"

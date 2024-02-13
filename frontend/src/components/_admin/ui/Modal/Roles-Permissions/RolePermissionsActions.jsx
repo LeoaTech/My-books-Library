@@ -45,7 +45,7 @@ const RolesPermissionModal = ({ close }) => {
   };
   return (
     <div className="flex justify-center items-center fixed inset-1 bg-opacity-75  bg-slate-400 transition-opacity">
-      <div className="mx-10 bg-white p-10 rounded-md flex flex-col justify-center items-center xs:w-2/3 md:w-1/3 md:mx-20">
+      <div className="mx-10 bg-white pt-5 px-4 rounded-md flex flex-col justify-center items-centerxs:w-full md:w-2/3 lg:w-1/3 md:mx-20 lg:mx-20">
         <div className="flex flex-col justify-between items-center gap-5">
           <h1 className="text-[17px] font-bold ">Permissions Details</h1>
 
@@ -101,7 +101,7 @@ const RolesPermissionModal = ({ close }) => {
               Permissions
             </label>
             {/* {data?.permissions && ( */}
-            <div className=" h-[300px] w-full mt-2 m-3 p-10 overflow-hidden overflow-y-auto ">
+            <div className=" h-[270px] w-full mt-4 m-3 px-10 overflow-hidden overflow-y-auto ">
               {data?.permissions ? (
                 <div className="flex flex-wrap overflow-hidden overflow-y-auto justify-between gap-9 xs:flex-col  ">
                   {data?.permissions &&
@@ -146,22 +146,7 @@ const RolesPermissionModal = ({ close }) => {
             )}
           </form>
 
-          {/* Action Buttons */}
-
-          <div className="mt-10 flex justify-evenly gap-6">
-            {/* <button
-                  onClick={() => deletePermissionMutation(values?.permission_id)}
-                  className="border p-2 px-5 bg-red-400 text-white rounded-md text-[17px] hover:bg-red-600"
-                >
-                  Yes
-                </button>
-                <button
-                  onClick={close}
-                  className="border p-2 px-5 bg-green-400 text-white rounded-md text-[17px] hover:bg-green-600"
-                >
-                  No
-                </button> */}
-          </div>
+         
         </div>
       </div>
     </div>
