@@ -72,8 +72,6 @@ const FetchPermissionsByRole = asyncHanlder(async (req, res) => {
   }
 });
 
-
-
 // Get Permission associated to a Role ID
 const FetchPermissionsByRoleId = asyncHanlder(async (req, res) => {
   try {
@@ -102,8 +100,41 @@ const FetchPermissionsByRoleId = asyncHanlder(async (req, res) => {
     console.log(error);
   }
 });
+
+// Assign New Permissions for Role ID
+
+const NewRolePermissions = asyncHanlder(async (req, res) => {
+  try {
+    const permissionData = req.body;
+    console.log(permissionData);
+    const { permissions } = permissionData;
+    const { role_id, permission_id } = permissions;
+
+    const values = permission_id?.map((p) => `(${role_id}, ${p})`).join(",");
+
+    const addPermissionQuery = `
+      INSERT INTO role_permissions (role_id, permission_id)
+      VALUES
+        ${values}
+      RETURNING *;
+    `;
+
+    const saveNewRolePermissions = await client.query(addPermissionQuery);
+
+    console.log(saveNewRolePermissions?.rows[0]);
+
+    res.status(200).json({
+      message: "New Permission",
+      result: saveNewRolePermissions?.rows[0],
+    });
+  } catch (error) {
+    console.log(error);
+  }
+});
+
 module.exports = {
   FetchRolePermissions,
   FetchPermissionsByRole,
-  FetchPermissionsByRoleId
+  FetchPermissionsByRoleId,
+  NewRolePermissions,
 };
