@@ -16,8 +16,9 @@ export { default as OrdersTable } from "./ui/Tables/OrderTable";
 export { default as ShippingsTable } from "./ui/Tables/ShippingDetailsTable";
 export { default as ReturnsTable } from "./ui/Tables/ReturnsTable";
 export { default as BookingsTable } from "./ui/Tables/BookingTable";
-export { default as RolesPermission } from "./ui/Tables/PermissionsTable";
+export { default as PermissionsTable } from "./ui/Tables/PermissionsTable";
 export { default as Roles } from "./ui/Tables/RolesTable";
+export { default as RolesPermissions } from "./ui/Tables/RolesPermissionsTable";
 
 export { default as AddBookDetails } from "./ui/Modal/AddNewBookModal";
 export { default as ShowBookDetails } from "./ui/Modal/BookDetailsModal";
