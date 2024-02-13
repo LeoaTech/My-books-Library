@@ -71,7 +71,39 @@ const FetchPermissionsByRole = asyncHanlder(async (req, res) => {
     console.log(error);
   }
 });
+
+
+
+// Get Permission associated to a Role ID
+const FetchPermissionsByRoleId = asyncHanlder(async (req, res) => {
+  try {
+    const { roleId } = req.query;
+
+    const permissionQuery = `SELECT
+        rp.role_id,
+        p.permission_id,
+        p.name AS permission_name
+    FROM
+        public.role_permissions rp
+    JOIN
+        public.permissions p ON rp.permission_id = p.permission_id
+    WHERE
+        rp.role_id = $1;;
+    `;
+
+    const getAllPermissions = await client.query(permissionQuery, [roleId]);
+
+    // console.log(getAllPermissions?.rows, "Role Permissions found");
+    res.status(200).json({
+      permissions: getAllPermissions?.rows,
+      message: "All Role Permissions Found ",
+    });
+  } catch (error) {
+    console.log(error);
+  }
+});
 module.exports = {
   FetchRolePermissions,
   FetchPermissionsByRole,
+  FetchPermissionsByRoleId
 };
