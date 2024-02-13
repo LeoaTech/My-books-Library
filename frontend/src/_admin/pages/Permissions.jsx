@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Roles, RolesPermission } from "../../components/_admin";
+import {
+  PermissionsTable,
+  Roles,
+  RolesPermissions,
+} from "../../components/_admin";
 
-const types = ["Roles", "Permissions"];
-
+const types = ["Roles", "Permissions", "Roles Permissions"];
 
 /* Tabs  */
 function TabGroup() {
@@ -32,22 +35,23 @@ function TabGroup() {
   );
 }
 
-
 /* Renders Tables Based on Active Tabs */
 
 const RenderTable = ({ active }) => {
   const [openRoleModal, setOpenRoleModal] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
+  const [ShowDetails, setShowDetails] = useState(false);
 
   if (active === "Roles") {
     return (
       <>
         <div className="flex justify-end items-end ">
-        <button
-          onClick={() => setOpenRoleModal(true)}
-        className="flex p-2 px-4 bg-gray-500 text-white border m-2 rounded-md hover:bg-slate-500"
-        >
-          Add Role
-        </button>
+          <button
+            onClick={() => setOpenRoleModal(true)}
+            className="flex p-2 px-4 bg-gray-500 text-white border m-2 rounded-md hover:bg-slate-500"
+          >
+            Add Role
+          </button>
         </div>
         <Roles open={openRoleModal} setOpenRoleModal={setOpenRoleModal} />
       </>
@@ -55,15 +59,43 @@ const RenderTable = ({ active }) => {
   } else if (active === "Permissions") {
     return (
       <>
-        <button className="flex p-2 px-4 bg-[#10B981] text-white border m-2 rounded-md ">
-          Change Permissions
+        <button
+          onClick={() => setOpenModal(true)}
+          className="flex p-2 px-4 bg-[#10B981] text-white border m-2 rounded-md "
+        >
+          Add Permissions
         </button>
-        <RolesPermission />
+        <PermissionsTable openModal={openModal} setOpenModal={setOpenModal} />
+      </>
+    );
+  } else if (active === "Roles Permissions") {
+    return (
+      <>
+        <div className="flex">
+          <button
+            onClick={() => setOpenModal(true)}
+            className="flex p-2 px-4 bg-[#10B981] text-white border m-2 rounded-md "
+          >
+            Assign New
+          </button>
+
+          <button
+            onClick={() => setShowDetails(true)}
+            className="flex p-2 px-4 bg-[#10B981] text-white border m-2 rounded-md "
+          >
+            Change Permissions
+          </button>
+        </div>
+        <RolesPermissions
+          openModal={openModal}
+          setOpenModal={setOpenModal}
+          ShowDetails={ShowDetails}
+          setShowDetails={setShowDetails}
+        />
       </>
     );
   }
 };
-
 
 /*  Permissions Page */
 const Permissions = () => {
