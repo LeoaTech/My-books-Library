@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { HiPencilSquare } from "react-icons/hi2";
+import { HiPlus, HiMinusCircle } from "react-icons/hi";
 import {
   PermissionsTable,
   Roles,
@@ -48,9 +50,12 @@ const RenderTable = ({ active }) => {
         <div className="flex justify-end items-end ">
           <button
             onClick={() => setOpenRoleModal(true)}
-            className="flex p-2 px-4 bg-gray-500 text-white border m-2 rounded-md hover:bg-slate-500"
+            className="flex p-2 px-4 bg-[#758aae] hover:bg-[#2f3c52] text-white border m-2 rounded-md"
           >
-            Add Role
+            <span className="flex justify-center items-center gap-2">
+              <HiPlus />
+              New Role{" "}
+            </span>
           </button>
         </div>
         <Roles open={openRoleModal} setOpenRoleModal={setOpenRoleModal} />
@@ -59,31 +64,43 @@ const RenderTable = ({ active }) => {
   } else if (active === "Permissions") {
     return (
       <>
-        <button
-          onClick={() => setOpenModal(true)}
-          className="flex p-2 px-4 bg-[#10B981] text-white border m-2 rounded-md "
-        >
-          Add Permissions
-        </button>
+        <div className="flex justify-end items-end">
+          <button
+            onClick={() => setOpenModal(true)}
+            className="flex p-2 px-4 bg-[#758aae] hover:bg-[#2f3c52] text-white border m-2 rounded-md "
+          >
+            <span className="flex justify-center items-center gap-2">
+              <HiPlus />
+              Permissions
+            </span>
+          </button>
+        </div>
+
         <PermissionsTable openModal={openModal} setOpenModal={setOpenModal} />
       </>
     );
   } else if (active === "Roles Permissions") {
     return (
       <>
-        <div className="flex">
+        <div className="flex justify-end items-end">
           <button
             onClick={() => setOpenModal(true)}
-            className="flex p-2 px-4 bg-[#10B981] text-white border m-2 rounded-md "
+            className="flex p-2 px-4 bg-[#758aae] hover:bg-[#2f3c52] text-white border m-2 rounded-md "
           >
-            Assign New
+            <span className="flex justify-center items-center gap-2">
+              <HiPlus />
+              New
+            </span>
           </button>
 
           <button
             onClick={() => setShowDetails(true)}
-            className="flex p-2 px-4 bg-[#10B981] text-white border m-2 rounded-md "
+            className="flex p-2 px-4 bg-[#758aae] hover:bg-[#2f3c52] text-white border m-2 rounded-md "
           >
-            Change Permissions
+            <span className="flex justify-center items-center gap-2">
+              <HiMinusCircle />
+              Permissions
+            </span>
           </button>
         </div>
         <RolesPermissions
