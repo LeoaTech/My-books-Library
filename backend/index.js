@@ -3,6 +3,7 @@ const cors = require("cors");
 require("dotenv").config();
 const store = require("./config/dbConfig.js");
 const { notfound, errorHanlder } = require("./middleware/errorMiddleware.js");
+const cookieSession = require("cookie-session");
 const session = require("express-session");
 const passport = require("passport");
 const cookieParser = require("cookie-parser");
@@ -11,12 +12,19 @@ const booksRouter = require("./routes/booksRoutes/BooksRoutes.js");
 const googleOAuthRouter = require("./routes/authenticationRoutes/GoogleAuthRoute.js");
 const userRouter = require("./routes/UserRoutes.js");
 const rolesRouter = require("./routes/RolesRoute.js");
-const permissionsRouter = require("./routes/PermissionsRoutes.js")
-const rolePermissionsRouter = require("./routes/RolesPermissionRoute.js")
+const permissionsRouter = require("./routes/PermissionsRoutes.js");
+const rolePermissionsRouter = require("./routes/RolesPermissionRoute.js");
+const authorsRouter = require("./routes/AuthorsRoutes.js");
+
 const port = process.env.PORT || 8100;
 
 const app = express();
+
 app.use(passport.initialize());
+
+// app.use(
+//   cookieSession({ name: "session", keys: ["lama"], maxAge: 24 * 60 * 60 * 100 })
+// );
 
 app.use(
   session({
@@ -43,9 +51,11 @@ app.use("/", googleOAuthRouter);
 app.use("/auth", authRouter);
 app.use("/books", booksRouter);
 app.use("/users", userRouter);
-app.use("/roles",rolesRouter);
-app.use("/permissions",permissionsRouter);
-app.use("/roles-permissions",rolePermissionsRouter);
+app.use("/roles", rolesRouter);
+app.use("/permissions", permissionsRouter);
+app.use("/roles-permissions", rolePermissionsRouter);
+
+app.use("/authors", authorsRouter);
 app.use(notfound);
 app.use(errorHanlder);
 
@@ -55,5 +65,3 @@ app.get("/", (req, res) => {
 app.listen(port, () => {
   console.log("Server is listening on port", port);
 });
-
-
