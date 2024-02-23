@@ -1,18 +1,21 @@
 const express = require("express");
-const { FetchAllAuthors } = require("../controllers/Authors.Controller");
+const {
+  FetchAllAuthors,
+  AddNewAuthor,
+} = require("../controllers/Authors.Controller");
 
 const router = express.Router();
 
 router.get("/", FetchAllAuthors);
 
-// Add New Role
-router.post("/new");
+// Add New Author
+router.post("/new", AddNewAuthor);
 
-// Update Role
+// Update Author
 
 router.put("/update/:author_id");
 
-// Delete Role
+// Delete Author
 
 router.delete("/remove/:author_id");
 
