@@ -17,6 +17,10 @@ const permissionsRouter = require("./routes/PermissionsRoutes.js");
 const rolePermissionsRouter = require("./routes/RolesPermissionRoute.js");
 const authorsRouter = require("./routes/AuthorsRoutes.js");
 const conditionsRoutes = require("./routes/ConditionsRoutes.js");
+const categoryRoutes = require("./routes/CategoriesRoutes.js");
+
+
+
 const port = process.env.PORT || 8100;
 
 const app = express();
@@ -58,6 +62,10 @@ app.use("/roles-permissions", rolePermissionsRouter);
 
 app.use("/authors", authorsRouter);
 app.use("/conditions", conditionsRoutes);
+app.use("/categories", categoryRoutes);
+
+
+
 app.use(notfound);
 app.use(errorHanlder);
 
