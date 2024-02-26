@@ -1,6 +1,20 @@
 const express = require("express");
 const router = express.Router();
 const passport = require("passport");
+
+const { Client } = require("pg");
+const connectionUrl = process.env.CONNECTION_URL;
+
+const client = new Client(connectionUrl);
+
+client.connect((err, res) => {
+  if (err) {
+    console.log(err);
+  } else {
+    console.log("Authentication API connected");
+  }
+});
+
 require("../../controllers/AuthController/GoogleAuth.js");
 
 // Google Authentication
@@ -27,7 +41,8 @@ router.get("/auth/logout", (req, res) => {
       console.log(err, "Logout Failed");
       return res.json(err);
     }
-    req.session = null;
+
+    req.session.cookie.originalMaxAge = 0;
 
     res.clearCookie("connect.sid", {
       path: "/",
@@ -36,32 +51,40 @@ router.get("/auth/logout", (req, res) => {
       secure: true,
       maxAge: 24 * 60 * 60 * 1000,
     });
-    res.clearCookie("connect.sid", {
-      path: "/",
-      httpOnly: true,
-      sameSite: "none",
-      secure: true,
-      maxAge: 24 * 60 * 60 * 1000,
-    });
-    return res.redirect("http://localhost:5173/");
+
+    res.send("Logout user");
+    // res.redirect(`${process.env.CLIENT_URL}/`)
   });
 });
 // Google Login Failure Routes
 
 router.get("/auth/google/failure", (req, res) => {
+  console.log(req.user, "user Failed");
+
   res.redirect("https://localhost:5173/signin");
 });
 
 // Successful google login Route
 
 router.get("/auth/login/success", async (req, res) => {
-  console.log(req.user, "user");
+  console.log(req.user, "user at Line 59 in GoogleATH SIGN IN Success");
   if (req.user) {
+    const checkRole = await client.query(
+      "SELECT name FROM roles Where role_id=  $1",
+      [req.user?.role_id]
+    );
+    let role_name;
+
+    if (checkRole?.rowCount > 0) {
+      role_name = checkRole?.rows[0]?.name;
+    }
+
     res.status(200).json({
       user: {
         email: req.user.email,
         name: req.user.name,
-        role: req.user.role,
+        role: req.user.role_id,
+        role_name: role_name,
         auth: true,
       },
       message: "Login success",
