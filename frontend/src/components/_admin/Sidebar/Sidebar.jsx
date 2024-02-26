@@ -62,18 +62,19 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   return (
     <aside
       ref={sidebar}
-      className={`absolute left-0 top-0 z-50 flex h-screen w-[18rem] flex-col overflow-y-hidden bg-black duration-300 ease-linear lg:static lg:translate-x-0 ${
+      className={`absolute left-0 top-0 z-50 flex h-screen w-[18rem] flex-col overflow-y-hidden bg-slate-800 text-white duration-300 ease-linear lg:static lg:translate-x-0 ${
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
       }`}
     >
       {/* <!-- SIDEBAR HEADER --> */}
       <div className="flex items-center justify-between gap-2 pt-3 px-6 py-5.5 lg:py-5.5">
-        <Link to="/dashboard">
+        <Link className="flex justify-center items-center gap-4" to="/dashboard">
           <img
             src="https://plus.unsplash.com/premium_photo-1661914978519-52a11fe159a7?w=400&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTN8fGxvZ298ZW58MHx8MHx8fDA%3D"
             className="flex justify-center items-center h-12 w-12 rounded-full"
             alt="Logo"
           />
+          <span className="font-bold text-xl">Dashboard</span>
         </Link>
 
         <button
@@ -380,6 +381,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                               }
                             >
                               Users
+                            </Link>
+                          </li>
+                          <li className="ml-5 hover:text-white">
+                            <Link
+                              to="/dashboard/roles-permissions"
+                              className={({ isActive }) =>
+                                "group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white " +
+                                (isActive && "!text-white")
+                              }
+                            >
+                              Roles and Permissions
                             </Link>
                           </li>
                         </ul>
