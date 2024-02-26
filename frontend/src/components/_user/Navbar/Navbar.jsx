@@ -15,7 +15,6 @@ const Navbar = () => {
     setMenuOpen(!isMenuOpen);
   };
 
-  console.log(auth);
 
   useEffect(() => {
     const onScroll = () => {
