@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 const store = require("./config/dbConfig.js");
+const bodyParser = require("body-parser");
 const { notfound, errorHanlder } = require("./middleware/errorMiddleware.js");
 const cookieSession = require("cookie-session");
 const session = require("express-session");
@@ -15,7 +16,7 @@ const rolesRouter = require("./routes/RolesRoute.js");
 const permissionsRouter = require("./routes/PermissionsRoutes.js");
 const rolePermissionsRouter = require("./routes/RolesPermissionRoute.js");
 const authorsRouter = require("./routes/AuthorsRoutes.js");
-
+const conditionsRoutes = require("./routes/ConditionsRoutes.js");
 const port = process.env.PORT || 8100;
 
 const app = express();
@@ -43,7 +44,7 @@ app.use(
     credentials: true,
   })
 );
-app.use(express.urlencoded({ extended: true }));
+// app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser()); //cookies middleware
 
@@ -56,6 +57,7 @@ app.use("/permissions", permissionsRouter);
 app.use("/roles-permissions", rolePermissionsRouter);
 
 app.use("/authors", authorsRouter);
+app.use("/conditions", conditionsRoutes);
 app.use(notfound);
 app.use(errorHanlder);
 
