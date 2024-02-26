@@ -21,7 +21,7 @@ const categoryRoutes = require("./routes/CategoriesRoutes.js");
 const coversRoutes = require("./routes/CoversRoutes.js");
 const publisherRoutes = require("./routes/PublishersRoutes.js");
 const vendorsRoutes = require("./routes/VendorsRoutes.js");
-
+const branchRoutes = require("./routes/BranchRoutes.js");
 const port = process.env.PORT || 8100;
 
 const app = express();
@@ -67,7 +67,7 @@ app.use("/categories", categoryRoutes);
 app.use("/covers", coversRoutes);
 app.use("/publishers", publisherRoutes);
 app.use("/vendors", vendorsRoutes);
-
+app.use("/branches", branchRoutes);
 app.use(notfound);
 app.use(errorHanlder);
 
