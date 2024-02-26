@@ -7,10 +7,9 @@ import Sidebar from "../components/_admin/Sidebar/Sidebar";
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-    
   return (
     <div
-      className={`flex h-screen bg-slate-900 dark:bg-gray-900 overflow-hidden;
+      className={`flex h-screen bg-neutral-50 dark:bg-gray-900 overflow-hidden;
       }`}
     >
       {/* <Sidebar /> */}
@@ -22,7 +21,7 @@ const AdminLayout = () => {
         {/* <Outlet /> */}
 
         <main>
-          <div className="mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10">
+          <div className="text-[#1C2434] mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10 dark:text-white">
             <Outlet />
           </div>
         </main>
