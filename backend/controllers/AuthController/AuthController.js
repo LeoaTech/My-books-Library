@@ -1,5 +1,6 @@
 const asyncHanlder = require("express-async-handler");
 const jwt = require("jsonwebtoken");
+
 require("dotenv").config();
 const bcrypt = require("bcryptjs");
 const validator = require("validator");
@@ -27,18 +28,14 @@ const generateToken = (id) => {
 
 const refreshToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_REFRESH_SECRET, {
-    expiresIn: "1d", //in production 7 day
+    expiresIn: "3h", //in production 1 day
   });
 };
 
 // Create New User Account
 const RegisterUser = asyncHanlder(async (req, res) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password } = req.body;
 
-  let userRole = "";
-  if (role == undefined) {
-    userRole = "user";
-  }
   try {
     if (!name || !email || !password) {
       res.status(400);
@@ -51,6 +48,18 @@ const RegisterUser = asyncHanlder(async (req, res) => {
     // if (!validator.isStrongPassword(password)) {
     //   throw Error("Please enter a strong password");
     // }
+
+    const checkRole = await client.query(
+      "SELECT role_id FROM roles Where name=  $1",
+      ["user"]
+    );
+
+    console.log(checkRole?.rows);
+    let role;
+
+    if (checkRole?.rowCount > 0) {
+      role = checkRole?.rows[0]?.role_id;
+    }
     try {
       // check if user exists in DB
       const userExists = await client.query(
@@ -69,8 +78,8 @@ const RegisterUser = asyncHanlder(async (req, res) => {
 
       // Save User in DB
       const user = await client.query(
-        `INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4) RETURNING *`,
-        [name, email, hashedPassword, userRole]
+        `INSERT INTO users (name, email, password, role_id) VALUES ($1, $2, $3, $4) RETURNING *`,
+        [name, email, hashedPassword, role]
       );
 
       console.log(user.rowCount, "Inserted user in users Table");
@@ -132,6 +141,20 @@ const LoginUser = asyncHanlder(async (req, res) => {
 
         const refresh_token = refreshToken(user.id); //refresh token
 
+        // Find role name for Each role_id
+
+        const findRoleName = await client.query(
+          "SELECT name FROM roles WHERE role_id=$1",
+          [user?.role_id]
+        );
+
+        let role_name;
+        if (findRoleName?.rowCount > 0) {
+          role_name = findRoleName?.rows[0]?.name;
+        } else {
+          role_name = "";
+        }
+
         // Check if user id exists in Tokens table or not
         const isTokenExists = await client.query(
           "SELECT * FROM tokens WHERE user_id=$1",
@@ -174,7 +197,8 @@ const LoginUser = asyncHanlder(async (req, res) => {
           user: {
             name: user?.name,
             email: user?.email,
-            role: user?.role,
+            role: user?.role_id,
+            role_name: role_name,
           },
           message: "success",
         });
@@ -260,7 +284,7 @@ const Logout = asyncHanlder(async (req, res) => {
 const RefreshToken = async (req, res) => {
   try {
     const cookies = req.cookies;
-    if (!cookies["refreshToken"]) {
+    if (!cookies["refreshToken"] ) {
       return res.status(401).json({ message: "Unauthorized Access Denied" });
     }
 
@@ -277,7 +301,7 @@ const RefreshToken = async (req, res) => {
       foundJWToken?.rows[0]?.user_id,
     ]);
 
-    console.log(foundJWToken, "db token found");
+    // console.log(foundJWToken, "db token found");
 
     if (!foundJWToken) {
       return res
@@ -288,6 +312,20 @@ const RefreshToken = async (req, res) => {
     let userData;
     if (foundUser) {
       userData = foundUser?.rows[0];
+    }
+
+    // Find role name for Each role_id
+
+    const findRoleName = await client.query(
+      "SELECT name FROM roles WHERE role_id=$1",
+      [userData?.role_id]
+    );
+
+    let role_name;
+    if (findRoleName?.rowCount > 0) {
+      role_name = findRoleName?.rows[0]?.name;
+    } else {
+      role_name = "";
     }
     // Verify Refresh token to generate new access token
     jwt.verify(
@@ -316,7 +354,8 @@ const RefreshToken = async (req, res) => {
           user: {
             name: userData?.name,
             email: userData?.email,
-            role: userData?.role,
+            role: userData?.role_id,
+            role_name: role_name,
           },
           message: "Success to Authorized",
         });
