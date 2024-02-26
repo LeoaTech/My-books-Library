@@ -83,15 +83,15 @@ const DropdownUser = () => {
         ref={dropdown}
         onFocus={() => setDropdownOpen(true)}
         onBlur={() => setDropdownOpen(false)}
-        className={`absolute right-0 pt-2 mt-4 flex w-[16rem] flex-col rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark ${
+        className={`absolute right-0 pt-2 mt-4 flex w-[16rem] flex-col rounded-sm border border-[#E2E8F0] bg-white shadow-default dark:border-[#2E3A47] dark:bg-slate-800 dark:text-white ${
           dropdownOpen === true ? "block" : "hidden"
         }`}
       >
-        <ul className="flex flex-col gap-5 border-b border-stroke px-6 py-5.5 dark:border-strokedark">
+        <ul className="flex flex-col gap-5 border-b border-[#E2E8F0] px-6 py-5.5 dark:border-[#2E3A47]">
           <li>
             <Link
               to="/dashboard/profile"
-              className="flex items-center gap-3.5 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
+              className="flex items-center gap-3.5 text-sm font-medium duration-300 ease-in-out hover:text-[#3C50E0] lg:text-base"
             >
               <svg
                 className="fill-current"
@@ -117,7 +117,7 @@ const DropdownUser = () => {
           <li>
             <Link
               to="/dashboard/settings"
-              className="flex items-center gap-3.5 mb-2 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
+              className="flex items-center gap-3.5 mb-2 text-sm font-medium duration-300 ease-in-out hover:text-[#3C50E0] lg:text-base"
             >
               <svg
                 className="fill-current"
@@ -141,7 +141,7 @@ const DropdownUser = () => {
           </li>
         </ul>
         <button onClick={logout}
-         className="flex items-center gap-3.5 py-4 px-6 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base" >
+         className="flex items-center gap-3.5 py-4 px-6 text-sm font-medium duration-300 ease-in-out hover:text-[#3C50E0] lg:text-base" >
           <svg
             className="fill-current"
             width="22"
