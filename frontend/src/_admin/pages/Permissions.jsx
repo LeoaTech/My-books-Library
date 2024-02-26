@@ -20,7 +20,7 @@ function TabGroup() {
         {types.map((type) => (
           <li className="mr-2 border-b mx-2 border-[#80CAEE] mb-2" key={type}>
             <Link
-              className={`inline-block p-2 mx-3 text-[#64748B] bg-transparent rounded-t-lg ${
+              className={`inline-block p-2 mx-3 bg-transparent rounded-t-lg ${
                 active === type ? "text-[#3C50E0] " : "text-[#8A99AF]"
               }`}
               key={type}
