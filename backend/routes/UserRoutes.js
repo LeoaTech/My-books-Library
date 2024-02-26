@@ -11,14 +11,8 @@ const router = express.Router();
 // Get All Users
 router.get("/", getAllUsers);
 
-// Get User Profile by User ID
-router.get("/user", getUserProfile);
-
-/* Protect these Route For Admins Only */
-//Update Role of a User
-router.put("/:user_id/role", UpdateRoles);
-
 // Delete a User Profile
 router.delete("/:user_id", DeleteUser);
+
 
 module.exports = router;
