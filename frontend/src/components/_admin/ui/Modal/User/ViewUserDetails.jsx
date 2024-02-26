@@ -1,8 +1,6 @@
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useChangeUserRole } from "../../../../../hooks/users/roles/useUpdateRole";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { fetchUserByID } from "../../../../../hooks/users/useFetchUserRoles";
 
 const PermissionCard = ({ permission }) => {
   return (
