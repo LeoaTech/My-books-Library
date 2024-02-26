@@ -9,6 +9,7 @@ export const useSaveBook = () => {
   const addBook = async (booksForm) => {
     setIsLoading(true);
     setError(null);
+
     const response = await fetch(`${BASE_URL}/books/create`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -21,6 +22,23 @@ export const useSaveBook = () => {
     console.log(result, "Result");
   };
 
+  const updateBook = async (book) => {
+    setIsLoading(true);
+    setError(null);
 
-  return { addBook, isLoading, error, message };
+    console.log(book, "Book updated Form functions");
+    const response = await fetch(`${BASE_URL}/books/update/${book?.bookId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ book: book }),
+    });
+
+    console.log(response, "Book Update Form Response");
+    const result = await response.json(); //response?.data;
+    console.log(result, "Update Result");
+  };
+
+  
+  return { addBook, isLoading, error, message, updateBook };
 };
