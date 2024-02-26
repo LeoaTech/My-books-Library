@@ -21,14 +21,17 @@ export const useLogout = () => {
 
   // Google Auth Signout Method
   const signout = async () => {
-    let res = await fetch(`${BASE_URL}/auth/logout`, {
-      credentials: "include",
+    let res = await axios.get(`${BASE_URL}/auth/logout`, {
+      withCredentials: true,
     });
     console.log(res, "logged out");
-
-
-    dispatch({ type: "Logout" });
-    navigate("/");
+    if (res.status === 200) {
+      dispatch({ type: "Logout" });
+      setAuth({});
+      navigate("/");
+    }else{
+      console.log("logout failed")
+    }
   };
-  return { logout,signout };
+  return { logout, signout };
 };
