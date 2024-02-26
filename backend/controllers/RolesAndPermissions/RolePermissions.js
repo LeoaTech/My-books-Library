@@ -86,7 +86,7 @@ const FetchPermissionsByRoleId = asyncHanlder(async (req, res) => {
     JOIN
         public.permissions p ON rp.permission_id = p.permission_id
     WHERE
-        rp.role_id = $1;;
+        rp.role_id = $1;
     `;
 
     const getAllPermissions = await client.query(permissionQuery, [roleId]);
