@@ -15,7 +15,8 @@ const Navbar = () => {
     setMenuOpen(!isMenuOpen);
   };
 
-  const googleAuth = localStorage.getItem("google-auth");
+  console.log(auth);
+
   useEffect(() => {
     const onScroll = () => {
       if (window.scrollY > 150) {
@@ -120,17 +121,21 @@ const Navbar = () => {
                 </Link>
                 <Link
                   to="/signup"
-                  className="h-9 flex justify-center items-center px-4 ml-auto text-sm bg-meta-5 text-white rounded-lg text-center px-2 py-1 uppercase cursor-pointer hover:text-white hover:bg-secondary"
+                  className="h-9 flex justify-center items-center px-4 ml-auto text-sm bg-blue-500 text-white rounded-lg text-center px-2 py-1 uppercase cursor-pointer hover:text-white hover:bg-secondary"
                 >
                   Sign up
                 </Link>
               </>
             )}
 
+            {auth?.role_name === "admin" && (
+              <Link to="/dashboard">Dashboard</Link>
+            )}
             {/* Sign Out for Email and Password Login */}
-            {auth?.role && <a onClick={logout}>Logout</a>}
+            {auth?.role && !auth?.auth && <a onClick={logout}>Logout</a>}
+
             {/* Sign out for Google Auth Login */}
-            {/* {auth?.role && <a onClick={signout}>Sign Out</a>} */}
+            {auth?.role && auth?.auth && <a onClick={signout}>Sign Out</a>}
           </div>
         </div>
 
@@ -163,11 +168,19 @@ const Navbar = () => {
               <HiOutlineShoppingCart className="h-5 w-5 " /> Cart
             </Link>
 
-            {!auth && (
+            <Link
+              className=" mt-5 mb-5 flex justify-center- items-center text-base text-white uppercase cursor-pointer p-1 hover:text-salte-400 hover:bg-slate-500 hover:rounded-lg"
+              to="/dashboard"
+            >
+              {" "}
+              Admin Dashboard
+            </Link>
+
+            {!auth?.role && (
               <>
                 <Link
                   to="/signin"
-                  className="h-9 flex justify-center items-center px-4 ml-auto text-sm bg-transparent text-black rounded-lg   text-center px-2 py-1 uppercase cursor-pointer hover:bg-black hover:text-white"
+                  className="mt-5  mb-5 h-9 flex justify-center items-center p-4 ml-auto text-sm bg-transparent text-black rounded-lg   text-center px-2 py-1 uppercase cursor-pointer hover:bg-black hover:text-white"
                 >
                   Sign in
                 </Link>
