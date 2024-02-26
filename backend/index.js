@@ -19,7 +19,7 @@ const authorsRouter = require("./routes/AuthorsRoutes.js");
 const conditionsRoutes = require("./routes/ConditionsRoutes.js");
 const categoryRoutes = require("./routes/CategoriesRoutes.js");
 const coversRoutes = require("./routes/CoversRoutes.js");
-
+const publisherRoutes = require("./routes/PublishersRoutes.js");
 
 const port = process.env.PORT || 8100;
 
@@ -64,8 +64,7 @@ app.use("/authors", authorsRouter);
 app.use("/conditions", conditionsRoutes);
 app.use("/categories", categoryRoutes);
 app.use("/covers", coversRoutes);
-
-
+app.use("/publishers", publisherRoutes);
 
 app.use(notfound);
 app.use(errorHanlder);
