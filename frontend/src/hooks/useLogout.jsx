@@ -27,10 +27,12 @@ export const useLogout = () => {
     console.log(res, "logged out");
     if (res.status === 200) {
       dispatch({ type: "Logout" });
+      localStorage.removeItem("google-auth");
+
       setAuth({});
       navigate("/");
-    }else{
-      console.log("logout failed")
+    } else {
+      console.log("logout failed");
     }
   };
   return { logout, signout };
