@@ -1,10 +1,8 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
-const store = require("./config/dbConfig.js");
 const bodyParser = require("body-parser");
 const { notfound, errorHanlder } = require("./middleware/errorMiddleware.js");
-const cookieSession = require("cookie-session");
 const session = require("express-session");
 const passport = require("passport");
 const cookieParser = require("cookie-parser");
