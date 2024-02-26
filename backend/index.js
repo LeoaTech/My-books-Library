@@ -28,10 +28,6 @@ const app = express();
 
 app.use(passport.initialize());
 
-// app.use(
-//   cookieSession({ name: "session", keys: ["lama"], maxAge: 24 * 60 * 60 * 100 })
-// );
-
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
@@ -50,6 +46,8 @@ app.use(
   })
 );
 // app.use(express.urlencoded({ extended: true }));
+app.use(bodyParser.json({ limit: "100mb" }));
+app.use(bodyParser.urlencoded({ limit: "100mb", extended: true }));
 app.use(express.json());
 app.use(cookieParser()); //cookies middleware
 
