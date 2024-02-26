@@ -1,10 +1,11 @@
 import { useForm } from "react-hook-form";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import GoogleIcon from "../../assets/google.svg";
 import { useSignup } from "../../hooks/useSignup";
 import { useEffect } from "react";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { BASE_URL } from "../../utiliz/baseAPIURL";
 
 const schema = z.object({
   name: z.string(),
@@ -57,12 +58,13 @@ const Signup = () => {
         <form className="custom-form" onSubmit={handleSubmit(onSubmit)}>
           <h1 className="form-title">Create account</h1>
           <div className="custom-form">
-            {/* <a
-            className="google-oauth-button"
-            href={`/auth/google/start${search}`}
-          >
-            <img src={GoogleIcon} width={22} height={22} /> Continue with Google
-          </a> */}
+            <Link
+              className="google-oauth-button"
+              to={`${BASE_URL}/auth/google`}
+            >
+              <img src={GoogleIcon} width={22} height={22} /> Continue with
+              Google
+            </Link>
             <input
               className="custom-input"
               placeholder="Name"
