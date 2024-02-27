@@ -279,9 +279,117 @@ const DeleteBook = asyncHanlder(async (req, res) => {
   }
 });
 
+// Update A Book Details
+const UpdateBook = asyncHanlder(async (req, res) => {
+  const { book } = req.body;
+  const {
+    title,
+    rental_price,
+    purchase_price,
+    author,
+    condition,
+    cover,
+    available,
+    category,
+    isbn,
+    cover_img_url,
+    publisher,
+    publish_year,
+    vendor_id,
+    branch_id,
+    discount_percentage,
+    credit,
+    summary,
+    bookId,
+    imageUpdated,
+  } = book;
+
+  let imagesUrlsJson;
+  if (imageUpdated) {
+    let images = [...cover_img_url];
+    const imagesUrls = [];
+
+    try {
+      for (let i = 0; i < images.length; i++) {
+        const uploadImg = await cloudinary.uploader.upload(images[i], options);
+        console.log(uploadImg);
+        imagesUrls.push({
+          public_id: uploadImg.public_id,
+          secureURL: uploadImg.secure_url,
+        });
+        // return uploadImg?.public_id;
+      }
+    } catch (error) {
+      console.log(error);
+    }
+
+    imagesUrlsJson = JSON.stringify(imagesUrls);
+  } else {
+    imagesUrlsJson = JSON.stringify(cover_img_url);
+  }
+
+  //   Save Book in database
+  try {
+    const updateBook = await client.query(
+      `UPDATE books SET 
+      title =$1,
+      rental_price=$2,
+      purchase_price=$3,
+      condition=$4,
+      cover=$5,
+      category=$6,
+      isbn=$7,
+      is_available=$8,
+      vendor_id=$9,
+      branch_id=$10,
+      discount_percentage=$11,
+      summary=$12,
+      publish_year=$13,
+      publisher=$14,
+      credit=$15,
+      author=$16,
+      cover_img_url=$17
+      WHERE 
+      id = $18
+       Returning *`,
+      [
+        title,
+        rental_price,
+        purchase_price,
+        condition,
+        cover,
+        category,
+        isbn,
+        available,
+        vendor_id,
+        branch_id,
+        discount_percentage,
+        summary,
+        publish_year,
+        publisher,
+        credit,
+        author,
+        imagesUrlsJson,
+        bookId,
+      ]
+    );
+
+    // console.log(updateBook?.rows[0]);
+    if (updateBook?.rowCount > 0) {
+      res.status(200).json({ message: "Book Updated successfully" });
+    }
+    res.status(400).json({ message: "Error Updating Book" });
+  } catch (error) {
+    console.log(error, "Error Updating book: ");
+  }
+
+  // res.status(200).json({ message: "Book updated Successfully" });
+});
+
 module.exports = {
   GetAllBooks,
   GetBookById,
   CreateNewBook,
   DeleteBook,
+  UpdateBook,
 };
