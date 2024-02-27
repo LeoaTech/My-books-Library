@@ -6,13 +6,14 @@
 
 body {
   font-family: "Inter", sans-serif;
-  color: #000;
+  /* color: #fff; */
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 
   /* padding-top: 64px; */
 }
+
 /* Add this to your global styles or component styles */
 .modal-overlay {
   position: fixed;
@@ -321,6 +322,12 @@ button {
 
 .success {
   color: green;
+}
+
+
+.format-message{
+  font-size: 14px;
+  margin: 0 10px;
 }
 
 .format-message::first-letter {

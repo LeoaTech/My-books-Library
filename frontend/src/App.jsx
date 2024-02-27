@@ -4,7 +4,6 @@ function App() {
   return (
     <>
       <Navbar />
-      <div className="py-40 bg-primary"></div>
     </>
   );
 }
