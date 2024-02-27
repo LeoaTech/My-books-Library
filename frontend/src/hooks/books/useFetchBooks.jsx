@@ -22,3 +22,17 @@ export const useFetchBooks = () => {
   });
 };
 
+// Fetch Book Details by ID
+
+export const fetchBookById = async (bookId) => {
+  try {
+    const response = await fetch(`${BASE_URL}/books/book?bookId=${bookId}`, {
+      credentials: "include",
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching books", error);
+    throw error; // Rethrow the error to let React Query handle it
+  }
+};
