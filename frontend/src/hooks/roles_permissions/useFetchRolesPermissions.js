@@ -44,3 +44,22 @@ export const fetchPermissionsByRole = async (roleId) => {
   }
 };
 
+// Fetch Permission associated with Role_id
+
+
+export const fetchPermissionsByRoleID = async (roleId) => {
+  try {
+    console.log(roleId, "idhr aya");
+    const response = await fetch(
+      `${BASE_URL}/roles-permissions/permissions?roleId=${roleId}`,
+      {
+        credentials: "include",
+      }
+    );
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching role permissions", error);
+    throw error; // Rethrow the error to let React Query handle it
+  }
+};
