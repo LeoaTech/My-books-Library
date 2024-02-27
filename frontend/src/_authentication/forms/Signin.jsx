@@ -17,18 +17,11 @@ const schema = z.object({
 const Signin = () => {
   const { search } = useLocation();
   const navigate = useNavigate();
-  const { persist, setPersist, setGoogleAuth, googleAuth } = useAuthContext();
+  const { persist, setPersist,  googleAuth } = useAuthContext();
 
   const togglePersist = () => {
     setPersist((prev) => !prev);
   };
-  const onGoogleAuthLogin = () => {
-    setGoogleAuth((prev) => !prev);
-  };
-
-  useEffect(() => {
-    localStorage.setItem("google-auth", googleAuth);
-  }, [googleAuth]);
 
   useEffect(() => {
     localStorage.setItem("persist", persist);
@@ -76,8 +69,6 @@ const Signin = () => {
             <Link
               className="google-oauth-button"
               to={`${BASE_URL}/auth/google`}
-              onClick={onGoogleAuthLogin}
-              // start${search}
             >
               <img src={GoogleIcon} width={22} height={22} /> Continue with
               Google
