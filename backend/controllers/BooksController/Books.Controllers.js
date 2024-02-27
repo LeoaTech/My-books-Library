@@ -3,6 +3,15 @@ require("dotenv").config();
 const { Client } = require("pg");
 const connectionUrl = process.env.CONNECTION_URL;
 const client = new Client(connectionUrl);
+const cloudinary = require("cloudinary").v2;
+
+// Cloudinary Configuration
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.CLOUD_API_KEY,
+  api_secret: process.env.CLOUD_API_SECRET,
+  secure: true,
+});
 
 client.connect((err, res) => {
   if (err) {
@@ -11,6 +20,14 @@ client.connect((err, res) => {
     console.log("Book Controller API connected");
   }
 });
+
+// Options for image upload
+const options = {
+  folder: "books",
+  use_filename: true,
+  unique_filename: false,
+  overwrite: true,
+};
 
 // Get All Books
 
@@ -122,7 +139,117 @@ WHERE books.id=$1
   }
 });
 
+// Create New Book Data
+const CreateNewBook = asyncHanlder(async (req, res) => {
+  const { books } = req.body;
+
+  const {
+    title,
+    rental_price,
+    purchase_price,
+    author,
+    condition,
+    cover,
+    isbn,
+    isAvailable,
+    category,
+    vendor_id,
+    branch_id,
+    discount_percentage,
+    summary,
+    publisher,
+    publish_year,
+    credit,
+    cover_img_url,
+    role_id,
+  } = books;
+
+  // Upload Images To Cloudinary
+  let images = [...cover_img_url];
+  const imagesUrls = [];
+
+  try {
+    for (let i = 0; i < images.length; i++) {
+      const uploadImg = await cloudinary.uploader.upload(images[i], options);
+      console.log(uploadImg);
+      imagesUrls.push({
+        public_id: uploadImg.public_id,
+        secureURL: uploadImg.secure_url,
+      });
+      // return uploadImg?.public_id;
+    }
+  } catch (error) {
+    console.log(error);
+  }
+
+  const imagesUrlsJson = JSON.stringify(imagesUrls);
+
+  //   Save Book in database
+
+  if (imagesUrls.length > 0) {
+    try {
+      const saveBook = await client.query(
+        `INSERT INTO books (
+          title,
+          rental_price,
+          purchase_price,
+          author,
+          condition,
+          cover,
+          is_available,
+          category,
+          isbn,
+          cover_img_url,
+          publisher,
+          publish_year,
+          vendor_id,
+          branch_id, 
+          discount_percentage, 
+          credit,
+          summary,
+          added_by
+          ) 
+          values ($1,$2,$3,$4,$5,$6,$7,$8,$9 ,$10,$11,$12,$13,$14,$15,$16,$17,$18) Returning *`,
+        [
+          title,
+          rental_price,
+          purchase_price,
+          author,
+          condition,
+          cover,
+          isAvailable,
+          category,
+          isbn,
+          imagesUrlsJson,
+          publisher,
+          publish_year,
+          vendor_id,
+          branch_id,
+          discount_percentage,
+          credit,
+          summary,
+          role_id,
+        ]
+      );
+      console.log(saveBook?.rowCount, "Book Saved");
+      if (saveBook?.rowCount > 0) {
+        res.status(200).json({
+          books: saveBook?.rows[0],
+          message: "Book created successfully",
+        });
+      } else {
+        res.status(400).json({ message: "Error Creating Book" });
+      }
+    } catch (error) {
+      console.log(error, "Error saving book: ");
+    }
+  } else {
+    return res.status(400).json({ message: "Error Uploading Images Files" });
+  }
+});
+
 module.exports = {
   GetAllBooks,
   GetBookById,
+  CreateNewBook,
 };
