@@ -4,6 +4,7 @@ const {
   GetAllBooks,
   GetBookById,
   DeleteBook,
+  CreateNewBook,
 } = require("../../controllers/BooksController/Books.Controllers.js");
 // require("../../controllers/AuthController/GoogleAuth.js");
 
@@ -15,5 +16,9 @@ router.get("/", GetAllBooks);
 router.get("/book", GetBookById);
 
 router.delete("/delete/:book_id", DeleteBook);
+
+// add a book to the list
+router.post("/create", CreateNewBook);
+
 
 module.exports = router;
