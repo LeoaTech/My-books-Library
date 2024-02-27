@@ -248,8 +248,40 @@ const CreateNewBook = asyncHanlder(async (req, res) => {
   }
 });
 
+// Delete a Book Data   (admin route only)
+
+const DeleteBook = asyncHanlder(async (req, res) => {
+  const { book_id } = req.params;
+
+  // Delete images from cloudinary server
+  try {
+    await cloudinary.api
+      .delete_resources(req.body.imageIds, {
+        type: "upload",
+        resource_type: "image",
+      })
+      .then((result) => console.log(result, "Book deleted successfully"));
+
+    // Delete book from DB
+    const deleteQuery = await client.query(`DELETE FROM books WHERE id=$1`, [
+      book_id,
+    ]);
+
+    console.log(deleteQuery?.rowCount, "Deleted");
+
+    if (deleteQuery?.rowCount > 0) {
+      res.status(200).json({ message: "Book deleted Suuccessfully" });
+    } else {
+      res.status(204).json({ message: "Failed To Delete Book" });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+});
+
 module.exports = {
   GetAllBooks,
   GetBookById,
   CreateNewBook,
+  DeleteBook,
 };
