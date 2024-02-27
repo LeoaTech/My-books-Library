@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import DropdownUser from "../Account/DropDownProfileMenu";
 import { HiMenuAlt1 } from "react-icons/hi";
 import DropdownNotification from "./DropdownNotification";
+import DarkModeSwitcher from "./DarkModeSwitcher";
 
 const Header = ({ sidebarOpen, setSidebarOpen }) => {
   return (
@@ -70,6 +71,10 @@ const Header = ({ sidebarOpen, setSidebarOpen }) => {
 
         <div className="flex items-center gap-3 2xsm:gap-7">
           <ul className="flex items-center gap-2 2xsm:gap-4">
+            {/* <!-- Dark Mode Toggler --> */}
+            <DarkModeSwitcher />
+            {/* <!-- Dark Mode Toggler --> */}
+
             {/* <!-- Notification Menu Area --> */}
             <DropdownNotification />
             {/* <!-- Notification Menu Area --> */}
