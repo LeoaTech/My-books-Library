@@ -5,7 +5,7 @@ export { default as DropdownProfileMenu } from "./Account/DropDownProfileMenu";
 export { default as DropdownNotification } from "./Navbar/DropdownNotification";
 export { default as Header } from "./Navbar/Header";
 export { default as NotificationCard } from "./Account/NotificationCard";
-
+export { default as DarkModeSwitcher } from "./Navbar/DarkModeSwitcher";
 export { default as Sidebar } from "./Sidebar/Sidebar";
 export { default as SidebarLinksGroup } from "./Sidebar/SidebarLinkGroup";
 
