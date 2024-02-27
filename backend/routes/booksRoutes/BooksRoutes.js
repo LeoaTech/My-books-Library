@@ -1,12 +1,13 @@
 const express = require("express");
 const requiredAuth = require("../../middleware/authMiddleware.js");
+const {
+  GetAllBooks,
+} = require("../../controllers/BooksController/Books.Controllers.js");
 // require("../../controllers/AuthController/GoogleAuth.js");
 
 const router = express.Router();
 
-router.get("/", requiredAuth, (req, res) => {
-  res.send("Welcome to Book requests");
-});
+// Get a list of books
+router.get("/", GetAllBooks);
 
-
-module.exports =router
+module.exports = router;
