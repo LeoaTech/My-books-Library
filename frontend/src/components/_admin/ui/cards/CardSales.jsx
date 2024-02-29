@@ -1,10 +1,10 @@
 const CardSales = () => {
   return (
-    <div className="rounded-lg border border-stroke bg-white py-6 px-7.5 shadow-default dark:border-strokedark dark:bg-boxdark">
+    <div className="rounded-lg border border-[#E2E8F0] bg-white py-6 px-7.5 shadow-default dark:border-[#2E3A47] dark:bg-[#24303F]">
       <div className="flex h-11.5 w-8.5 items-center justify-center rounded-full">
-        <span className="flex h-11 w-11 items-center justify-center rounded-full bg-meta-2 dark:bg-meta-4">
+        <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#EFF2F7] dark:bg-[#313D4A]">
           <svg
-            className="fill-primary dark:fill-white"
+            className="fill-[#3C50E0] dark:fill-white"
             width="22"
             height="22"
             viewBox="0 0 22 22"
@@ -25,9 +25,7 @@ const CardSales = () => {
 
       <div className="mt-2 ml-4 flex items-center justify-between">
         <div>
-          <h4 className="text-title-md font-bold text-black dark:text-white">
-            2450
-          </h4>
+          <h4 className="text-xl font-bold text-black dark:text-white">2450</h4>
           <span className="text-sm font-medium">Total Sales</span>
         </div>
       </div>
