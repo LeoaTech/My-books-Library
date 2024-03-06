@@ -4,7 +4,7 @@ import {
   Route,
 } from "react-router-dom";
 import App from "../App";
-import routes, { accountRoutes, roleRoutes } from "../utiliz";
+import routes, { accountRoutes, roleRoutes, VendorOtherRoutes, vendorsRoutes } from "../utiliz";
 import { Suspense } from "react";
 import AdminLoader from "../components/_admin/Loader/Loader";
 import AdminLayout from "../_admin/Layout";
@@ -22,6 +22,8 @@ import BookOverview from "../_root/pages/BookOverview";
 import PersistLogin from "../utiliz/PersistLogin";
 import RequiredAuth from "../utiliz/RequiredAuth";
 import InvalidToken from "../_authentication/forms/InvalidToken";
+import VendorShop from "../_vendors/pages/Home";
+import VendorsLayout from "../_vendors/Layout";
 
 const renderRoutes = (routes) => {
   return routes?.map((route, i) => {
@@ -109,6 +111,49 @@ const router = createBrowserRouter(
             path="/librarian/dashboard"
             element={<>Librarian Route</>}
           ></Route>
+        </Route>
+
+        {/* Vendors Routes */}
+        <Route element={<RequiredAuth allowedRoles={["admin", "vendor"]} />}>
+          <Route
+            path="/vendor"
+            element={
+              <Suspense fallback={<AdminLoader />}>
+                <VendorsLayout />
+              </Suspense>
+            }
+          >
+            <Route index element={<VendorShop />} />
+            {/* {vendorsRoutes?.map((route, i) => {
+              const { component: Component, path } = route;
+              return (
+                <Route
+                  key={i}
+                  exact={true}
+                  path={`/vendor${path}`}
+                  element={
+                    <Suspense fallback={<AdminLoader />}>
+                      <Component />
+                    </Suspense>
+                  }
+                />
+              );
+            })} */}
+
+            {renderRoutes(vendorsRoutes)}
+
+            {VendorOtherRoutes?.map((route, i) => {
+              const { component: Component, path, subRoutes } = route;
+              if (subRoutes) {
+                // Render parent route without a direct component
+                return (
+                  <Route key={i} path={path}>
+                    {renderRoutes(subRoutes)}
+                  </Route>
+                );
+              }
+            })}
+          </Route>
         </Route>
       </Route>
     </Route>
