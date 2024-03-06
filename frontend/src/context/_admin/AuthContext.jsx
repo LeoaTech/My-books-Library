@@ -4,7 +4,6 @@ import { BASE_URL } from "../../utiliz/baseAPIURL";
 
 export const AuthContext = createContext();
 
-console.log(AuthContext);
 export const authReducer = (state, action) => {
   switch (action.type) {
     case "Login":
@@ -34,10 +33,8 @@ export const AuthContextProvider = ({ children }) => {
         withCredentials: true,
       });
 
-      console.log(response, "resp");
       const data = response?.data?.user;
 
-      console.log(data, "on auth context");
       //   save the json token to local storage;
       if (response.status === 200) {
         localStorage.setItem("google-auth", data?.auth);

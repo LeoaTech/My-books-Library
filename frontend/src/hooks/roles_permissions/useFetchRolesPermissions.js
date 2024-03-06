@@ -49,7 +49,6 @@ export const fetchPermissionsByRole = async (roleId) => {
 
 export const fetchPermissionsByRoleID = async (roleId) => {
   try {
-    console.log(roleId, "idhr aya");
     const response = await fetch(
       `${BASE_URL}/roles-permissions/permissions?roleId=${roleId}`,
       {
