@@ -22,7 +22,6 @@ import BookOverview from "../_root/pages/BookOverview";
 import PersistLogin from "../utiliz/PersistLogin";
 import RequiredAuth from "../utiliz/RequiredAuth";
 import InvalidToken from "../_authentication/forms/InvalidToken";
-import VendorShop from "../_vendors/pages/Home";
 import VendorsLayout from "../_vendors/Layout";
 
 const renderRoutes = (routes) => {
