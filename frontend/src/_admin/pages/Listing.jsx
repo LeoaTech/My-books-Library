@@ -111,7 +111,7 @@ const Listing = () => {
             {hasPermission("CREATE") ? (
               <button
                 className="bg-[#758aae] text-white active:bg-[#80CAEE] 
-      font-medium rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 px-2 py-2 lg:px-3 "
+      font-medium rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 px-2 py-2 md:px-3 "
                 type="button"
                 onClick={() => setShowModal(true)}
               >
@@ -147,7 +147,11 @@ const Listing = () => {
           </div>
 
           {/* Show Table Only when Role has Read Authority */}
-          {hasPermission("READ") ? <Table /> : <UnAuthorized />}
+          {hasPermission("READ") ? (
+            <Table hasPermission={hasPermission} />
+          ) : (
+            <UnAuthorized />
+          )}
         </>
       ) : (
         <UnAuthorized /> // Access Denied
