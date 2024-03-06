@@ -26,7 +26,7 @@ const CardSales = () => {
       <div className="mt-2 ml-4 flex items-center justify-between">
         <div>
           <h4 className="text-xl font-bold text-black dark:text-white">2450</h4>
-          <span className="text-sm font-medium">Total Sales</span>
+          <span className="text-sm font-medium opacity-40">Total Sales</span>
         </div>
       </div>
     </div>
