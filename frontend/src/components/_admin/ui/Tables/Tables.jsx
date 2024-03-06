@@ -93,12 +93,23 @@ const Tables = ({ hasPermission }) => {
                   </button>
                 </div>
               )}
-              <button
-                onClick={() => viewBookDetails(bookId)}
-                className="text-red-500"
-              >
-                <MdOutlineDeleteOutline />
-              </button>
+              {hasPermission("DELETE") ? (
+                <button
+                  onClick={() => viewBookDetails(bookId)}
+                  className="text-red-500"
+                >
+                  <MdOutlineDeleteOutline />
+                </button>
+              ) : (
+                <div className="group relative m-2 flex justify-center">
+                  <span className="absolute -top-10 scale-0 transition-all rounded bg-gray-800 p-2 text-xs text-red-500 group-hover:scale-100">
+                    Access Denied!
+                  </span>
+                  <button disabled className="text-red-500">
+                    <MdOutlineDeleteOutline />
+                  </button>
+                </div>
+              )}
             </div>
           );
         },
