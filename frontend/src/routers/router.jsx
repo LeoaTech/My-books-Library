@@ -123,7 +123,7 @@ const router = createBrowserRouter(
               </Suspense>
             }
           >
-            <Route index element={<VendorShop />} />
+            <Route index element={<DashboardPage />} />
             {/* {vendorsRoutes?.map((route, i) => {
               const { component: Component, path } = route;
               return (

@@ -22,8 +22,6 @@ const Users = lazy(() => import("../_admin/pages/Users"));
 const Permissions = lazy(() => import("../_admin/pages/Permissions"));
 const Profile = lazy(() => import("../_admin/pages/Profile"));
 
-const VendorShop = lazy(() => import("../_vendors/pages/Home"));
-
 /**
  * ⚠ These are internal routes!
  * They will be rendered inside the app, using the default `containers/Layout`.
@@ -136,7 +134,7 @@ export const vendorsRoutes = [
     title: "Home",
     path: "/vendor/", // the url
     icon: HomeIcon,
-    component: VendorShop, // view rendered
+    component: Dashboard, // view rendered
   },
 
   {
