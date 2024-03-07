@@ -37,7 +37,6 @@ const Signup = () => {
     formState;
 
   const onSubmit = async (data) => {
-    console.log(data);
     const { email, name, password } = data;
 
     await signup(email, password, name);

@@ -12,7 +12,6 @@ export const useLogout = () => {
     let res = await axios.get(`${BASE_URL}/auth/user/logout`, {
       withCredentials: true,
     });
-    console.log(res, "logged out");
 
     setAuth({});
     dispatch({ type: "Logout" });
@@ -24,7 +23,6 @@ export const useLogout = () => {
     let res = await axios.get(`${BASE_URL}/auth/logout`, {
       withCredentials: true,
     });
-    console.log(res, "logged out");
     if (res.status === 200) {
       dispatch({ type: "Logout" });
       localStorage.removeItem("google-auth");

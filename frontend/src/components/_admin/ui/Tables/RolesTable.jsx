@@ -28,8 +28,6 @@ const RolesTable = ({ open, setOpenRoleModal }) => {
     setDeleteRole(false);
   };
 
-  // console.log(data);
-
   if (isPending) {
     return <h1>Loading...</h1>;
   }

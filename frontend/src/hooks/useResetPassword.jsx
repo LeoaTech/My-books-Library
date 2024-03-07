@@ -33,9 +33,6 @@ export const useResetPassword = () => {
 
     if (res.ok) {
       const result = await res.json();
-
-      console.log(result, "Email Link is Valid");
-      // console.log("Valid user");
     } else {
       navigate("/expired-link");
     }

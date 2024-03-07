@@ -60,7 +60,6 @@ const DeleteBookModal = ({ data, close }) => {
       </div>
     </div>;
   }
-  console.log(bookDetails);
   return (
     <>
       <div className="flex justify-center items-center fixed inset-0 bg-[#64748B] bg-opacity-75 transition-opacity">

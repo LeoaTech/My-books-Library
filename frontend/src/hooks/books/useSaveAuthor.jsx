@@ -9,7 +9,6 @@ export const useAuthor = () => {
   const addAuthor = async (name) => {
     setIsLoading(true);
     setError(null);
-    console.log("Form Reached");
 
     const response = await fetch(`${BASE_URL}/authors/new`, {
       method: "POST",
@@ -18,9 +17,8 @@ export const useAuthor = () => {
       body: JSON.stringify({name:name}),
     });
 
-    console.log(response, "Authors Add Form Response");
     const result = await response.json(); //response?.data;
-    console.log(result, "Result");
+    // console.log(result, "Author Save Result");
   };
 
   return { isLoading, error, message, addAuthor };

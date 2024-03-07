@@ -146,24 +146,12 @@ const ListingTable = () => {
     getCoreRowModel: getCoreRowModel(),
     state: {
       rowSelection,
-    //   globalFilter,
     },
-    // enableRowSelection: true, //enable row selection for all rows
-    // // enableRowSelection: row => row.original.age > 18, // or enable row selection conditionally per row
-    // onRowSelectionChange: setRowSelection,
+  
     getFilteredRowModel: getFilteredRowModel(),
-    // getPaginationRowModel: getPaginationRowModel(),
-    // debugTable: true,
+  
   });
 
-  console.log(globalFilter, "Rows");
-
-//   const filteredData = globalFilter.find((f) => f.id === "title")?.value || "";
-
-//   const onFilterChange = (id, value) =>
-//     setGlobalFilter((prev) =>
-//       prev.filter((f) => f.id !== id).concat({ id, value })
-//     );
   return (
     <>
       {/* Create a Seprate filter Components */}

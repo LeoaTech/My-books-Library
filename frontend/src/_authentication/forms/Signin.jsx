@@ -17,7 +17,7 @@ const schema = z.object({
 const Signin = () => {
   const { search } = useLocation();
   const navigate = useNavigate();
-  const { persist, setPersist,  googleAuth } = useAuthContext();
+  const { persist, setPersist, googleAuth } = useAuthContext();
 
   const togglePersist = () => {
     setPersist((prev) => !prev);
@@ -39,7 +39,6 @@ const Signin = () => {
   });
 
   const onSubmit = async (data) => {
-    console.log(data);
     const { email, password } = data;
 
     await signin(email, password);
@@ -47,8 +46,6 @@ const Signin = () => {
 
   useEffect(() => {
     if (isSubmitSuccessful) {
-      console.log(error, message);
-
       reset();
       if (error == false) {
         navigate("/");

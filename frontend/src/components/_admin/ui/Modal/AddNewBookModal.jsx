@@ -20,7 +20,6 @@ import { RxCross1 } from "react-icons/rx";
 
 const AddNewBookModal = ({ setShowModal }) => {
   const auth = useAuthContext();
-  console.log(auth);
   const queryClient = useQueryClient();
   const [imagesList, setImagesList] = useState([]);
 
@@ -87,7 +86,6 @@ const AddNewBookModal = ({ setShowModal }) => {
   const handleCreate = async (inputValue) => {
     setIsLoading(true);
     const res = await addAuthorMutation(inputValue);
-    console.log(res, "created");
     setTimeout(async () => {
       const newOption = createOption(inputValue);
       setIsLoading(false);
@@ -98,7 +96,6 @@ const AddNewBookModal = ({ setShowModal }) => {
   const onPublisherCreate = async (inputField) => {
     setIsLoading(true);
     const res = await addPublisherMutation(inputField);
-    console.log(res, "created");
     setTimeout(async () => {
       const newOption = createOption(inputField);
       setIsLoading(false);
@@ -165,7 +162,6 @@ const AddNewBookModal = ({ setShowModal }) => {
         value: author.id,
         label: author.name,
       }));
-      console.log(authorList);
       setAuthors([...authorList]);
     }
   }, [authorsData]);
@@ -176,13 +172,11 @@ const AddNewBookModal = ({ setShowModal }) => {
         value: publisher.id,
         label: publisher.name,
       }));
-      console.log(publisherList);
       setPublisherList([...publisherList]);
     }
   }, [publishersData]);
 
   const onSubmit = async (data) => {
-    console.log(data);
     const booksForm = {
       ...data,
       author: selectedAuthor?.value,
@@ -194,12 +188,9 @@ const AddNewBookModal = ({ setShowModal }) => {
       role_id: auth?.role,
     };
 
-    console.log(booksForm);
     await addBookMutation(booksForm);
   };
 
-  // console.log(imagesList);
-  console.log(errors, "Errors", isValid, "success");
 
   if (
     isPendingAuthors ||

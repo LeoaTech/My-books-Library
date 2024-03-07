@@ -10,9 +10,7 @@ const UserTable = ({ users }) => {
 
   // To View User Details
   const editUserDetails = (userId) => {
-    console.log(userId);
     const activeUser = users?.find((user) => user?.user_id == userId);
-    console.log(activeUser);
     setValues(activeUser);
     setOpenModal(!openModal);
   };
@@ -20,7 +18,6 @@ const UserTable = ({ users }) => {
   const showUserDetails = (userId) => {
     setDetails(true);
     const activeUser = users?.find((user) => user?.user_id == userId);
-    console.log(activeUser);
     setValues(activeUser);  };
 
   return (

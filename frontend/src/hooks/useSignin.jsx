@@ -18,7 +18,6 @@ export const useSignin = () => {
   const signin = async (email, password) => {
     setIsLoading(true);
     setError(null);
-    console.log("Form Reached");
 
     const response = await fetch(`${BASE_URL}/auth/signin`, {
       method: "POST",
@@ -27,17 +26,7 @@ export const useSignin = () => {
       body: JSON.stringify({ email, password }),
     });
 
-    // const response = await axios.post(
-    //   `${BASE_URL}/auth/signin`,
-    //   {
-    //     email,
-    //     password,
-    //   },
-    //   { headers: { "Content-Type": "application/json" }, withCredentials: true }
-    // );
-    console.log(response, "Form Response");
     const result = await response.json(); //response?.data;
-    console.log(result, "Result");
 
     setIsLoading(false);
 

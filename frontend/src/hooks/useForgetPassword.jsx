@@ -8,7 +8,6 @@ export const useForgetPassword = () => {
   const [message, setMessage] = useState(false);
 
   const forgetPassword = async (email) => {
-    console.log(email);
     const res = await fetch(
       `${BASE_URL}/auth/forgot-password`,
       {
@@ -18,7 +17,6 @@ export const useForgetPassword = () => {
       }
     );
 
-    console.log(res, "response");
 
     if (res.ok) {
       setMessage(true);
