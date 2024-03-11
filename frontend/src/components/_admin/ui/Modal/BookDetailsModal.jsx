@@ -15,7 +15,7 @@ import { useFetchPublishers } from "../../../../hooks/books/useFetchPublishers";
 import { usePublisher } from "../../../../hooks/books/useAddPublisher";
 import { useFetchVendors } from "../../../../hooks/books/useFetchVendors";
 import { useFetchBranches } from "../../../../hooks/books/useFetchBranches";
-import { fetchBookById } from "../../../../hooks/books/useFetchBooks";
+import { FetchBookById } from "../../../../api/books";
 
 const schema = z.object({
   title: z.string().min(3, { message: "Please Enter a title" }),
@@ -44,8 +44,8 @@ const BookDetailsModal = ({ close, bookValue }) => {
   const [publisherValue, setPublisherValue] = useState();
 
   const { data: bookDetail } = useQuery({
-    queryFn: () => fetchBookById(bookValue),
-    queryKey: ["role-permissions", { bookValue }],
+    queryFn: () => FetchBookById(bookValue),
+    queryKey: ["books", { bookValue }],
   });
 
   const { addAuthor } = useAuthor();
