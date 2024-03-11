@@ -7,11 +7,12 @@ const useAxiosPrivate = () => {
   const refresh = useRefreshToken();
   const { auth } = useAuthContext();
 
+
   useEffect(() => {
     const requestInterceptor = axiosPrivate.interceptors.request.use(
       (config) => {
         if (!config.headers["Authorization"]) {
-          config.headers["Authorization"] = `Bearer ${auth?.AccessToken}`;
+          config.headers["Authorization"] = `Bearer ${auth?.accessToken}`;
         }
         return config;
       },
@@ -44,7 +45,7 @@ const useAxiosPrivate = () => {
     };
   }, [auth, refresh]);
 
-  return axiosPrivate();
+  return axiosPrivate;
 };
 
 export default useAxiosPrivate;
