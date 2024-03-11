@@ -45,7 +45,6 @@ const checkRole = async (req, res, next) => {
 const checkPermissions = (requiredPermissions) => {
   return async (req, res, next) => {
 
-    console.log(req.user,"permissions")
     const userRole = req.user?.role_id;
 
     try {
