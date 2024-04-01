@@ -138,10 +138,89 @@ const DeleteOrder = asyncHanlder(async (req, res) => {
 });
 
 
+/* Update Order */
+
+const UpdateOrder = asyncHanlder(async (req, res) => {
+  try {
+    const { orderForm } = req.body;
+
+    const {
+      name,
+      email,
+      address,
+      city,
+      country,
+      phone,
+      payment_id,
+      mode_of_payment,
+      shipping_address,
+      shipping_city,
+      shipping_country,
+      shipping_phone,
+      discount_code,
+      discount_value,
+      order_by,
+      order_on,
+      id,
+    } = orderForm;
+
+    try {
+      const EditOrderQuery = `UPDATE orders SET 
+        name =$1,
+        email=$2,
+        address=$3,
+        city=$4,
+        country=$5,
+        phone=$6,
+        payment_id=$7,
+        mode_of_payment=$8,
+        shipping_address=$9,
+        shipping_city=$10,
+        shipping_country=$11,
+        shipping_phone=$12,
+        discount_code=$13,
+        discount_value=$14,
+        order_by=$15,
+        order_on=$16
+        WHERE id=$17
+         Returning *`;
+
+      const updatedOrder = await client.query(EditOrderQuery, [
+        name,
+        email,
+        address,
+        city,
+        country,
+        phone,
+        payment_id,
+        mode_of_payment,
+        shipping_address,
+        shipping_city,
+        shipping_country,
+        shipping_phone,
+        discount_code,
+        discount_value,
+        order_by,
+        order_on,
+        id,
+      ]);
+
+      console.log(updatedOrder?.rowCount, "1 Order updated");
+      res.status(200).json({
+        message: "Orders Updated ",
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+});
 module.exports = {
   FetchAllOrders,
   FetchOrderById,
   CreateNewOrder,
-  DeleteOrder
+  DeleteOrder,
+  UpdateOrder
  
 };
