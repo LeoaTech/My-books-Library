@@ -20,6 +20,9 @@ const coversRoutes = require("./routes/CoversRoutes.js");
 const publisherRoutes = require("./routes/PublishersRoutes.js");
 const vendorsRoutes = require("./routes/VendorsRoutes.js");
 const branchRoutes = require("./routes/BranchRoutes.js");
+const ordersRoutes = require("./routes/OrdersRoutes/OrdersRoutes.js");
+
+
 const port = process.env.PORT || 8100;
 
 const app = express();
@@ -64,6 +67,8 @@ app.use("/covers", coversRoutes);
 app.use("/publishers", publisherRoutes);
 app.use("/vendors", vendorsRoutes);
 app.use("/branches", branchRoutes);
+app.use("/orders", ordersRoutes);
+
 app.use(notfound);
 app.use(errorHanlder);
 
