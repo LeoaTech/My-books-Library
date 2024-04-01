@@ -1,92 +1,607 @@
-import React from "react";
+import React, { useState } from "react";
+import { useFetchOrders } from "../../../../hooks/orders/useFetchOrders";
+import { MdEdit } from "react-icons/md";
+import OrderDetails from "../Modal/Orders/OrderDetails";
+import { DeleteOrder, EditOrder } from "../Modal";
+import { HiChevronDoubleLeft, HiChevronDoubleRight } from "react-icons/hi";
 
-const OrderTable = () => {
+const OrderTable = ({ filteredOrders }) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage] = useState(5);
+
+  // Calculate indexes for pagination
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+
+  const {
+    data: orderData,
+    isPending: orderPernding,
+    isError: orderError,
+  } = useFetchOrders();
+  const [showOrderDetails, setShowOrderDetails] = useState(false);
+  const [editOrderDetails, setEditOrderDetails] = useState(false);
+  const [deleteOrderDetails, setDeleteOrderDetails] = useState(false);
+
+  const [getOrderDetails, setOrderDetails] = useState(null);
+
+  console.log(orderData?.orders);
+
+  function onViewOrderDetails(orderId) {
+    const result = orderData?.orders?.find((order) => order?.id === orderId);
+
+    setOrderDetails(result);
+    setShowOrderDetails(true);
+  }
+
+  function onEditOrderDetails(orderId) {
+    const result = orderData?.orders?.find((order) => order?.id === orderId);
+
+    setOrderDetails(result);
+    setEditOrderDetails(true);
+  }
+
+  function onDeleteOrders(orderId) {
+    const result = orderData?.orders?.find((order) => order?.id === orderId);
+
+    setOrderDetails(result);
+    setDeleteOrderDetails(true);
+  }
+  function onClose() {
+    setShowOrderDetails(false);
+    setDeleteOrderDetails(false);
+    setEditOrderDetails(false);
+  }
+
+  if (orderPernding) {
+    return <h2>Loading Orders</h2>;
+  }
+  if (orderError) {
+    return <h1> {orderError}</h1>;
+  }
+
+  if (orderData?.error) {
+    return (
+      <h2 className="py-40 text-lg font-bold text-slate-600">
+        {" "}
+        {orderData.error}
+      </h2>
+    );
+  }
+
+  const currentRows = orderData?.orders?.slice(indexOfFirstRow, indexOfLastRow);
+
+  // Change page
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
   return (
-    <div className="rounded-sm border border-stroke bg-white shadow-default p-10  dark:border-strokedark dark:bg-boxdark">
-      <div className="max-w-full overflow-x-auto">
-        <table class="w-full table-auto">
-          <thead>
-            <tr className="bg-gray-2 text-left dark:bg-meta-4">
-              <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
-                Order ID
+    <>
+      {filteredOrders?.length > 0 ? (
+        <div className="rounded-sm border border-[#E2E8F0] bg-white shadow-default p-10  dark:border-[#2E3A47] dark:bg-[#24303F]">
+          <div className="max-w-full overflow-x-auto">
+            <table className="w-full table-auto">
+              <thead>
+                <tr className="bg-[#f0f5fc] text-left dark:bg-[#313D4A]">
+                  <th className="min-w-[160px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
+                    Order ID
+                  </th>
+
+                  <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
+                    Full Name
+                  </th>
+                  {/* <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
+              Address
+            </th>
+            <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
+              City
+            </th>
+            <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
+              Country
+            </th>
+            <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
+              Phone
+            </th> */}
+                  <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
+                    Email
+                  </th>
+                  <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
+                    Payment Mode
+                  </th>
+                  {/* <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
+              Shipping Address
+            </th>
+            <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
+              Shipping City
+            </th>
+            <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
+              Shipping Country
+            </th>
+            <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
+              Shipping Phone
+            </th> 
+            <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
+              Payment ID
+            </th>
+            <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
+              Discount Code
+            </th>
+            <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
+              Discount Value
+            </th>
+            <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
+              Purchased Items
+            </th>*/}
+                  <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
+                    Order By
+                  </th>
+                  <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
+                    Order Date
+                  </th>
+                  <th className="py-4 px-4 font-medium text-black dark:text-white">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredOrders?.length == 0 ? (
+                  <tr>
+                    <td className="table-data-cell" colSpan="4">
+                      No items found
+                    </td>
+                  </tr>
+                ) : (
+                  filteredOrders?.map((order) => (
+                    <tr key={order?.id}>
+                      <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-11">
+                        {order?.id}
+                      </td>
+                      <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-11">
+                        {order?.name}
+                      </td>
+                      {/* <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-11">
+                {order?.address}
+              </td>
+
+              <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-11">
+                {order?.city}
+              </td>
+
+              <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-11">
+                {order?.country}
+              </td>
+              <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-11">
+                {order?.phone}
+              </td> */}
+
+                      <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-11">
+                        {order?.email}
+                      </td>
+                      <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-11">
+                        {order?.mode_of_payment}
+                      </td>
+                      {/* <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-11">
+                {order?.shipping_address}
+              </td>
+              <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-11">
+                {order?.shipping_city}
+              </td>
+              <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-11">
+                {order?.shipping_country}
+              </td>
+              <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-11">
+                {order?.shipping_phone}
+              </td>
+              <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-11">
+                {order?.payment_id}
+              </td>
+              <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-11">
+                {order?.discount_code}
+              </td>
+              <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-11">
+                {order?.discount_value}
+              </td>
+              <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-11">
+                {order?.items}
+              </td> */}
+                      <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-11">
+                        {order?.order_by}
+                      </td>
+                      <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-11">
+                        {new Date(order?.order_on).toLocaleString()}
+                      </td>
+
+                      <td className="border-b border-[#eee] py-5 px-4 dark:border-[#2E3A47]">
+                        <div className="flex items-center space-x-3.5">
+                          <button
+                            className="hover:text-[#F0950C]"
+                            onClick={() => onEditOrderDetails(order?.id)}
+                          >
+                            {/* <svg
+                      className="fill-current"
+                      width="18"
+                      height="18"
+                      viewBox="0 0 18 18"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M8.99981 14.8219C3.43106 14.8219 0.674805 9.50624 0.562305 9.28124C0.47793 9.11249 0.47793 8.88749 0.562305 8.71874C0.674805 8.49374 3.43106 3.20624 8.99981 3.20624C14.5686 3.20624 17.3248 8.49374 17.4373 8.71874C17.5217 8.88749 17.5217 9.11249 17.4373 9.28124C17.3248 9.50624 14.5686 14.8219 8.99981 14.8219ZM1.85605 8.99999C2.4748 10.0406 4.89356 13.5562 8.99981 13.5562C13.1061 13.5562 15.5248 10.0406 16.1436 8.99999C15.5248 7.95936 13.1061 4.44374 8.99981 4.44374C4.89356 4.44374 2.4748 7.95936 1.85605 8.99999Z"
+                        fill=""
+                      />
+                      <path
+                        d="M9 11.3906C7.67812 11.3906 6.60938 10.3219 6.60938 9C6.60938 7.67813 7.67812 6.60938 9 6.60938C10.3219 6.60938 11.3906 7.67813 11.3906 9C11.3906 10.3219 10.3219 11.3906 9 11.3906ZM9 7.875C8.38125 7.875 7.875 8.38125 7.875 9C7.875 9.61875 8.38125 10.125 9 10.125C9.61875 10.125 10.125 9.61875 10.125 9C10.125 8.38125 9.61875 7.875 9 7.875Z"
+                        fill=""
+                      />
+                    </svg> */}
+
+                            <MdEdit />
+                          </button>
+                          <button
+                            className="hover:text-[#D34053]"
+                            onClick={() => onViewOrderDetails(order?.id)}
+                          >
+                            {/* <svg
+                      className="fill-current"
+                      width="18"
+                      height="18"
+                      viewBox="0 0 18 18"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M13.7535 2.47502H11.5879V1.9969C11.5879 1.15315 10.9129 0.478149 10.0691 0.478149H7.90352C7.05977 0.478149 6.38477 1.15315 6.38477 1.9969V2.47502H4.21914C3.40352 2.47502 2.72852 3.15002 2.72852 3.96565V4.8094C2.72852 5.42815 3.09414 5.9344 3.62852 6.1594L4.07852 15.4688C4.13477 16.6219 5.09102 17.5219 6.24414 17.5219H11.7004C12.8535 17.5219 13.8098 16.6219 13.866 15.4688L14.3441 6.13127C14.8785 5.90627 15.2441 5.3719 15.2441 4.78127V3.93752C15.2441 3.15002 14.5691 2.47502 13.7535 2.47502ZM7.67852 1.9969C7.67852 1.85627 7.79102 1.74377 7.93164 1.74377H10.0973C10.2379 1.74377 10.3504 1.85627 10.3504 1.9969V2.47502H7.70664V1.9969H7.67852ZM4.02227 3.96565C4.02227 3.85315 4.10664 3.74065 4.24727 3.74065H13.7535C13.866 3.74065 13.9785 3.82502 13.9785 3.96565V4.8094C13.9785 4.9219 13.8941 5.0344 13.7535 5.0344H4.24727C4.13477 5.0344 4.02227 4.95002 4.02227 4.8094V3.96565ZM11.7285 16.2563H6.27227C5.79414 16.2563 5.40039 15.8906 5.37227 15.3844L4.95039 6.2719H13.0785L12.6566 15.3844C12.6004 15.8625 12.2066 16.2563 11.7285 16.2563Z"
+                        fill=""
+                      />
+                      <path
+                        d="M9.00039 9.11255C8.66289 9.11255 8.35352 9.3938 8.35352 9.75942V13.3313C8.35352 13.6688 8.63477 13.9782 9.00039 13.9782C9.33789 13.9782 9.64727 13.6969 9.64727 13.3313V9.75942C9.64727 9.3938 9.33789 9.11255 9.00039 9.11255Z"
+                        fill=""
+                      />
+                      <path
+                        d="M11.2502 9.67504C10.8846 9.64692 10.6033 9.90004 10.5752 10.2657L10.4064 12.7407C10.3783 13.0782 10.6314 13.3875 10.9971 13.4157C11.0252 13.4157 11.0252 13.4157 11.0533 13.4157C11.3908 13.4157 11.6721 13.1625 11.6721 12.825L11.8408 10.35C11.8408 9.98442 11.5877 9.70317 11.2502 9.67504Z"
+                        fill=""
+                      />
+                      <path
+                        d="M6.72245 9.67504C6.38495 9.70317 6.1037 10.0125 6.13182 10.35L6.3287 12.825C6.35683 13.1625 6.63808 13.4157 6.94745 13.4157C6.97558 13.4157 6.97558 13.4157 7.0037 13.4157C7.3412 13.3875 7.62245 13.0782 7.59433 12.7407L7.39745 10.2657C7.39745 9.90004 7.08808 9.64692 6.72245 9.67504Z"
+                        fill=""
+                      />
+                    </svg> */}
+
+                            <svg
+                              className="fill-current"
+                              width="18"
+                              height="18"
+                              viewBox="0 0 18 18"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M8.99981 14.8219C3.43106 14.8219 0.674805 9.50624 0.562305 9.28124C0.47793 9.11249 0.47793 8.88749 0.562305 8.71874C0.674805 8.49374 3.43106 3.20624 8.99981 3.20624C14.5686 3.20624 17.3248 8.49374 17.4373 8.71874C17.5217 8.88749 17.5217 9.11249 17.4373 9.28124C17.3248 9.50624 14.5686 14.8219 8.99981 14.8219ZM1.85605 8.99999C2.4748 10.0406 4.89356 13.5562 8.99981 13.5562C13.1061 13.5562 15.5248 10.0406 16.1436 8.99999C15.5248 7.95936 13.1061 4.44374 8.99981 4.44374C4.89356 4.44374 2.4748 7.95936 1.85605 8.99999Z"
+                                fill=""
+                              />
+                              <path
+                                d="M9 11.3906C7.67812 11.3906 6.60938 10.3219 6.60938 9C6.60938 7.67813 7.67812 6.60938 9 6.60938C10.3219 6.60938 11.3906 7.67813 11.3906 9C11.3906 10.3219 10.3219 11.3906 9 11.3906ZM9 7.875C8.38125 7.875 7.875 8.38125 7.875 9C7.875 9.61875 8.38125 10.125 9 10.125C9.61875 10.125 10.125 9.61875 10.125 9C10.125 8.38125 9.61875 7.875 9 7.875Z"
+                                fill=""
+                              />
+                            </svg>
+                          </button>
+                          <button
+                            className="hover:text-[#D34053]"
+                            onClick={() => onDeleteOrders(order?.id)}
+                          >
+                            <svg
+                              className="fill-current"
+                              width="18"
+                              height="18"
+                              viewBox="0 0 18 18"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M13.7535 2.47502H11.5879V1.9969C11.5879 1.15315 10.9129 0.478149 10.0691 0.478149H7.90352C7.05977 0.478149 6.38477 1.15315 6.38477 1.9969V2.47502H4.21914C3.40352 2.47502 2.72852 3.15002 2.72852 3.96565V4.8094C2.72852 5.42815 3.09414 5.9344 3.62852 6.1594L4.07852 15.4688C4.13477 16.6219 5.09102 17.5219 6.24414 17.5219H11.7004C12.8535 17.5219 13.8098 16.6219 13.866 15.4688L14.3441 6.13127C14.8785 5.90627 15.2441 5.3719 15.2441 4.78127V3.93752C15.2441 3.15002 14.5691 2.47502 13.7535 2.47502ZM7.67852 1.9969C7.67852 1.85627 7.79102 1.74377 7.93164 1.74377H10.0973C10.2379 1.74377 10.3504 1.85627 10.3504 1.9969V2.47502H7.70664V1.9969H7.67852ZM4.02227 3.96565C4.02227 3.85315 4.10664 3.74065 4.24727 3.74065H13.7535C13.866 3.74065 13.9785 3.82502 13.9785 3.96565V4.8094C13.9785 4.9219 13.8941 5.0344 13.7535 5.0344H4.24727C4.13477 5.0344 4.02227 4.95002 4.02227 4.8094V3.96565ZM11.7285 16.2563H6.27227C5.79414 16.2563 5.40039 15.8906 5.37227 15.3844L4.95039 6.2719H13.0785L12.6566 15.3844C12.6004 15.8625 12.2066 16.2563 11.7285 16.2563Z"
+                                fill=""
+                              />
+                              <path
+                                d="M9.00039 9.11255C8.66289 9.11255 8.35352 9.3938 8.35352 9.75942V13.3313C8.35352 13.6688 8.63477 13.9782 9.00039 13.9782C9.33789 13.9782 9.64727 13.6969 9.64727 13.3313V9.75942C9.64727 9.3938 9.33789 9.11255 9.00039 9.11255Z"
+                                fill=""
+                              />
+                              <path
+                                d="M11.2502 9.67504C10.8846 9.64692 10.6033 9.90004 10.5752 10.2657L10.4064 12.7407C10.3783 13.0782 10.6314 13.3875 10.9971 13.4157C11.0252 13.4157 11.0252 13.4157 11.0533 13.4157C11.3908 13.4157 11.6721 13.1625 11.6721 12.825L11.8408 10.35C11.8408 9.98442 11.5877 9.70317 11.2502 9.67504Z"
+                                fill=""
+                              />
+                              <path
+                                d="M6.72245 9.67504C6.38495 9.70317 6.1037 10.0125 6.13182 10.35L6.3287 12.825C6.35683 13.1625 6.63808 13.4157 6.94745 13.4157C6.97558 13.4157 6.97558 13.4157 7.0037 13.4157C7.3412 13.3875 7.62245 13.0782 7.59433 12.7407L7.39745 10.2657C7.39745 9.90004 7.08808 9.64692 6.72245 9.67504Z"
+                                fill=""
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : (
+        <div className="rounded-sm border border-[#E2E8F0] bg-white shadow-default p-10  dark:border-[#2E3A47] dark:bg-[#24303F]">
+          <div className="max-w-full overflow-x-auto">
+            <table className="w-full table-auto">
+              <thead>
+                <tr className="bg-[#f0f5fc] text-left dark:bg-[#313D4A]">
+                  <th className="min-w-[160px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
+                    Order ID
+                  </th>
+
+                  <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
+                    Full Name
+                  </th>
+                  {/* <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
+                Address
               </th>
               <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
-                Store
+                City
               </th>
               <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
-                Customer Name
+                Country
               </th>
               <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
-                Order Date
+                Phone
+              </th> */}
+                  <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
+                    Email
+                  </th>
+                  <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
+                    Payment Mode
+                  </th>
+                  {/* <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
+                Shipping Address
               </th>
               <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
-                Order Status
+                Shipping City
               </th>
               <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
-                Order Link
+                Shipping Country
               </th>
               <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
-                Carrier
+                Shipping Phone
+              </th> 
+              <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
+                Payment ID
               </th>
               <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
-                Ship Date
+                Discount Code
               </th>
               <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
-                Est. Delivery Date
+                Discount Value
               </th>
               <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
-                Carrier Status
-              </th>
-              <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
-                Order Tracting Number
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((index) => (
-              <tr key={index}>
-                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                  ORDER0001
-                </td>
-                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                  LeoaTech
-                </td>
-                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                  Monica Chandler Bing
+                Purchased Items
+              </th>*/}
+                  <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
+                    Order By
+                  </th>
+                  <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
+                    Order Date
+                  </th>
+                  <th className="py-4 px-4 font-medium text-black dark:text-white">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentRows?.map((order) => (
+                  <tr key={order?.id}>
+                    <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-11">
+                      {order?.id}
+                    </td>
+                    <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-11">
+                      {order?.name}
+                    </td>
+                    {/* <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-11">
+                  {order?.address}
                 </td>
 
-                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                  23 Jan, 2024
+                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-11">
+                  {order?.city}
                 </td>
 
-                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                  www.example.com/order/24556
+                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-11">
+                  {order?.country}
                 </td>
-                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                  Pending
-                </td>
+                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-11">
+                  {order?.phone}
+                </td> */}
 
-                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                  TCS
+                    <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-11">
+                      {order?.email}
+                    </td>
+                    <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-11">
+                      {order?.mode_of_payment}
+                    </td>
+                    {/* <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-11">
+                  {order?.shipping_address}
                 </td>
-                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                  26 Jan,2024
+                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-11">
+                  {order?.shipping_city}
                 </td>
-                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                  31 Jan, 2024
+                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-11">
+                  {order?.shipping_country}
                 </td>
-                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                  In Transit
+                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-11">
+                  {order?.shipping_phone}
                 </td>
-                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                  355929393
+                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-11">
+                  {order?.payment_id}
                 </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-11">
+                  {order?.discount_code}
+                </td>
+                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-11">
+                  {order?.discount_value}
+                </td>
+                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-11">
+                  {order?.items}
+                </td> */}
+                    <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-11">
+                      {order?.order_by}
+                    </td>
+                    <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-11">
+                      {new Date(order?.order_on).toLocaleString()}
+                    </td>
+
+                    <td className="border-b border-[#eee] py-5 px-4 dark:border-[#2E3A47]">
+                      <div className="flex items-center space-x-3.5">
+                        <button
+                          className="hover:text-[#F0950C]"
+                          onClick={() => onEditOrderDetails(order?.id)}
+                        >
+                          {/* <svg
+                        className="fill-current"
+                        width="18"
+                        height="18"
+                        viewBox="0 0 18 18"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M8.99981 14.8219C3.43106 14.8219 0.674805 9.50624 0.562305 9.28124C0.47793 9.11249 0.47793 8.88749 0.562305 8.71874C0.674805 8.49374 3.43106 3.20624 8.99981 3.20624C14.5686 3.20624 17.3248 8.49374 17.4373 8.71874C17.5217 8.88749 17.5217 9.11249 17.4373 9.28124C17.3248 9.50624 14.5686 14.8219 8.99981 14.8219ZM1.85605 8.99999C2.4748 10.0406 4.89356 13.5562 8.99981 13.5562C13.1061 13.5562 15.5248 10.0406 16.1436 8.99999C15.5248 7.95936 13.1061 4.44374 8.99981 4.44374C4.89356 4.44374 2.4748 7.95936 1.85605 8.99999Z"
+                          fill=""
+                        />
+                        <path
+                          d="M9 11.3906C7.67812 11.3906 6.60938 10.3219 6.60938 9C6.60938 7.67813 7.67812 6.60938 9 6.60938C10.3219 6.60938 11.3906 7.67813 11.3906 9C11.3906 10.3219 10.3219 11.3906 9 11.3906ZM9 7.875C8.38125 7.875 7.875 8.38125 7.875 9C7.875 9.61875 8.38125 10.125 9 10.125C9.61875 10.125 10.125 9.61875 10.125 9C10.125 8.38125 9.61875 7.875 9 7.875Z"
+                          fill=""
+                        />
+                      </svg> */}
+
+                          <MdEdit />
+                        </button>
+                        <button
+                          className="hover:text-[#D34053]"
+                          onClick={() => onViewOrderDetails(order?.id)}
+                        >
+                          {/* <svg
+                        className="fill-current"
+                        width="18"
+                        height="18"
+                        viewBox="0 0 18 18"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M13.7535 2.47502H11.5879V1.9969C11.5879 1.15315 10.9129 0.478149 10.0691 0.478149H7.90352C7.05977 0.478149 6.38477 1.15315 6.38477 1.9969V2.47502H4.21914C3.40352 2.47502 2.72852 3.15002 2.72852 3.96565V4.8094C2.72852 5.42815 3.09414 5.9344 3.62852 6.1594L4.07852 15.4688C4.13477 16.6219 5.09102 17.5219 6.24414 17.5219H11.7004C12.8535 17.5219 13.8098 16.6219 13.866 15.4688L14.3441 6.13127C14.8785 5.90627 15.2441 5.3719 15.2441 4.78127V3.93752C15.2441 3.15002 14.5691 2.47502 13.7535 2.47502ZM7.67852 1.9969C7.67852 1.85627 7.79102 1.74377 7.93164 1.74377H10.0973C10.2379 1.74377 10.3504 1.85627 10.3504 1.9969V2.47502H7.70664V1.9969H7.67852ZM4.02227 3.96565C4.02227 3.85315 4.10664 3.74065 4.24727 3.74065H13.7535C13.866 3.74065 13.9785 3.82502 13.9785 3.96565V4.8094C13.9785 4.9219 13.8941 5.0344 13.7535 5.0344H4.24727C4.13477 5.0344 4.02227 4.95002 4.02227 4.8094V3.96565ZM11.7285 16.2563H6.27227C5.79414 16.2563 5.40039 15.8906 5.37227 15.3844L4.95039 6.2719H13.0785L12.6566 15.3844C12.6004 15.8625 12.2066 16.2563 11.7285 16.2563Z"
+                          fill=""
+                        />
+                        <path
+                          d="M9.00039 9.11255C8.66289 9.11255 8.35352 9.3938 8.35352 9.75942V13.3313C8.35352 13.6688 8.63477 13.9782 9.00039 13.9782C9.33789 13.9782 9.64727 13.6969 9.64727 13.3313V9.75942C9.64727 9.3938 9.33789 9.11255 9.00039 9.11255Z"
+                          fill=""
+                        />
+                        <path
+                          d="M11.2502 9.67504C10.8846 9.64692 10.6033 9.90004 10.5752 10.2657L10.4064 12.7407C10.3783 13.0782 10.6314 13.3875 10.9971 13.4157C11.0252 13.4157 11.0252 13.4157 11.0533 13.4157C11.3908 13.4157 11.6721 13.1625 11.6721 12.825L11.8408 10.35C11.8408 9.98442 11.5877 9.70317 11.2502 9.67504Z"
+                          fill=""
+                        />
+                        <path
+                          d="M6.72245 9.67504C6.38495 9.70317 6.1037 10.0125 6.13182 10.35L6.3287 12.825C6.35683 13.1625 6.63808 13.4157 6.94745 13.4157C6.97558 13.4157 6.97558 13.4157 7.0037 13.4157C7.3412 13.3875 7.62245 13.0782 7.59433 12.7407L7.39745 10.2657C7.39745 9.90004 7.08808 9.64692 6.72245 9.67504Z"
+                          fill=""
+                        />
+                      </svg> */}
+
+                          <svg
+                            className="fill-current"
+                            width="18"
+                            height="18"
+                            viewBox="0 0 18 18"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M8.99981 14.8219C3.43106 14.8219 0.674805 9.50624 0.562305 9.28124C0.47793 9.11249 0.47793 8.88749 0.562305 8.71874C0.674805 8.49374 3.43106 3.20624 8.99981 3.20624C14.5686 3.20624 17.3248 8.49374 17.4373 8.71874C17.5217 8.88749 17.5217 9.11249 17.4373 9.28124C17.3248 9.50624 14.5686 14.8219 8.99981 14.8219ZM1.85605 8.99999C2.4748 10.0406 4.89356 13.5562 8.99981 13.5562C13.1061 13.5562 15.5248 10.0406 16.1436 8.99999C15.5248 7.95936 13.1061 4.44374 8.99981 4.44374C4.89356 4.44374 2.4748 7.95936 1.85605 8.99999Z"
+                              fill=""
+                            />
+                            <path
+                              d="M9 11.3906C7.67812 11.3906 6.60938 10.3219 6.60938 9C6.60938 7.67813 7.67812 6.60938 9 6.60938C10.3219 6.60938 11.3906 7.67813 11.3906 9C11.3906 10.3219 10.3219 11.3906 9 11.3906ZM9 7.875C8.38125 7.875 7.875 8.38125 7.875 9C7.875 9.61875 8.38125 10.125 9 10.125C9.61875 10.125 10.125 9.61875 10.125 9C10.125 8.38125 9.61875 7.875 9 7.875Z"
+                              fill=""
+                            />
+                          </svg>
+                        </button>
+                        <button
+                          className="hover:text-[#D34053]"
+                          onClick={() => onDeleteOrders(order?.id)}
+                        >
+                          <svg
+                            className="fill-current"
+                            width="18"
+                            height="18"
+                            viewBox="0 0 18 18"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M13.7535 2.47502H11.5879V1.9969C11.5879 1.15315 10.9129 0.478149 10.0691 0.478149H7.90352C7.05977 0.478149 6.38477 1.15315 6.38477 1.9969V2.47502H4.21914C3.40352 2.47502 2.72852 3.15002 2.72852 3.96565V4.8094C2.72852 5.42815 3.09414 5.9344 3.62852 6.1594L4.07852 15.4688C4.13477 16.6219 5.09102 17.5219 6.24414 17.5219H11.7004C12.8535 17.5219 13.8098 16.6219 13.866 15.4688L14.3441 6.13127C14.8785 5.90627 15.2441 5.3719 15.2441 4.78127V3.93752C15.2441 3.15002 14.5691 2.47502 13.7535 2.47502ZM7.67852 1.9969C7.67852 1.85627 7.79102 1.74377 7.93164 1.74377H10.0973C10.2379 1.74377 10.3504 1.85627 10.3504 1.9969V2.47502H7.70664V1.9969H7.67852ZM4.02227 3.96565C4.02227 3.85315 4.10664 3.74065 4.24727 3.74065H13.7535C13.866 3.74065 13.9785 3.82502 13.9785 3.96565V4.8094C13.9785 4.9219 13.8941 5.0344 13.7535 5.0344H4.24727C4.13477 5.0344 4.02227 4.95002 4.02227 4.8094V3.96565ZM11.7285 16.2563H6.27227C5.79414 16.2563 5.40039 15.8906 5.37227 15.3844L4.95039 6.2719H13.0785L12.6566 15.3844C12.6004 15.8625 12.2066 16.2563 11.7285 16.2563Z"
+                              fill=""
+                            />
+                            <path
+                              d="M9.00039 9.11255C8.66289 9.11255 8.35352 9.3938 8.35352 9.75942V13.3313C8.35352 13.6688 8.63477 13.9782 9.00039 13.9782C9.33789 13.9782 9.64727 13.6969 9.64727 13.3313V9.75942C9.64727 9.3938 9.33789 9.11255 9.00039 9.11255Z"
+                              fill=""
+                            />
+                            <path
+                              d="M11.2502 9.67504C10.8846 9.64692 10.6033 9.90004 10.5752 10.2657L10.4064 12.7407C10.3783 13.0782 10.6314 13.3875 10.9971 13.4157C11.0252 13.4157 11.0252 13.4157 11.0533 13.4157C11.3908 13.4157 11.6721 13.1625 11.6721 12.825L11.8408 10.35C11.8408 9.98442 11.5877 9.70317 11.2502 9.67504Z"
+                              fill=""
+                            />
+                            <path
+                              d="M6.72245 9.67504C6.38495 9.70317 6.1037 10.0125 6.13182 10.35L6.3287 12.825C6.35683 13.1625 6.63808 13.4157 6.94745 13.4157C6.97558 13.4157 6.97558 13.4157 7.0037 13.4157C7.3412 13.3875 7.62245 13.0782 7.59433 12.7407L7.39745 10.2657C7.39745 9.90004 7.08808 9.64692 6.72245 9.67504Z"
+                              fill=""
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {/* Pagination controls */}
+            <div className="flex justify-center md:justify-end gap-4 mt-5">
+              <button
+                onClick={() => paginate(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="disabled:text-slate-300 text-blue-900"
+              >
+                <HiChevronDoubleLeft style={{ height: 22, width: 32 }} />
+              </button>
+
+              <span className="text-orange-600 bg-gray-100 border text-sm rounded-full h-[40px] w-[45px] flex justify-center items-center">
+                {currentPage}
+              </span>
+              {orderData?.orders?.length > rowsPerPage && (
+                <button
+                  onClick={() => paginate(currentPage + 1)}
+                  disabled={indexOfLastRow >=orderData?.orders?.length}
+                  className="disabled:text-slate-300 text-blue-900"
+                >
+                  <HiChevronDoubleRight style={{ height: 22, width: 32 }} />
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Show Order Details */}
+      {showOrderDetails && (
+        <OrderDetails getOrderDetails={getOrderDetails} onClose={onClose} />
+      )}
+
+      {/* Edit Order Details */}
+      {editOrderDetails && (
+        <EditOrder getOrderDetails={getOrderDetails} onClose={onClose} />
+      )}
+
+      {/* Delete Order Modal */}
+      {deleteOrderDetails && (
+        <DeleteOrder onClose={onClose} orderId={getOrderDetails} />
+      )}
+    </>
   );
 };
 
