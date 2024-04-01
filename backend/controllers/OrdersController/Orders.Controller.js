@@ -42,7 +42,86 @@ const FetchOrderById = asyncHanlder(async (req, res) => {
   }
 });
 
+/* Create an Order */
+
+const CreateNewOrder = asyncHanlder(async (req, res) => {
+  // console.log(req.body);
+  try {
+    const { orderForm } = req.body;
+
+    const {
+      name,
+      email,
+      address,
+      city,
+      country,
+      phone,
+      payment_id,
+      mode_of_payment,
+      shipping_address,
+      shipping_city,
+      shipping_country,
+      shipping_phone,
+      discount_code,
+      discount_value,
+      order_by,
+      order_on,
+    } = orderForm;
+
+    try {
+      const createOrderQuery = `INSERT INTO orders (
+        name,
+        email,
+        address,
+        city,
+        country,
+        phone,
+        payment_id,
+        mode_of_payment,
+        shipping_address,
+        shipping_city,
+        shipping_country,
+        shipping_phone,
+        discount_code,
+        discount_value,
+        order_by,
+        order_on) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) Returning *`;
+
+      const saveNewOrder = await client.query(createOrderQuery, [
+        name,
+        email,
+        address,
+        city,
+        country,
+        phone,
+        payment_id,
+        mode_of_payment,
+        shipping_address,
+        shipping_city,
+        shipping_country,
+        shipping_phone,
+        discount_code,
+        discount_value,
+        order_by,
+        order_on,
+      ]);
+
+      console.log(saveNewOrder?.rowCount, "1 Order Created");
+      res.status(200).json({
+        message: "Order Created Successfully",
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+
 module.exports = {
   FetchAllOrders,
-  FetchOrderById
+  FetchOrderById,
+  CreateNewOrder
+ 
 };
