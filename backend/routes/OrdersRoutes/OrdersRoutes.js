@@ -1,6 +1,7 @@
 const express = require("express");
 const {
   FetchAllOrders,
+  CreateNewOrder,
   DeleteOrder,
   FetchOrderById,
 } = require("../../controllers/OrdersController/Orders.Controller");
@@ -27,6 +28,17 @@ router.get(
   checkPermissions(["READ ORDER"]),
   FetchOrderById
 );
+
+// Add New Orders
+router.post(
+  "/create",
+   checkRole,
+  checkPermissions(["CREATE ORDER"]),
+  CreateNewOrder
+);
+
+
+// Delete Orders
 
 router.delete(
   "/delete/:order_id",
