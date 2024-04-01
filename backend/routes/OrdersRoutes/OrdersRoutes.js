@@ -2,6 +2,7 @@ const express = require("express");
 const {
   FetchAllOrders,
   CreateNewOrder,
+  UpdateOrder,
   DeleteOrder,
   FetchOrderById,
 } = require("../../controllers/OrdersController/Orders.Controller");
@@ -37,6 +38,14 @@ router.post(
   CreateNewOrder
 );
 
+// Update Orders
+
+router.put(
+  "/update/:order_id",
+  checkRole,
+  checkPermissions(["EDIT ORDER"]),
+  UpdateOrder
+);
 
 // Delete Orders
 
