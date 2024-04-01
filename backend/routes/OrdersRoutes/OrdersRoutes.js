@@ -1,6 +1,7 @@
 const express = require("express");
 const {
   FetchAllOrders,
+  DeleteOrder,
   FetchOrderById,
 } = require("../../controllers/OrdersController/Orders.Controller");
 const {
@@ -14,9 +15,10 @@ const router = express.Router();
 // Verify Authentication
 router.use(checkAuth);
 
-// Fetch All Orders
+// Fetch All Orders 
 
-router.get("/", checkRole, checkPermissions(["READ ORDER"]), FetchAllOrders);
+router.get("/",checkRole, checkPermissions(["READ ORDER"]), FetchAllOrders);
+
 
 // Fetch Order by Order Id
 router.get(
@@ -24,6 +26,13 @@ router.get(
   checkRole,
   checkPermissions(["READ ORDER"]),
   FetchOrderById
+);
+
+router.delete(
+  "/delete/:order_id",
+  checkRole,
+  checkPermissions(["DELETE ORDER"]),
+  DeleteOrder
 );
 
 module.exports = router;
