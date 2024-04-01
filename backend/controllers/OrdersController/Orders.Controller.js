@@ -119,9 +119,29 @@ const CreateNewOrder = asyncHanlder(async (req, res) => {
 });
 
 
+/* Delete Order */
+
+const DeleteOrder = asyncHanlder(async (req, res) => {
+  const { order_id } = req.params;
+  try {
+    const deleteOrderQuery = `DELETE FROM orders WHERE id =$1`;
+
+    const deleteOrderdetails = await client.query(deleteOrderQuery, [order_id]);
+
+    console.log(deleteOrderdetails?.rowCount);
+    res.status(200).json({
+      message: "Delete Order ",
+    });
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+
 module.exports = {
   FetchAllOrders,
   FetchOrderById,
-  CreateNewOrder
+  CreateNewOrder,
+  DeleteOrder
  
 };
