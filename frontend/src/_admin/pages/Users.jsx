@@ -1,14 +1,18 @@
-import React from "react";
-import { ListingTable, UserTable } from "../../components/_admin";
+import { UserTable } from "../../components/_admin";
+import { useFetchUserRoles } from "../../hooks/users/useFetchUserRoles";
 
 const Users = () => {
+  const { isPending, error, data } = useFetchUserRoles();
+
+  if (isPending) return "Loading..."; //Add Loading Component
+
+  if (error) return "An error has occurred: " + error.message; // Add error Component
+
   return (
     <div>
-      <h1 className="text-3xl mb-5">Users</h1>
+      <h1 className="m-5 text-lg md:text-2xl text-[#8A99AF]">Users</h1>
 
-      {/* <ListingTable /> */}
-
-      <UserTable />
+      {data && <UserTable users={data?.data} />}
     </div>
   );
 };

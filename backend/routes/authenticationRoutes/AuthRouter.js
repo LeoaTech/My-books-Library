@@ -1,35 +1,39 @@
 const express = require("express");
 const {
   RegisterUser,
-  ForgetPassword,
   LoginUser,
+  Logout,
   RefreshToken,
+  ForgetPassword,
+  VerifyUserAuth,
   ResetPassword,
 } = require("../../controllers/AuthController/AuthController.js");
-const requiredAuth = require("../../middleware/authMiddleware.js");
-
 
 const router = express.Router();
 
-// Sign up Route
+// New User Sign up Route
 router.post("/signup", RegisterUser);
 
-// Sign in Route
+// Log-in Route
 router.post("/signin", LoginUser);
+
+// Logout Route for  email/password
+router.get("/user/logout", Logout);
 
 // Refresh token after 5 min
 
-router.post("/refresh", RefreshToken);
-// Log out Route
-
-router.post("/logout", LogoutUser);
+router.get("/refresh", RefreshToken);
 
 // Forgot Password Route
-
 router.post("/forgot-password", ForgetPassword);
 
 
-router.post("/reset-password", requiredAuth, ResetPassword);
+// Verify Reset Password Email Link Token
+router.get(`/forgotpassword/:id/:token`, VerifyUserAuth);
+
+
+// Reset Password with forgot Password Email Link
+router.post("/reset-password/:id/:token", ResetPassword);
 
 
 module.exports = router;
