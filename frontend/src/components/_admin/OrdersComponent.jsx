@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useFetchOrders } from "../../hooks/orders/useFetchOrders";
-
+import OrderTable from "./ui/Tables/OrderTable"
 const OrdersComponent = () => {
   const {
     data: orderData,
@@ -79,6 +79,8 @@ const OrdersComponent = () => {
           </button>
         </div>
         {/* Order Table */}
+        <OrderTable filteredOrders={filteredOrders} />
+
       </div>
     );
 };
