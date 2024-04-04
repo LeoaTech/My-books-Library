@@ -30,6 +30,29 @@ export const useOrdersApi = () => {
     }
   };
 
- 
-  return { isLoading, error, updateOrder };
+  // Delete Order
+  const deleteOrder = async (orderId) => {
+    setIsLoading(true);
+    setError(null);
+
+    // console.log(orderId, "OrderId");
+    const response = await fetch(`${BASE_URL}/orders/delete/${orderId}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+    });
+
+    console.log(response, "Delete Order Response");
+
+    const result = await response.json(); //response?.data;
+    console.log(result, "Delete Order Result");
+
+    if (response.status === 204) {
+      setIsLoading(false);
+    } else {
+      setIsLoading(false);
+    }
+  };
+
+  return { isLoading, error, updateOrder, deleteOrder };
 };
