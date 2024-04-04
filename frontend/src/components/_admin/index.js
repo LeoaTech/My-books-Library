@@ -22,3 +22,5 @@ export { default as RolesPermissions } from "./ui/Tables/RolesPermissionsTable";
 
 export { default as AddBookDetails } from "./ui/Modal/AddNewBookModal";
 export { default as ShowBookDetails } from "./ui/Modal/BookDetailsModal";
+
+export { default as OrderComponent } from "./OrdersComponent";
