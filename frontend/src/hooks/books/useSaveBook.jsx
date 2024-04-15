@@ -44,11 +44,11 @@ export const useSaveBook = () => {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      // body: JSON.stringify({ book: book }),
     });
 
     // console.log(response, "Book Delete Response");
     const result = await response.json(); //response?.data;
+    setIsLoading(false)
     console.log(result, "delete Result");
   };
 
