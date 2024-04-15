@@ -4,7 +4,12 @@ import {
   Route,
 } from "react-router-dom";
 import App from "../App";
-import routes, { accountRoutes, roleRoutes, VendorOtherRoutes, vendorsRoutes } from "../utiliz";
+import routes, {
+  accountRoutes,
+  roleRoutes,
+  VendorOtherRoutes,
+  vendorsRoutes,
+} from "../utiliz";
 import { Suspense } from "react";
 import AdminLoader from "../components/_admin/Loader/Loader";
 import AdminLayout from "../_admin/Layout";
@@ -16,13 +21,22 @@ import {
   SignIn,
   SignUp,
 } from "../_authentication/forms";
-import Shop from "../_root/pages/Shop";
-import Library from "../_root/pages/Library";
-import BookOverview from "../_root/pages/BookOverview";
+
 import PersistLogin from "../utiliz/PersistLogin";
 import RequiredAuth from "../utiliz/RequiredAuth";
 import InvalidToken from "../_authentication/forms/InvalidToken";
 import VendorsLayout from "../_vendors/Layout";
+
+// guest/user pages
+import Home from "../_root/pages/Home";
+import Shop from "../_root/pages/Shop";
+import Library from "../_root/pages/Library";
+import BookOverview from "../_root/pages/BookOverview";
+import MyProfile from "../_root/pages/UserProfile/index";
+import AccountSettings from "../_root/pages/UserProfile/AccountSettings";
+import MyOrdersHistory from "../_root/pages/UserProfile/MyOrdersHistory";
+import Membership from "../_root/pages/UserProfile/Membership";
+import Billing from "../_root/pages/UserProfile/Billing";
 
 const renderRoutes = (routes) => {
   return routes?.map((route, i) => {
@@ -55,10 +69,15 @@ const renderRoutes = (routes) => {
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route>
+      <Route path="/" element={<Home />}></Route>
       <Route path="library" element={<Library />}></Route>
       <Route path="shop" element={<Shop />}></Route>
       <Route path="book" element={<BookOverview />}></Route>
-
+      <Route path="profile" element={<MyProfile />}></Route>
+      <Route path="account" element={<AccountSettings />}></Route>
+      <Route path="orders" element={<MyOrdersHistory />}></Route>
+      <Route path="membership" element={<Membership />}></Route>
+      <Route path="billing" element={<Billing />}></Route>
       {/* Authentication Routes */}
 
       <Route element={<AuthLayout />}>
