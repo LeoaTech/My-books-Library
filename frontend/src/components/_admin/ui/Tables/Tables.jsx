@@ -5,11 +5,15 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-
-import DeleteBookModal from "../Modal/DeleteBookModal";
 import { useFetchBooks } from "../../../../hooks/books/useFetchBooks";
 import { ShowBookDetails } from "../..";
-import { MdEdit, MdOutlineDeleteOutline } from "react-icons/md";
+import {
+  MdEdit,
+  MdOutlineDeleteOutline,
+  MdOutlineRemoveRedEye,
+} from "react-icons/md";
+import DeleteBook from "../Modal/DeleteBook";
+import BookDetailsModal from "../Modal/BookDetailsModal";
 
 const Tables = ({ hasPermission }) => {
   const { isPending, error, data: booksData } = useFetchBooks();
@@ -73,9 +77,10 @@ const Tables = ({ hasPermission }) => {
         header: "Actions",
         cell: (info) => {
           const bookId = info.row.original?.id;
+          const bookTitle = info.row.original?.title
 
           return (
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               {hasPermission("EDIT") ? (
                 <button
                   onClick={() => editBookDetails(bookId)}
@@ -93,9 +98,16 @@ const Tables = ({ hasPermission }) => {
                   </button>
                 </div>
               )}
+              
+              <button
+                onClick={() => viewBookDetails(bookId)}
+                className="text-green-600"
+              >
+                <MdOutlineRemoveRedEye />
+              </button>
               {hasPermission("DELETE") ? (
                 <button
-                  onClick={() => viewBookDetails(bookId)}
+                  onClick={() => deleteBookDetails(bookId,bookTitle)}
                   className="text-red-500"
                 >
                   <MdOutlineDeleteOutline />
@@ -128,10 +140,16 @@ const Tables = ({ hasPermission }) => {
   const [values, setValues] = useState(null);
   const [bookDetailModal, setBookDetailModal] = useState(false);
   const [editDetailModal, setEditDetailModal] = useState(false);
+  const [deleteBookModal, setDeleteBookModal] = useState(false);
 
   const viewBookDetails = (id) => {
     setValues(id);
     setBookDetailModal(true);
+  };
+
+  const deleteBookDetails = (id,title) => {
+    setValues({id, title});
+    setDeleteBookModal(true);
   };
 
   const editBookDetails = (id) => {
@@ -143,6 +161,7 @@ const Tables = ({ hasPermission }) => {
   const closeModal = () => {
     setBookDetailModal(false);
     setEditDetailModal(false);
+    setDeleteBookModal(false);
   };
 
   if (isPending) return "Loading..."; //Add Loading Component
@@ -150,11 +169,11 @@ const Tables = ({ hasPermission }) => {
   if (error) return "An error has occurred: " + error.message; // Add error Component
 
   return (
-    <div className="rounded-sm border border-[#E2E8F0] bg-white shadow-default max-w-full overflow-x-auto overflow-y-auto dark:border-[#2E3A47] dark:bg-[#24303F]">
+    <div className="rounded-sm  h-[500px]border border-[#E2E8F0] bg-white shadow-default max-w-full overflow-x-auto overflow-y-auto dark:border-[#2E3A47] dark:bg-[#24303F]">
       {/* React Table */}
-      <div className="max-w-full overflow-x-auto dark:border-[#2E3A47]">
+      <div className="max-w-full  overflow-x-auto dark:border-[#2E3A47]">
         {booksData?.books && (
-          <table className="w-full table-auto border">
+          <table className="w-full  table-auto border">
             <thead>
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr
@@ -206,8 +225,10 @@ const Tables = ({ hasPermission }) => {
       {editDetailModal && (
         <ShowBookDetails bookValue={values} close={closeModal} />
       )}
+      {/* Display Single Book Details */}
+      {bookDetailModal && <BookDetailsModal data={values} close={closeModal} />}
 
-      {bookDetailModal && <DeleteBookModal data={values} close={closeModal} />}
+      {deleteBookModal && <DeleteBook book= {values} close={closeModal} />}
     </div>
   );
 };
