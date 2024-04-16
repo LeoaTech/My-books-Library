@@ -44,6 +44,7 @@ const FetchOrderById = asyncHanlder(async (req, res) => {
 
 /* Create an Order */
 
+// ?TODO: Validate the Duplicate Entries of Order details 
 const CreateNewOrder = asyncHanlder(async (req, res) => {
   // console.log(req.body);
   try {
@@ -64,6 +65,8 @@ const CreateNewOrder = asyncHanlder(async (req, res) => {
       shipping_phone,
       discount_code,
       discount_value,
+      items, //Items will always be an array [{book_id,book_title}]
+      tracking_id,
       order_by,
       order_on,
     } = orderForm;
@@ -84,8 +87,10 @@ const CreateNewOrder = asyncHanlder(async (req, res) => {
         shipping_phone,
         discount_code,
         discount_value,
+        items,
+        tracking_id,
         order_by,
-        order_on) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) Returning *`;
+        order_on) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18) Returning *`;
 
       const saveNewOrder = await client.query(createOrderQuery, [
         name,
@@ -102,6 +107,8 @@ const CreateNewOrder = asyncHanlder(async (req, res) => {
         shipping_phone,
         discount_code,
         discount_value,
+        JSON.stringify(items), // Serialize items to JSON string
+        tracking_id,
         order_by,
         order_on,
       ]);
@@ -117,7 +124,6 @@ const CreateNewOrder = asyncHanlder(async (req, res) => {
     console.log(error);
   }
 });
-
 
 /* Delete Order */
 
@@ -136,7 +142,6 @@ const DeleteOrder = asyncHanlder(async (req, res) => {
     console.log(error);
   }
 });
-
 
 /* Update Order */
 
@@ -221,6 +226,5 @@ module.exports = {
   FetchOrderById,
   CreateNewOrder,
   DeleteOrder,
-  UpdateOrder
- 
+  UpdateOrder,
 };
