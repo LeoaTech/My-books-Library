@@ -8,6 +8,7 @@ import {
   MdOutlineCalendarMonth,
   MdOutlineLocalPhone,
   MdOutlinePerson,
+  MdShoppingBag,
 } from "react-icons/md";
 import { RxCross1 } from "react-icons/rx";
 import { BsCreditCard2BackFill, BsPerson, BsPersonFill } from "react-icons/bs";
@@ -20,7 +21,32 @@ import { FaArrowRightToCity, FaFlag } from "react-icons/fa6";
 import { RiFlag2Fill, RiUserLocationFill } from "react-icons/ri";
 
 const OrderDetails = ({ getOrderDetails, onClose }) => {
-  console.log(getOrderDetails);
+  const itemsList = [
+    {
+      book_id: 1,
+      book_title: "test bok1",
+    },
+    {
+      book_id: 2,
+      book_title: "Test Book 2",
+    },
+    {
+      book_id: 3,
+      book_title: "test bok1",
+    },
+    {
+      book_id: 4,
+      book_title: "Test Book 2",
+    },
+    {
+      book_id: 5,
+      book_title: "test bok1",
+    },
+    {
+      book_id: 6,
+      book_title: "Test Book 2",
+    },
+  ];
   return (
     <div className="fixed left-0 top-0  inset-0 bg-[#64748B] bg-opacity-75 transition-opacity dark:bg-slate-300 dark:bg-opacity-75 lg:left-[18rem]">
       <div className="relative p-5 rounded-md">
@@ -45,7 +71,10 @@ const OrderDetails = ({ getOrderDetails, onClose }) => {
                 Order Details
               </h3>
               <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-400">
-                Order Id: <span className="text-slate-700 font-medium text-md">{getOrderDetails?.id}</span>
+                Order Id:{" "}
+                <span className="text-slate-700 font-medium text-md">
+                  {getOrderDetails?.id}
+                </span>
               </h5>
             </div>
 
@@ -63,27 +92,31 @@ const OrderDetails = ({ getOrderDetails, onClose }) => {
                 </span>
               </div>
 
-               {/* Order Created Details  */}
-               <p className="mt-7 text-lg font-semibold text-slate-600 border-b border-blue-100 mb-4">
-               Ordered Items List
+              {/* Order Created Details  */}
+              <p className="mt-7 text-lg font-semibold text-slate-600 border-b border-blue-100 mb-4">
+                Ordered Items List
               </p>
               <div className="flex flex-col justify-start items-start">
                 <div className="flex flex-col mb-5">
                   <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 mb-3 ">
-                    <MdOutlineBook/>
+                    <MdOutlineBook />
                     Items
                   </h5>
-                  <p className="ml-10 font-medium text-md text-slate-400">
-                    {getOrderDetails?.items}
-                  </p>
+                  <ul className="ml-10 font-medium text-md text-slate-400 grid grid-cols-1 gap-x-8 md:grid-cols-2 md:gap-12">
+                    {getOrderDetails?.items?.map((book, index) => (
+                      <li className="" key={book.book_id}>
+                        <span className="font-semibold flex items-center gap-2 text-emerald-900">
+                          <MdShoppingBag />
+                          Order Item {index + 1}{" "}
+                        </span>
 
-                  <ul>
-                    <li>
-                      
-                    </li>
+                        <p className="text-blue-400 ml-8 mt-2 text-lg">
+                          {book?.book_title}
+                        </p>
+                      </li>
+                    ))}
                   </ul>
                 </div>
-               
               </div>
               {/* Order Created Details  */}
               <p className="mt-7 text-lg font-semibold text-slate-600 border-b border-blue-100 mb-4">
@@ -105,7 +138,8 @@ const OrderDetails = ({ getOrderDetails, onClose }) => {
                     Created On
                   </h5>
                   <p className="ml-10 font-medium text-md text-slate-400">
-                    {new Date(getOrderDetails?.order_on)?.toDateString()} - {new Date(getOrderDetails?.order_on)?.toLocaleTimeString()}
+                    {new Date(getOrderDetails?.order_on)?.toDateString()} -{" "}
+                    {new Date(getOrderDetails?.order_on)?.toLocaleTimeString()}
                   </p>
                 </div>
               </div>
