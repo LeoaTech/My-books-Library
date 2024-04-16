@@ -4,9 +4,11 @@ import {
   MdLocalAirport,
   MdLocalPhone,
   MdLocationCity,
+  MdOutlineBook,
   MdOutlineCalendarMonth,
   MdOutlineLocalPhone,
   MdOutlinePerson,
+  MdShoppingBag,
 } from "react-icons/md";
 import { RxCross1 } from "react-icons/rx";
 import { BsCreditCard2BackFill, BsPerson, BsPersonFill } from "react-icons/bs";
@@ -86,7 +88,7 @@ const EditOrder = ({ getOrderDetails, onClose }) => {
         {/* my-5 rounded-md flex justify-center items-center z-70  overflow-hidden xs:h-[400px] overflow-y-auto */}
         <div className=" md:mx-20">
           <div className=" p-10 relative rounded-md border border-[#E2E8F0] bg-white shadow-lg dark:border-[#2E3A47] dark:bg-[#24303F] md:px-8 md:py-8 ">
-            <div className=" flex justify-between items-center rounded-sm p-3 bg-slate-100 border-b border-[#E2E8F0] py-4 px-6.5 dark:border-[#2E3A47]">
+            <div className=" flex justify-between items-center rounded-sm p-3 bg-slate-100 border border-[#E2E8F0] py-4 px-6.5 dark:border-[#2E3A47]">
               <h3 className="font-bold text-[#313D4A] dark:text-white">
                 Update Order Details
               </h3>
@@ -103,8 +105,8 @@ const EditOrder = ({ getOrderDetails, onClose }) => {
             <div className="max-h-[600px] px-12 w-full overflow-hidden overflow-y-auto text-slate-800">
               <form onSubmit={handleSubmit(onSubmit)}>
                 {/* Order details */}
-                <div className="flex flex-col md:gap-5 my-5 md:flex-row ">
-                  <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 mb-3 md:justify-center ">
+                <div className="flex flex-col md:gap-5 my-5 ">
+                  <h5 className="flex justify-start items-center gap-2 text-md font-normal text-blue-400 mb-3 ">
                     <MdEmail />
                     Email Address
                   </h5>
@@ -116,10 +118,37 @@ const EditOrder = ({ getOrderDetails, onClose }) => {
                     id="email"
                     {...register("email")}
                     autoFocus
-                    className="w-full md:w-[400px] md:ml-10 rounded-sm border-[#E2E8F0] border-b bg-transparent py-3 px-5 font-medium text-slate-400 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                    className="w-full md:w-[400px] md:ml-10 rounded-sm border-[#E2E8F0] border bg-transparent py-3 px-5 font-medium text-slate-400 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                   />
                   {/* </span> */}
                 </div>
+
+                  {/* Order Created Details  */}
+              <p className="mt-7 text-lg font-semibold text-slate-600 border-b border-blue-100 mb-4">
+                Ordered Items List
+              </p>
+              <div className="flex flex-col justify-start items-start">
+                <div className="flex flex-col mb-5">
+                  <h5 className="flex justify-start items-center gap-2 text-md font-normal text-blue-400 mb-3 ">
+                    <MdOutlineBook />
+                    Items
+                  </h5>
+                  <ul className="ml-10 font-medium text-md text-slate-400 grid grid-cols-1 gap-x-8 md:grid-cols-2 md:gap-12">
+                    {getOrderDetails?.items?.map((book, index) => (
+                      <li className="" key={book.book_id}>
+                        <span className="font-semibold flex items-center gap-2 text-emerald-900">
+                          <MdShoppingBag />
+                          Order Item {index + 1}{" "}
+                        </span>
+
+                        <p className="text-blue-400 ml-8 mt-2 text-lg">
+                          {book?.book_title}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
 
                 {/* Order Created Details  */}
                 <p className="mt-10 text-lg font-semibold text-slate-600 border-b-2 w-2/3 border-blue-100 mb-4">
@@ -127,7 +156,7 @@ const EditOrder = ({ getOrderDetails, onClose }) => {
                 </p>
                 <div className="flex flex-col justify-start items-start">
                   <div className="flex flex-col mb-5">
-                    <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 mb-3 ">
+                    <h5 className="flex justify-start items-center gap-2 text-md font-normal text-blue-400 mb-3 ">
                       <MdOutlinePerson />
                       Order Placed by
                     </h5>
@@ -136,12 +165,12 @@ const EditOrder = ({ getOrderDetails, onClose }) => {
                       type="text"
                       name="order_by"
                       {...register("order_by")}
-                      className="w-full md:w-[400px] md:ml-10  rounded-sm border-b border-[#E2E8F0] bg-transparent py-3 px-5 font-medium text-slate-400 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                      className="w-full md:w-[400px] md:ml-10  rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 font-medium text-slate-400 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                     />
                     {/* </p> */}
                   </div>
                   <div className="flex flex-col mb-5">
-                    <h5 className="flex justify-start items-start gap-2 text-md font-semibold text-slate-600 mb-3 ">
+                    <h5 className="flex justify-start items-start gap-2 text-md font-normal text-blue-400 mb-3 ">
                       <MdOutlineCalendarMonth />
                       Created On
                     </h5>
@@ -150,7 +179,7 @@ const EditOrder = ({ getOrderDetails, onClose }) => {
                       type="text"
                       name="order_on"
                       {...register("order_on")}
-                      className="w-full md:w-[400px] md:ml-10  rounded-sm border-b border-[#E2E8F0] bg-transparent py-3 px-5 font-medium text-slate-400 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                      className="w-full md:w-[400px] md:ml-10  rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 font-medium text-slate-400 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                     />
                     {/* </p> */}
                   </div>
@@ -163,14 +192,14 @@ const EditOrder = ({ getOrderDetails, onClose }) => {
 
                 <div className="flex flex-col gap-5 md:flex-row md:gap-26 md:items-center lg:gap-32">
                   <div className="flex flex-col md:mb-5">
-                    <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 mb-3 ">
+                    <h5 className="flex justify-start items-center gap-2 text-md font-normal text-blue-400 mb-3 ">
                       <MdCurrencyExchange /> Payment ID
                     </h5>
                     <input
                       type="text"
                       name="payment_id"
                       {...register("payment_id")}
-                      className="w-full  rounded-sm border-b border-[#E2E8F0] bg-transparent py-3 px-5 font-medium text-slate-400 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                      className="w-full  rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 font-medium text-slate-400 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                     />
                     {/* <p className="ml-10  font-medium text-md text-slate-400">
                       {getOrderDetails?.payment_id}
@@ -178,7 +207,7 @@ const EditOrder = ({ getOrderDetails, onClose }) => {
                   </div>
 
                   <div className="flex-flex-col mb-5">
-                    <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 mb-3  ">
+                    <h5 className="flex justify-start items-center gap-2 text-md font-normal text-blue-400 mb-3  ">
                       <BsCreditCard2BackFill /> Payment Mode
                     </h5>
 
@@ -190,7 +219,7 @@ const EditOrder = ({ getOrderDetails, onClose }) => {
                       type="text"
                       name="mode_of_payment"
                       {...register("mode_of_payment")}
-                      className="w-full   rounded-sm border-b border-[#E2E8F0] bg-transparent py-3 px-5 font-medium text-slate-400 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                      className="w-full   rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 font-medium text-slate-400 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                     />
                   </div>
                 </div>
@@ -201,7 +230,7 @@ const EditOrder = ({ getOrderDetails, onClose }) => {
                 </p>
                 <div className="flex flex-col  gap-5 md:flex-row md:gap-22 lg:gap-32">
                   <div className="flex flex-col mb-5">
-                    <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 mb-3 ">
+                    <h5 className="flex justify-start items-center gap-2 text-md font-normal text-blue-400 mb-3 ">
                       <BiSolidDiscount />
                       Discount Code
                     </h5>
@@ -212,12 +241,12 @@ const EditOrder = ({ getOrderDetails, onClose }) => {
                       type="text"
                       name="discount_code"
                       {...register("discount_code")}
-                      className="w-full rounded-sm border-b border-[#E2E8F0] bg-transparent py-3 px-5 font-medium text-slate-400 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                      className="w-full rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 font-medium text-slate-400 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                     />
                   </div>
 
                   <div className="flex-flex-col mb-5">
-                    <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 mb-3  ">
+                    <h5 className="flex justify-start items-center gap-2 text-md font-normal text-blue-400 mb-3  ">
                       <LiaMoneyCheckAltSolid />
                       Discount Value
                     </h5>
@@ -226,7 +255,7 @@ const EditOrder = ({ getOrderDetails, onClose }) => {
                       type="text"
                       name="discount_value"
                       {...register("discount_value")}
-                      className="w-full  rounded-sm border-b border-[#E2E8F0] bg-transparent py-3 px-5 font-medium text-slate-400 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                      className="w-full  rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 font-medium text-slate-400 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                     />
                     {/* <p className="ml-10  font-medium text-md text-slate-400">
                       {getOrderDetails?.discount_value}
@@ -243,7 +272,7 @@ const EditOrder = ({ getOrderDetails, onClose }) => {
                     <RiUserLocationFill />
                     Customer Info
                   </p>
-                  <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 mb-3 ">
+                  <h5 className="flex justify-start items-center gap-2 text-md font-normal text-blue-400 mb-3 ">
                     <IoLocation /> Address
                   </h5>
                   {/* <p className="ml-10  text-md font-medium text-slate-400">
@@ -253,9 +282,9 @@ const EditOrder = ({ getOrderDetails, onClose }) => {
                     type="text"
                     name="address"
                     {...register("address")}
-                    className="w-full md:w-[400px] md:ml-10  rounded-sm border-b border-[#E2E8F0] bg-transparent py-3 px-5 font-medium text-slate-400 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                    className="w-full md:w-[400px] md:ml-10  rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 font-medium text-slate-400 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                   />
-                  <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 mb-3 ">
+                  <h5 className="flex justify-start items-center gap-2 text-md font-normal text-blue-400 mb-3 ">
                     {" "}
                     <MdLocationCity />
                     City
@@ -267,9 +296,9 @@ const EditOrder = ({ getOrderDetails, onClose }) => {
                     type="text"
                     name="city"
                     {...register("city")}
-                    className="w-full md:w-[400px] md:ml-10  rounded-sm border-b border-[#E2E8F0] bg-transparent py-3 px-5 font-medium text-slate-400 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                    className="w-full md:w-[400px] md:ml-10  rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 font-medium text-slate-400 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                   />
-                  <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 mb-3 ">
+                  <h5 className="flex justify-start items-center gap-2 text-md font-normal text-blue-400 mb-3 ">
                     <RiFlag2Fill />
                     Country
                   </h5>{" "}
@@ -280,9 +309,9 @@ const EditOrder = ({ getOrderDetails, onClose }) => {
                     type="text"
                     name="phone"
                     {...register("phone")}
-                    className="w-full md:w-[400px] md:ml-10  rounded-sm border-b border-[#E2E8F0] bg-transparent py-3 px-5 font-medium text-slate-400 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                    className="w-full md:w-[400px] md:ml-10  rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 font-medium text-slate-400 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                   />
-                  <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 mb-3">
+                  <h5 className="flex justify-start items-center gap-2 text-md font-normal text-blue-400 mb-3">
                     <MdLocalPhone />
                     Phone Number
                   </h5>{" "}
@@ -293,7 +322,7 @@ const EditOrder = ({ getOrderDetails, onClose }) => {
                     type="text"
                     name="country"
                     {...register("country")}
-                    className="w-full md:w-[400px] md:ml-10  rounded-sm border-b border-[#E2E8F0] bg-transparent py-3 px-5 font-medium text-slate-400 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                    className="w-full md:w-[400px] md:ml-10  rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 font-medium text-slate-400 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                   />
                 </div>
 
@@ -304,7 +333,7 @@ const EditOrder = ({ getOrderDetails, onClose }) => {
                     <MdLocalAirport />
                     Shipping Details
                   </p>
-                  <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 mb-3 ">
+                  <h5 className="flex justify-start items-center gap-2 text-md font-normal text-blue-400 mb-3 ">
                     <GrMapLocation />
                     Adress
                   </h5>
@@ -315,9 +344,9 @@ const EditOrder = ({ getOrderDetails, onClose }) => {
                     type="text"
                     name="shipping_address"
                     {...register("shipping_address")}
-                    className="w-full md:w-[400px] md:ml-10  rounded-sm border-b border-[#E2E8F0] bg-transparent py-3 px-5 font-medium text-slate-400 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                    className="w-full md:w-[400px] md:ml-10  rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 font-medium text-slate-400 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                   />
-                  <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 mb-3 ">
+                  <h5 className="flex justify-start items-center gap-2 text-md font-normal text-blue-400 mb-3 ">
                     {" "}
                     <FaArrowRightToCity />
                     City
@@ -329,9 +358,9 @@ const EditOrder = ({ getOrderDetails, onClose }) => {
                     type="text"
                     name="shipping_city"
                     {...register("shipping_city")}
-                    className="w-full md:w-[400px] md:ml-10  rounded-sm border-b border-[#E2E8F0] bg-transparent py-3 px-5 font-medium text-slate-400 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                    className="w-full md:w-[400px] md:ml-10  rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 font-medium text-slate-400 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                   />
-                  <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 mb-3 ">
+                  <h5 className="flex justify-start items-center gap-2 text-md font-normal text-blue-400 mb-3 ">
                     <FaFlag />
                     Country
                   </h5>{" "}
@@ -342,9 +371,9 @@ const EditOrder = ({ getOrderDetails, onClose }) => {
                     type="text"
                     name="shipping_country"
                     {...register("shipping_country")}
-                    className="w-full md:w-[400px] md:ml-10  rounded-sm border-b border-[#E2E8F0] bg-transparent py-3 px-5 font-medium text-slate-400 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                    className="w-full md:w-[400px] md:ml-10  rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 font-medium text-slate-400 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                   />
-                  <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 mb-3">
+                  <h5 className="flex justify-start items-center gap-2 text-md font-normal text-blue-400 mb-3">
                     <MdOutlineLocalPhone />
                     Phone Number
                   </h5>{" "}
@@ -355,7 +384,7 @@ const EditOrder = ({ getOrderDetails, onClose }) => {
                     type="text"
                     name="shipping_phone"
                     {...register("shipping_phone")}
-                    className="w-full md:w-[400px] md:ml-10  rounded-sm border-b border-[#E2E8F0] bg-transparent py-3 px-5 font-medium text-slate-400 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                    className="w-full md:w-[400px] md:ml-10  rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 font-medium text-slate-400 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                   />
                 </div>
                 {/* </div> */}
