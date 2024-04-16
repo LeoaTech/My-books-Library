@@ -164,6 +164,8 @@ const UpdateOrder = asyncHanlder(async (req, res) => {
       shipping_phone,
       discount_code,
       discount_value,
+      items, //Items will always be an array [{book_id,book_title}]
+      tracking_id,
       order_by,
       order_on,
       id,
@@ -185,9 +187,12 @@ const UpdateOrder = asyncHanlder(async (req, res) => {
         shipping_phone=$12,
         discount_code=$13,
         discount_value=$14,
-        order_by=$15,
-        order_on=$16
-        WHERE id=$17
+        items=$15, //Items will always be an array [{book_id,book_title}]
+        tracking_id=$16,
+        order_by=$17,
+        order_on=$18
+        WHERE 
+        id=$19
          Returning *`;
 
       const updatedOrder = await client.query(EditOrderQuery, [
@@ -205,6 +210,8 @@ const UpdateOrder = asyncHanlder(async (req, res) => {
         shipping_phone,
         discount_code,
         discount_value,
+        JSON.stringify(items), // Serialize items to JSON string
+        tracking_id,
         order_by,
         order_on,
         id,
