@@ -16,10 +16,10 @@ import { useFetchVendors } from "../../../../hooks/books/useFetchVendors";
 import { useFetchBranches } from "../../../../hooks/books/useFetchBranches";
 import { useAuthContext } from "../../../../hooks/useAuthContext";
 import { bookSchema } from "../../../../schemas/books";
+import { RxCross1 } from "react-icons/rx";
 
 const AddNewBookModal = ({ setShowModal }) => {
   const auth = useAuthContext();
-  console.log(auth);
   const queryClient = useQueryClient();
   const [imagesList, setImagesList] = useState([]);
 
@@ -86,7 +86,6 @@ const AddNewBookModal = ({ setShowModal }) => {
   const handleCreate = async (inputValue) => {
     setIsLoading(true);
     const res = await addAuthorMutation(inputValue);
-    console.log(res, "created");
     setTimeout(async () => {
       const newOption = createOption(inputValue);
       setIsLoading(false);
@@ -97,7 +96,6 @@ const AddNewBookModal = ({ setShowModal }) => {
   const onPublisherCreate = async (inputField) => {
     setIsLoading(true);
     const res = await addPublisherMutation(inputField);
-    console.log(res, "created");
     setTimeout(async () => {
       const newOption = createOption(inputField);
       setIsLoading(false);
@@ -164,7 +162,6 @@ const AddNewBookModal = ({ setShowModal }) => {
         value: author.id,
         label: author.name,
       }));
-      console.log(authorList);
       setAuthors([...authorList]);
     }
   }, [authorsData]);
@@ -175,13 +172,11 @@ const AddNewBookModal = ({ setShowModal }) => {
         value: publisher.id,
         label: publisher.name,
       }));
-      console.log(publisherList);
       setPublisherList([...publisherList]);
     }
   }, [publishersData]);
 
   const onSubmit = async (data) => {
-    console.log(data);
     const booksForm = {
       ...data,
       author: selectedAuthor?.value,
@@ -193,12 +188,9 @@ const AddNewBookModal = ({ setShowModal }) => {
       role_id: auth?.role,
     };
 
-    console.log(booksForm);
     await addBookMutation(booksForm);
   };
 
-  // console.log(imagesList);
-  console.log(errors, "Errors", isValid, "success");
 
   if (
     isPendingAuthors ||
@@ -246,16 +238,20 @@ const AddNewBookModal = ({ setShowModal }) => {
 
   return (
     <>
-      <div className="flex justify-center items-center fixed inset-0 bg-[#64748B] bg-opacity-75 transition-opacity dark:bg-slate-50 dark:bg-opacity-75">
+      <div className="flex justify-center items-center fixed inset-0 bg-[#64748B] bg-opacity-75 transition-opacity dark:bg-slate-500 dark:bg-opacity-75">
         <div className="relative p-5 rounded-sm">
           <div className="flex items-center justify-center p-5 z-10 w-screen overfow-hidden xs:h-[300px]overflow-y-auto ">
             <div className="flex flex-col">
               {/* <!--Book Details Form --> */}
               <div className="px-10 relative rounded-sm border border-[#E2E8F0] bg-white shadow-default dark:border-[#2E3A47] dark:bg-[#24303F] md:px-8 md:py-8 ">
-                <div className="text-center rounded-sm p-3 border-b border-[#E2E8F0] py-4 px-6.5 dark:border-[#2E3A47]">
+                <div className="flex justify-between items-center rounded-sm p-3 border-b border-[#E2E8F0] py-4 px-6.5 dark:border-[#2E3A47]">
                   <h3 className="font-bold text-[#313D4A] dark:text-white">
                     Add New Book Details
                   </h3>
+                  <RxCross1
+                    style={{ height: 18, width: 23, cursor: "pointer" ,color:"#FFF"}}
+                    onClick={() => setShowModal(false)}
+                  />
                 </div>
                 <div className="max-h-[600px] px-4 w-full overflow-hidden overflow-y-auto">
                   <form onSubmit={handleSubmit(onSubmit)}>
@@ -287,6 +283,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                           </label>
 
                           <Controller
+                            // className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                             control={control}
                             name="author"
                             render={({ field }) => (
@@ -299,12 +296,14 @@ const AddNewBookModal = ({ setShowModal }) => {
                                 styles={{
                                   control: (baseStyles, state) => ({
                                     ...baseStyles,
-                                    borderColor: state.isFocused
-                                      ? "#3C50E0"
-                                      : "#E2E8F0",
+                                    // borderColor: state.isFocused
+                                    //   ? "#3C50E0"
+                                    //   : "#E2E8F0",
                                     padding: 5,
+                                    // backgroundColor: "#1d2a39",
                                   }),
                                 }}
+                                className="relative z-80 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent  outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                                 onChange={(newValue, actionMeta) => {
                                   // Use actionMeta.action to check if the change is a creation
                                   if (actionMeta.action === "create-option") {
@@ -338,7 +337,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                             name="rental_price"
                             placeholder="Add Rent Price"
                             {...register("rental_price")}
-                            className="w-full rounded-sm border-[1.5px] border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                            className="w-full rounded-sm border-[1.5px] border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                           />
                           {errors?.rental_price?.message && (
                             <p className="format-message error">
@@ -356,7 +355,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                             name="purchase_price"
                             placeholder="Add Purchase Price"
                             {...register("purchase_price")}
-                            className="w-full rounded-sm border-[1.5px] border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                            className="w-full rounded-sm border-[1.5px] border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                           />
 
                           {errors?.purchase_price?.message && (
@@ -377,7 +376,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                           </label>
                           <div className="relative z-20 bg-transparent dark:bg-[#1d2a39]">
                             <select
-                              className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                              className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                               name="condition"
                               {...register("condition")}
                             >
@@ -417,7 +416,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                           </label>
                           <div className="relative z-20 bg-transparent dark:bg-[#1d2a39]">
                             <select
-                              className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                              className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                               name="cover"
                               {...register("cover")}
                             >
@@ -463,7 +462,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                           </label>
                           <div className="relative z-20 bg-transparent dark:bg-[#1d2a39]">
                             <select
-                              className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                              className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                               name="category"
                               {...register("category")}
                             >
@@ -507,7 +506,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                             type="text"
                             placeholder="Enter ISBN "
                             {...register("isbn")}
-                            className="w-full rounded-sm border-[1.5px] border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                            className="w-full rounded-sm border-[1.5px] border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                           />
                           {errors?.isbn?.message && (
                             <p className="format-message error">
@@ -573,7 +572,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                             name="publish_year"
                             placeholder="Add Publish Year"
                             {...register("publish_year")}
-                            className="w-full rounded-sm border-[1.5px] border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                            className="w-full rounded-sm border-[1.5px] border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                           />
 
                           {errors?.publish_year?.message && (
@@ -595,7 +594,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                             name="discount_percentage"
                             placeholder="Add discount_percentage"
                             {...register("discount_percentage")}
-                            className="w-full rounded-sm border-[1.5px] border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                            className="w-full rounded-sm border-[1.5px] border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                           />
                           {errors?.discount_percentage?.message && (
                             <p className="format-message error">
@@ -613,7 +612,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                             name="credit"
                             placeholder="Add Credits"
                             {...register("credit")}
-                            className="w-full rounded-sm border-[1.5px] border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                            className="w-full rounded-sm border-[1.5px] border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                           />
                           {errors?.credit?.message && (
                             <p className="format-message error">
@@ -633,7 +632,7 @@ const AddNewBookModal = ({ setShowModal }) => {
 
                           <div className="relative z-20 bg-transparent dark:bg-[#1d2a39]">
                             <select
-                              className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                              className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                               name="vendor_id"
                               {...register("vendor_id")}
                             >
@@ -677,7 +676,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                           </label>
                           <div className="relative z-20 bg-transparent dark:bg-[#1d2a39]">
                             <select
-                              className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                              className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                               name="branch_id"
                               {...register("branch_id")}
                             >
@@ -728,7 +727,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                             rows={4}
                             placeholder="Add a summary"
                             {...register("summary")}
-                            className="w-full rounded-sm border-[1.5px] border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                            className="w-full rounded-sm border-[1.5px] border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                           />
                           {errors?.summary?.message && (
                             <p className="format-message error">
@@ -749,7 +748,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                             placeholder="Add Cover Images"
                             onChange={onUploadImages}
                             // {...register("cover_img_url")}
-                            className="w-full rounded-sm border-[1.5px] border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                            className="w-full rounded-sm border-[1.5px] border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                           />
                           {errors?.cover_img_url?.message && (
                             <p className="format-message error">

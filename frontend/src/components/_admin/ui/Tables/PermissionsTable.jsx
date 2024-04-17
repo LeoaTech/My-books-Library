@@ -9,7 +9,6 @@ const PermissionsTable = ({ openModal, setOpenModal }) => {
   const [isDelete, setIsDelete] = useState(false);
   const [permissionData, setPermissionData] = useState();
 
-  console.log(data);
   const UpdateRole = (permissionId) => {
     const roleValues = data?.permissions?.find(
       (permission) => permission?.permission_id === permissionId
@@ -32,7 +31,6 @@ const PermissionsTable = ({ openModal, setOpenModal }) => {
     setIsDelete(false);
   };
 
-  // console.log(data);
 
   if (isPending) {
     return <h1>Loading...</h1>;

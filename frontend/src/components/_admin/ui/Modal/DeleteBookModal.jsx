@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { fetchBookById } from "../../../../hooks/books/useFetchBooks";
+import { FetchBookById } from "../../../../api/books";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -41,7 +41,7 @@ const DeleteBookModal = ({ data, close }) => {
   }
 
   const { isPending: isPendingBook, data: bookDetails } = useQuery({
-    queryFn: () => fetchBookById(data),
+    queryFn: () => FetchBookById(data),
     queryKey: ["books", { data }],
   });
 
@@ -60,7 +60,6 @@ const DeleteBookModal = ({ data, close }) => {
       </div>
     </div>;
   }
-  console.log(bookDetails);
   return (
     <>
       <div className="flex justify-center items-center fixed inset-0 bg-[#64748B] bg-opacity-75 transition-opacity">

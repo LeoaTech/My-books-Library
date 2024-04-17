@@ -67,7 +67,7 @@ JOIN public.categories ON books.category = categories.id;`);
 
     // console.log(getBooksList?.rows);
     if (getBooksList?.rowCount > 0) {
-      res.status(201).json({
+      res.status(200).json({
         books: getBooksList?.rows,
         message: "Book Retrieved successfully",
       });

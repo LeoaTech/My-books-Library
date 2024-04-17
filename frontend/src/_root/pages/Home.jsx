@@ -1,4 +1,5 @@
 import React from "react";
+import Navbar from "../../components/_user/Navbar/Navbar";
 import HeroSection from "../../components/_user/HeroSection/HeroSection";
 import RecommendedBooks from "../../components/_user/Recommended/RecommendedBooks";
 import NewArrivalBooks from "../../components/_user/NewArrival/NewArrivalBooks";
@@ -29,6 +30,7 @@ const Home = () => {
 
   return (
     <>
+      <Navbar />
       <HeroSection />
       <RecommendedBooks />
       <NewArrivalBooks />

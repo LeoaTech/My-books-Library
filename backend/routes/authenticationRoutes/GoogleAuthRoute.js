@@ -67,7 +67,6 @@ router.get("/auth/google/failure", (req, res) => {
 // Successful google login Route
 
 router.get("/auth/login/success", async (req, res) => {
-  console.log(req.user, "user at Line 59 in GoogleATH SIGN IN Success");
   if (req.user) {
     const checkRole = await client.query(
       "SELECT name FROM roles Where role_id=  $1",

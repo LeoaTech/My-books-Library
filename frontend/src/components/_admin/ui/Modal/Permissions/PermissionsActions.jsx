@@ -11,8 +11,6 @@ const schema = z.object({
 
 const PermissionModal = ({ isEdit, values, close }) => {
   const queryClient = useQueryClient();
-
-  console.log(values)
   const { updatePermission, deletePermission ,deletePermissionText} = usePermissions();
   const {
     register,

@@ -6,7 +6,7 @@ import { BASE_URL } from "../../utiliz/baseAPIURL";
 const fetchConditions = async ({ signal }) =>
   await fetch(`${BASE_URL}/conditions`, { signal, credentials: "include" })
     .then((res) => {
-        // console.log(res,"Cosnditions fetched")
+        // console.log(res,"Conditions fetched")
       if (!res.ok) {
         throw new Error("Couldn't fetch Book condition types");
       } else {

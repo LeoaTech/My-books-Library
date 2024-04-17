@@ -29,7 +29,6 @@ export const useFetchRolesPermissions = () => {
 // Fetch Permission which does not exist with Role_id
 export const fetchPermissionsByRole = async (roleId) => {
   try {
-    console.log(roleId, "idhr aya");
     const response = await fetch(
       `${BASE_URL}/roles-permissions/permission?roleId=${roleId}`,
       {
@@ -49,7 +48,6 @@ export const fetchPermissionsByRole = async (roleId) => {
 
 export const fetchPermissionsByRoleID = async (roleId) => {
   try {
-    console.log(roleId, "idhr aya");
     const response = await fetch(
       `${BASE_URL}/roles-permissions/permissions?roleId=${roleId}`,
       {

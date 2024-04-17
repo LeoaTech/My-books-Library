@@ -10,7 +10,6 @@ export const useRolesPermissions = () => {
   const addRolePermission = async (rolesPermissions) => {
     setIsLoading(true);
     setError(null);
-    console.log("Form Reached");
 
     const response = await fetch(
       `${BASE_URL}/roles-permissions/permission/add`,
@@ -22,9 +21,8 @@ export const useRolesPermissions = () => {
       }
     );
 
-    console.log(response, "Permissions Form Response");
     const result = await response.json(); //response?.data;
-    console.log(result, "Result");
+    // console.log(result, "Result");
   };
 
   /* Delete Permission */
@@ -45,10 +43,9 @@ export const useRolesPermissions = () => {
       }
     );
 
-    console.log(response, "Permissions Form Response");
 
     const result = await response.json(); //response?.data;
-    console.log(result, "Result");
+    // console.log(result, "Result");
 
     if (response.status === 204) {
       setIsLoading(false);

@@ -8,7 +8,6 @@ export const usePublisher = () => {
   const addPublisher = async (name) => {
     setIsLoading(true);
     setError(null);
-    console.log("Form Reached");
 
     const response = await fetch(`${BASE_URL}/publishers/new`, {
       method: "POST",
@@ -17,9 +16,8 @@ export const usePublisher = () => {
       body: JSON.stringify({ name: name }),
     });
 
-    console.log(response, "Create New Publishers Form Response");
     const result = await response.json(); //response?.data;
-    console.log(result, "Result");
+    // console.log(result, "Result to Create a new publisher");
   };
 
   return { isLoading, error, addPublisher };

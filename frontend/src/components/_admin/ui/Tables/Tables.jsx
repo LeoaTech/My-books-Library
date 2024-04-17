@@ -11,7 +11,7 @@ import { useFetchBooks } from "../../../../hooks/books/useFetchBooks";
 import { ShowBookDetails } from "../..";
 import { MdEdit, MdOutlineDeleteOutline } from "react-icons/md";
 
-const Tables = () => {
+const Tables = ({ hasPermission }) => {
   const { isPending, error, data: booksData } = useFetchBooks();
 
   const [data, setData] = useState([]);
@@ -76,19 +76,40 @@ const Tables = () => {
 
           return (
             <div className="flex gap-2">
-              <button
-                onClick={() => editBookDetails(bookId)}
-                className="text-orange-400"
-              >
-                <MdEdit />
-              </button>
-
-              <button
-                onClick={() => viewBookDetails(bookId)}
-                className="text-orange-400"
-              >
-                <MdOutlineDeleteOutline />
-              </button>
+              {hasPermission("EDIT") ? (
+                <button
+                  onClick={() => editBookDetails(bookId)}
+                  className="text-green-600"
+                >
+                  <MdEdit />
+                </button>
+              ) : (
+                <div className="group relative m-2 flex justify-center">
+                  <span className="absolute -top-10 scale-0 transition-all px-3 py-1 rounded bg-gray-800 p-2 text-xs text-red-500 group-hover:scale-100">
+                    Access Denied!
+                  </span>
+                  <button disabled className="text-green-600 ">
+                    <MdEdit />
+                  </button>
+                </div>
+              )}
+              {hasPermission("DELETE") ? (
+                <button
+                  onClick={() => viewBookDetails(bookId)}
+                  className="text-red-500"
+                >
+                  <MdOutlineDeleteOutline />
+                </button>
+              ) : (
+                <div className="group relative m-2 flex justify-center">
+                  <span className="absolute -top-10 scale-0 transition-all rounded bg-gray-800 p-2 text-xs text-red-500 group-hover:scale-100">
+                    Access Denied!
+                  </span>
+                  <button disabled className="text-red-500">
+                    <MdOutlineDeleteOutline />
+                  </button>
+                </div>
+              )}
             </div>
           );
         },

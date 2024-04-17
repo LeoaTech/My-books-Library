@@ -15,7 +15,7 @@ import { useFetchPublishers } from "../../../../hooks/books/useFetchPublishers";
 import { usePublisher } from "../../../../hooks/books/useAddPublisher";
 import { useFetchVendors } from "../../../../hooks/books/useFetchVendors";
 import { useFetchBranches } from "../../../../hooks/books/useFetchBranches";
-import { fetchBookById } from "../../../../hooks/books/useFetchBooks";
+import { FetchBookById } from "../../../../api/books";
 
 const schema = z.object({
   title: z.string().min(3, { message: "Please Enter a title" }),
@@ -44,8 +44,8 @@ const BookDetailsModal = ({ close, bookValue }) => {
   const [publisherValue, setPublisherValue] = useState();
 
   const { data: bookDetail } = useQuery({
-    queryFn: () => fetchBookById(bookValue),
-    queryKey: ["role-permissions", { bookValue }],
+    queryFn: () => FetchBookById(bookValue),
+    queryKey: ["books", { bookValue }],
   });
 
   const { addAuthor } = useAuthor();
@@ -94,7 +94,6 @@ const BookDetailsModal = ({ close, bookValue }) => {
   const handleCreate = async (inputValue) => {
     setIsLoading(true);
     const res = await addAuthorMutation(inputValue);
-    console.log(res, "created");
     setTimeout(async () => {
       const newOption = createOption(inputValue);
       setIsLoading(false);
@@ -105,7 +104,6 @@ const BookDetailsModal = ({ close, bookValue }) => {
   const onPublisherCreate = async (inputField) => {
     setIsLoading(true);
     const res = await addPublisherMutation(inputField);
-    console.log(res, "created");
     setTimeout(async () => {
       const newOption = createOption(inputField);
       setIsLoading(false);
@@ -156,16 +154,12 @@ const BookDetailsModal = ({ close, bookValue }) => {
         value: author.id,
         label: author.name,
       }));
-      console.log(authorList);
       setAuthors([...authorList]);
 
       if (bookDetail) {
         const defaultAuthor = authorsData?.authors?.find(
           (author) => author?.name === bookDetail?.book?.author_name
         );
-
-        console.log(defaultAuthor);
-
         setAuthorValue({
           label: defaultAuthor?.name,
           value: defaultAuthor?.id,
@@ -180,16 +174,12 @@ const BookDetailsModal = ({ close, bookValue }) => {
         value: publisher.id,
         label: publisher.name,
       }));
-      console.log(publisherList);
       setPublisherList([...publisherList]);
 
       if (bookDetail) {
         const defaultPublisher = publishersData?.publishers?.find(
           (pub) => pub.name === bookDetail?.book?.publisher_name
         );
-
-        console.log(defaultPublisher);
-
         setPublisherValue({
           label: defaultPublisher?.name,
           value: defaultPublisher?.id,

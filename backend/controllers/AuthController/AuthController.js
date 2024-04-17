@@ -19,15 +19,15 @@ client.connect((err, res) => {
 });
 
 // Generate Access JWT
-const generateToken = (id) => {
+const generateToken = (data) => {
   //5m in production
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "5m" });
+  return jwt.sign({ data }, process.env.JWT_SECRET, { expiresIn: "5m" });
 };
 
 // Refresh token Generate
 
-const refreshToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_REFRESH_SECRET, {
+const refreshToken = (data) => {
+  return jwt.sign({ data }, process.env.JWT_REFRESH_SECRET, {
     expiresIn: "3h", //in production 1 day
   });
 };
@@ -54,7 +54,7 @@ const RegisterUser = asyncHanlder(async (req, res) => {
       ["user"]
     );
 
-    console.log(checkRole?.rows);
+    // console.log(checkRole?.rows);
     let role;
 
     if (checkRole?.rowCount > 0) {
@@ -115,6 +115,8 @@ const LoginUser = asyncHanlder(async (req, res) => {
       );
       let user = userEmail?.rows[0];
 
+      // console.log(user, "Login");
+
       if (!user) {
         return res.status(401).json({ message: "Invalid Email" });
         // throw new Error("Invalid Email Address");
@@ -133,13 +135,15 @@ const LoginUser = asyncHanlder(async (req, res) => {
           {
             UserInfo: {
               id: user.id,
+              role_id: user.role_id,
             },
           },
           process.env.JWT_SECRET,
-          { expiresIn: "30s" }
+          { expiresIn: "30s" }    //Update Expired time in Production
         );
 
-        const refresh_token = refreshToken(user.id); //refresh token
+        const user_info = { id: user.id, role_id: user?.role_id };
+        const refresh_token = refreshToken(user_info); //refresh token
 
         // Find role name for Each role_id
 
@@ -233,7 +237,7 @@ const Logout = asyncHanlder(async (req, res) => {
         [TokenRefresh]
       );
 
-      console.log(foundJWToken?.rows[0]);
+      // console.log(foundJWToken?.rows[0]);
       if (!foundJWToken) {
         res.clearCookie("refreshToken", {
           httpOnly: true,
@@ -252,9 +256,9 @@ const Logout = asyncHanlder(async (req, res) => {
           ["", expired_at, foundJWToken?.rows[0]?.user_id]
         );
 
-        console.log(dbToken?.rows[0]);
+        // console.log(dbToken?.rows[0]);
       } catch (error) {
-        console.log(error, "User token insert in db error");
+        // console.log(error, "User token Insertion Failed");
         return res.sendStatus(401);
       }
       // in production add the secure flag true with cookie
@@ -284,7 +288,7 @@ const Logout = asyncHanlder(async (req, res) => {
 const RefreshToken = async (req, res) => {
   try {
     const cookies = req.cookies;
-    if (!cookies["refreshToken"] ) {
+    if (!cookies["refreshToken"]) {
       return res.status(401).json({ message: "Unauthorized Access Denied" });
     }
 
@@ -343,6 +347,7 @@ const RefreshToken = async (req, res) => {
           {
             UserInfo: {
               id: foundJWToken?.rows[0]?.id,
+              role_id: userData?.role_id,
             },
           },
           process.env.JWT_SECRET,
@@ -384,12 +389,17 @@ const ForgetPassword = asyncHanlder(async (req, res) => {
     );
 
     let userData = userExists?.rows[0];
-    console.log(userExists?.rows[0], "User Found");
+    // console.log(userExists?.rows[0], "User Found");
 
     if (userExists?.rowCount > 0) {
       // Send the Reset Password Email
 
-      let resetToken = generateToken(userData?.id);
+      const userInfo = {
+        id: userData?.id,
+        role_id: userData?.role_id,
+      };
+
+      let resetToken = generateToken(userInfo);
       // const salt = await bcrypt.genSalt(12);
 
       // const hash = await bcrypt.hash(resetToken, salt);
@@ -410,7 +420,7 @@ const ForgetPassword = asyncHanlder(async (req, res) => {
           
           (Link will expire in 5 minutes)`;
 
-          console.log(data, "updated user");
+          // console.log(data, "updated user");
 
           // send Password Reset Email
           try {
@@ -456,7 +466,7 @@ const VerifyUserAuth = asyncHanlder(async (req, res) => {
         [token, id]
       );
 
-      console.log(updateResetToken?.rows[0]);
+      // console.log(updateResetToken?.rows[0]);
       return res.redirect(`${process.env.CLIENT_URL}/expired-link`);
     }
   } catch (error) {
@@ -476,7 +486,7 @@ const ResetPassword = asyncHanlder(async (req, res) => {
     // Validate Token
     const validateToken = jwt.verify(token, process.env.JWT_SECRET);
 
-    console.log(validateToken);
+    // console.log(validateToken);
 
     if (!password) {
       res.status(400);

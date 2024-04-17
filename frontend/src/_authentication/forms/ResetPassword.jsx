@@ -39,10 +39,8 @@ const ResetPassword = () => {
   } = useForm({ resolver: zodResolver(schema), mode: "all" });
 
   const onSubmit = async (data) => {
-    console.log(data);
     const { password, confirmPassword } = data;
 
-    console.log(data);
     await resetPassword(password, confirmPassword, id, token);
   };
 
@@ -90,7 +88,6 @@ const ResetPassword = () => {
             )}
             <button
               disabled={!isDirty || !isValid || isSubmitting}
-              onClick={() => console.log("Reset Password")}
               type="submit"
               className="border border-blue-500 bg-blue text-white rounded-lg py-2 w-full "
             >

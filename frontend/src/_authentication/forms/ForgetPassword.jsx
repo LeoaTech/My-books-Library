@@ -23,7 +23,6 @@ const ForgetPassword = () => {
   });
 
   const onSubmit = async (data) => {
-    console.log(data);
     const { email } = data;
     await forgetPassword(email);
   };

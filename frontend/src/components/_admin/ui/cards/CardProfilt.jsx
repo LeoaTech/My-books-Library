@@ -32,7 +32,7 @@ const CardProfit = () => {
           <h4 className="text-xl font-bold text-black dark:text-white">
             300
           </h4>
-          <span className="text-sm font-medium">Total Subscriptions</span>
+          <span className="text-sm font-medium opacity-40">Total Subscriptions</span>
         </div>
       </div>
     </div>
