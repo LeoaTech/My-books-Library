@@ -17,30 +17,30 @@ const router = express.Router();
 
 router.use(checkAuth);
 
-// Get a list of books
+// Get list of books
 
-router.get("/", checkRole, checkPermissions(["READ A BOOK"]), GetAllBooks);
-router.get("/book", checkRole, checkPermissions(["READ A BOOK"]), GetBookById);
+router.get("/", checkRole, checkPermissions(["READ BOOK"]), GetAllBooks);
+router.get("/book", checkRole, checkPermissions(["READ BOOK"]), GetBookById);
 
 router.delete(
   "/delete/:book_id",
   checkRole,
-  checkPermissions(["DELETE A BOOK"]),
+  checkPermissions(["DELETE BOOK"]),
   DeleteBook
 );
 
-// add a book to the list
+// add book to the list
 router.post(
   "/create",
   checkRole,
-  checkPermissions(["CREATE A BOOK"]),
+  checkPermissions(["CREATE BOOK"]),
   CreateNewBook
 );
 
 router.put(
   "/update/:id",
   checkRole,
-  checkPermissions(["EDIT A BOOK"]),
+  checkPermissions(["EDIT BOOK"]),
   UpdateBook
 );
 

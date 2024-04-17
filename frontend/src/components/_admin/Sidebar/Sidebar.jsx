@@ -116,7 +116,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
 
             <ul className="mb-6 flex flex-col gap-1.5">
               {routes?.map((route) => (
-                <li key={route.path}>
+                <li key={route.title}>
                   {!route?.subRoutes ? (
                     <Link
                       to={route.path}
@@ -238,8 +238,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                 Roles and Permisisions
               </h3>
 
-              {roleRoutes?.map((route) => (
-                <ul key={route.title} className="mb-6 flex flex-col gap-1.5">
+              {roleRoutes?.map((route,index) => (
+                <ul key={index} className="mb-6 flex flex-col gap-1.5">
                   <SidebarLinkGroup
                     activeCondition={
                       pathname === "/dashboard/users" ||
@@ -250,7 +250,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                       return (
                         <React.Fragment>
                           <Link
-                            to="#"
+                            to="/dashboard/users"
                             className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-[#DEE4EE] duration-300 ease-in-out hover:bg-[#333A48] dark:hover:bg-[#313D4A] ${
                               (pathname === "/dashboard/users" ||
                                 pathname.includes("users")) &&
@@ -337,7 +337,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                     return (
                       <React.Fragment>
                         <Link
-                          to="#"
+                          to="/profile"
                           className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-[#DEE4EE] duration-300 ease-in-out hover:bg-[#333A48] dark:hover:bg-[#313D4A] ${
                             (pathname === "/profile" ||
                               pathname === "/notifications" ||

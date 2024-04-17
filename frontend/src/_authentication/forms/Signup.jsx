@@ -53,7 +53,7 @@ const Signup = () => {
 
   return (
     <div className="py-40 h-screen flex flex-1 justify-center items-center ">
-      <div className="rounded-lg border border-stroke bg-white p-20 shadow-lg dark:border-strokedark dark:bg-boxdark">
+      <div className="rounded-lg border border-[#E2E8F0] bg-white p-20 shadow-lg dark:border-[#2E3A47] dark:bg-[#24303F]">
         <form className="custom-form" onSubmit={handleSubmit(onSubmit)}>
           <h1 className="form-title">Create account</h1>
           <div className="custom-form">
@@ -104,19 +104,19 @@ const Signup = () => {
             <button
               disabled={!isDirty || !isValid || isSubmitting}
               type="submit"
-              className={` cursor-pointer border border-blue-500 bg-graydark text-white rounded-lg py-2 w-1/2 hover:bg-body `}
+              className={` cursor-pointer border border-slate-500 bg-[#333A48] text-white rounded-lg py-2 w-1/2 hover:bg-[#64748B] `}
             >
               {isSubmitting || isLoading ? "Signing up...." : "Signup"}
             </button>
 
             {/* Error from server side */}
             {message && error && (
-              <span className="text-meta-1 text-sm">{error}</span>
+              <span className="text-[#DC3545] text-sm">{error}</span>
             )}
             <p className="p-4 mt-2">
               Already have an Account?{" "}
               <span
-                className="text-primary cursor-pointer"
+                className="text-[#3C50E0] cursor-pointer"
                 onClick={() => navigate("/signin")}
               >
                 Sign In

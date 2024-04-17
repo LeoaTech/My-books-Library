@@ -35,21 +35,21 @@ export const useSaveBook = () => {
     // console.log(result, "Update Result");
   };
 
-  const deleteBook = async (book) => {
+  const deleteBook = async (bookId) => {
     setIsLoading(true);
     setError(null);
 
-    console.log(book, "Book Delete");
-    const response = await fetch(`${BASE_URL}/books/delete/${book?.book_id}`, {
+    console.log(bookId, "Book Delete");
+    const response = await fetch(`${BASE_URL}/books/delete/${bookId}`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ book: book }),
     });
 
     // console.log(response, "Book Delete Response");
     const result = await response.json(); //response?.data;
-    // console.log(result, "delete Result");
+    setIsLoading(false)
+    console.log(result, "delete Result");
   };
 
   return { addBook, isLoading, error, message, updateBook, deleteBook };
