@@ -36,7 +36,9 @@ EMAIL_USERNAME
 EMAIL_PASSWORD
 
 
-##Cloudinary variables (Signup on cloudinary and get ID, API_key, and secret)
+## Cloudinary variables (Signup on cloudinary and get ID, API_key, and secret)
+
+
 CLOUD_NAME=""
 CLOUD_API_KEY=""
 CLOUD_API_SECRET=""
