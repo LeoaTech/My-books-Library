@@ -5,18 +5,18 @@
 
 ## PLEASE ADD and UPDATE THESE VARIABLES in .env FILE
 
-JWT_SECRET
+JWT_SECRET=""
 
 
-JWT_REFRESH_SECRET
+JWT_REFRESH_SECRET=""
 
 
-SESSION_SECRET
+SESSION_SECRET=""
 
-
+## database connection string (Postgres)
 CONNECTION_URL
 
-PORT
+PORT=8000
 
 
 GOOGLE_CLIENT_ID
@@ -28,9 +28,18 @@ SERVER_URL='http://localhost:8000'
 
 CLIENT_URL="http://localhost:5173"
 
-EMAIL_SERVICE
+EMAIL_SERVICE=
 
 EMAIL_FROM
 
 EMAIL_USERNAME
 EMAIL_PASSWORD
+
+
+##Cloudinary variables (Signup on cloudinary and get ID, API_key, and secret)
+CLOUD_NAME=""
+CLOUD_API_KEY=""
+CLOUD_API_SECRET=""
+
+
+
