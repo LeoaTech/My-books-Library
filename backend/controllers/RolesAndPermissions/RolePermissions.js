@@ -1,18 +1,6 @@
 const asyncHanlder = require("express-async-handler");
-const { Client } = require("pg");
-require("dotenv").config();
+const pool = require("../../config/dbConfig");
 
-const connectionUrl = process.env.CONNECTION_URL;
-
-const client = new Client(connectionUrl);
-
-client.connect((err, res) => {
-  if (err) {
-    console.log(err);
-  } else {
-    console.log("Roles Permissions API connected");
-  }
-});
 
 //    Fetched All Roles from DB
 const FetchRolePermissions = asyncHanlder(async (req, res) => {
@@ -30,7 +18,7 @@ JOIN
 GROUP BY
   p.permission_id, p.name;
 `;
-    const getAllPermissions = await client.query(permissionsQuery);
+    const getAllPermissions = await pool.query(permissionsQuery);
     res.status(200).json({
       permissions: getAllPermissions?.rows,
       message: "All Role Permissions Found ",
@@ -40,7 +28,8 @@ GROUP BY
   }
 });
 
-/* Fetch Permissions bases on Role */
+
+/* Fetch UnAssigned Permissions for Role */
 const FetchPermissionsByRole = asyncHanlder(async (req, res) => {
   try {
     const { roleId } = req.query;
@@ -59,7 +48,7 @@ const FetchPermissionsByRole = asyncHanlder(async (req, res) => {
       );
 `;
 
-    const unassignedPermissions = await client.query(
+    const unassignedPermissions = await pool.query(
       getUnassignedPermissionsQuery,
       [roleId]
     );
@@ -89,7 +78,7 @@ const FetchPermissionsByRoleId = asyncHanlder(async (req, res) => {
         rp.role_id = $1;
     `;
 
-    const getAllPermissions = await client.query(permissionQuery, [roleId]);
+    const getAllPermissions = await pool.query(permissionQuery, [roleId]);
 
     // console.log(getAllPermissions?.rows, "Role Permissions found");
     res.status(200).json({
@@ -119,7 +108,7 @@ const NewRolePermissions = asyncHanlder(async (req, res) => {
       RETURNING *;
     `;
 
-    const saveNewRolePermissions = await client.query(addPermissionQuery);
+    const saveNewRolePermissions = await pool.query(addPermissionQuery);
 
     console.log(saveNewRolePermissions?.rows[0]);
 
@@ -141,7 +130,7 @@ const DeleteRolePermission = asyncHanlder(async (req, res) => {
     const permissionsArray = permission_id?.map((p) => Number(p));
 
     try {
-      const deletePermissions = await client.query(
+      const deletePermissions = await pool.query(
         `DELETE FROM role_permissions WHERE permission_id = ANY($1) AND role_id = $2 RETURNING *`,
         [permissionsArray, role_id]
       );
