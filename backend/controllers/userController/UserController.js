@@ -1,24 +1,12 @@
 const asyncHanlder = require("express-async-handler");
-const { Client } = require("pg");
-require("dotenv").config();
-
-const connectionUrl = process.env.CONNECTION_URL;
-
-const client = new Client(connectionUrl);
-
-client.connect((err, res) => {
-  if (err) {
-    console.log(err);
-  } else {
-    console.log("Users API connected");
-  }
-});
+const pool = require("../../config/dbConfig");
 
 const getAllUsers = asyncHanlder(async (req, res) => {
   const userQuery = `SELECT
 u.id AS user_id,
 u.email,
 u.role_id,
+r.name AS role_name,
 u.name AS name,
 ARRAY_AGG(p.name) AS permissions
 FROM
@@ -32,7 +20,7 @@ public.permissions p ON rp.permission_id = p.permission_id
 GROUP BY
 u.id, u.email, u.role_id, r.name ; `;
 
-  const userExists = await client.query(userQuery);
+  const userExists = await pool.query(userQuery);
 
   // console.log(userExists?.rows, "User Found");
   res.status(200).json({
@@ -63,7 +51,7 @@ WHERE
   u.id = $1
 GROUP BY
   u.id, u.email, u.role_id;`;
-  const userExists = await client.query(getUserProfile, [userId]);
+  const userExists = await pool.query(getUserProfile, [userId]);
 
   // console.log(userExists?.rows, "User Found");
   res.status(200).json({
@@ -84,7 +72,7 @@ const UpdateRoles = asyncHanlder(async (req, res) => {
 
   console.log(req.params, req.body);
 
-  const foundUserID = await client.query(`SELECT * from users where id= $1`, [
+  const foundUserID = await pool.query(`SELECT * from users where id= $1`, [
     userId,
   ]);
   let user = foundUserID?.rows[0];
@@ -97,7 +85,7 @@ const UpdateRoles = asyncHanlder(async (req, res) => {
 
   try {
     // create user
-    const updateQuery = await client.query(
+    const updateQuery = await pool.query(
       `UPDATE users SET role_id = $1 WHERE id = $2 RETURNING *`,
       [newRoleID, userId]
     );
@@ -116,7 +104,7 @@ const DeleteUser = asyncHanlder(async (req, res) => {
   console.log(req.params);
 
   try {
-    const deleteUserQuery = await client.query(
+    const deleteUserQuery = await pool.query(
       `DELETE FROM users WHERE id=$1`,
       [user_id]
     ); 

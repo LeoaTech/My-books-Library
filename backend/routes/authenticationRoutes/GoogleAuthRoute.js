@@ -1,19 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const passport = require("passport");
-
-const { Client } = require("pg");
-const connectionUrl = process.env.CONNECTION_URL;
-
-const client = new Client(connectionUrl);
-
-client.connect((err, res) => {
-  if (err) {
-    console.log(err);
-  } else {
-    console.log("Authentication API connected");
-  }
-});
+const pool = require("../../config/dbConfig.js");
 
 require("../../controllers/AuthController/GoogleAuth.js");
 
@@ -28,7 +16,7 @@ router.get(
 router.get(
   "/auth/google/callback",
   passport.authenticate("google", {
-    successRedirect: `http://localhost:5173/`, //Redirec to Client Home Page
+    successRedirect: `http://localhost:5173/`, //Redirect to Client Home Page
     failureRedirect: "/auth/google/failure",
   })
 );
@@ -68,7 +56,7 @@ router.get("/auth/google/failure", (req, res) => {
 
 router.get("/auth/login/success", async (req, res) => {
   if (req.user) {
-    const checkRole = await client.query(
+    const checkRole = await pool.query(
       "SELECT name FROM roles Where role_id=  $1",
       [req.user?.role_id]
     );

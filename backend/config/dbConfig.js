@@ -1,19 +1,11 @@
-const { Client } =  require("pg");
-const connectionUrl = process.env.CONNECTION_URL
 
-const client = new Client(connectionUrl);
+const pg = require("pg");
+const { Pool } = pg;
 
-const connectDb = async () => {
-  try {
-    await client.connect();
+require("dotenv").config();
 
-    console.log("Connected");
-  } catch (error) {
-    console.log(error);
-    await client.end();
-  }finally{
-    await client.end()
-  }
-};
+const pool = new Pool({
+  connectionString: process.env.CONNECTION_URL,
+});
 
-module.exports= connectDb;
+module.exports = pool;

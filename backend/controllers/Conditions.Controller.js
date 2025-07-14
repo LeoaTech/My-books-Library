@@ -1,24 +1,12 @@
 const asyncHanlder = require("express-async-handler");
-const { Client } = require("pg");
-require("dotenv").config();
-const connectionUrl = process.env.CONNECTION_URL;
-const client = new Client(connectionUrl);
-
-
-client.connect((err, res) => {
-  if (err) {
-    console.log(err);
-  } else {
-    console.log("Conditions API connected");
-  }
-});
+const pool = require("../config/dbConfig");
 
 /* Get ALL Conditions */
 
 const GetBookCondition = asyncHanlder(async (req, res) => {
   try {
     const bookConditionQuery = `SELECT * FROM conditions`;
-    const getAllCondition = await client.query(bookConditionQuery);
+    const getAllCondition = await pool.query(bookConditionQuery);
 
     res.status(200).json({
       conditions: getAllCondition?.rows,
@@ -29,5 +17,4 @@ const GetBookCondition = asyncHanlder(async (req, res) => {
   }
 });
 
-
-module.exports = {GetBookCondition}
+module.exports = { GetBookCondition };

@@ -1,21 +1,11 @@
-require("dotenv").config();
-const { Client } = require("pg");
-const connectionUrl = process.env.CONNECTION_URL;
+// require("dotenv").config();
 
-const client = new Client(connectionUrl);
-
-client.connect((err, res) => {
-  if (err) {
-    console.log(err);
-  } else {
-    console.log("Role Services connected");
-  }
-});
+const pool = require("../config/dbConfig");
 
 const getRoles = async () => {
   try {
     const permissionsQuery = `SELECT * FROM roles`;
-    const getAllPermissions = await client.query(permissionsQuery);
+    const getAllPermissions = await pool.query(permissionsQuery);
 
     const roles = getAllPermissions?.rows;
     return roles.map((role) => role?.role_id); // Returning all role Ids
@@ -43,7 +33,7 @@ GROUP BY
     rp.role_id, r.name
 `;
 
-    const getAllPermissions = await client.query(permissionQuery, [roleId]);
+    const getAllPermissions = await pool.query(permissionQuery, [roleId]);
 
     const role = getAllPermissions?.rows[0];
     return role ? role.permissions : []; //Returns all permissions for the role id

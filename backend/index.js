@@ -6,6 +6,8 @@ const { notfound, errorHanlder } = require("./middleware/errorMiddleware.js");
 const session = require("express-session");
 const passport = require("passport");
 const cookieParser = require("cookie-parser");
+
+// * Import routes
 const authRouter = require("./routes/authenticationRoutes/AuthRouter.js");
 const booksRouter = require("./routes/booksRoutes/BooksRoutes.js");
 const googleOAuthRouter = require("./routes/authenticationRoutes/GoogleAuthRoute.js");
@@ -21,7 +23,7 @@ const publisherRoutes = require("./routes/PublishersRoutes.js");
 const vendorsRoutes = require("./routes/VendorsRoutes.js");
 const branchRoutes = require("./routes/BranchRoutes.js");
 const ordersRoutes = require("./routes/OrdersRoutes/OrdersRoutes.js");
-
+const pool = require("./config/dbConfig.js");
 
 const port = process.env.PORT || 8100;
 
@@ -52,6 +54,7 @@ app.use(bodyParser.urlencoded({ limit: "100mb", extended: true }));
 app.use(express.json());
 app.use(cookieParser()); //cookies middleware
 
+// * Routes
 app.use("/", googleOAuthRouter);
 app.use("/auth", authRouter);
 app.use("/books", booksRouter);
@@ -71,9 +74,22 @@ app.use("/orders", ordersRoutes);
 
 app.use(notfound);
 app.use(errorHanlder);
-
-app.get("/", (req, res) => {
+app.get("/test", (req, res) => {
   res.send("Home Page");
+});
+
+pool.connect((err, client, release) => {
+
+  if (err) {
+    return console.error("Error acquiring client", err.stack);
+  }
+  client.query("SELECT NOW()", (err, result) => {
+    release();
+    if (err) {
+      return console.error("Error executing query", err.stack);
+    }
+    console.log("Connected to Database !");
+  });
 });
 app.listen(port, () => {
   console.log("Server is listening on port", port);

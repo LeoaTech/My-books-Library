@@ -1,21 +1,6 @@
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
-const { Client } = require("pg");
-const RoleService = require("../services/role.services"); // Adjust the path based on your project structure
-
-const connectionUrl = process.env.CONNECTION_URL;
-
-const client = new Client(connectionUrl);
-
-client.connect((err, res) => {
-  if (err) {
-    console.log(err);
-  } else {
-    console.log("authorization-middlware connected");
-  }
-});
-
-
+const RoleService = require("../services/role.services"); 
 
   /* Authorized Role Id of User */
 
@@ -38,8 +23,6 @@ const checkRole = async (req, res, next) => {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
-
 
   /* Verifying Role Permissions */
 const checkPermissions = (requiredPermissions) => {
