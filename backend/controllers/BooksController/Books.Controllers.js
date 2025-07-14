@@ -1,8 +1,5 @@
 const asyncHanlder = require("express-async-handler");
-require("dotenv").config();
-const { Client } = require("pg");
-const connectionUrl = process.env.CONNECTION_URL;
-const client = new Client(connectionUrl);
+const pool = require("../../config/dbConfig");
 const cloudinary = require("cloudinary").v2;
 
 // Cloudinary Configuration
@@ -13,15 +10,9 @@ cloudinary.config({
   secure: true,
 });
 
-client.connect((err, res) => {
-  if (err) {
-    console.log(err);
-  } else {
-    console.log("Book Controller API connected");
-  }
-});
+;
 
-// Options for image upload
+// Options for image upload on cloudinary
 const options = {
   folder: "books",
   use_filename: true,
@@ -33,7 +24,7 @@ const options = {
 
 const GetAllBooks = asyncHanlder(async (req, res) => {
   try {
-    const getBooksList = await client.query(`SELECT
+    const getBooksList = await pool.query(`SELECT
     books.id,
     books.title,
     books.summary,
@@ -83,7 +74,7 @@ const GetBookById = asyncHanlder(async (req, res) => {
   const { bookId } = req.query;
 
   try {
-    const getBookDetail = await client.query(
+    const getBookDetail = await pool.query(
       `SELECT
     books.id,
     books.title,
@@ -188,7 +179,7 @@ const CreateNewBook = asyncHanlder(async (req, res) => {
 
   if (imagesUrls.length > 0) {
     try {
-      const saveBook = await client.query(
+      const saveBook = await pool.query(
         `INSERT INTO books (
           title,
           rental_price,
@@ -263,7 +254,7 @@ const DeleteBook = asyncHanlder(async (req, res) => {
       .then((result) => console.log(result, "Book deleted successfully"));
 
     // Delete book from DB
-    const deleteQuery = await client.query(`DELETE FROM books WHERE id=$1`, [
+    const deleteQuery = await pool.query(`DELETE FROM books WHERE id=$1`, [
       book_id,
     ]);
 
@@ -330,7 +321,7 @@ const UpdateBook = asyncHanlder(async (req, res) => {
 
   //   Save Book in database
   try {
-    const updateBook = await client.query(
+    const updateBook = await pool.query(
       `UPDATE books SET 
       title =$1,
       rental_price=$2,
