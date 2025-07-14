@@ -1,24 +1,11 @@
 const asyncHanlder = require("express-async-handler");
-const { Client } = require("pg");
-require("dotenv").config();
-
-const connectionUrl = process.env.CONNECTION_URL;
-
-const client = new Client(connectionUrl);
-
-client.connect((err, res) => {
-  if (err) {
-    console.log(err);
-  } else {
-    console.log("Roles API connected");
-  }
-});
+const pool = require("../../config/dbConfig");
 
 //    Fetched All Roles from DB
 const FetchRoles = asyncHanlder(async (req, res) => {
   try {
     const rolesQuery = `SELECT * FROM roles`;
-    const getAllRoles = await client.query(rolesQuery);
+    const getAllRoles = await pool.query(rolesQuery);
 
     // console.log(getAllRoles?.rows, "User Found");
     res.status(200).json({
@@ -38,7 +25,7 @@ const NewRole = asyncHanlder(async (req, res) => {
 
     const { name } = roleData;
     const addRoleQuery = `INSERT INTO roles (name) values ($1) Returning *`;
-    const saveNewRole = await client.query(addRoleQuery, [name]);
+    const saveNewRole = await pool.query(addRoleQuery, [name]);
 
     console.log(saveNewRole?.rows[0]);
 
@@ -57,7 +44,7 @@ const UpdateRole = asyncHanlder(async (req, res) => {
     const roleData = req.body;
     const { name } = roleData;
 
-    const findRoleId = await client.query(
+    const findRoleId = await pool.query(
       `SELECT * FROM roles WHERE role_id =$1`,
       [role_id]
     );
@@ -66,7 +53,7 @@ const UpdateRole = asyncHanlder(async (req, res) => {
       res.status(400).json({ message: "RoleId not exists" });
     } else {
       const updateRoleQuery = `Update roles set name =$1 WHERE role_id = $2 Returning *`;
-      const updateRole = await client.query(updateRoleQuery, [name, role_id]);
+      const updateRole = await pool.query(updateRoleQuery, [name, role_id]);
 
       console.log(updateRole?.rows[0]);
 
@@ -87,12 +74,12 @@ const DeleteRole = asyncHanlder(async (req, res) => {
 
     console.log(req.params);
 
-    const findRoleId = await client.query(
+    const findRoleId = await pool.query(
       `SELECT * FROM roles WHERE role_id =$1`,
       [role_id]
     );
 
-    const findUserRoleId = await client.query(
+    const findUserRoleId = await pool.query(
       `SELECT * FROM users2 WHERE role_id =$1`,
       [role_id]
     );
@@ -100,15 +87,13 @@ const DeleteRole = asyncHanlder(async (req, res) => {
     // console.log(findRoleId)
 
     if (findUserRoleId?.rowCount > 0) {
-      res
-        .status(400)
-        .json({
-          "message": "Role cannot be Deleted, a user Already have this RoleId",
-        });
-        return;
+      res.status(400).json({
+        message: "Role cannot be Deleted, a user Already have this RoleId",
+      });
+      return;
     } else {
       if (findRoleId?.rowCount > 0) {
-        await client.query(`DELETE from roles WHERE role_id =$1`, [role_id]);
+        await pool.query(`DELETE from roles WHERE role_id =$1`, [role_id]);
 
         res.status(200).json({ message: "Delete Role" });
       } else {
@@ -117,12 +102,10 @@ const DeleteRole = asyncHanlder(async (req, res) => {
     }
   } catch (error) {
     console.log(error);
-    res
-      .status(400)
-      .json({
-        message: "Role cannot be Deleted, a user Already have this RoleId",
-      });
-      return;
+    res.status(400).json({
+      message: "Role cannot be Deleted, a user Already have this RoleId",
+    });
+    return;
   }
 });
 
