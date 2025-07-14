@@ -1,23 +1,11 @@
 const asyncHanlder = require("express-async-handler");
-const { Client } = require("pg");
-require("dotenv").config();
+const pool = require("../config/dbConfig");
 
-const connectionUrl = process.env.CONNECTION_URL;
-
-const client = new Client(connectionUrl);
-
-client.connect((err, res) => {
-  if (err) {
-    console.log(err);
-  } else {
-    console.log("Publishers API connected");
-  }
-});
 /* Get ALL Publishers */
 const FetchPublishers = asyncHanlder(async (req, res) => {
   try {
     const PublishersQuery = `SELECT * FROM publishers`;
-    const getAllPublishers = await client.query(PublishersQuery);
+    const getAllPublishers = await pool.query(PublishersQuery);
 
     res.status(200).json({
       publishers: getAllPublishers?.rows,
@@ -33,7 +21,7 @@ const FetchPublishers = asyncHanlder(async (req, res) => {
 const AddNewPublisher = asyncHanlder(async (req, res) => {
   console.log(req.body);
   try {
-    const createPublisherQuery = await client.query(
+    const createPublisherQuery = await pool.query(
       `INSERT INTO publishers (name) VALUES ($1)`,
       [req.body.name]
     );
