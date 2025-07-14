@@ -1,32 +1,21 @@
 const asyncHanlder = require("express-async-handler");
-const { Client } = require("pg");
-require("dotenv").config();
+const pool = require("../../config/dbConfig");
 
-const connectionUrl = process.env.CONNECTION_URL;
-
-const client = new Client(connectionUrl);
-
-client.connect((err, res) => {
-  if (err) {
-    console.log(err);
-  } else {
-    console.log("Orders API connected");
-  }
-});
 
 /* Fetch All Orders Details */
 
 const FetchAllOrders = asyncHanlder(async (req, res) => {
   try {
     const ordersQuery = `SELECT * FROM Orders`;
-    const getAllOrders = await client.query(ordersQuery);
+    const getAllOrders = await pool.query(ordersQuery);
 
     res.status(200).json({
       orders: getAllOrders?.rows,
       message: "All Orders Found ",
     });
   } catch (error) {
-    console.log(error);
+    console.log(error,"Error fetching Orders");
+    res.status(500).json({message:error.message});
   }
 });
 
@@ -44,7 +33,7 @@ const FetchOrderById = asyncHanlder(async (req, res) => {
 
 /* Create an Order */
 
-// ?TODO: Validate the Duplicate Entries of Order details 
+// ?TODO: Validate the Duplicate Entries of Order details
 const CreateNewOrder = asyncHanlder(async (req, res) => {
   // console.log(req.body);
   try {
@@ -92,7 +81,7 @@ const CreateNewOrder = asyncHanlder(async (req, res) => {
         order_by,
         order_on) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18) Returning *`;
 
-      const saveNewOrder = await client.query(createOrderQuery, [
+      const saveNewOrder = await pool.query(createOrderQuery, [
         name,
         email,
         address,
@@ -115,13 +104,16 @@ const CreateNewOrder = asyncHanlder(async (req, res) => {
 
       console.log(saveNewOrder?.rowCount, "1 Order Created");
       res.status(200).json({
+        result: saveNewOrder?.rows[0],
         message: "Order Created Successfully",
-      });
+      });updated
     } catch (error) {
       console.log(error);
+      res.status(400).json({ message: "Something went wrong " });
     }
   } catch (error) {
     console.log(error);
+    res.status(500).json({ message: error.message });
   }
 });
 
@@ -132,14 +124,15 @@ const DeleteOrder = asyncHanlder(async (req, res) => {
   try {
     const deleteOrderQuery = `DELETE FROM orders WHERE id =$1`;
 
-    const deleteOrderdetails = await client.query(deleteOrderQuery, [order_id]);
+    const deleteOrderdetails = await pool.query(deleteOrderQuery, [order_id]);
 
     console.log(deleteOrderdetails?.rowCount);
     res.status(200).json({
-      message: "Delete Order ",
+      message: "Deleted Order details successfully",
     });
   } catch (error) {
-    console.log(error);
+    console.log(error,"Delete order details failed");
+    res.status(500).json({ message: "Error deleting Orders", error: error });
   }
 });
 
@@ -195,7 +188,7 @@ const UpdateOrder = asyncHanlder(async (req, res) => {
         id=$19
          Returning *`;
 
-      const updatedOrder = await client.query(EditOrderQuery, [
+      const updatedOrder = await pool.query(EditOrderQuery, [
         name,
         email,
         address,
@@ -222,12 +215,15 @@ const UpdateOrder = asyncHanlder(async (req, res) => {
         message: "Orders Updated ",
       });
     } catch (error) {
-      console.log(error);
+      console.log(error, "DB Error Update Order failed");
+      res.status(500).json({ message: "DB Error: Failed to Update Orders", error: error });
     }
   } catch (error) {
-    console.log(error);
+    console.log(error, "Error updating order failed ");
+    res.status(500).json({ message: "Server Error: Something went wrong", error: error });
   }
 });
+
 module.exports = {
   FetchAllOrders,
   FetchOrderById,
