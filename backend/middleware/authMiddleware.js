@@ -1,18 +1,6 @@
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
-const { Client } = require("pg");
 
-const connectionUrl = process.env.CONNECTION_URL;
-
-const client = new Client(connectionUrl);
-
-client.connect((err, res) => {
-  if (err) {
-    console.log(err);
-  } else {
-    console.log("auth-middlware connected");
-  }
-});
 const requireAuth = async (req, res, next) => {
   // Verify Authorized access
 
@@ -44,7 +32,6 @@ const requireAuth = async (req, res, next) => {
 
 // Verify Authorization of a User using JWT or User Authentication
 const checkAuth = async (req, res, next) => {
-
   const authorization = req.headers?.cookie;
 
   // Parsing the cookie string to extract individual cookie values
