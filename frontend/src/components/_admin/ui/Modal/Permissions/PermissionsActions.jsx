@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { usePermissions } from "../../../../../hooks/permissions/usePermissions";
+import { RxCross1 } from "react-icons/rx";
 
 const schema = z.object({
   name: z.string().min(2, { message: "Please Enter a Permission Name" }),
@@ -11,7 +12,7 @@ const schema = z.object({
 
 const PermissionModal = ({ isEdit, values, close }) => {
   const queryClient = useQueryClient();
-  const { updatePermission, deletePermission ,deletePermissionText} = usePermissions();
+  const { updatePermission, deletePermission, deletePermissionText } = usePermissions();
   const {
     register,
     handleSubmit,
@@ -46,13 +47,28 @@ const PermissionModal = ({ isEdit, values, close }) => {
     // }
   });
 
+
   const onSubmit = async (data) => {
-    const updatePermission = { ...data, permission_id: values?.permission_id};
+    const updatePermission = { ...data, permission_id: values?.permission_id };
     await updatePermissionMutation(updatePermission);
   };
   return (
-    <div className="flex justify-center items-center fixed inset-1 bg-opacity-75  bg-slate-400 transition-opacity">
-      <div className="mx-10 bg-white p-10 rounded-md flex flex-col justify-center items-center xs:w-2/3 md:w-1/3 md:mx-20">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#64748B]/75 dark:bg-slate-300/68 lg:left-[18rem]">
+      <div className="relative w-[90%] max-w-md bg-neutral-50 dark:border-[#2E3A47] dark:bg-[#24303F] p-10 rounded-md shadow-lg">
+        {/* Modal Close Button */}
+        <div className="absolute top-4 right-4">
+          <RxCross1
+            style={{
+              height: 18,
+              width: 23,
+              cursor: "pointer",
+              color: "#FFF",
+              strokeWidth: 2,
+            }}
+            onClick={close}
+          />
+        </div>
+
         <div className="flex flex-col justify-between items-center gap-5">
           <h1 className="text-[17px] font-bold ">
             {isEdit ? "Update Permission" : "Delete Permission"}
@@ -94,18 +110,15 @@ const PermissionModal = ({ isEdit, values, close }) => {
               </div>
               <div className="flex justify-evenly items-center p-5  ">
                 {" "}
-                <input
-                  className="cursor-pointer  text-blue-800 hover:text-blue-400"
+                <button
+                  className="inline-flex w-full justify-center rounded-md bg-[#FFBA00] hover:bg-orange-400 px-3 py-2 text-sm font-semibold text-white shadow-sm  sm:ml-3 sm:w-auto"
                   disabled={!isDirty || !isValid || isSubmitting}
-                  type="submit"
-                  value="Update"
-                />
-                <input
+                >Update</button>
+                <button
                   onClick={close}
-                  className="cursor-pointer text-red-500 hover:text-red-400"
+                  className="mt-3 inline-flex w-full justify-center rounded-md bg-white hover:bg-gray-300 px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300  sm:mt-0 sm:w-auto"
                   type="button"
-                  value="Close"
-                />
+                >Close</button>
               </div>{" "}
               {errors && (
                 <span className="text-meta-1 text-sm">
@@ -116,11 +129,11 @@ const PermissionModal = ({ isEdit, values, close }) => {
           ) : (
             <>
 
-              <p className="text-[18px] text-gray-700">Are u sure you want to delete the <span className="text-[18px] text-red-400 underline">{`${(values?.name).toUpperCase()} `}</span> Permission ?</p>
-            
+              <p className="text-[18px] text-gray-700 dark:text-gray-100">Are u sure you want to delete the <span className="text-[18px] text-red-400 underline">{`${(values?.name).toUpperCase()}  `}</span> Permission ?</p>
+
               {/* Action Buttons */}
 
-              <div className="mt-10 flex justify-evenly gap-6">
+              <div className="mt-5 flex justify-end gap-6 p-5">
                 <button
                   onClick={() => deletePermissionMutation(values?.permission_id)}
                   className="border p-2 px-5 bg-red-400 text-white rounded-md text-[17px] hover:bg-red-600"
@@ -136,7 +149,7 @@ const PermissionModal = ({ isEdit, values, close }) => {
               </div>
 
 
-              
+
             </>
           )}
         </div>
