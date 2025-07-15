@@ -3,6 +3,7 @@ import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
+  getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 import { useFetchBooks } from "../../../../hooks/books/useFetchBooks";
@@ -19,6 +20,10 @@ const Tables = ({ hasPermission }) => {
   const { isPending, error, data: booksData } = useFetchBooks();
 
   const [data, setData] = useState([]);
+  const [pagination, setPagination] = useState({
+    pageIndex: 0, //initial page index
+    pageSize: 4, //default page size
+  });
   const columnHelper = createColumnHelper();
 
   useEffect(() => {
@@ -82,44 +87,44 @@ const Tables = ({ hasPermission }) => {
           return (
             <div className="flex gap-3">
               {hasPermission("EDIT") ? (
-                <button
+                <bbutton
                   onClick={() => editBookDetails(bookId)}
                   className="text-green-600"
                 >
                   <MdEdit />
-                </button>
+                </bbutton>
               ) : (
                 <div className="group relative m-2 flex justify-center">
                   <span className="absolute -top-10 scale-0 transition-all px-3 py-1 rounded bg-gray-800 p-2 text-xs text-red-500 group-hover:scale-100">
                     Access Denied!
                   </span>
-                  <button disabled className="text-green-600 ">
+                  <bbutton disabled className="text-green-600 ">
                     <MdEdit />
-                  </button>
+                  </bbutton>
                 </div>
               )}
-              
-              <button
+
+              <bbutton
                 onClick={() => viewBookDetails(bookId)}
                 className="text-green-600"
               >
                 <MdOutlineRemoveRedEye />
-              </button>
+              </bbutton>
               {hasPermission("DELETE") ? (
-                <button
-                  onClick={() => deleteBookDetails(bookId,bookTitle)}
+                <bbutton
+                  onClick={() => deleteBookDetails(bookId, bookTitle)}
                   className="text-red-500"
                 >
                   <MdOutlineDeleteOutline />
-                </button>
+                </bbutton>
               ) : (
                 <div className="group relative m-2 flex justify-center">
                   <span className="absolute -top-10 scale-0 transition-all rounded bg-gray-800 p-2 text-xs text-red-500 group-hover:scale-100">
                     Access Denied!
                   </span>
-                  <button disabled className="text-red-500">
+                  <bbutton disabled className="text-red-500">
                     <MdOutlineDeleteOutline />
-                  </button>
+                  </bbutton>
                 </div>
               )}
             </div>
@@ -135,6 +140,13 @@ const Tables = ({ hasPermission }) => {
     data: booksData?.books,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(), //load client-side pagination code
+    onPaginationChange: setPagination, //update the pagination state when internal APIs mutate the pagination state
+    state: {
+      pagination
+    },
+    autoResetPageIndex: true
+
   });
 
   const [values, setValues] = useState(null);
@@ -147,8 +159,8 @@ const Tables = ({ hasPermission }) => {
     setBookDetailModal(true);
   };
 
-  const deleteBookDetails = (id,title) => {
-    setValues({id, title});
+  const deleteBookDetails = (id, title) => {
+    setValues({ id, title });
     setDeleteBookModal(true);
   };
 
@@ -163,6 +175,7 @@ const Tables = ({ hasPermission }) => {
     setEditDetailModal(false);
     setDeleteBookModal(false);
   };
+
 
   if (isPending) return "Loading..."; //Add Loading Component
 
@@ -188,9 +201,9 @@ const Tables = ({ hasPermission }) => {
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                     </th>
                   ))}
                 </tr>
@@ -217,8 +230,72 @@ const Tables = ({ hasPermission }) => {
             </tbody>
           </table>
         )}
+
         <div />
+
+        {/* Pagination */}
+
+        <nav
+          className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 px-4 border-t border-[#E2E8F0] dark:border-[#2E3A47]"
+          aria-label="Table navigation"
+        >
+          {/* Pagination Buttons */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+              className={`rounded px-4 py-2 text-sm font-medium border 
+        ${table.getCanPreviousPage()
+                  ? "text-slate-600 bg-white border-[#E2E8F0] hover:bg-slate-100 dark:text-white dark:bg-[#1d2a39] dark:border-[#2E3A47] hover:dark:bg-[#2b3a4a]"
+                  : "cursor-not-allowed text-gray-400 bg-gray-100 border-gray-200 dark:bg-[#1d2a39] dark:text-gray-500"}`}
+            >
+              Previous
+            </button>
+
+            <span className="text-sm text-slate-600 dark:text-white">
+              Page <strong>{table.getState().pagination.pageIndex + 1}</strong> of{" "}
+              <strong>{table.getPageCount()}</strong>
+            </span>
+
+            <button
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+              className={`rounded px-4 py-2 text-sm font-medium border 
+        ${table.getCanNextPage()
+                  ? "text-slate-600 bg-white border-[#E2E8F0] hover:bg-slate-100 dark:text-white dark:bg-[#1d2a39] dark:border-[#2E3A47] hover:dark:bg-[#2b3a4a]"
+                  : "cursor-not-allowed text-gray-400 bg-gray-100 border-gray-200 dark:bg-[#1d2a39] dark:text-gray-500"}`}
+            >
+              Next
+            </button>
+          </div>
+
+          {/* Page Size Selector */}
+          <div className="flex items-center gap-2">
+            <label
+              htmlFor="pageSize"
+              className="text-sm text-slate-600 dark:text-white"
+            >
+              Rows per page:
+            </label>
+            <select
+              id="pageSize"
+              className="rounded border border-[#E2E8F0] bg-white px-3 py-2 text-sm text-slate-700 outline-none dark:border-[#2E3A47] dark:bg-[#1d2a39] dark:text-white"
+              value={table.getState().pagination.pageSize}
+              onChange={(e) => table.setPageSize(Number(e.target.value))}
+            >
+              {[20, 50, 100].map((pageSize) => (
+                <option key={pageSize} value={pageSize}>
+                  {pageSize}
+                </option>
+              ))}
+            </select>
+          </div>
+        </nav>
+
+
       </div>
+
+
 
       {/* Edit / Delete  Book Details Modal */}
 
@@ -228,7 +305,7 @@ const Tables = ({ hasPermission }) => {
       {/* Display Single Book Details */}
       {bookDetailModal && <BookDetailsModal data={values} close={closeModal} />}
 
-      {deleteBookModal && <DeleteBook book= {values} close={closeModal} />}
+      {deleteBookModal && <DeleteBook book={values} close={closeModal} />}
     </div>
   );
 };
