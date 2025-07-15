@@ -2,13 +2,20 @@ import { useState } from "react";
 import { NewRole, RoleModal } from "../Modal";
 import { useFetchRoles } from "../../../../hooks/users/roles/useFetchRole";
 import { MdEdit } from "react-icons/md";
-import { AiOutlineLoading } from "react-icons/ai";
+import { HiChevronDoubleLeft, HiChevronDoubleRight } from "react-icons/hi";
 
 const RolesTable = ({ open, setOpenRoleModal }) => {
   const { isPending, data } = useFetchRoles();
   const [editRole, setEditRole] = useState(false);
   const [deleteRole, setDeleteRole] = useState(false);
   const [roleData, setRoleData] = useState();
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage] = useState(8);
+
+  // Calculate indexes for pagination
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
 
   const UpdateRole = (roleId) => {
     const roleValues = data?.roles?.find((role) => role?.role_id === roleId);
@@ -28,11 +35,15 @@ const RolesTable = ({ open, setOpenRoleModal }) => {
     setDeleteRole(false);
   };
 
+  const currentRows = data?.roles?.slice(indexOfFirstRow, indexOfLastRow);
+
+  // Change page
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
   if (isPending) {
     return <h1>Loading...</h1>;
   }
   return (
-    <div className="rounded-sm border border-stroke bg-white shadow-default p-8 border-b border-[#eee]  dark:border-[#2E3A47] dark:bg-[#24303F]">
+    <div className="rounded-sm border border-[#E2E8F0] bg-white shadow-default p-8 border-b  dark:border-[#2E3A47] dark:bg-[#24303F]">
       <div className="max-w-full overflow-x-auto">
         <table className="w-full table-auto">
           <thead>
@@ -44,15 +55,15 @@ const RolesTable = ({ open, setOpenRoleModal }) => {
                 Role Name
               </th>
               <th className="min-w-[220px] py-4 px-4 font-medium text-gray-600 dark:text-white xl:pl-11">
-                Create Date
+                Created At
               </th>
-              <th className="min-w-[220px] py-4 px-4 font-medium text-gray-600 dark:text-white xl:pl-11">
+              <th className="min-w-[170px] py-4 px-4 font-medium text-gray-600 dark:text-white xl:pl-11">
                 Actions
               </th>
             </tr>
           </thead>
           <tbody>
-            {data?.roles?.map((role) => (
+            {currentRows?.map((role) => (
               <tr key={role?.role_id}>
                 <td className="border-b border-[#eee] py-5 px-4 pl-5 dark:border-[#2E3A47] xl:pl-11">
                   {role?.role_id}
@@ -63,8 +74,8 @@ const RolesTable = ({ open, setOpenRoleModal }) => {
                   </p>
                 </td>
                 <td className="border-b border-[#eee] py-5 px-4 pl-5 dark:border-[#2E3A47] xl:pl-11">
-                  {new Date(role?.created_at).toLocaleString()}
-                </td>
+                {new Date(role?.created_at).toDateString()} {" "} - {" "}
+                  {new Date(role?.created_at).toLocaleTimeString()}                 </td>
                 <td className="border-b border-[#eee] py-5 px-8 dark:border-[#2E3A47]">
                   <div className="flex items-center space-x-3.5">
                     <button
@@ -113,6 +124,30 @@ const RolesTable = ({ open, setOpenRoleModal }) => {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Pagination controls */}
+      <div className="flex justify-end gap-4 mt-5 mb-2">
+        <button
+          onClick={() => paginate(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="disabled:text-slate-300 dark:disabled:text-gray-600 text-blue-500"
+        >
+          <HiChevronDoubleLeft style={{ height: 17, width: 27 }} />
+        </button>
+
+        <span className="text-orange-600 bg-gray-100 border text-sm rounded-full h-[40px] w-[45px] flex justify-center items-center">
+          {currentPage}
+        </span>
+        {data?.permissions?.length > rowsPerPage && (
+          <button
+            onClick={() => paginate(currentPage + 1)}
+            disabled={indexOfLastRow >= data?.permissions?.length}
+            className="disabled:text-slate-300 dark:disabled:text-gray-600 text-blue-500"
+          >
+            <HiChevronDoubleRight style={{ height: 17, width: 27 }} />
+          </button>
+        )}
       </div>
 
       {/* Save New Role Modal */}
