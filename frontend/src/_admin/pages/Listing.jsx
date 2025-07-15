@@ -1,20 +1,23 @@
-import { useEffect, useState } from "react";
-import { AddBookDetails, Table } from "../../components/_admin";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { HiPlus } from "react-icons/hi";
 import { useQuery } from "@tanstack/react-query";
 import { fetchPermissionsByRoleID } from "../../hooks/roles_permissions/useFetchRolesPermissions";
 import { useAuthContext } from "../../hooks/useAuthContext";
 import { MdWarning } from "react-icons/md";
-import UnAuthorized from "../../components/_admin/UnAuthorized";
+import Loader from "../../components/_admin/Loader/Loader";
+import SkeletonTable from "../../components/Loader/SkeletonTable";
+
+// * Lazy Load Components
+const UnAuthorizedRoles = lazy(() => import("../../components/_admin/UnAuthorized"));
+const ListingTable = lazy(() => import("../../components/_admin/ui/Tables/Tables"));
+const AddBookDetails = lazy(() => import("../../components/_admin/ui/Modal/AddNewBookModal"));
+
 
 const Listing = () => {
   const [showModal, setShowModal] = useState(false);
   const [accessAction, setAccessAction] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // Search Book Functionality is not yet implemented
-  const handleSubmit = (e) => {
-    e.preventDefault();
-  };
 
   const { auth } = useAuthContext();
 
@@ -38,8 +41,6 @@ const Listing = () => {
       setAccessAction(booksPermissions);
     }
   }, [permissionsList]);
-
-  // Function to check if permissions exist in the List
 
   // Function to check if a user has a specific permission
   const hasPermission = (permissionName) => {
@@ -68,45 +69,14 @@ const Listing = () => {
           {/* Search from Listing ----  and ----  Create New Book Button */}
           <div className=" m-3 flex justify-between items-center">
             {/* Search Input Shows for Read Books Authorixed roles */}
-            {hasPermission("READ") && (
-              <form onSubmit={handleSubmit}>
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Type to search..."
-                    className="border-b w-full bg-transparent pr-2 pl-6 lg:pr-4 lg:pl-9 p-3 focus:outline-none"
-                  />
 
-                  <button
-                    className="absolute top-1/2 left-0 -translate-y-1/2"
-                    type="submit"
-                  >
-                    <svg
-                      className="fill-[#64748B] hover:fill-[#3C50E0] dark:fill-[#AEB7C0] dark:hover:fill-[#3C50E0]"
-                      width="20"
-                      height="20"
-                      viewBox="0 0 20 20"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        clipRule="evenodd"
-                        d="M9.16666 3.33332C5.945 3.33332 3.33332 5.945 3.33332 9.16666C3.33332 12.3883 5.945 15 9.16666 15C12.3883 15 15 12.3883 15 9.16666C15 5.945 12.3883 3.33332 9.16666 3.33332ZM1.66666 9.16666C1.66666 5.02452 5.02452 1.66666 9.16666 1.66666C13.3088 1.66666 16.6667 5.02452 16.6667 9.16666C16.6667 13.3088 13.3088 16.6667 9.16666 16.6667C5.02452 16.6667 1.66666 13.3088 1.66666 9.16666Z"
-                        fill=""
-                      />
-                      <path
-                        fillRule="evenodd"
-                        clipRule="evenodd"
-                        d="M13.2857 13.2857C13.6112 12.9603 14.1388 12.9603 14.4642 13.2857L18.0892 16.9107C18.4147 17.2362 18.4147 17.7638 18.0892 18.0892C17.7638 18.4147 17.2362 18.4147 16.9107 18.0892L13.2857 14.4642C12.9603 14.1388 12.9603 13.6112 13.2857 13.2857Z"
-                        fill=""
-                      />
-                    </svg>
-                  </button>
-                </div>
-              </form>
-            )}
-
+            <input
+              type="text"
+              placeholder="Search by title, author, genre..."
+              className="ml-4 w-1/2  focus:outline-none px-4 py-2 text-sm border-b border-gray-300 bg-neutral-100 rounded-md dark:border-gray-600 dark:bg-[#1d2a39] dark:text-white"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
             {/* Authhorized roles can access Create Book Form  */}
             {hasPermission("CREATE") ? (
               <button
@@ -146,20 +116,32 @@ const Listing = () => {
             )}
           </div>
 
+
           {/* Show Table Only when Role has Read Authority */}
           {hasPermission("READ") ? (
-            <Table hasPermission={hasPermission} />
+            <Suspense fallback={<SkeletonTable rows={7} columns={7} />}>
+              <ListingTable hasPermission={hasPermission} searchQuery={searchQuery} />
+
+            </Suspense>
           ) : (
-            <UnAuthorized />
+            <Suspense fallback={<Loader />}>
+              <UnAuthorizedRoles />
+            </Suspense>
           )}
         </>
       ) : (
-        <UnAuthorized /> // Access Denied
+        <Suspense fallback={<Loader />}>
+          <UnAuthorizedRoles />
+        </Suspense>// Access Denied
       )}
 
       {/* Add New Book Modal */}
 
-      {showModal && <AddBookDetails setShowModal={setShowModal} />}
+      {showModal &&
+        <Suspense fallback={<Loader />}>
+          <AddBookDetails setShowModal={setShowModal} />
+        </Suspense>
+      }
     </>
   );
 };

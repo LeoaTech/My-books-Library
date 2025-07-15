@@ -15,14 +15,15 @@ import {
 } from "react-icons/md";
 import DeleteBook from "../Modal/DeleteBook";
 import BookDetailsModal from "../Modal/BookDetailsModal";
+import Loader from "../../Loader/Loader";
 
-const Tables = ({ hasPermission }) => {
+const Tables = ({ hasPermission, searchQuery }) => {
   const { isPending, error, data: booksData } = useFetchBooks();
 
   const [data, setData] = useState([]);
   const [pagination, setPagination] = useState({
     pageIndex: 0, //initial page index
-    pageSize: 4, //default page size
+    pageSize: 10, //default page size
   });
   const columnHelper = createColumnHelper();
 
@@ -30,7 +31,24 @@ const Tables = ({ hasPermission }) => {
     if (booksData) {
       setData(booksData);
     }
-  }, [data]);
+  }, [booksData]);
+
+
+
+  const filteredData = useMemo(() => {
+    if (!booksData?.books) return [];
+
+    return booksData.books.filter((book) => {
+      const lower = searchQuery.toLowerCase();
+      return (
+        book.title.toLowerCase().includes(lower) ||
+        book.author_name?.toLowerCase().includes(lower) ||
+        book.category_name?.toLowerCase().includes(lower) ||
+        book.isbn?.toString().includes(lower)
+      );
+    });
+  }, [booksData, searchQuery]);
+
 
   const columns = useMemo(
     () => [
@@ -41,22 +59,25 @@ const Tables = ({ hasPermission }) => {
           const images = info.row.original.cover_img_url;
 
           return (
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-              <div className="h-12.5 w-15 rounded-md">
+            <div className="min-w-[220px] flex flex-col lg:flex-row lg:justify-start lg:items-center gap-2 lg:gap-4 w-full max-w-[260px]">
+              <div className="flex-shrink-0">
                 {images && (
                   <img
                     src={images[0]?.secureURL}
-                    alt={`Cover Image `}
-                    className="h-12 w-12 rounded-lg"
+                    alt="Cover"
+                    className="h-14 w-14 rounded-md object-cover"
                   />
                 )}
               </div>
-              <p className="text-sm text-slate-600 dark:text-white">{title}</p>
+              <p className="text-sm text-slate-600 dark:text-white break-words">
+                {title}
+              </p>
             </div>
           );
         },
         footer: (info) => info.column.id,
       }),
+
       columnHelper.accessor("category_name", {
         header: () => "Genre",
         cell: (info) => info.renderValue(),
@@ -76,7 +97,14 @@ const Tables = ({ hasPermission }) => {
       }),
       columnHelper.accessor("isbn", {
         header: "ISBN",
+        cell: ({ getValue }) => (
+          <div className="w-[100px] max-w-[150px] whitespace-normal break-all">
+            {getValue()}
+          </div>
+        ),
+        size: 150,
         footer: (info) => info.column.id,
+
       }),
       columnHelper.accessor("actions", {
         header: "Actions",
@@ -85,51 +113,52 @@ const Tables = ({ hasPermission }) => {
           const bookTitle = info.row.original?.title
 
           return (
-            <div className="flex gap-3">
+            <div className=" max-w-[120px] flex gap-3">
               {hasPermission("EDIT") ? (
-                <bbutton
+                <button
                   onClick={() => editBookDetails(bookId)}
                   className="text-green-600"
                 >
                   <MdEdit />
-                </bbutton>
+                </button>
               ) : (
                 <div className="group relative m-2 flex justify-center">
                   <span className="absolute -top-10 scale-0 transition-all px-3 py-1 rounded bg-gray-800 p-2 text-xs text-red-500 group-hover:scale-100">
                     Access Denied!
                   </span>
-                  <bbutton disabled className="text-green-600 ">
+                  <button disabled className="text-green-600 ">
                     <MdEdit />
-                  </bbutton>
+                  </button>
                 </div>
               )}
 
-              <bbutton
+              <button
                 onClick={() => viewBookDetails(bookId)}
                 className="text-green-600"
               >
                 <MdOutlineRemoveRedEye />
-              </bbutton>
+              </button>
               {hasPermission("DELETE") ? (
-                <bbutton
+                <button
                   onClick={() => deleteBookDetails(bookId, bookTitle)}
                   className="text-red-500"
                 >
                   <MdOutlineDeleteOutline />
-                </bbutton>
+                </button>
               ) : (
                 <div className="group relative m-2 flex justify-center">
                   <span className="absolute -top-10 scale-0 transition-all rounded bg-gray-800 p-2 text-xs text-red-500 group-hover:scale-100">
                     Access Denied!
                   </span>
-                  <bbutton disabled className="text-red-500">
+                  <button disabled className="text-red-500">
                     <MdOutlineDeleteOutline />
-                  </bbutton>
+                  </button>
                 </div>
               )}
             </div>
           );
         },
+        size: 100,
         footer: (info) => info.column.id,
       }),
     ],
@@ -137,7 +166,7 @@ const Tables = ({ hasPermission }) => {
   );
 
   const table = useReactTable({
-    data: booksData?.books,
+    data: filteredData,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(), //load client-side pagination code
@@ -177,12 +206,12 @@ const Tables = ({ hasPermission }) => {
   };
 
 
-  if (isPending) return "Loading..."; //Add Loading Component
+  if (isPending) return <Loader />; //Add Loading Component
 
   if (error) return "An error has occurred: " + error.message; // Add error Component
 
   return (
-    <div className="rounded-sm  h-[500px]border border-[#E2E8F0] bg-white shadow-default max-w-full overflow-x-auto overflow-y-auto dark:border-[#2E3A47] dark:bg-[#24303F]">
+    <div className="rounded-sm h-[500px]border border-[#E2E8F0] bg-neutral-100 shadow-default max-w-full overflow-x-auto overflow-y-auto dark:border-[#2E3A47] dark:bg-[#24303F]">
       {/* React Table */}
       <div className="max-w-full  overflow-x-auto dark:border-[#2E3A47]">
         {booksData?.books && (
@@ -215,19 +244,17 @@ const Tables = ({ hasPermission }) => {
                   {row?.getVisibleCells()?.map((cell) => (
                     <td
                       key={cell.id}
-                      className="text-center pt-[14px] pb-[18px] border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-7"
+                      className="text-center pt-[14px] pb-[18px] border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-7 w-[200px]" // add fixed width here
                     >
-                      <p className="font-medium text-slate-600 dark:text-white">
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
+                      <p className="font-medium text-slate-600 dark:text-white whitespace-normal break-words">
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </p>
                     </td>
                   ))}
                 </tr>
               ))}
             </tbody>
+
           </table>
         )}
 
