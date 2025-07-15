@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { usePermissions } from "../../../../../hooks/permissions/usePermissions";
+import { RxCross1 } from "react-icons/rx";
 
 const schema = z.object({
   name: z.string().min(2, { message: "Please Enter a Permission Name" }),
@@ -30,14 +31,34 @@ const NewPermission = ({ setOpenModal }) => {
     },
   });
 
+
+
+  const onClose = useCallback(() => {
+    setOpenModal((prev) => !prev)
+  }, [])
+
   const onSubmit = async (data) => {
     await NewPermissionMutation(data);
   };
   return (
-    <div className="flex justify-center items-center fixed inset-1 bg-opacity-75  bg-slate-400 transition-opacity">
-      <div className="mx-10 bg-white p-10 rounded-md flex flex-col justify-center items-center xs:w-2/3 md:w-1/3 md:mx-20">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#64748B]/75 dark:bg-slate-300/68 lg:left-[18rem]">
+      <div className="relative w-[90%] max-w-md bg-neutral-50 dark:border-[#2E3A47] dark:bg-[#24303F] p-10 rounded-md shadow-lg">
+        {/* Modal Close Button */}
+        <div className="absolute top-4 right-4">
+          <RxCross1
+            style={{
+              height: 18,
+              width: 23,
+              cursor: "pointer",
+              color: "#FFF",
+              strokeWidth: 2,
+            }}
+            onClick={onClose}
+          />
+        </div>
+
         <div className="flex flex-col justify-between items-center gap-5">
-          <h1 className="text-[17px] font-bold ">New Permission</h1>
+          <h1 className="text-[19px] font-bold text-gray-300 ">New Permission</h1>
           <form onSubmit={handleSubmit(onSubmit)}>
             <div>
               <label className="mb-2.5 block text-blue-500 dark:text-white">
@@ -53,20 +74,16 @@ const NewPermission = ({ setOpenModal }) => {
                 <p className="format-message error">{errors.name.message}</p>
               )}
             </div>
-            <div className="mt-5 flex justify-evenly items-center p-5  ">
+            <div className="mt-5 flex justify-end gap-4 p-5">
               {" "}
-              <input
-                className="cursor-pointer  text-blue-800 hover:text-blue-400"
+              <button
+                className="rounded-md bg-[#FFBA00] px-4 py-2 text-sm font-semibold text-white shadow-sm disabled:opacity-50"
                 disabled={!isDirty || !z.isValid || isSubmitting}
-                type="submit"
-                value="Create"
-              />
-              <input
-                onClick={() => setOpenModal((prev) => !prev)}
-                className="cursor-pointer text-red-500 hover:text-red-400"
-                type="button"
-                value="Close"
-              />
+              >Create</button>
+              <button
+                onClick={onClose}
+                className="rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+              >Close</button>
             </div>{" "}
             {errors && (
               <span className="text-meta-1 text-sm">
