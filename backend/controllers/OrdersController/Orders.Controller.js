@@ -1,5 +1,5 @@
 const asyncHanlder = require("express-async-handler");
-const pool = require("../../config/dbConfig");
+const db = require("../../config/dbConfig");
 
 
 /* Fetch All Orders Details */
@@ -7,7 +7,7 @@ const pool = require("../../config/dbConfig");
 const FetchAllOrders = asyncHanlder(async (req, res) => {
   try {
     const ordersQuery = `SELECT * FROM Orders`;
-    const getAllOrders = await pool.query(ordersQuery);
+    const getAllOrders = await db.query(ordersQuery);
 
     res.status(200).json({
       orders: getAllOrders?.rows,
@@ -81,7 +81,7 @@ const CreateNewOrder = asyncHanlder(async (req, res) => {
         order_by,
         order_on) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18) Returning *`;
 
-      const saveNewOrder = await pool.query(createOrderQuery, [
+      const saveNewOrder = await db.query(createOrderQuery, [
         name,
         email,
         address,
@@ -124,7 +124,7 @@ const DeleteOrder = asyncHanlder(async (req, res) => {
   try {
     const deleteOrderQuery = `DELETE FROM orders WHERE id =$1`;
 
-    const deleteOrderdetails = await pool.query(deleteOrderQuery, [order_id]);
+    const deleteOrderdetails = await db.query(deleteOrderQuery, [order_id]);
 
     console.log(deleteOrderdetails?.rowCount);
     res.status(200).json({
@@ -188,7 +188,7 @@ const UpdateOrder = asyncHanlder(async (req, res) => {
         id=$19
          Returning *`;
 
-      const updatedOrder = await pool.query(EditOrderQuery, [
+      const updatedOrder = await db.query(EditOrderQuery, [
         name,
         email,
         address,
