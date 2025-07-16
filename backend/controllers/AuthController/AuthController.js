@@ -7,7 +7,7 @@ const validator = require("validator");
 
 const send_email = require("../../utiliz/sendEmail");
 
-const pool = require("../../config/dbConfig");
+const db = require("../../config/dbConfig");
 
 
 // Generate Access JWT
@@ -41,7 +41,7 @@ const RegisterUser = asyncHanlder(async (req, res) => {
     //   throw Error("Please enter a strong password");
     // }
 
-    const checkRole = await pool.query(
+    const checkRole = await db.query(
       "SELECT role_id FROM roles Where name=  $1",
       ["user"]
     );
@@ -54,7 +54,7 @@ const RegisterUser = asyncHanlder(async (req, res) => {
     }
     try {
       // check if user exists in DB
-      const userExists = await pool.query(
+      const userExists = await db.query(
         "SELECT * FROM users Where email = $1",
         [email]
       );
@@ -69,7 +69,7 @@ const RegisterUser = asyncHanlder(async (req, res) => {
       const hashedPassword = await bcrypt?.hash(password, salt);
 
       // Save User in DB
-      const user = await pool.query(
+      const user = await db.query(
         `INSERT INTO users (name, email, password, role_id) VALUES ($1, $2, $3, $4) RETURNING *`,
         [name, email, hashedPassword, role]
       );
@@ -101,7 +101,7 @@ const LoginUser = asyncHanlder(async (req, res) => {
     }
     try {
       // Verify user email in DB
-      const userEmail = await pool.query(
+      const userEmail = await db.query(
         `SELECT * from users where email= $1`,
         [email]
       );
@@ -139,7 +139,7 @@ const LoginUser = asyncHanlder(async (req, res) => {
 
         // Find role name for Each role_id
 
-        const findRoleName = await pool.query(
+        const findRoleName = await db.query(
           "SELECT name FROM roles WHERE role_id=$1",
           [user?.role_id]
         );
@@ -152,7 +152,7 @@ const LoginUser = asyncHanlder(async (req, res) => {
         }
 
         // Check if user id exists in Tokens table or not
-        const isTokenExists = await pool.query(
+        const isTokenExists = await db.query(
           "SELECT * FROM tokens WHERE user_id=$1",
           [user?.id]
         );
@@ -162,7 +162,7 @@ const LoginUser = asyncHanlder(async (req, res) => {
           // Update Token info on sign in
           try {
             // create user
-            const dbToken = await pool.query(
+            const dbToken = await db.query(
               `Update tokens set token=$1, expired_at=$2 WHERE user_id=$3 RETURNING *`,
               [refresh_token, expired_at, user?.id]
             );
@@ -172,7 +172,7 @@ const LoginUser = asyncHanlder(async (req, res) => {
         } else {
           try {
             // create user refresh token in db on first login
-            const dbToken = await pool.query(
+            const dbToken = await db.query(
               `INSERT INTO tokens ( user_id, token, expired_at) VALUES ($1, $2, $3) RETURNING *`,
               [user?.id, refresh_token, expired_at]
             );
@@ -224,7 +224,7 @@ const Logout = asyncHanlder(async (req, res) => {
       const TokenRefresh = cookies["refreshToken"];
 
       // Check if refresh token from cookie is same that we saved in db
-      const foundJWToken = await pool.query(
+      const foundJWToken = await db.query(
         "select * from tokens where token = $1",
         [TokenRefresh]
       );
@@ -243,7 +243,7 @@ const Logout = asyncHanlder(async (req, res) => {
       // Delete the token from the db
       try {
         // Update Tokens table to remove the token data
-        const dbToken = await pool.query(
+        const dbToken = await db.query(
           `Update tokens set token=$1, expired_at=$2 where user_id= $3 RETURNING *`,
           ["", expired_at, foundJWToken?.rows[0]?.user_id]
         );
@@ -287,13 +287,13 @@ const RefreshToken = async (req, res) => {
     const TokenRefresh = cookies["refreshToken"];
 
     // Check if refresh token from cookie is same that we saved in db
-    const foundJWToken = await pool.query(
+    const foundJWToken = await db.query(
       "select * from tokens where token = $1",
       [TokenRefresh]
     );
 
     // Check if user id exists in table with this token user id
-    const foundUser = await pool.query("select * from users where id =$1", [
+    const foundUser = await db.query("select * from users where id =$1", [
       foundJWToken?.rows[0]?.user_id,
     ]);
 
@@ -312,7 +312,7 @@ const RefreshToken = async (req, res) => {
 
     // Find role name for Each role_id
 
-    const findRoleName = await pool.query(
+    const findRoleName = await db.query(
       "SELECT name FROM roles WHERE role_id=$1",
       [userData?.role_id]
     );
@@ -375,7 +375,7 @@ const ForgetPassword = asyncHanlder(async (req, res) => {
 
   try {
     // check if user email exists
-    const userExists = await pool.query(
+    const userExists = await db.query(
       "SELECT * FROM users WHERE email = $1",
       [email]
     );
@@ -397,7 +397,7 @@ const ForgetPassword = asyncHanlder(async (req, res) => {
       // const hash = await bcrypt.hash(resetToken, salt);
       // Store the Token in DB as email Verify Token
       try {
-        const userUpdate = await pool.query(
+        const userUpdate = await db.query(
           `update users set reset_password_token =$1 where email= $2 Returning *`,
           [resetToken, email]
         );
@@ -443,7 +443,7 @@ const VerifyUserAuth = asyncHanlder(async (req, res) => {
 
   try {
     // check if user exists with token and user_id
-    const userExists = await pool.query(
+    const userExists = await db.query(
       "SELECT * FROM users Where id = $1 AND reset_password_token = $2 ",
       [id, token]
     );
@@ -453,7 +453,7 @@ const VerifyUserAuth = asyncHanlder(async (req, res) => {
     if (userExists?.rowCount > 0 && validateToken) {
       return res.status(201).json({ message: "success" });
     } else {
-      const updateResetToken = await pool.query(
+      const updateResetToken = await db.query(
         "UPDATE users set reset_password_token = $1 Where id = $2 ",
         [token, id]
       );
@@ -485,7 +485,7 @@ const ResetPassword = asyncHanlder(async (req, res) => {
       throw Error("Please Enter Password");
     }
 
-    const UserExists = await pool.query("SELECT * FROM users Where id = $1", [
+    const UserExists = await db.query("SELECT * FROM users Where id = $1", [
       id,
     ]);
 
@@ -498,7 +498,7 @@ const ResetPassword = asyncHanlder(async (req, res) => {
 
       // Update User table with new Password;
       try {
-        const userUpdate = await pool.query(
+        const userUpdate = await db.query(
           `update users set password =$1 where id= $2 Returning *`,
           [hashedPassword, id]
         );
@@ -508,7 +508,7 @@ const ResetPassword = asyncHanlder(async (req, res) => {
           let data = userUpdate?.rows[0];
 
           try {
-            await pool.query(
+            await db.query(
               `update users set reset_password_token =$1 where id= $2 Returning *`,
               ["", id]
             );
