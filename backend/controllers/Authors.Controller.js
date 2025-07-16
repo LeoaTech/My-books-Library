@@ -1,12 +1,11 @@
 const asyncHanlder = require("express-async-handler");
-const pool = require("../config/dbConfig");
-
+const db = require("../config/dbConfig")
 
 /* Get ALL Authors */
 const FetchAllAuthors = asyncHanlder(async (req, res) => {
   try {
     const AuthorsQuery = `SELECT * FROM authors`;
-    const getAllAuthors = await pool.query(AuthorsQuery);
+    const getAllAuthors = await db.query(AuthorsQuery);
 
     res.status(200).json({
       authors: getAllAuthors?.rows,
@@ -22,7 +21,7 @@ const FetchAllAuthors = asyncHanlder(async (req, res) => {
 const AddNewAuthor = asyncHanlder(async (req, res) => {
   console.log(req.body);
   try {
-    const createAuthorQuery = await pool.query(
+    const createAuthorQuery = await db.query(
       `INSERT INTO authors (name) VALUES ($1)`,
       [req.body.name]
     );

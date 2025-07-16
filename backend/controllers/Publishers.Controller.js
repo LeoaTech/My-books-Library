@@ -1,11 +1,11 @@
 const asyncHanlder = require("express-async-handler");
-const pool = require("../config/dbConfig");
+const db = require("../config/dbConfig");
 
 /* Get ALL Publishers */
 const FetchPublishers = asyncHanlder(async (req, res) => {
   try {
     const PublishersQuery = `SELECT * FROM publishers`;
-    const getAllPublishers = await pool.query(PublishersQuery);
+    const getAllPublishers = await db.query(PublishersQuery);
 
     res.status(200).json({
       publishers: getAllPublishers?.rows,
@@ -21,7 +21,7 @@ const FetchPublishers = asyncHanlder(async (req, res) => {
 const AddNewPublisher = asyncHanlder(async (req, res) => {
   console.log(req.body);
   try {
-    const createPublisherQuery = await pool.query(
+    const createPublisherQuery = await db.query(
       `INSERT INTO publishers (name) VALUES ($1)`,
       [req.body.name]
     );

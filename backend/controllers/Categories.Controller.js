@@ -1,11 +1,11 @@
 const asyncHanlder = require("express-async-handler");
-const pool = require("../config/dbConfig");
+const db = require("../config/dbConfig");
 
 /* Get ALL Categories */
 const GetCategories = asyncHanlder(async (req, res) => {
   try {
     const categoriesQuery = `SELECT * FROM categories`;
-    const getAllCategories = await pool.query(categoriesQuery);
+    const getAllCategories = await db.query(categoriesQuery);
 
     res.status(200).json({
       categories: getAllCategories?.rows,

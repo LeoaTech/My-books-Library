@@ -1,11 +1,11 @@
 const asyncHanlder = require("express-async-handler");
-const pool = require("../config/dbConfig");
+const db = require("../config/dbConfig");
 
 /* Get ALL vendors */
 const GetVendors = asyncHanlder(async (req, res) => {
   try {
     const vendorsQuery = `SELECT * FROM vendors`;
-    const getAllVendors = await pool.query(vendorsQuery);
+    const getAllVendors = await db.query(vendorsQuery);
 
     // console.log(getAllVendors?.rows);
     res.status(200).json({
@@ -33,14 +33,14 @@ const NewVendor = asyncHanlder(async (req, res) => {
 
     const existVendorQuery = `SELECT * FROM vendors WHERE role_id = $1 and name = $2`;
 
-    const findVendor = await pool.query(existVendorQuery, [roleId, name]);
+    const findVendor = await db.query(existVendorQuery, [roleId, name]);
 
     console.log(findVendor?.rows[0], "Vendor found");
     if (findVendor?.rowCount > 0) {
       // Update Details for Vendor
 
       const editVendorQuery = `Update vendors SET last_login = $1 WHERE name =$2 AND role_id =$3 Returning *`;
-      const updateNewVendor = await pool.query(editVendorQuery, [
+      const updateNewVendor = await db.query(editVendorQuery, [
         new Date(),
         name,
         roleId,
@@ -53,7 +53,7 @@ const NewVendor = asyncHanlder(async (req, res) => {
         .json({ message: "Update Vendor", result: updateNewVendor?.rows[0] });
     } else {
       const addVendorQuery = `INSERT INTO vendors (name, role_id,last_login) values ($1,$2,$3) Returning *`;
-      const saveNewVendor = await pool.query(addVendorQuery, [
+      const saveNewVendor = await db.query(addVendorQuery, [
         name,
         role_id,
         new Date(),
@@ -86,7 +86,7 @@ const DeleteVendor = asyncHanlder(async (req, res) => {
 
     const existVendorQuery = `SELECT * FROM vendors WHERE role_id = $1 and name = $2`;
 
-    const findVendor = await pool.query(existVendorQuery, [roleId, name]);
+    const findVendor = await db.query(existVendorQuery, [roleId, name]);
 
     console.log(findVendor?.rows[0], "Vendor found");
     if (findVendor?.rowCount > 0) {
