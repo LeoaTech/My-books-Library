@@ -23,7 +23,6 @@ const publisherRoutes = require("./routes/PublishersRoutes.js");
 const vendorsRoutes = require("./routes/VendorsRoutes.js");
 const branchRoutes = require("./routes/BranchRoutes.js");
 const ordersRoutes = require("./routes/OrdersRoutes/OrdersRoutes.js");
-const pool = require("./config/dbConfig.js");
 
 const port = process.env.PORT || 8100;
 
@@ -78,19 +77,7 @@ app.get("/test", (req, res) => {
   res.send("Home Page");
 });
 
-pool.connect((err, client, release) => {
 
-  if (err) {
-    return console.error("Error acquiring client", err.stack);
-  }
-  client.query("SELECT NOW()", (err, result) => {
-    release();
-    if (err) {
-      return console.error("Error executing query", err.stack);
-    }
-    console.log("Connected to Database !");
-  });
-});
 app.listen(port, () => {
   console.log("Server is listening on port", port);
 });
