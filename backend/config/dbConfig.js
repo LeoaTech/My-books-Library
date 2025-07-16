@@ -8,4 +8,23 @@ const pool = new Pool({
   connectionString: process.env.CONNECTION_URL,
 });
 
-module.exports = pool;
+pool.on('connect', () => {
+  console.log('DB Connected successfully!');
+});
+pool.connect((err, client, release) => {
+
+  if (err) {
+    return console.error("Error acquiring client", err.stack);
+  }
+  client.query("SELECT NOW()", (err, result) => {
+    release();
+    if (err) {
+      return console.error("Error executing query", err.stack);
+    }
+    console.log("Connected to Database !");
+  });
+});
+module.exports = {
+  query: (text, params) => pool.query(text, params),
+};
+
