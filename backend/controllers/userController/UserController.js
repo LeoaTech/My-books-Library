@@ -1,5 +1,5 @@
 const asyncHanlder = require("express-async-handler");
-const pool = require("../../config/dbConfig");
+const db = require("../../config/dbConfig");
 
 const getAllUsers = asyncHanlder(async (req, res) => {
   const userQuery = `SELECT
@@ -20,7 +20,7 @@ public.permissions p ON rp.permission_id = p.permission_id
 GROUP BY
 u.id, u.email, u.role_id, r.name ; `;
 
-  const userExists = await pool.query(userQuery);
+  const userExists = await db.query(userQuery);
 
   // console.log(userExists?.rows, "User Found");
   res.status(200).json({
@@ -51,7 +51,7 @@ WHERE
   u.id = $1
 GROUP BY
   u.id, u.email, u.role_id;`;
-  const userExists = await pool.query(getUserProfile, [userId]);
+  const userExists = await db.query(getUserProfile, [userId]);
 
   // console.log(userExists?.rows, "User Found");
   res.status(200).json({
@@ -72,7 +72,7 @@ const UpdateRoles = asyncHanlder(async (req, res) => {
 
   console.log(req.params, req.body);
 
-  const foundUserID = await pool.query(`SELECT * from users where id= $1`, [
+  const foundUserID = await db.query(`SELECT * from users where id= $1`, [
     userId,
   ]);
   let user = foundUserID?.rows[0];
@@ -85,7 +85,7 @@ const UpdateRoles = asyncHanlder(async (req, res) => {
 
   try {
     // create user
-    const updateQuery = await pool.query(
+    const updateQuery = await db.query(
       `UPDATE users SET role_id = $1 WHERE id = $2 RETURNING *`,
       [newRoleID, userId]
     );
@@ -104,7 +104,7 @@ const DeleteUser = asyncHanlder(async (req, res) => {
   console.log(req.params);
 
   try {
-    const deleteUserQuery = await pool.query(
+    const deleteUserQuery = await db.query(
       `DELETE FROM users WHERE id=$1`,
       [user_id]
     ); 
