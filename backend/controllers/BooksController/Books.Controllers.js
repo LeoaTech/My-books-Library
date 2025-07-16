@@ -1,5 +1,5 @@
 const asyncHanlder = require("express-async-handler");
-const pool = require("../../config/dbConfig");
+const db = require("../../config/dbConfig");
 const cloudinary = require("cloudinary").v2;
 
 // Cloudinary Configuration
@@ -9,8 +9,6 @@ cloudinary.config({
   api_secret: process.env.CLOUD_API_SECRET,
   secure: true,
 });
-
-;
 
 // Options for image upload on cloudinary
 const options = {
@@ -24,7 +22,7 @@ const options = {
 
 const GetAllBooks = asyncHanlder(async (req, res) => {
   try {
-    const getBooksList = await pool.query(`SELECT
+    const getBooksList = await db.query(`SELECT
     books.id,
     books.title,
     books.summary,
@@ -56,15 +54,16 @@ JOIN public.branches ON books.branch_id = branches.id
 JOIN public.publishers ON books.publisher = publishers.id
 JOIN public.categories ON books.category = categories.id;`);
 
-    // console.log(getBooksList?.rows);
-    if (getBooksList?.rowCount > 0) {
-      res.status(200).json({
-        books: getBooksList?.rows,
-        message: "Book Retrieved successfully",
-      });
-    }
+    console.log(getBooksList?.rows);
+    // if (getBooksList?.rowCount > 0) {
+    res.status(200).json({
+      books: getBooksList?.rows || [],
+      message: "Book Retrieved successfully",
+    });
+    // }
   } catch (error) {
     console.log(err, "Error getting books");
+    return res.status(500).json({ message: "No books found" });
   }
 });
 
@@ -74,7 +73,7 @@ const GetBookById = asyncHanlder(async (req, res) => {
   const { bookId } = req.query;
 
   try {
-    const getBookDetail = await pool.query(
+    const getBookDetail = await db.query(
       `SELECT
     books.id,
     books.title,
@@ -124,9 +123,16 @@ WHERE books.id=$1
         book: getBookDetail?.rows[0],
         message: "Book Retrieved successfully",
       });
+    } else {
+      res.status(400).json({
+        message: "Book details failed to retrieved",
+      });
     }
   } catch (error) {
     console.log(error.message, "Error getting book Details");
+    res.status(500).json({
+      message: error.message || "Book details failed to retrieved",
+    });
   }
 });
 
@@ -179,7 +185,7 @@ const CreateNewBook = asyncHanlder(async (req, res) => {
 
   if (imagesUrls.length > 0) {
     try {
-      const saveBook = await pool.query(
+      const saveBook = await db.query(
         `INSERT INTO books (
           title,
           rental_price,
@@ -233,6 +239,7 @@ const CreateNewBook = asyncHanlder(async (req, res) => {
       }
     } catch (error) {
       console.log(error, "Error saving book: ");
+      res.status(400).json({ message: error.message || "Error Creating Book" });
     }
   } else {
     return res.status(400).json({ message: "Error Uploading Images Files" });
@@ -254,7 +261,7 @@ const DeleteBook = asyncHanlder(async (req, res) => {
       .then((result) => console.log(result, "Book deleted successfully"));
 
     // Delete book from DB
-    const deleteQuery = await pool.query(`DELETE FROM books WHERE id=$1`, [
+    const deleteQuery = await db.query(`DELETE FROM books WHERE id=$1`, [
       book_id,
     ]);
 
@@ -321,7 +328,7 @@ const UpdateBook = asyncHanlder(async (req, res) => {
 
   //   Save Book in database
   try {
-    const updateBook = await pool.query(
+    const updateBook = await db.query(
       `UPDATE books SET 
       title =$1,
       rental_price=$2,
@@ -367,11 +374,12 @@ const UpdateBook = asyncHanlder(async (req, res) => {
 
     // console.log(updateBook?.rows[0]);
     if (updateBook?.rowCount > 0) {
-      res.status(200).json({ message: "Book Updated successfully" });
+      return res.status(200).json({ message: "Book Updated successfully" });
     }
     res.status(400).json({ message: "Error Updating Book" });
   } catch (error) {
     console.log(error, "Error Updating book: ");
+    return res.status(500).json({ message: "Error Updating Book" });
   }
 
   // res.status(200).json({ message: "Book updated Successfully" });
