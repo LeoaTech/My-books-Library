@@ -20,6 +20,7 @@ import Loader from "../../Loader/Loader";
 const Tables = ({ hasPermission, searchQuery }) => {
   const { isPending, error, data: booksData } = useFetchBooks();
 
+
   const [data, setData] = useState([]);
   const [pagination, setPagination] = useState({
     pageIndex: 0, //initial page index
@@ -214,7 +215,7 @@ const Tables = ({ hasPermission, searchQuery }) => {
     <div className="rounded-sm h-[500px]border border-[#E2E8F0] bg-neutral-100 shadow-default max-w-full overflow-x-auto overflow-y-auto dark:border-[#2E3A47] dark:bg-[#24303F]">
       {/* React Table */}
       <div className="max-w-full  overflow-x-auto dark:border-[#2E3A47]">
-        {booksData?.books && (
+        {booksData?.books && booksData?.books?.length > 0 ? (
           <table className="w-full  table-auto border">
             <thead>
               {table.getHeaderGroups().map((headerGroup) => (
@@ -256,69 +257,72 @@ const Tables = ({ hasPermission, searchQuery }) => {
             </tbody>
 
           </table>
-        )}
+        ) :
+          <h2 className="flex max-h-[400px] m-20 justify-center items-center text-2xl"> Start by Adding New Books </h2>
+        }
 
         <div />
 
         {/* Pagination */}
+        {booksData?.books && booksData?.books?.length > 0 && (
 
-        <nav
-          className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 px-4 border-t border-[#E2E8F0] dark:border-[#2E3A47]"
-          aria-label="Table navigation"
-        >
-          {/* Pagination Buttons */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-              className={`rounded px-4 py-2 text-sm font-medium border 
+          <nav
+            className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 px-4 border-t border-[#E2E8F0] dark:border-[#2E3A47]"
+            aria-label="Table navigation"
+          >
+            {/* Pagination Buttons */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => table.previousPage()}
+                disabled={!table.getCanPreviousPage()}
+                className={`rounded px-4 py-2 text-sm font-medium border 
         ${table.getCanPreviousPage()
-                  ? "text-slate-600 bg-white border-[#E2E8F0] hover:bg-slate-100 dark:text-white dark:bg-[#1d2a39] dark:border-[#2E3A47] hover:dark:bg-[#2b3a4a]"
-                  : "cursor-not-allowed text-gray-400 bg-gray-100 border-gray-200 dark:bg-[#1d2a39] dark:text-gray-500"}`}
-            >
-              Previous
-            </button>
+                    ? "text-slate-600 bg-white border-[#E2E8F0] hover:bg-slate-100 dark:text-white dark:bg-[#1d2a39] dark:border-[#2E3A47] hover:dark:bg-[#2b3a4a]"
+                    : "cursor-not-allowed text-gray-400 bg-gray-100 border-gray-200 dark:bg-[#1d2a39] dark:text-gray-500"}`}
+              >
+                Previous
+              </button>
 
-            <span className="text-sm text-slate-600 dark:text-white">
-              Page <strong>{table.getState().pagination.pageIndex + 1}</strong> of{" "}
-              <strong>{table.getPageCount()}</strong>
-            </span>
+              <span className="text-sm text-slate-600 dark:text-white">
+                Page <strong>{table.getState().pagination.pageIndex + 1}</strong> of{" "}
+                <strong>{table.getPageCount()}</strong>
+              </span>
 
-            <button
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-              className={`rounded px-4 py-2 text-sm font-medium border 
+              <button
+                onClick={() => table.nextPage()}
+                disabled={!table.getCanNextPage()}
+                className={`rounded px-4 py-2 text-sm font-medium border 
         ${table.getCanNextPage()
-                  ? "text-slate-600 bg-white border-[#E2E8F0] hover:bg-slate-100 dark:text-white dark:bg-[#1d2a39] dark:border-[#2E3A47] hover:dark:bg-[#2b3a4a]"
-                  : "cursor-not-allowed text-gray-400 bg-gray-100 border-gray-200 dark:bg-[#1d2a39] dark:text-gray-500"}`}
-            >
-              Next
-            </button>
-          </div>
+                    ? "text-slate-600 bg-white border-[#E2E8F0] hover:bg-slate-100 dark:text-white dark:bg-[#1d2a39] dark:border-[#2E3A47] hover:dark:bg-[#2b3a4a]"
+                    : "cursor-not-allowed text-gray-400 bg-gray-100 border-gray-200 dark:bg-[#1d2a39] dark:text-gray-500"}`}
+              >
+                Next
+              </button>
+            </div>
 
-          {/* Page Size Selector */}
-          <div className="flex items-center gap-2">
-            <label
-              htmlFor="pageSize"
-              className="text-sm text-slate-600 dark:text-white"
-            >
-              Rows per page:
-            </label>
-            <select
-              id="pageSize"
-              className="rounded border border-[#E2E8F0] bg-white px-3 py-2 text-sm text-slate-700 outline-none dark:border-[#2E3A47] dark:bg-[#1d2a39] dark:text-white"
-              value={table.getState().pagination.pageSize}
-              onChange={(e) => table.setPageSize(Number(e.target.value))}
-            >
-              {[20, 50, 100].map((pageSize) => (
-                <option key={pageSize} value={pageSize}>
-                  {pageSize}
-                </option>
-              ))}
-            </select>
-          </div>
-        </nav>
-
+            {/* Page Size Selector */}
+            <div className="flex items-center gap-2">
+              <label
+                htmlFor="pageSize"
+                className="text-sm text-slate-600 dark:text-white"
+              >
+                Rows per page:
+              </label>
+              <select
+                id="pageSize"
+                className="rounded border border-[#E2E8F0] bg-white px-3 py-2 text-sm text-slate-700 outline-none dark:border-[#2E3A47] dark:bg-[#1d2a39] dark:text-white"
+                value={table.getState().pagination.pageSize}
+                onChange={(e) => table.setPageSize(Number(e.target.value))}
+              >
+                {[20, 50, 100].map((pageSize) => (
+                  <option key={pageSize} value={pageSize}>
+                    {pageSize}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </nav>
+        )}
 
       </div>
 
