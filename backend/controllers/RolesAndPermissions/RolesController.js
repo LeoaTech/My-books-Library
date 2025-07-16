@@ -1,11 +1,11 @@
 const asyncHanlder = require("express-async-handler");
-const pool = require("../../config/dbConfig");
+const db = require("../../config/dbConfig");
 
 //    Fetched All Roles from DB
 const FetchRoles = asyncHanlder(async (req, res) => {
   try {
     const rolesQuery = `SELECT * FROM roles`;
-    const getAllRoles = await pool.query(rolesQuery);
+    const getAllRoles = await db.query(rolesQuery);
 
     // console.log(getAllRoles?.rows, "User Found");
     res.status(200).json({
@@ -25,7 +25,7 @@ const NewRole = asyncHanlder(async (req, res) => {
 
     const { name } = roleData;
     const addRoleQuery = `INSERT INTO roles (name) values ($1) Returning *`;
-    const saveNewRole = await pool.query(addRoleQuery, [name]);
+    const saveNewRole = await db.query(addRoleQuery, [name]);
 
     console.log(saveNewRole?.rows[0]);
 
@@ -44,7 +44,7 @@ const UpdateRole = asyncHanlder(async (req, res) => {
     const roleData = req.body;
     const { name } = roleData;
 
-    const findRoleId = await pool.query(
+    const findRoleId = await db.query(
       `SELECT * FROM roles WHERE role_id =$1`,
       [role_id]
     );
@@ -53,7 +53,7 @@ const UpdateRole = asyncHanlder(async (req, res) => {
       res.status(400).json({ message: "RoleId not exists" });
     } else {
       const updateRoleQuery = `Update roles set name =$1 WHERE role_id = $2 Returning *`;
-      const updateRole = await pool.query(updateRoleQuery, [name, role_id]);
+      const updateRole = await db.query(updateRoleQuery, [name, role_id]);
 
       console.log(updateRole?.rows[0]);
 
@@ -74,12 +74,12 @@ const DeleteRole = asyncHanlder(async (req, res) => {
 
     console.log(req.params);
 
-    const findRoleId = await pool.query(
+    const findRoleId = await db.query(
       `SELECT * FROM roles WHERE role_id =$1`,
       [role_id]
     );
 
-    const findUserRoleId = await pool.query(
+    const findUserRoleId = await db.query(
       `SELECT * FROM users2 WHERE role_id =$1`,
       [role_id]
     );
@@ -93,7 +93,7 @@ const DeleteRole = asyncHanlder(async (req, res) => {
       return;
     } else {
       if (findRoleId?.rowCount > 0) {
-        await pool.query(`DELETE from roles WHERE role_id =$1`, [role_id]);
+        await db.query(`DELETE from roles WHERE role_id =$1`, [role_id]);
 
         res.status(200).json({ message: "Delete Role" });
       } else {

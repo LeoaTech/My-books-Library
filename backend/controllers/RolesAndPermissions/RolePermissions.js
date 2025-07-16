@@ -1,5 +1,5 @@
 const asyncHanlder = require("express-async-handler");
-const pool = require("../../config/dbConfig");
+const db = require("../../config/dbConfig");
 
 
 //    Fetched All Roles from DB
@@ -18,7 +18,7 @@ JOIN
 GROUP BY
   p.permission_id, p.name;
 `;
-    const getAllPermissions = await pool.query(permissionsQuery);
+    const getAllPermissions = await db.query(permissionsQuery);
     res.status(200).json({
       permissions: getAllPermissions?.rows,
       message: "All Role Permissions Found ",
@@ -48,7 +48,7 @@ const FetchPermissionsByRole = asyncHanlder(async (req, res) => {
       );
 `;
 
-    const unassignedPermissions = await pool.query(
+    const unassignedPermissions = await db.query(
       getUnassignedPermissionsQuery,
       [roleId]
     );
@@ -78,7 +78,7 @@ const FetchPermissionsByRoleId = asyncHanlder(async (req, res) => {
         rp.role_id = $1;
     `;
 
-    const getAllPermissions = await pool.query(permissionQuery, [roleId]);
+    const getAllPermissions = await db.query(permissionQuery, [roleId]);
 
     // console.log(getAllPermissions?.rows, "Role Permissions found");
     res.status(200).json({
@@ -108,7 +108,7 @@ const NewRolePermissions = asyncHanlder(async (req, res) => {
       RETURNING *;
     `;
 
-    const saveNewRolePermissions = await pool.query(addPermissionQuery);
+    const saveNewRolePermissions = await db.query(addPermissionQuery);
 
     console.log(saveNewRolePermissions?.rows[0]);
 
@@ -130,7 +130,7 @@ const DeleteRolePermission = asyncHanlder(async (req, res) => {
     const permissionsArray = permission_id?.map((p) => Number(p));
 
     try {
-      const deletePermissions = await pool.query(
+      const deletePermissions = await db.query(
         `DELETE FROM role_permissions WHERE permission_id = ANY($1) AND role_id = $2 RETURNING *`,
         [permissionsArray, role_id]
       );
