@@ -1,5 +1,5 @@
 const passport = require("passport");
-const pool = require("../../config/dbConfig");
+const db = require("../../config/dbConfig");
 const GoogleStrategy = require("passport-google-oauth2").Strategy;
 
 passport.use(
@@ -17,14 +17,14 @@ passport.use(
 
         // Check if the user already exists in the database
         const query = "SELECT * FROM users WHERE email= $1";
-        const result = await pool.query(query, [profile?.email]);
+        const result = await db.query(query, [profile?.email]);
 
         if (result?.rows?.length > 0) {
           // User already exists, return the user
           return done(null, result?.rows[0]);
         }
 
-        const checkRole = await pool.query(
+        const checkRole = await db.query(
           "SELECT role_id FROM roles Where name=  $1",
           ["member" || "Member" || "MEMBER"]
         );
@@ -37,7 +37,7 @@ passport.use(
         // User doesn't exist, create a new user
         const insertQuery =
           "INSERT INTO users ( name, password,role_id, email,img_url  ) VALUES ($1, $2,$3,$4,$5) RETURNING *";
-        const insertedUser = await pool.query(insertQuery, [
+        const insertedUser = await db.query(insertQuery, [
           profile?.displayName,
           "",
           role,
@@ -66,7 +66,7 @@ passport.serializeUser((user, done) => {
 passport.deserializeUser(async (user, done) => {
   // try {
   //   const query = "SELECT * FROM users WHERE email= $1";
-  //   const result = await pool.query(query, [user?.email]);
+  //   const result = await db.query(query, [user?.email]);
 
   //   // console.log(result, "Deserialized user");
   //   if (result?.rows?.length > 0) {
