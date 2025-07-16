@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const passport = require("passport");
-const pool = require("../../config/dbConfig.js");
+const db = require("../../config/dbConfig.js");
 
 require("../../controllers/AuthController/GoogleAuth.js");
 
@@ -56,7 +56,7 @@ router.get("/auth/google/failure", (req, res) => {
 
 router.get("/auth/login/success", async (req, res) => {
   if (req.user) {
-    const checkRole = await pool.query(
+    const checkRole = await db.query(
       "SELECT name FROM roles Where role_id=  $1",
       [req.user?.role_id]
     );
