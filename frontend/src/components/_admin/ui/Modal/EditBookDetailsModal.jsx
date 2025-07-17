@@ -18,6 +18,7 @@ import { FetchBookById } from "../../../../api/books";
 import { RxCross1 } from "react-icons/rx";
 import UpdateImageUploader from "../../UpdateImageUploader";
 import { EditBookSchema } from "../../../../schemas/books";
+import { newStyles } from "./CreatableSelectCustomStyles";
 
 const EditBookDetailsModal = ({ close, bookValue }) => {
   const { error, message, updateBook } = useSaveBook();
@@ -251,7 +252,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
     );
   }
   return (
-    <div className="fixed left-0 top-0  inset-0 bg-[#64748B] bg-opacity-75 transition-opacity dark:bg-slate-300 dark:bg-opacity-75 lg:left-[18rem]">
+    <div className="fixed left-0 top-0  inset-0 bg-[#64748B] bg-opacity-75 transition-opacity dark:bg-slate-400 dark:bg-opacity-75 lg:left-[18rem]">
       <div className="relative p-5 rounded-md">
         {/* Modal Close Button */}
         <div className="flex justify-end p-5 md:p-10  ">
@@ -260,7 +261,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
               height: 18,
               width: 23,
               cursor: "pointer",
-              color: "#FFF",
+              color:"#fcfcfc",
               strokeWidth: 2,
             }}
             onClick={close}
@@ -269,7 +270,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
         {/* my-5 rounded-md flex justify-center items-center z-70  overflow-hidden xs:h-[400px] overflow-y-auto */}
         <div className=" md:mx-20">
           <div className=" p-10 relative rounded-md border border-[#E2E8F0] bg-white shadow-lg dark:border-[#2E3A47] dark:bg-[#24303F] md:px-8 md:py-8 ">
-            <div className="rounded-sm p-3 bg-slate-100 border-b border-[#E2E8F0] py-4 px-6.5 dark:border-[#2E3A47]">
+            <div className="rounded-sm p-3 bg-slate-100 border-b border-[#E2E8F0] py-4 px-6.5 dark:border-[#2E3A47]  dark:bg-[#2c3745]">
               <h3 className="font-bold text-[#313D4A] dark:text-white">
                 Edit Book Details
               </h3>
@@ -292,7 +293,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                         name="title"
                         placeholder="Add Title"
                         {...register("title")}
-                        className="w-full rounded-sm border-[1.5px] border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                       />
                       {errors?.title?.message && (
                         <p className="format-message error">
@@ -316,15 +317,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                             isClearable
                             isDisabled={isLoading}
                             isLoading={isLoading}
-                            styles={{
-                              control: (baseStyles, state) => ({
-                                ...baseStyles,
-                                borderColor: state.isFocused
-                                  ? "#3C50E0"
-                                  : "#E2E8F0",
-                                padding: 5,
-                              }),
-                            }}
+                            styles={newStyles}
                             onChange={(newValue, actionMeta) => {
                               if (actionMeta.action === "create-option") {
                                 handleCreate(newValue.label);
@@ -356,7 +349,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                         name="rental_price"
                         placeholder="Add Rent Price"
                         {...register("rental_price")}
-                        className="w-full rounded-sm border-[1.5px] border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                       />
                       {errors?.rental_price?.message && (
                         <p className="format-message error">
@@ -374,7 +367,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                         name="purchase_price"
                         placeholder="Add Purchase Price"
                         {...register("purchase_price")}
-                        className="w-full rounded-sm border-[1.5px] border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                       />
 
                       {errors?.purchase_price?.message && (
@@ -396,7 +389,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                       </label>
                       <div className="relative z-20 bg-transparent dark:bg-[#1d2a39]">
                         <select
-                          className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                          className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:text-neutral-100 dark:focus:text-neutral-100 dark:focus:border-[#3C50E0]"
                           name="condition"
                           {...register("condition")}
                         >
@@ -411,7 +404,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                         </select>
                         <span className="absolute top-1/2 right-4 z-30 -translate-y-1/2">
                           <svg
-                            className="fill-current"
+                            className=" dark:text-white fill-current"
                             width="24"
                             height="24"
                             viewBox="0 0 24 24"
@@ -437,9 +430,9 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                       >
                         Cover
                       </label>
-                      <div className="relative z-20 bg-transparent dark:bg-[#1d2a39]">
+                      <div className="relative z-20 bg-transparent dark:bg-form-input">
                         <select
-                          className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                          className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:text-neutral-100 dark:focus:text-neutral-100 dark:focus:border-[#3C50E0]"
                           name="cover"
                           {...register("cover")}
                         >
@@ -457,7 +450,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
 
                         <span className="absolute top-1/2 right-4 z-30 -translate-y-1/2">
                           <svg
-                            className="fill-current"
+                            className=" dark:text-white fill-current"
                             width="24"
                             height="24"
                             viewBox="0 0 24 24"
@@ -487,9 +480,9 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                       >
                         Category
                       </label>
-                      <div className="relative z-20 bg-transparent dark:bg-[#1d2a39]">
+                      <div className="relative z-20 bg-transparent dark:bg-form-input">
                         <select
-                          className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                          className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:text-neutral-100 dark:focus:text-neutral-100 dark:focus:border-[#3C50E0]"
                           name="category"
                           {...register("category")}
                         >
@@ -505,7 +498,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                         </select>
                         <span className="absolute top-1/2 right-4 z-30 -translate-y-1/2">
                           <svg
-                            className="fill-current"
+                            className=" dark:text-white fill-current"
                             width="24"
                             height="24"
                             viewBox="0 0 24 24"
@@ -533,7 +526,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                         type="text"
                         placeholder="Enter ISBN "
                         {...register("isbn")}
-                        className="w-full rounded-sm border-[1.5px] border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                       />
                       {errors?.isbn?.message && (
                         <p className="format-message error">
@@ -561,15 +554,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                             isClearable
                             isDisabled={isLoading}
                             isLoading={isLoading}
-                            styles={{
-                              control: (baseStyles, state) => ({
-                                ...baseStyles,
-                                borderColor: state.isFocused
-                                  ? "#3C50E0"
-                                  : "#E2E8F0",
-                                padding: 5,
-                              }),
-                            }}
+                            styles={newStyles}
                             onChange={(newValue, actionMeta) => {
                               // Use actionMeta.action to check if the change is a creation
                               if (actionMeta.action === "create-option") {
@@ -599,7 +584,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                         name="publish_year"
                         placeholder="Add Publish Year"
                         {...register("publish_year")}
-                        className="w-full rounded-sm border-[1.5px] border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                       />
 
                       {errors?.publish_year?.message && (
@@ -621,7 +606,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                         name="discount_percentage"
                         placeholder="Add discount_percentage"
                         {...register("discount_percentage")}
-                        className="w-full rounded-sm border-[1.5px] border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                       />
                       {errors?.discount_percentage?.message && (
                         <p className="format-message error">
@@ -639,7 +624,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                         name="credit"
                         placeholder="Add Credits"
                         {...register("credit")}
-                        className="w-full rounded-sm border-[1.5px] border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                       />
                       {errors?.credit?.message && (
                         <p className="format-message error">
@@ -655,9 +640,9 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                         Vendor
                       </label>
 
-                      <div className="relative z-20 bg-transparent dark:bg-[#1d2a39]">
+                      <div className="relative z-20 bg-transparent dark:bg-form-input">
                         <select
-                          className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                          className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:text-neutral-100 dark:focus:text-neutral-100 dark:focus:border-[#3C50E0]"
                           name="vendor_id"
                           {...register("vendor_id")}
                           defaultValue={vendorsData?.vendors?.find((ven) => {
@@ -674,7 +659,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                         </select>
                         <span className="absolute top-1/2 right-4 z-30 -translate-y-1/2">
                           <svg
-                            className="fill-current"
+                            className=" dark:text-white fill-current"
                             width="24"
                             height="24"
                             viewBox="0 0 24 24"
@@ -703,9 +688,9 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
                         Branch
                       </label>
-                      <div className="relative z-20 bg-transparent dark:bg-[#1d2a39]">
+                      <div className="relative z-20 bg-transparent dark:bg-form-input">
                         <select
-                          className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                          className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:text-neutral-100 dark:focus:text-neutral-100 dark:focus:border-[#3C50E0]"
                           name="branch_id"
                           {...register("branch_id")}
                           defaultValue={branchesData?.branches?.find(
@@ -724,7 +709,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                         </select>
                         <span className="absolute top-1/2 right-4 z-30 -translate-y-1/2">
                           <svg
-                            className="fill-current"
+                            className=" dark:text-white fill-current"
                             width="24"
                             height="24"
                             viewBox="0 0 24 24"
@@ -762,7 +747,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                         rows={4}
                         placeholder="Add a summary"
                         {...register("summary")}
-                        className="w-full rounded-sm border-[1.5px] border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-form-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                        className="w-full rounded-sm border-[1.5px] border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:text-neutral-50 dark:focus:border-[#3C50E0]"
                       />
                       {errors?.summary?.message && (
                         <p className="format-message error">
@@ -779,16 +764,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                         Edit Cover Images
                       </label>
 
-                      {/* <input
-                        type="file"
-                        id="cover_img_url"
-                        multiple
-                        name="cover_img_url"
-                        placeholder="Add Cover Images"
-                        onChange={onUploadImages}
-                        // {...register("cover_img_url")}
-                        className="w-full rounded-sm border-[1.5px] border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
-                      /> */}
+                     
                       <UpdateImageUploader
                         setImagesList={setImagesList}
                         register={register}
