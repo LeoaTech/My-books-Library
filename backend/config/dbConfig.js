@@ -5,12 +5,12 @@ const { Pool } = pg;
 require("dotenv").config();
 
 const pool = new Pool({
-  connectionString: process.env.CONNECTION_URL,
+  connectionString: process.env.DATABASE_URL,
 });
 
-pool.on('connect', () => {
-  console.log('DB Connected successfully!');
-});
+// pool.on('connect', () => {
+//   console.log('DB Connected successfully!');
+// });
 pool.connect((err, client, release) => {
 
   if (err) {
