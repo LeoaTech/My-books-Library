@@ -17,11 +17,15 @@ import { useAuthContext } from "../../../../hooks/useAuthContext";
 import { bookSchema } from "../../../../schemas/books";
 import { RxCross1 } from "react-icons/rx";
 import ImageUploader from "../../ImageFileUploader";
+import { newStyles } from "./CreatableSelectCustomStyles";
+// import UpdateImageUploader from "../../UpdateImageUploader";
 
 const AddNewBookModal = ({ setShowModal }) => {
   const auth = useAuthContext();
   const queryClient = useQueryClient();
   const [imagesList, setImagesList] = useState([]);
+  const theme = localStorage.getItem("color-theme").replace(/"/g, '');
+
 
   const { error, message, addBook } = useSaveBook();
   const { addAuthor } = useAuthor();
@@ -120,8 +124,10 @@ const AddNewBookModal = ({ setShowModal }) => {
 
   const { mutateAsync: addBookMutation } = useMutation({
     mutationFn: addBook,
-    onSuccess: () => {
-      reset();
+    onSuccess: (data) => {
+      // reset();
+      console.log(data);
+
       setShowModal(false);
     },
     onSettled: () => {
@@ -163,6 +169,7 @@ const AddNewBookModal = ({ setShowModal }) => {
 
   /* Save Book Details Form function */
   const onSubmit = async (data) => {
+
     // updated all fields values
     const booksForm = {
       ...data,
@@ -174,7 +181,6 @@ const AddNewBookModal = ({ setShowModal }) => {
       condtion: selectedCondition,
       role_id: auth?.user?.role,
     };
-
     await addBookMutation(booksForm);  //add book mutation
   };
 
@@ -223,7 +229,7 @@ const AddNewBookModal = ({ setShowModal }) => {
   }
 
   return (
-    <div className="fixed left-0 top-0  inset-0 bg-[#64748B] bg-opacity-75 transition-opacity dark:bg-slate-300 dark:bg-opacity-75 lg:left-[18rem]">
+    <div className="fixed left-0 top-0  inset-0 bg-[#64748B] bg-opacity-75 transition-opacity dark:bg-slate-400 dark:bg-opacity-75 lg:left-[18rem]">
       <div className="relative p-5 rounded-md">
         {/* Modal Close Button */}
         <div className="flex justify-end p-5 md:p-10  ">
@@ -232,7 +238,7 @@ const AddNewBookModal = ({ setShowModal }) => {
               height: 18,
               width: 23,
               cursor: "pointer",
-              color: "#FFF",
+              color: "#FFF !IMPORTANT",
               strokeWidth: 2,
             }}
             onClick={() => setShowModal(false)}
@@ -240,7 +246,7 @@ const AddNewBookModal = ({ setShowModal }) => {
         </div>
         <div className=" md:mx-20">
           <div className=" p-10 relative rounded-md border border-[#E2E8F0] bg-white shadow-lg dark:border-[#2E3A47] dark:bg-[#24303F] md:px-8 md:py-8 ">
-            <div className="rounded-sm p-3 bg-slate-100 border-b border-[#E2E8F0] py-4 px-6.5 dark:border-[#2E3A47]">
+            <div className="rounded-sm p-3 bg-slate-100 border-b border-[#E2E8F0] py-4 px-6.5 dark:border-[#2E3A47]  dark:bg-[#2c3745]">
               <h3 className="font-bold text-[#313D4A] dark:text-white">
                 Create New Book
               </h3>
@@ -262,7 +268,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                         name="title"
                         placeholder="Add Title"
                         {...register("title")}
-                        className="w-full rounded-sm border-[1.5px] border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                       />
                       {errors?.title?.message && (
                         <p className="format-message error">
@@ -277,7 +283,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                       </label>
 
                       <Controller
-                        className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                        // className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:focus:border-[#3C50E0]"
                         control={control}
                         name="author"
                         render={({ field }) => (
@@ -287,32 +293,15 @@ const AddNewBookModal = ({ setShowModal }) => {
                             isClearable
                             isDisabled={isLoading}
                             isLoading={isLoading}
-                            styles={{
-                              control: (baseStyles, state) => ({
-                                ...baseStyles,
-                                // borderColor: state.isFocused
-                                //   ? "#3C50E0"
-                                //   : "#E2E8F0",
-                                padding: 5,
-                                // backgroundColor: "#1d2a39",
-                              }),
-                              menu: (baseStyles) => ({
-                                ...baseStyles,
-                                zIndex: 9999, // Adjust the z-index to ensure it appears above other elements
-                                opacity: 1,
-                              }),
-                            }}
-                            className="relative z-80 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent  outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                            styles={newStyles}
                             onChange={(newValue, actionMeta) => {
-                              // Use actionMeta.action to check if the change is a creation
                               if (actionMeta.action === "create-option") {
-                                handleCreate(newValue.label); // Pass the label of the new option
+                                handleCreate(newValue.label);
                               } else {
-                                field.onChange(newValue); // Regular option selected
+                                field.onChange(newValue);
                               }
                             }}
                             value={field.value}
-                            // onCreateOption={handleCreate}
                           />
                         )}
                       />
@@ -336,7 +325,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                         name="rental_price"
                         placeholder="Add Rent Price"
                         {...register("rental_price")}
-                        className="w-full rounded-sm border-[1.5px] border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                       />
                       {errors?.rental_price?.message && (
                         <p className="format-message error">
@@ -354,7 +343,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                         name="purchase_price"
                         placeholder="Add Purchase Price"
                         {...register("purchase_price")}
-                        className="w-full rounded-sm border-[1.5px] border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                       />
 
                       {errors?.purchase_price?.message && (
@@ -373,21 +362,23 @@ const AddNewBookModal = ({ setShowModal }) => {
                       >
                         Condition
                       </label>
-                      <div className="relative z-20 bg-transparent dark:bg-[#1d2a39]">
+                      <div className="relative z-20 bg-transparent dark:bg-form-input">
                         <select
-                          className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                          className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:text-neutral-100 dark:focus:text-neutral-100 dark:focus:border-[#3C50E0]"
                           name="condition"
                           {...register("condition")}
                         >
+                          <option disabled>Select</option>
                           {conditionsData?.conditions?.map((condition) => (
                             <option key={condition.id} value={condition.id}>
                               {condition?.name}
                             </option>
                           ))}
                         </select>
+
                         <span className="absolute top-1/2 right-4 z-30 -translate-y-1/2">
                           <svg
-                            className="fill-current"
+                            className=" dark:text-white fill-current"
                             width="24"
                             height="24"
                             viewBox="0 0 24 24"
@@ -413,12 +404,14 @@ const AddNewBookModal = ({ setShowModal }) => {
                       >
                         Cover
                       </label>
-                      <div className="relative z-20 bg-transparent dark:bg-[#1d2a39]">
+                      <div className="relative z-20 bg-transparent dark:bg-form-input">
                         <select
-                          className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                          className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:text-neutral-100 dark:focus:text-neutral-100 dark:focus:border-[#3C50E0]"
                           name="cover"
                           {...register("cover")}
                         >
+                          <option disabled>Select</option>
+
                           {coversData?.covers &&
                             coversData?.covers?.map((cover) => (
                               <option key={cover?.id} value={cover?.id}>
@@ -426,10 +419,9 @@ const AddNewBookModal = ({ setShowModal }) => {
                               </option>
                             ))}
                         </select>
-
                         <span className="absolute top-1/2 right-4 z-30 -translate-y-1/2">
                           <svg
-                            className="fill-current"
+                            className=" dark:text-white fill-current"
                             width="24"
                             height="24"
                             viewBox="0 0 24 24"
@@ -459,12 +451,14 @@ const AddNewBookModal = ({ setShowModal }) => {
                       >
                         Category
                       </label>
-                      <div className="relative z-20 bg-transparent dark:bg-[#1d2a39]">
+                      <div className="relative z-20 bg-transparent dark:bg-form-input">
                         <select
-                          className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                          className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:text-neutral-100 dark:focus:text-neutral-100 dark:focus:border-[#3C50E0]"
                           name="category"
                           {...register("category")}
                         >
+                          <option disabled>Select</option>
+
                           {categoriesData?.categories &&
                             categoriesData?.categories?.map((category) => (
                               <option key={category?.id} value={category?.id}>
@@ -474,7 +468,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                         </select>
                         <span className="absolute top-1/2 right-4 z-30 -translate-y-1/2">
                           <svg
-                            className="fill-current"
+                            className=" dark:text-white fill-current"
                             width="24"
                             height="24"
                             viewBox="0 0 24 24"
@@ -502,7 +496,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                         type="text"
                         placeholder="Enter ISBN "
                         {...register("isbn")}
-                        className="w-full rounded-sm border-[1.5px] border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                       />
                       {errors?.isbn?.message && (
                         <p className="format-message error">
@@ -521,7 +515,7 @@ const AddNewBookModal = ({ setShowModal }) => {
 
                       <Controller
                         control={control}
-                        className="bg-white dark:bg-slate-800"
+                        // className="bg-white dark:bg-slate-800"
                         name="publisher"
                         render={({ field }) => (
                           <CreatableSelect
@@ -530,20 +524,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                             isClearable
                             isDisabled={isLoading}
                             isLoading={isLoading}
-                            styles={{
-                              control: (baseStyles, state) => ({
-                                ...baseStyles,
-                                borderColor: state.isFocused
-                                  ? "#3C50E0"
-                                  : "#E2E8F0",
-                                padding: 5,
-                              }),
-                              menu: (baseStyles) => ({
-                                ...baseStyles,
-                                zIndex: 9999, // Adjust the z-index to ensure it appears above other elements
-                                opacity: 1,
-                              }),
-                            }}
+                            styles={newStyles}
                             onChange={(newValue, actionMeta) => {
                               // Use actionMeta.action to check if the change is a creation
                               if (actionMeta.action === "create-option") {
@@ -573,7 +554,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                         name="publish_year"
                         placeholder="Add Publish Year"
                         {...register("publish_year")}
-                        className="w-full rounded-sm border-[1.5px] border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                       />
 
                       {errors?.publish_year?.message && (
@@ -595,7 +576,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                         name="discount_percentage"
                         placeholder="Add discount_percentage"
                         {...register("discount_percentage")}
-                        className="w-full rounded-sm border-[1.5px] border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                       />
                       {errors?.discount_percentage?.message && (
                         <p className="format-message error">
@@ -613,7 +594,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                         name="credit"
                         placeholder="Add Credits"
                         {...register("credit")}
-                        className="w-full rounded-sm border-[1.5px] border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                       />
                       {errors?.credit?.message && (
                         <p className="format-message error">
@@ -631,12 +612,14 @@ const AddNewBookModal = ({ setShowModal }) => {
                         Vendor
                       </label>
 
-                      <div className="relative z-20 bg-transparent dark:bg-[#1d2a39]">
+                      <div className="relative z-20 bg-transparent dark:bg-form-input">
                         <select
-                          className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                          className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:text-neutral-100 dark:focus:text-neutral-100 dark:focus:border-[#3C50E0]"
                           name="vendor_id"
                           {...register("vendor_id")}
                         >
+                          <option disabled>Select</option>
+
                           {vendorsData?.vendors &&
                             vendorsData?.vendors?.map((vendor) => (
                               <option key={vendor?.id} value={vendor?.id}>
@@ -646,7 +629,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                         </select>
                         <span className="absolute top-1/2 right-4 z-30 -translate-y-1/2">
                           <svg
-                            className="fill-current"
+                            className=" dark:text-white fill-current"
                             width="24"
                             height="24"
                             viewBox="0 0 24 24"
@@ -675,12 +658,14 @@ const AddNewBookModal = ({ setShowModal }) => {
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
                         Branch
                       </label>
-                      <div className="relative z-20 bg-transparent dark:bg-[#1d2a39]">
+                      <div className="relative z-20 bg-transparent dark:bg-form-input">
                         <select
-                          className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                          className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:text-neutral-100 dark:focus:text-neutral-100 dark:focus:border-[#3C50E0]"
                           name="branch_id"
                           {...register("branch_id")}
                         >
+                          <option disabled>Select</option>
+
                           {branchesData?.branches &&
                             branchesData?.branches?.map((branch) => (
                               <option key={branch?.id} value={branch?.id}>
@@ -688,9 +673,10 @@ const AddNewBookModal = ({ setShowModal }) => {
                               </option>
                             ))}{" "}
                         </select>
+
                         <span className="absolute top-1/2 right-4 z-30 -translate-y-1/2">
                           <svg
-                            className="fill-current"
+                            className=" dark:text-white fill-current"
                             width="24"
                             height="24"
                             viewBox="0 0 24 24"
@@ -728,7 +714,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                         rows={4}
                         placeholder="Add a summary"
                         {...register("summary")}
-                        className="w-full rounded-sm border-[1.5px] border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                        className="w-full rounded-sm border-[1.5px] border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:text-neutral-50 dark:focus:border-[#3C50E0]"
                       />
                       {errors?.summary?.message && (
                         <p className="format-message error">
@@ -749,6 +735,12 @@ const AddNewBookModal = ({ setShowModal }) => {
                         register={register}
                         errors={errors?.cover_img_url?.message}
                       />
+
+                      {/* <UpdateImageUploader
+                        imageList={imagesList}
+                        setImagesList={setImagesList}
+                        register={register}
+                        errors={errors?.cover_img_url?.message} /> */}
                     </div>
                   </div>
 
@@ -764,7 +756,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                             {...register("isAvailable")}
                             className="rounded bg-gray-200 border-transparent h-4 w-4 p-5 ml-2 focus:border-transparent focus:bg-gray-200 text-gray-700 focus:ring-1 focus:ring-offset-2 focus:ring-gray-500"
                           />
-                          <span className="ml-2">Available </span>
+                          <span className="ml-2  text-[#0284c7] dark:text-white">Available </span>
                         </label>
                       </div>
                     </div>
