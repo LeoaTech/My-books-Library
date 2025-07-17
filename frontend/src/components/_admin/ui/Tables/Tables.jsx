@@ -62,7 +62,7 @@ const Tables = ({ hasPermission, searchQuery }) => {
           return (
             <div className="min-w-[220px] flex flex-col lg:flex-row lg:justify-start lg:items-center gap-2 lg:gap-4 w-full max-w-[260px]">
               <div className="flex-shrink-0">
-                {images && (
+                {images && images.length > 0&& (
                   <img
                     src={images[0]?.secureURL}
                     alt="Cover"
