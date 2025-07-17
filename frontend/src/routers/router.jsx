@@ -4,10 +4,10 @@ import {
   Route,
 } from "react-router-dom";
 import App from "../App";
-import routes, { accountRoutes, roleRoutes, VendorOtherRoutes, vendorsRoutes } from "../utiliz";
+import routes, { accountRoutes, roleRoutes } from "../utiliz";
 import { Suspense } from "react";
 import AdminLoader from "../components/_admin/Loader/Loader";
-import AdminLayout from "../_admin/Layout";
+import DashboardLayout from "../_admin/Layout";
 import DashboardPage from "../_admin/pages/Home";
 import AuthLayout from "../_authentication/forms/AuthLayout";
 import {
@@ -22,21 +22,17 @@ import BookOverview from "../_root/pages/BookOverview";
 import PersistLogin from "../utiliz/PersistLogin";
 import RequiredAuth from "../utiliz/RequiredAuth";
 import InvalidToken from "../_authentication/forms/InvalidToken";
-import VendorsLayout from "../_vendors/Layout";
 
 const renderRoutes = (routes) => {
   return routes?.map((route, i) => {
     const { component: Component, path, subRoutes } = route;
     if (subRoutes) {
-      // Render parent route without a direct component
       return (
         <Route key={i} path={path}>
           {renderRoutes(subRoutes)}
         </Route>
       );
     }
-
-    // Render route with a direct component
     return (
       <Route
         key={i}
@@ -55,12 +51,11 @@ const renderRoutes = (routes) => {
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route>
-      <Route path="library" element={<Library />}></Route>
-      <Route path="shop" element={<Shop />}></Route>
-      <Route path="book" element={<BookOverview />}></Route>
+      <Route path="library" element={<Library />} />
+      <Route path="shop" element={<Shop />} />
+      <Route path="book" element={<BookOverview />} />
 
       {/* Authentication Routes */}
-
       <Route element={<AuthLayout />}>
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
@@ -70,88 +65,15 @@ const router = createBrowserRouter(
       <Route path="/expired-link" element={<InvalidToken />} />
 
       <Route element={<PersistLogin />}>
-        <Route path="/" element={<App />}></Route>
+        <Route path="/" element={<App />} />
 
-        {/* Protect Admin Routes */}
-        <Route element={<RequiredAuth allowedRoles={["admin"]} />}>
-          <Route path="/dashboard" element={<AdminLayout />}>
+        {/* Protected Dashboard Routes */}
+        <Route element={<RequiredAuth allowedRoles={["admin", "vendor", "librarian"]} />}>
+          <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<DashboardPage />} />
-
             {renderRoutes(routes)}
-            {accountRoutes?.map((route, i) => {
-              const { component: Component, path, subRoutes } = route;
-              if (subRoutes) {
-                // Render parent route without a direct component
-                return (
-                  <Route key={i} path={path}>
-                    {renderRoutes(subRoutes)}
-                  </Route>
-                );
-              }
-            })}
-            {roleRoutes?.map((route, i) => {
-              const { component: Component, path, subRoutes } = route;
-              if (subRoutes) {
-                // Render parent route without a direct component
-                return (
-                  <Route key={i} path={path}>
-                    {renderRoutes(subRoutes)}
-                  </Route>
-                );
-              }
-            })}
-            {/* {renderRoutes(accountRoutes)} */}
-          </Route>
-        </Route>
-
-        {/* Librarian Routes */}
-        <Route element={<RequiredAuth allowedRoles={["admin", "moderator"]} />}>
-          <Route
-            path="/librarian/dashboard"
-            element={<>Librarian Route</>}
-          ></Route>
-        </Route>
-
-        {/* Vendors Routes */}
-        <Route element={<RequiredAuth allowedRoles={["admin", "vendor"]} />}>
-          <Route
-            path="/vendor"
-            element={
-              <Suspense fallback={<AdminLoader />}>
-                <VendorsLayout />
-              </Suspense>
-            }
-          >
-            <Route index element={<DashboardPage />} />
-            {/* {vendorsRoutes?.map((route, i) => {
-              const { component: Component, path } = route;
-              return (
-                <Route
-                  key={i}
-                  exact={true}
-                  path={`/vendor${path}`}
-                  element={
-                    <Suspense fallback={<AdminLoader />}>
-                      <Component />
-                    </Suspense>
-                  }
-                />
-              );
-            })} */}
-
-            {renderRoutes(vendorsRoutes)}
-
-            {VendorOtherRoutes?.map((route, i) => {
-              const { component: Component, path, subRoutes } = route;
-              if (subRoutes) {
-                // Render parent route without a direct component
-                return (
-                  <Route key={i} path={path}>
-                    {renderRoutes(subRoutes)}
-                  </Route>
-                );
-              }
-            })}
+            {renderRoutes(accountRoutes)}
+            {renderRoutes(roleRoutes)}
           </Route>
         </Route>
       </Route>
