@@ -181,12 +181,11 @@ const CreateNewBook = asyncHanlder(async (req, res) => {
 
   const imagesUrlsJson = JSON.stringify(imagesUrls);
 
-  //   Save Book in database
+  //   Save Book in database with or without images
 
-  if (imagesUrls.length > 0) {
-    try {
-      const saveBook = await db.query(
-        `INSERT INTO books (
+  try {
+    const saveBook = await db.query(
+      `INSERT INTO books (
           title,
           rental_price,
           purchase_price,
@@ -207,42 +206,42 @@ const CreateNewBook = asyncHanlder(async (req, res) => {
           added_by
           ) 
           values ($1,$2,$3,$4,$5,$6,$7,$8,$9 ,$10,$11,$12,$13,$14,$15,$16,$17,$18) Returning *`,
-        [
-          title,
-          rental_price,
-          purchase_price,
-          author,
-          condition,
-          cover,
-          isAvailable,
-          category,
-          isbn,
-          imagesUrlsJson,
-          publisher,
-          publish_year,
-          vendor_id,
-          branch_id,
-          discount_percentage,
-          credit,
-          summary,
-          role_id,
-        ]
-      );
-      console.log(saveBook?.rowCount, "Book Saved");
-      if (saveBook?.rowCount > 0) {
-        res.status(200).json({
-          books: saveBook?.rows[0],
-          message: "Book created successfully",
-        });
-      } else {
-        res.status(400).json({ message: "Error Creating Book" });
-      }
-    } catch (error) {
-      console.log(error, "Error saving book: ");
-      res.status(400).json({ message: error.message || "Error Creating Book" });
+      [
+        title,
+        rental_price,
+        purchase_price,
+        author,
+        condition,
+        cover,
+        isAvailable,
+        category,
+        isbn,
+        imagesUrlsJson,
+        publisher,
+        publish_year,
+        vendor_id,
+        branch_id,
+        discount_percentage,
+        credit,
+        summary,
+        role_id,
+      ]
+    );
+    console.log(saveBook?.rowCount, "Book Saved");
+    if (saveBook?.rowCount > 0) {
+      return res.status(200).json({
+        books: saveBook?.rows[0],
+        message:
+          imagesUrls.length > 0
+            ? "Book Details saved successfully"
+            : "Book Details Saved without cover_images",
+      });
+    } else {
+      return res.status(400).json({ message: "Error Creating Book" });
     }
-  } else {
-    return res.status(400).json({ message: "Error Uploading Images Files" });
+  } catch (error) {
+    console.log(error, "Error saving book: ");
+    res.status(400).json({ message: error.message || "Error Creating Book" });
   }
 });
 
