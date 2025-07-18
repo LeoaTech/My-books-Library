@@ -37,14 +37,14 @@ const DeleteBook = ({ book, close }) => {
         </div>
         <div className="my-5 rounded-md flex justify-center items-center z-70  overflow-hidden xs:h-[400px] overflow-y-auto ">
           <div className="mt-10 p-10 relative rounded-md border border-[#E2E8F0] bg-white shadow-lg dark:border-[#2E3A47] dark:bg-[#24303F] md:px-8 md:py-8 ">
-            <div className="flex justify-between items-center rounded-sm p-3 bg-slate-100 border-b border-[#E2E8F0] py-4 px-6.5 dark:border-[#2E3A47]">
+            <div className="flex justify-between items-center rounded-sm p-3 bg-slate-100 border-b border-[#E2E8F0] py-4 px-6.5 dark:bg-[#2E3A47] dark:border-[#2E3A47]">
               <h3 className="font-bold text-[#313D4A] dark:text-white">
                 Delete Book{" "}
               </h3>
             </div>
 
             <p className="mt-10 text-xl text-blue-500">
-              {`Are u sure you want to delete the Book ${book?.title}?`}
+              {`Are u sure you want to delete the Book `}<span className="font-bold text-orange-400">{`${book?.title}?`}</span>
             </p>
 
             <div className="mt-10 flex justify-evenly gap-2">
