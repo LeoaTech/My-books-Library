@@ -16,15 +16,13 @@ import { useFetchBranches } from "../../../../hooks/books/useFetchBranches";
 import { useAuthContext } from "../../../../hooks/useAuthContext";
 import { bookSchema } from "../../../../schemas/books";
 import { RxCross1 } from "react-icons/rx";
-import ImageUploader from "../../ImageFileUploader";
 import { newStyles } from "./CreatableSelectCustomStyles";
-// import UpdateImageUploader from "../../UpdateImageUploader";
+import FileUpload from "../../shared/FileUpload";
 
 const AddNewBookModal = ({ setShowModal }) => {
   const auth = useAuthContext();
   const queryClient = useQueryClient();
   const [imagesList, setImagesList] = useState([]);
-  const theme = localStorage.getItem("color-theme").replace(/"/g, '');
 
 
   const { error, message, addBook } = useSaveBook();
@@ -183,6 +181,9 @@ const AddNewBookModal = ({ setShowModal }) => {
     };
     await addBookMutation(booksForm);  //add book mutation
   };
+
+
+
 
   if (
     isPendingAuthors ||
@@ -730,17 +731,11 @@ const AddNewBookModal = ({ setShowModal }) => {
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
                         Add Cover Images
                       </label>
-                      <ImageUploader
+                      <FileUpload
                         setImagesList={setImagesList}
-                        register={register}
-                        errors={errors?.cover_img_url?.message}
+                        imagesList={imagesList}
                       />
 
-                      {/* <UpdateImageUploader
-                        imageList={imagesList}
-                        setImagesList={setImagesList}
-                        register={register}
-                        errors={errors?.cover_img_url?.message} /> */}
                     </div>
                   </div>
 
