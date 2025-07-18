@@ -58,13 +58,13 @@ const Tables = ({ hasPermission, searchQuery }) => {
         cell: (info) => {
           const title = info.row.original.title;
           const images = info.row.original.cover_img_url;
-
+          
           return (
             <div className="min-w-[220px] flex flex-col lg:flex-row lg:justify-start lg:items-center gap-2 lg:gap-4 w-full max-w-[260px]">
               <div className="flex-shrink-0">
                 {images && images.length > 0&& (
                   <img
-                    src={images[0]?.secureURL}
+                    src={images[0]?.secure_url}
                     alt="Cover"
                     className="h-14 w-14 rounded-md object-cover"
                   />
