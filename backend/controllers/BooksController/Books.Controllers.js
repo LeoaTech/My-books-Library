@@ -167,12 +167,12 @@ const CreateNewBook = asyncHanlder(async (req, res) => {
 
   try {
     for (let i = 0; i < images.length; i++) {
-      const uploadImg = await cloudinary.uploader.upload(images[i], options);
+      const uploadImg = await cloudinary.uploader.upload(
+        images[i].base64,
+        options
+      );
       console.log(uploadImg);
-      imagesUrls.push({
-        public_id: uploadImg.public_id,
-        secureURL: uploadImg.secure_url,
-      });
+      imagesUrls.push({...uploadImg});
       // return uploadImg?.public_id;
     }
   } catch (error) {
@@ -308,13 +308,17 @@ const UpdateBook = asyncHanlder(async (req, res) => {
 
     try {
       for (let i = 0; i < images.length; i++) {
-        const uploadImg = await cloudinary.uploader.upload(images[i], options);
-        console.log(uploadImg);
-        imagesUrls.push({
-          public_id: uploadImg.public_id,
-          secureURL: uploadImg.secure_url,
-        });
-        // return uploadImg?.public_id;
+        if (!images[i].public_id || !images[i].secure_url) {
+          const uploadImg = await cloudinary.uploader.upload(
+            images[i].base64,
+            options
+          );
+          console.log(uploadImg);
+          imagesUrls.push({ ...uploadImg });
+          // return uploadImg?.public_id;
+        } else {
+          imagesUrls.push(images[i]);
+        }
       }
     } catch (error) {
       console.log(error);
