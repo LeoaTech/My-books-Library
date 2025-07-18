@@ -96,7 +96,7 @@ const BookDetailsModal = ({ data, close }) => {
         </div>
         <div className=" md:mx-20">
           <div className="p-10 relative rounded-md border border-[#E2E8F0] bg-white shadow-lg dark:border-[#2E3A47] dark:bg-[#24303F] md:px-8 md:py-8 ">
-            <div className="text-center bg-slate-100 shadow-md mb-5 rounded-sm p-3 border-b border-blue-200  py-4 px-6.5 dark:border-[#2E3A47]">
+            <div className="text-center bg-slate-100 shadow-md mb-5 rounded-sm p-3 border-b border-blue-200  py-4 px-6.5 dark:border-[#2E3A47] dark:bg-[#2E3A47]">
               <h3 className="text-center font-bold text-[#313D4A] dark:text-white">
                 <span className="text-3xl">
                   {bookDetails?.book?.title?.toUpperCase()}
@@ -113,15 +113,19 @@ const BookDetailsModal = ({ data, close }) => {
                     {...settings}
                     className="w-full h-[400px] lg:w-[400px] lg:h-[410px]"
                   >
-                    {bookDetails?.book?.cover_img_url?.map((image) => (
+                    {bookDetails?.book?.cover_img_url?.length >0 ? bookDetails?.book?.cover_img_url?.map((image) => (
                       <div key={image?.public_id}>
                         <img
-                          src={image?.secureURL || NoImage}
+                          src={image?.secure_url || NoImage}
                           alt="book_cover"
                           className="w-full h-[380px] object-contain overflow-hidden "
                         />
                       </div>
-                    ))}
+                    )):<img
+                          src={NoImage}
+                          alt="No Image Found"
+                          className="w-full h-[380px] object-contain overflow-hidden "
+                        />}
                   </Slider>
                 </div>
                 <div className="mt-20 py-10 flex flex-col flex-grow gap-2 md:mt-0 ">
