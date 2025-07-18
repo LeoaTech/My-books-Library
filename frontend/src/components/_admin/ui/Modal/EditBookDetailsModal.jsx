@@ -16,9 +16,9 @@ import { useFetchVendors } from "../../../../hooks/books/useFetchVendors";
 import { useFetchBranches } from "../../../../hooks/books/useFetchBranches";
 import { FetchBookById } from "../../../../api/books";
 import { RxCross1 } from "react-icons/rx";
-import UpdateImageUploader from "../../UpdateImageUploader";
 import { EditBookSchema } from "../../../../schemas/books";
 import { newStyles } from "./CreatableSelectCustomStyles";
+import FileUpload from "../../shared/FileUpload";
 
 const EditBookDetailsModal = ({ close, bookValue }) => {
   const { error, message, updateBook } = useSaveBook();
@@ -100,6 +100,8 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
     value: label.toLowerCase().replace(/\W/g, ""),
   });
 
+  console.log(bookDetail, "Edit book details");
+
   useEffect(() => {
     if (authorsData) {
       const authorList = authorsData?.authors?.map((author) => ({
@@ -155,6 +157,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
         value: bookDetail?.book?.author_id,
       },
       publisher: publisherValue,
+      // imagesList: bookDetail?.book?.cover_img_url
     },
     resolver: zodResolver(EditBookSchema),
     mode: "all",
@@ -167,6 +170,15 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
       publisher: publisherValue,
     });
   }, [bookDetail, authorValue, publisherValue]);
+
+  // update the existing cover_images url in the imagesList
+useEffect(() => {
+  if (bookDetail?.book?.cover_img_url?.length > 0) {
+    setImagesList(bookDetail.book.cover_img_url);
+  }else{
+    setImagesList([])
+  }
+}, [bookDetail]);
 
   const selectedAuthor = watch("author");
   const selectedCondition = watch("condition");
@@ -207,6 +219,10 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
     // const updateFormData = { ...updateData, id: data[0]?.id };
     await updateBookMutation(booksForm);
   };
+
+
+  console.log(imagesList, "Uploaded images");
+
 
   if (
     isPendingAuthors ||
@@ -261,7 +277,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
               height: 18,
               width: 23,
               cursor: "pointer",
-              color:"#fcfcfc",
+              color: "#fcfcfc",
               strokeWidth: 2,
             }}
             onClick={close}
@@ -764,13 +780,10 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                         Edit Cover Images
                       </label>
 
-                     
-                      <UpdateImageUploader
+                      <FileUpload
                         setImagesList={setImagesList}
-                        register={register}
-                        imageList={bookDetail?.book?.cover_img_url}
-                        errors={errors?.cover_img_url?.message}
-                      />
+                        imagesList={imagesList}
+                      />      
                     </div>
                   </div>
                   {/* Tenth Row */}
