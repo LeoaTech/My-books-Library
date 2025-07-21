@@ -1,7 +1,6 @@
 const asyncHanlder = require("express-async-handler");
 const db = require("../../config/dbConfig");
 
-
 /* Fetch All Orders Details */
 
 const FetchAllOrders = asyncHanlder(async (req, res) => {
@@ -14,8 +13,8 @@ const FetchAllOrders = asyncHanlder(async (req, res) => {
       message: "All Orders Found ",
     });
   } catch (error) {
-    console.log(error,"Error fetching Orders");
-    res.status(500).json({message:error.message});
+    console.log(error, "Error fetching Orders");
+    res.status(500).json({ message: error.message });
   }
 });
 
@@ -106,10 +105,12 @@ const CreateNewOrder = asyncHanlder(async (req, res) => {
       res.status(200).json({
         result: saveNewOrder?.rows[0],
         message: "Order Created Successfully",
-      });updated
+      });
     } catch (error) {
-      console.log(error);
-      res.status(400).json({ message: "Something went wrong " });
+      // console.log(error);
+      res
+        .status(400)
+        .json({ message: error.message || "Something went wrong " });
     }
   } catch (error) {
     console.log(error);
@@ -131,7 +132,7 @@ const DeleteOrder = asyncHanlder(async (req, res) => {
       message: "Deleted Order details successfully",
     });
   } catch (error) {
-    console.log(error,"Delete order details failed");
+    console.log(error, "Delete order details failed");
     res.status(500).json({ message: "Error deleting Orders", error: error });
   }
 });
@@ -216,11 +217,15 @@ const UpdateOrder = asyncHanlder(async (req, res) => {
       });
     } catch (error) {
       console.log(error, "DB Error Update Order failed");
-      res.status(500).json({ message: "DB Error: Failed to Update Orders", error: error });
+      res
+        .status(500)
+        .json({ message: "DB Error: Failed to Update Orders", error: error });
     }
   } catch (error) {
     console.log(error, "Error updating order failed ");
-    res.status(500).json({ message: "Server Error: Something went wrong", error: error });
+    res
+      .status(500)
+      .json({ message: "Server Error: Something went wrong", error: error });
   }
 });
 
