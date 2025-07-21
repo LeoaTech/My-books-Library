@@ -23,12 +23,16 @@ export const useOrdersApi = () => {
     const result = await response.json(); //response?.data;
     console.log(result, "Result");
 
-    if (response.status === 204) {
-      setIsLoading(false);
+    if (!response.ok) {
+      setIsLoading(false)
+      setError(response?.message || "Failed to Update Order Details");
     } else {
-      setIsLoading(false);
+      if (response.status === 200) {
+        setIsLoading(false);
+        setError(null);
+      }
     }
-  };
+  }
 
   // Delete Order
   const deleteOrder = async (orderId) => {
@@ -47,9 +51,11 @@ export const useOrdersApi = () => {
     const result = await response.json(); //response?.data;
     console.log(result, "Delete Order Result");
 
-    if (response.status === 204) {
+    if (response.status === 200) {
+      setError(null)
       setIsLoading(false);
     } else {
+      setError(result.message)
       setIsLoading(false);
     }
   };
