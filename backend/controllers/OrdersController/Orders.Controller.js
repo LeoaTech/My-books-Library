@@ -133,7 +133,7 @@ const DeleteOrder = asyncHanlder(async (req, res) => {
     });
   } catch (error) {
     console.log(error, "Delete order details failed");
-    res.status(500).json({ message: "Error deleting Orders", error: error });
+    res.status(500).json({ message: "Error deleting Order Details", error: error });
   }
 });
 
@@ -142,7 +142,8 @@ const DeleteOrder = asyncHanlder(async (req, res) => {
 const UpdateOrder = asyncHanlder(async (req, res) => {
   try {
     const { orderForm } = req.body;
-
+    // console.log(orderForm);
+    
     const {
       name,
       email,
@@ -181,7 +182,7 @@ const UpdateOrder = asyncHanlder(async (req, res) => {
         shipping_phone=$12,
         discount_code=$13,
         discount_value=$14,
-        items=$15, //Items will always be an array [{book_id,book_title}]
+        items=$15,
         tracking_id=$16,
         order_by=$17,
         order_on=$18
@@ -204,7 +205,7 @@ const UpdateOrder = asyncHanlder(async (req, res) => {
         shipping_phone,
         discount_code,
         discount_value,
-        JSON.stringify(items), // Serialize items to JSON string
+        JSON.stringify(items), //Items will always be an array [{book_id,book_title}]Serialize items to JSON string
         tracking_id,
         order_by,
         order_on,
@@ -217,9 +218,10 @@ const UpdateOrder = asyncHanlder(async (req, res) => {
       });
     } catch (error) {
       console.log(error, "DB Error Update Order failed");
-      res
-        .status(500)
-        .json({ message: "DB Error: Failed to Update Orders", error: error });
+      res.status(500).json({
+        message: error.message || "DB Error: Failed to Update Orders",
+        error: error,
+      });
     }
   } catch (error) {
     console.log(error, "Error updating order failed ");
