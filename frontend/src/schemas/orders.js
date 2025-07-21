@@ -9,7 +9,7 @@ export const schema = z.object({
     payment_id: z.string(),
     mode_of_payment: z.string(),
     discount_code: z.string(),
-    discount_value: z.string(),
+    discount_value: z.number(),
     address: z.string(),
     city: z.string(),
     country: z.string(),
