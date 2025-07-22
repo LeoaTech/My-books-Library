@@ -1,92 +1,72 @@
 import { useEffect, useState } from "react";
+import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, Controller } from "react-hook-form";
-import { useSaveBook } from "../../../../hooks/books/useSaveBook";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useFetchAuthors } from "../../../../hooks/books/useFetchAuthors";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useSaveBook } from "../../../../../hooks/books/useSaveBook";
+import { useFetchAuthors } from "../../../../../hooks/books/useFetchAuthors";
 import CreatableSelect from "react-select/creatable";
-import { useAuthor } from "../../../../hooks/books/useSaveAuthor";
-import { useFetchConditions } from "../../../../hooks/books/useFetchConditions";
-import { useFetchCategories } from "../../../../hooks/books/useFetchCategories";
-import { useFetchCovers } from "../../../../hooks/books/useFetchCovers";
-import { useFetchPublishers } from "../../../../hooks/books/useFetchPublishers";
-import { usePublisher } from "../../../../hooks/books/useAddPublisher";
-import { useFetchVendors } from "../../../../hooks/books/useFetchVendors";
-import { useFetchBranches } from "../../../../hooks/books/useFetchBranches";
-import { useAuthContext } from "../../../../hooks/useAuthContext";
-import { bookSchema } from "../../../../schemas/books";
+import { useAuthor } from "../../../../../hooks/books/useSaveAuthor";
+import { useFetchConditions } from "../../../../../hooks/books/useFetchConditions";
+import { useFetchCategories } from "../../../../../hooks/books/useFetchCategories";
+import { useFetchCovers } from "../../../../../hooks/books/useFetchCovers";
+import { useFetchPublishers } from "../../../../../hooks/books/useFetchPublishers";
+import { usePublisher } from "../../../../../hooks/books/useAddPublisher";
+import { useFetchVendors } from "../../../../../hooks/books/useFetchVendors";
+import { useFetchBranches } from "../../../../../hooks/books/useFetchBranches";
+import { FetchBookById } from "../../../../../api/books";
 import { RxCross1 } from "react-icons/rx";
-import { newStyles } from "./CreatableSelectCustomStyles";
-import FileUpload from "../../shared/FileUpload";
+import { EditBookSchema } from "../../../../../schemas/books";
+import { newStyles } from "../../../shared/CreatableSelectCustomStyles";
+import FileUpload from "../../../shared/FileUpload";
 
-const AddNewBookModal = ({ setShowModal }) => {
-  const auth = useAuthContext();
+const EditBookDetailsModal = ({ close, bookValue }) => {
+  const { error, message, updateBook } = useSaveBook();
   const queryClient = useQueryClient();
   const [imagesList, setImagesList] = useState([]);
+  const [authorValue, setAuthorValue] = useState();
+  const [publisherValue, setPublisherValue] = useState();
 
+  const { data: bookDetail } = useQuery({
+    queryFn: () => FetchBookById(bookValue),
+    queryKey: ["books", { bookValue }],
+  });
 
-  const { error, message, addBook } = useSaveBook();
   const { addAuthor } = useAuthor();
   const { addPublisher } = usePublisher();
-
-  // Fetch all Authors
   const {
     isPending: isPendingAuthors,
-    isError: isAuthorFetchingError,
+    isError,
     data: authorsData,
   } = useFetchAuthors();
 
-  /* Fetch Type of Condition For Books */
   const { isPending: isPendingConditions, data: conditionsData } =
     useFetchConditions();
 
-  /* Fetch Categories List for Books */
   const { isPending: isPendingCategories, data: categoriesData } =
     useFetchCategories();
 
-  /* Fetch Types of Covers For Books */
   const { isPending: isPendingCovers, data: coversData } = useFetchCovers();
 
-  /* Fetch Publishers Lists */
   const { isPending: isPendingPublishers, data: publishersData } =
     useFetchPublishers();
 
-  /* Fetch All Existing Vendors List */
   const { isPending: isPendingVendors, data: vendorsData } = useFetchVendors();
 
-  /* Fetch All Branch List */
   const { isPendingBranches, data: branchesData } = useFetchBranches();
-
   const [authors, setAuthors] = useState([]);
   const [publisherList, setPublisherList] = useState([]);
 
   const [isLoading, setIsLoading] = useState(false);
   const [value, setValue] = useState(null);
+  const [data, setData] = useState();
 
-  const {
-    register,
-    control,
-    handleSubmit,
-    reset,
-    watch,
-    formState: { errors, isSubmitting, isValid, isDirty },
-  } = useForm({
-    defaultValues: {
-      author: "1",
-      publisher: "1",
-    },
-    resolver: zodResolver(bookSchema),
-    mode: "all",
-  });
-
-  /* Mutation to Create New Author  */
   const { mutateAsync: addAuthorMutation } = useMutation({
     mutationFn: addAuthor,
     onSuccess: () => {
-      queryClient.invalidateQueries(["authors"]); // invalidate author query to refetch new results
+      queryClient.invalidateQueries(["authors"]); // invalidate books query to refetch
     },
   });
-  /* Mutation to Add New Publisher  */
 
   const { mutateAsync: addPublisherMutation } = useMutation({
     mutationFn: addPublisher,
@@ -95,7 +75,6 @@ const AddNewBookModal = ({ setShowModal }) => {
     },
   });
 
-  // Create New Author function for  creatable Author fields
   const handleCreate = async (inputValue) => {
     setIsLoading(true);
     const res = await addAuthorMutation(inputValue);
@@ -105,8 +84,6 @@ const AddNewBookModal = ({ setShowModal }) => {
       setValue(newOption);
     }, 1000);
   };
-
-  // Create New Publisher function for creatable Publisher field
 
   const onPublisherCreate = async (inputField) => {
     setIsLoading(true);
@@ -118,32 +95,13 @@ const AddNewBookModal = ({ setShowModal }) => {
     }, 1000);
   };
 
-  /* Add Book Mutation  */
-
-  const { mutateAsync: addBookMutation } = useMutation({
-    mutationFn: addBook,
-    onSuccess: (data) => {
-      // reset();
-      console.log(data);
-
-      setShowModal(false);
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries(["books"]); // invalidate books query to refetch
-    },
-  });
-
-  const selectedAuthor = watch("author");
-  const selectedCondition = watch("condition");
-  const selectedCategory = watch("category");
-  const selectedCover = watch("cover");
-  const selectedPublisher = watch("publisher");
-
   const createOption = (label) => ({
     label,
     value: label.toLowerCase().replace(/\W/g, ""),
   });
-  /* Effect to update Author List options after creating new field */
+
+  console.log(bookDetail, "Edit book details");
+
   useEffect(() => {
     if (authorsData) {
       const authorList = authorsData?.authors?.map((author) => ({
@@ -151,9 +109,18 @@ const AddNewBookModal = ({ setShowModal }) => {
         label: author.name,
       }));
       setAuthors([...authorList]);
+
+      if (bookDetail) {
+        const defaultAuthor = authorsData?.authors?.find(
+          (author) => author?.name === bookDetail?.book?.author_name
+        );
+        setAuthorValue({
+          label: defaultAuthor?.name,
+          value: defaultAuthor?.id,
+        });
+      }
     }
-  }, [authorsData]);
-  /* Effect to update Publisherr List options after creating new field */
+  }, [authorsData, bookDetail]);
 
   useEffect(() => {
     if (publishersData) {
@@ -162,27 +129,99 @@ const AddNewBookModal = ({ setShowModal }) => {
         label: publisher.name,
       }));
       setPublisherList([...publisherList]);
+
+      if (bookDetail) {
+        const defaultPublisher = publishersData?.publishers?.find(
+          (pub) => pub.name === bookDetail?.book?.publisher_name
+        );
+        setPublisherValue({
+          label: defaultPublisher?.name,
+          value: defaultPublisher?.id,
+        });
+      }
     }
-  }, [publishersData]);
+  }, [publishersData, bookDetail]);
 
-  /* Save Book Details Form function */
-  const onSubmit = async (data) => {
+  const {
+    register,
+    control,
+    handleSubmit,
+    reset,
+    watch,
+    formState: { errors, isSubmitSuccessful, isSubmitting, isValid, isDirty },
+  } = useForm({
+    defaultValues: {
+      ...bookDetail?.book,
+      author: authorValue || {
+        label: bookDetail?.book?.author_name,
+        value: bookDetail?.book?.author_id,
+      },
+      publisher: publisherValue,
+      // imagesList: bookDetail?.book?.cover_img_url
+    },
+    resolver: zodResolver(EditBookSchema),
+    mode: "all",
+  });
 
-    // updated all fields values
+  useEffect(() => {
+    reset({
+      ...bookDetail?.book,
+      author: authorValue,
+      publisher: publisherValue,
+    });
+  }, [bookDetail, authorValue, publisherValue]);
+
+  // update the existing cover_images url in the imagesList
+  useEffect(() => {
+    if (bookDetail?.book?.cover_img_url?.length > 0) {
+      setImagesList(bookDetail.book.cover_img_url);
+    } else {
+      setImagesList([])
+    }
+  }, [bookDetail]);
+
+  const selectedAuthor = watch("author");
+  const selectedCondition = watch("condition");
+  const selectedCategory = watch("category");
+  const selectedCover = watch("cover");
+  const selectedPublisher = watch("publisher");
+  // Mutation to Update Book Details
+  const { mutateAsync: updateBookMutation } = useMutation({
+    mutationFn: updateBook,
+    onSuccess: () => {
+      reset();
+      queryClient.invalidateQueries(["books"]); // invalidate books query to refetch
+      close();
+    },
+  });
+
+  const onSubmit = async (updateData) => {
     const booksForm = {
-      ...data,
+      ...updateData,
+      bookId: bookValue,
       author: selectedAuthor?.value,
-      cover: selectedCover,
-      category: selectedCategory,
-      cover_img_url: [...imagesList],
+      cover: selectedCover == undefined ? selectedCover : updateData?.cover,
+      category:
+        selectedCategory == undefined ? selectedCategory : updateData?.category,
+      cover_img_url:
+        imagesList?.length > 0
+          ? [...imagesList]
+          : bookDetail?.book?.cover_img_url,
       publisher: selectedPublisher?.value,
-      condtion: selectedCondition,
-      role_id: auth?.user?.role,
+      condition:
+        selectedCondition == undefined
+          ? selectedCondition
+          : updateData?.condition,
+      imageUpdated: imagesList?.length > 0 ? true : false,
     };
-    await addBookMutation(booksForm);  //add book mutation
+
+    // console.log(booksForm);
+    // const updateFormData = { ...updateData, id: data[0]?.id };
+    await updateBookMutation(booksForm);
   };
 
 
+  console.log(imagesList, "Uploaded images");
 
 
   if (
@@ -197,7 +236,7 @@ const AddNewBookModal = ({ setShowModal }) => {
     return (
       <div className="flex justify-center items-center fixed inset-0 bg-[#64748B] bg-opacity-75 transition-opacity">
         <div className="relative p-5 rounded-sm">
-          <div className="flex items-center justify-center p-5 z-10 overfow-hidden xs:h-[300px]overflow-y-auto ">
+          <div className="flex items-center justify-center p-5 z-10 w-screen overfow-hidden xs:h-[300px]overflow-y-auto ">
             <div className="px-10 relative rounded-sm border border-[#E2E8F0] bg-white shadow-default dark:border-[#2E3A47] dark:bg-[#24303F] md:px-8 md:py-8 ">
               <h2>Loading .... Please Wait</h2>
             </div>
@@ -208,7 +247,7 @@ const AddNewBookModal = ({ setShowModal }) => {
   }
 
   if (
-    !authorsData || isAuthorFetchingError &&
+    !authorsData &&
     !categoriesData &&
     !conditionsData &&
     !coversData &&
@@ -219,7 +258,7 @@ const AddNewBookModal = ({ setShowModal }) => {
     return (
       <div className="flex justify-center items-center fixed inset-0 bg-[#64748B] bg-opacity-75 transition-opacity">
         <div className="relative p-5 rounded-sm">
-          <div className="flex items-center justify-center p-5 z-10 overfow-hidden xs:h-[300px]overflow-y-auto ">
+          <div className="flex items-center justify-center p-5 z-10 w-screen overfow-hidden xs:h-[300px]overflow-y-auto ">
             <div className="px-10 relative rounded-sm border border-[#E2E8F0] bg-white shadow-default dark:border-[#2E3A47] dark:bg-[#24303F] md:px-8 md:py-8 ">
               <h2>Error Loading Data.... Please Try Again</h2>
             </div>
@@ -228,7 +267,6 @@ const AddNewBookModal = ({ setShowModal }) => {
       </div>
     );
   }
-
   return (
     <div className="fixed left-0 top-0  inset-0 bg-[#64748B] bg-opacity-75 transition-opacity dark:bg-slate-400 dark:bg-opacity-75 lg:left-[18rem]">
       <div className="relative p-5 rounded-md">
@@ -239,26 +277,28 @@ const AddNewBookModal = ({ setShowModal }) => {
               height: 18,
               width: 23,
               cursor: "pointer",
-              color: "#FFF !IMPORTANT",
+              color: "#fcfcfc",
               strokeWidth: 2,
             }}
-            onClick={() => setShowModal(false)}
+            onClick={close}
           />
         </div>
+        {/* my-5 rounded-md flex justify-center items-center z-70  overflow-hidden xs:h-[400px] overflow-y-auto */}
         <div className=" md:mx-20">
           <div className=" p-10 relative rounded-md border border-[#E2E8F0] bg-white shadow-lg dark:border-[#2E3A47] dark:bg-[#24303F] md:px-8 md:py-8 ">
             <div className="rounded-sm p-3 bg-slate-100 border-b border-[#E2E8F0] py-4 px-6.5 dark:border-[#2E3A47]  dark:bg-[#2c3745]">
               <h3 className="font-bold text-[#313D4A] dark:text-white">
-                Create New Book
+                Edit Book Details
               </h3>
             </div>
 
             {/* Book Details Form */}
+
             <div className="max-h-[600px] px-12 w-full overflow-hidden overflow-y-auto text-slate-800">
               <form onSubmit={handleSubmit(onSubmit)}>
                 <div className="p-6.5 m-5.5 sm:overflow-auto sm:p-2 sm:m-2">
                   {/* first Row fields */}
-                  <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
+                  <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap:9">
                     <div className="w-full xl:w-1/2">
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
                         Title
@@ -284,7 +324,6 @@ const AddNewBookModal = ({ setShowModal }) => {
                       </label>
 
                       <Controller
-                        // className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:focus:border-[#3C50E0]"
                         control={control}
                         name="author"
                         render={({ field }) => (
@@ -302,7 +341,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                                 field.onChange(newValue);
                               }
                             }}
-                            value={field.value}
+                            value={field?.value}
                           />
                         )}
                       />
@@ -316,7 +355,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                   </div>
 
                   {/* Second Row Fields */}
-                  <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
+                  <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap:9">
                     <div className="w-full xl:w-1/2" autoFocus>
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
                         Rental Price
@@ -354,8 +393,9 @@ const AddNewBookModal = ({ setShowModal }) => {
                       )}
                     </div>
                   </div>
+
                   {/* Third Row fields */}
-                  <div className="mt-2 mb-4.5 flex flex-col gap-2 md:flex-row md:gap-9">
+                  <div className="mt-2 mb-4.5 flex flex-col gap-2 md:flex-row md:gap:9">
                     <div className="w-full xl:w-1/2">
                       <label
                         className="mb-2.5 block text-[#0284c7] dark:text-white"
@@ -363,20 +403,21 @@ const AddNewBookModal = ({ setShowModal }) => {
                       >
                         Condition
                       </label>
-                      <div className="relative z-20 bg-transparent dark:bg-form-input">
+                      <div className="relative z-20 bg-transparent dark:bg-[#1d2a39]">
                         <select
                           className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:text-neutral-100 dark:focus:text-neutral-100 dark:focus:border-[#3C50E0]"
                           name="condition"
                           {...register("condition")}
                         >
-                          <option disabled>Select</option>
+                          <option value={bookDetail?.book?.condition_id}>
+                            {bookDetail?.book?.condition_name}
+                          </option>
                           {conditionsData?.conditions?.map((condition) => (
                             <option key={condition.id} value={condition.id}>
                               {condition?.name}
                             </option>
                           ))}
                         </select>
-
                         <span className="absolute top-1/2 right-4 z-30 -translate-y-1/2">
                           <svg
                             className=" dark:text-white fill-current"
@@ -411,7 +452,9 @@ const AddNewBookModal = ({ setShowModal }) => {
                           name="cover"
                           {...register("cover")}
                         >
-                          <option disabled>Select</option>
+                          <option value={bookDetail?.book?.cover_id}>
+                            {bookDetail?.book?.cover_name}
+                          </option>
 
                           {coversData?.covers &&
                             coversData?.covers?.map((cover) => (
@@ -420,6 +463,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                               </option>
                             ))}
                         </select>
+
                         <span className="absolute top-1/2 right-4 z-30 -translate-y-1/2">
                           <svg
                             className=" dark:text-white fill-current"
@@ -444,7 +488,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                   </div>
 
                   {/* Fourth Row Fields */}
-                  <div className="mt-2 mb-4.5 flex flex-col gap-2 md:flex-row md:gap-9">
+                  <div className="mt-2 mb-4.5 flex flex-col gap-2 md:flex-row md:gap:9">
                     <div className="w-full xl:w-1/2">
                       <label
                         className="mb-2.5 block text-[#0284c7] dark:text-white"
@@ -458,8 +502,9 @@ const AddNewBookModal = ({ setShowModal }) => {
                           name="category"
                           {...register("category")}
                         >
-                          <option disabled>Select</option>
-
+                          <option value={bookDetail?.book?.category_id}>
+                            {bookDetail?.book?.category_name}
+                          </option>
                           {categoriesData?.categories &&
                             categoriesData?.categories?.map((category) => (
                               <option key={category?.id} value={category?.id}>
@@ -508,7 +553,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                   </div>
 
                   {/* Fifth Row */}
-                  <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
+                  <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap:9">
                     <div className="w-full xl:w-1/2">
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
                         Publisher
@@ -516,7 +561,7 @@ const AddNewBookModal = ({ setShowModal }) => {
 
                       <Controller
                         control={control}
-                        // className="bg-white dark:bg-slate-800"
+                        className="bg-white dark:bg-slate-800"
                         name="publisher"
                         render={({ field }) => (
                           <CreatableSelect
@@ -567,7 +612,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                   </div>
 
                   {/* Sixth Row */}
-                  <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
+                  <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap:9">
                     <div className="w-full xl:w-1/2" autoFocus>
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
                         Discount Percentage
@@ -604,10 +649,8 @@ const AddNewBookModal = ({ setShowModal }) => {
                       )}
                     </div>
                   </div>
-
                   {/* Seventh Row */}
-
-                  <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
+                  <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap:9">
                     <div className="w-full xl:w-1/2" autoFocus>
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
                         Vendor
@@ -618,9 +661,11 @@ const AddNewBookModal = ({ setShowModal }) => {
                           className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:text-neutral-100 dark:focus:text-neutral-100 dark:focus:border-[#3C50E0]"
                           name="vendor_id"
                           {...register("vendor_id")}
+                          defaultValue={vendorsData?.vendors?.find((ven) => {
+                            if (ven.id == bookDetail?.book?.vendor_id)
+                              return ven.id;
+                          })}
                         >
-                          <option disabled>Select</option>
-
                           {vendorsData?.vendors &&
                             vendorsData?.vendors?.map((vendor) => (
                               <option key={vendor?.id} value={vendor?.id}>
@@ -664,9 +709,13 @@ const AddNewBookModal = ({ setShowModal }) => {
                           className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:text-neutral-100 dark:focus:text-neutral-100 dark:focus:border-[#3C50E0]"
                           name="branch_id"
                           {...register("branch_id")}
+                          defaultValue={branchesData?.branches?.find(
+                            (branch) => {
+                              if (branch.name == bookDetail?.book?.branch_name)
+                                return branch.id;
+                            }
+                          )}
                         >
-                          <option disabled>Select</option>
-
                           {branchesData?.branches &&
                             branchesData?.branches?.map((branch) => (
                               <option key={branch?.id} value={branch?.id}>
@@ -674,7 +723,6 @@ const AddNewBookModal = ({ setShowModal }) => {
                               </option>
                             ))}{" "}
                         </select>
-
                         <span className="absolute top-1/2 right-4 z-30 -translate-y-1/2">
                           <svg
                             className=" dark:text-white fill-current"
@@ -704,7 +752,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                   </div>
 
                   {/* Eighth Row */}
-                  <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
+                  <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap:9">
                     <div className="w-full ">
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
                         Summary
@@ -729,43 +777,35 @@ const AddNewBookModal = ({ setShowModal }) => {
                   <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
                     <div className="w-full xl:w-1/2">
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
-                        Add Cover Images
+                        Edit Cover Images
                       </label>
+
                       <FileUpload
                         setImagesList={setImagesList}
                         imagesList={imagesList}
                       />
-
                     </div>
                   </div>
-
                   {/* Tenth Row */}
-
                   <div className="block">
                     <div className="mt-4 sm:mt-0">
                       <div className="mt-4">
                         <label className="inline-flex items-center">
                           <input
                             type="checkbox"
-                            name="isAvailable"
-                            {...register("isAvailable")}
+                            name="available"
+                            {...register("available")}
                             className="rounded bg-gray-200 border-transparent h-4 w-4 p-5 ml-2 focus:border-transparent focus:bg-gray-200 text-gray-700 focus:ring-1 focus:ring-offset-2 focus:ring-gray-500"
                           />
-                          <span className="ml-2  text-[#0284c7] dark:text-white">Available </span>
+                          <span className="ml-2">Available </span>
                         </label>
                       </div>
                     </div>
                   </div>
-
                   {/* Form Submissions Buttons */}
                   <div className=" px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
                     <button
-                      disabled={
-                        !isDirty ||
-                        !isValid ||
-                        isSubmitting ||
-                        imagesList?.length > 5
-                      }
+                      disabled={isSubmitting}
                       type="submit"
                       className="inline-flex w-full justify-center rounded-md bg-[#FFBA00] px-3 py-2 text-sm font-semibold text-white shadow-sm  sm:ml-3 sm:w-auto"
                     >
@@ -775,7 +815,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                       disabled={isSubmitting}
                       type="button"
                       className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
-                      onClick={() => setShowModal(false)}
+                      onClick={close}
                     >
                       Cancel
                     </button>
@@ -795,4 +835,4 @@ const AddNewBookModal = ({ setShowModal }) => {
   );
 };
 
-export default AddNewBookModal;
+export default EditBookDetailsModal;

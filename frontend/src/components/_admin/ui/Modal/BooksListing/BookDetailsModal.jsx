@@ -1,11 +1,11 @@
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { FetchBookById } from "../../../../api/books";
+import { FetchBookById } from "../../../../../api/books";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import NoImage from "../../../../assets/no-image.png";
+import NoImage from "../../../../../assets/no-image.png";
 import { useState } from "react";
-import { useSaveBook } from "../../../../hooks/books/useSaveBook";
+import { useSaveBook } from "../../../../../hooks/books/useSaveBook";
 import { RxCross1 } from "react-icons/rx";
 import { MdOutlineReviews, MdOutlineWbIncandescent } from "react-icons/md";
 import { BiCategory, BiBarcode, BiPurchaseTagAlt } from "react-icons/bi";
