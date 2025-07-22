@@ -10,7 +10,7 @@ import SkeletonTable from "../../components/Loader/SkeletonTable";
 // * Lazy Load Components
 const UnAuthorizedRoles = lazy(() => import("../../components/_admin/UnAuthorized"));
 const ListingTable = lazy(() => import("../../components/_admin/ui/Tables/Tables"));
-const AddBookDetails = lazy(() => import("../../components/_admin/ui/Modal/AddNewBookModal"));
+const AddBookDetails = lazy(() => import("../../components/_admin/ui/Modal/BooksListing/AddNewBookModal"));
 
 
 const Listing = () => {
