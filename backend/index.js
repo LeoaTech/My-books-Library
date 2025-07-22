@@ -23,7 +23,7 @@ const publisherRoutes = require("./routes/PublishersRoutes.js");
 const vendorsRoutes = require("./routes/VendorsRoutes.js");
 const branchRoutes = require("./routes/BranchRoutes.js");
 const ordersRoutes = require("./routes/OrdersRoutes/OrdersRoutes.js");
-
+const bookingRoutes = require("./routes/BookingsRoutes/index.js");
 const port = process.env.PORT || 8100;
 
 const app = express();
@@ -42,7 +42,7 @@ app.use(passport.session());
 
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:8000"],
+    origin: [process.env.CLIENT_URL, "process.env.SERVER_URL"],
     methods: "GET,POST,PUT,DELETE",
     credentials: true,
   })
@@ -55,28 +55,30 @@ app.use(cookieParser()); //cookies middleware
 
 // * Routes
 app.use("/", googleOAuthRouter);
-app.use("/auth", authRouter);
-app.use("/books", booksRouter);
-app.use("/users", userRouter);
-app.use("/roles", rolesRouter);
-app.use("/permissions", permissionsRouter);
-app.use("/roles-permissions", rolePermissionsRouter);
+app.use("/api/auth", authRouter);
+app.use("/api/books", booksRouter);
+app.use("/api/users", userRouter);
+app.use("/api/roles", rolesRouter);
+app.use("/api/permissions", permissionsRouter);
+app.use("/api/roles-permissions", rolePermissionsRouter);
 
-app.use("/authors", authorsRouter);
-app.use("/conditions", conditionsRoutes);
-app.use("/categories", categoryRoutes);
-app.use("/covers", coversRoutes);
-app.use("/publishers", publisherRoutes);
-app.use("/vendors", vendorsRoutes);
-app.use("/branches", branchRoutes);
-app.use("/orders", ordersRoutes);
+app.use("/api/authors", authorsRouter);
+app.use("/api/conditions", conditionsRoutes);
+app.use("/api/categories", categoryRoutes);
+app.use("/api/covers", coversRoutes);
+app.use("/api/publishers", publisherRoutes);
+app.use("/api/vendors", vendorsRoutes);
+app.use("/api/branches", branchRoutes);
+app.use("/api/orders", ordersRoutes);
+
+// Bookings Routes
+app.use(bookingRoutes);
 
 app.use(notfound);
 app.use(errorHanlder);
 app.get("/test", (req, res) => {
   res.send("Home Page");
 });
-
 
 app.listen(port, () => {
   console.log("Server is listening on port", port);
