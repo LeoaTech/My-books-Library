@@ -5,7 +5,7 @@ const db = require("../../config/dbConfig");
 
 const FetchAllOrders = asyncHanlder(async (req, res) => {
   try {
-    const ordersQuery = `SELECT * FROM Orders`;
+    const ordersQuery = `SELECT o.*, u.name, u.email,u.phone, u.address, u.city, u.country FROM Orders o JOIN Users u ON o.user_id = u.id`;
     const getAllOrders = await db.query(ordersQuery);
 
     res.status(200).json({
@@ -133,7 +133,9 @@ const DeleteOrder = asyncHanlder(async (req, res) => {
     });
   } catch (error) {
     console.log(error, "Delete order details failed");
-    res.status(500).json({ message: "Error deleting Order Details", error: error });
+    res
+      .status(500)
+      .json({ message: "Error deleting Order Details", error: error });
   }
 });
 
@@ -143,7 +145,7 @@ const UpdateOrder = asyncHanlder(async (req, res) => {
   try {
     const { orderForm } = req.body;
     // console.log(orderForm);
-    
+
     const {
       name,
       email,
