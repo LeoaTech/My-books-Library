@@ -10,12 +10,21 @@ export const useOrdersApi = () => {
     setIsLoading(true);
     setError(null);
 
+    const updatedOrder = {
+      shipping_address:order.shipping_address,
+      shipping_city:order.shipping_city,
+      shipping_country:order.shipping_country,
+      shipping_phone:order.shipping_phone,
+      items:order.items, 
+      id:order.id
+    }
+
     // console.log(order, "OrderId");
     const response = await fetch(`${BASE_URL}/orders/update/${order?.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ orderForm: order }),
+      body: JSON.stringify({ orderForm: updatedOrder }),
     });
 
     console.log(response, "Orders Form Response");
