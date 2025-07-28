@@ -39,14 +39,7 @@ const CreateNewOrder = asyncHanlder(async (req, res) => {
     const { orderForm } = req.body;
 
     const {
-      name,
-      email,
-      address,
-      city,
-      country,
-      phone,
-      payment_id,
-      mode_of_payment,
+      userID,
       shipping_address,
       shipping_city,
       shipping_country,
@@ -54,8 +47,7 @@ const CreateNewOrder = asyncHanlder(async (req, res) => {
       discount_code,
       discount_value,
       items, //Items will always be an array [{book_id,book_title}]
-      tracking_id,
-      order_by,
+     
       order_on,
     } = orderForm;
 
@@ -78,17 +70,10 @@ const CreateNewOrder = asyncHanlder(async (req, res) => {
         items,
         tracking_id,
         order_by,
-        order_on) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18) Returning *`;
+        order_on) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) Returning *`;
 
       const saveNewOrder = await db.query(createOrderQuery, [
-        name,
-        email,
-        address,
-        city,
-        country,
-        phone,
-        payment_id,
-        mode_of_payment,
+        userID,
         shipping_address,
         shipping_city,
         shipping_country,
@@ -96,8 +81,6 @@ const CreateNewOrder = asyncHanlder(async (req, res) => {
         discount_code,
         discount_value,
         JSON.stringify(items), // Serialize items to JSON string
-        tracking_id,
-        order_by,
         order_on,
       ]);
 
@@ -125,9 +108,9 @@ const DeleteOrder = asyncHanlder(async (req, res) => {
   try {
     const deleteOrderQuery = `DELETE FROM orders WHERE id =$1`;
 
-    const deleteOrderdetails = await db.query(deleteOrderQuery, [order_id]);
+    await db.query(deleteOrderQuery, [order_id]);
 
-    console.log(deleteOrderdetails?.rowCount);
+    // console.log(deleteOrderdetails?.rowCount);
     res.status(200).json({
       message: "Deleted Order details successfully",
     });
