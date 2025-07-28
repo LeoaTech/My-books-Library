@@ -7,7 +7,7 @@ import { HiChevronDoubleLeft, HiChevronDoubleRight } from "react-icons/hi";
 
 const OrderTable = ({ filteredOrders }) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage] = useState(5);
+  const [rowsPerPage] = useState(8);
 
   // Calculate indexes for pagination
   const indexOfLastRow = currentPage * rowsPerPage;
@@ -93,7 +93,7 @@ const OrderTable = ({ filteredOrders }) => {
                     Email
                   </th>
                    <th className="min-w-[160px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
-                    Payment Mode
+                    Total Items
                   </th>
 
                   {/*<th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
@@ -129,7 +129,7 @@ const OrderTable = ({ filteredOrders }) => {
                         {order?.email}
                       </td>
                       <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-11">
-                        {order?.mode_of_payment}
+                        {order?.items.length}
                       </td>
 
                       {/* <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-11">
@@ -174,6 +174,7 @@ const OrderTable = ({ filteredOrders }) => {
                             </svg>
                           </button>
                           <button
+                          disabled={order?.order_status.toLowerCase() != "delivered"}
                             className="hover:text-[#D34053]"
                             onClick={() => onDeleteOrders(order?.id)}
                           >
