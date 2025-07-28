@@ -147,70 +147,31 @@ const UpdateOrder = asyncHanlder(async (req, res) => {
     // console.log(orderForm);
 
     const {
-      name,
-      email,
-      address,
-      city,
-      country,
-      phone,
-      payment_id,
-      mode_of_payment,
       shipping_address,
       shipping_city,
       shipping_country,
       shipping_phone,
-      discount_code,
-      discount_value,
-      items, //Items will always be an array [{book_id,book_title}]
-      tracking_id,
-      order_by,
-      order_on,
+      items, //Items will always be an array [{id,title}]
       id,
     } = orderForm;
 
     try {
       const EditOrderQuery = `UPDATE orders SET 
-        name =$1,
-        email=$2,
-        address=$3,
-        city=$4,
-        country=$5,
-        phone=$6,
-        payment_id=$7,
-        mode_of_payment=$8,
-        shipping_address=$9,
-        shipping_city=$10,
-        shipping_country=$11,
-        shipping_phone=$12,
-        discount_code=$13,
-        discount_value=$14,
-        items=$15,
-        tracking_id=$16,
-        order_by=$17,
-        order_on=$18
+        shipping_address=$1,
+        shipping_city=$2,
+        shipping_country=$3,
+        shipping_phone=$4,
+        items=$5
         WHERE 
-        id=$19
+        id=$6
          Returning *`;
 
       const updatedOrder = await db.query(EditOrderQuery, [
-        name,
-        email,
-        address,
-        city,
-        country,
-        phone,
-        payment_id,
-        mode_of_payment,
         shipping_address,
         shipping_city,
         shipping_country,
         shipping_phone,
-        discount_code,
-        discount_value,
-        JSON.stringify(items), //Items will always be an array [{book_id,book_title}]Serialize items to JSON string
-        tracking_id,
-        order_by,
-        order_on,
+        JSON.stringify(items), //Items will always be an array [{id,title}]Serialize items to JSON string
         id,
       ]);
 
