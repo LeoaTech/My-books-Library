@@ -85,7 +85,9 @@ const EditOrder = ({ getOrderDetails, onClose }) => {
     await updateOrderMutation(updateFormData);
   };
 
-  const isEditOrderShippingDetails = getOrderDetails?.order_status.toLowerCase() === "packed" || getOrderDetails?.order_status.toLowerCase() == "shipped"
+  //  if Order status is Not "Packed or Shipped" then it won't let any user-role to edit the order
+
+  const isEditOrderShippingDetails = getOrderDetails?.order_status.toLowerCase() === "packed" || getOrderDetails?.order_status.toLowerCase() === "shipped";
 
   useEffect(() => {
     if (isSubmitSuccessful) {
@@ -439,9 +441,9 @@ const EditOrder = ({ getOrderDetails, onClose }) => {
                     Cancel
                   </button>
                   <button
-                    disabled={!isDirty || isSubmitting || isLoading}
+                    disabled={!isDirty || isSubmitting || isLoading || isEditOrderShippingDetails}
                     type="submit"
-                    className="bg-orange-400 text-white font-medium text-md cursor-pointer p-2 px-5 rounded-md "
+                    className="bg-orange-400 text-white font-medium text-md cursor-pointer disabled:cursor-not-allowed p-2 px-5 rounded-md "
                   >
                     {isLoading ? <LoadingSpinner /> : "Update"}
                   </button>
