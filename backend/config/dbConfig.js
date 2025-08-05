@@ -1,4 +1,3 @@
-
 const pg = require("pg");
 const { Pool } = pg;
 
@@ -12,7 +11,6 @@ const pool = new Pool({
 //   console.log('DB Connected successfully!');
 // });
 pool.connect((err, client, release) => {
-
   if (err) {
     return console.error("Error acquiring client", err.stack);
   }
@@ -24,7 +22,4 @@ pool.connect((err, client, release) => {
     console.log("Connected to Database !");
   });
 });
-module.exports = {
-  query: (text, params) => pool.query(text, params),
-};
-
+module.exports = { pool, query: (text, params) => pool.query(text, params) };

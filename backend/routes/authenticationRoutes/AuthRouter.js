@@ -7,12 +7,17 @@ const {
   ForgetPassword,
   VerifyUserAuth,
   ResetPassword,
+  SignupUser,
 } = require("../../controllers/AuthController/AuthController.js");
 
 const router = express.Router();
 
 // New User Sign up Route
-router.post("/signup", RegisterUser);
+router.post("/signup", SignupUser);
+
+// User Sign Up As a Library Owner
+
+router.post("/register",RegisterUser)
 
 // Log-in Route
 router.post("/signin", LoginUser);
