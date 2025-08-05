@@ -15,6 +15,7 @@ import {
   ResetPassword,
   SignIn,
   SignUp,
+  SignupPage
 } from "../_authentication/forms";
 import Shop from "../_root/pages/Shop";
 import Library from "../_root/pages/Library";
@@ -22,6 +23,7 @@ import BookOverview from "../_root/pages/BookOverview";
 import PersistLogin from "../utiliz/PersistLogin";
 import RequiredAuth from "../utiliz/RequiredAuth";
 import InvalidToken from "../_authentication/forms/InvalidToken";
+import Register from "../_authentication/forms/Register";
 
 const renderRoutes = (routes) => {
   return routes?.map((route, i) => {
@@ -58,7 +60,7 @@ const router = createBrowserRouter(
       {/* Authentication Routes */}
       <Route element={<AuthLayout />}>
         <Route path="/signin" element={<SignIn />} />
-        <Route path="/signup" element={<SignUp />} />
+        <Route path="/signup" element={<SignupPage />} />
         <Route path="/forgotpassword/:id/:token" element={<ResetPassword />} />
         <Route path="/forgot-password" element={<ForgetPassword />} />
       </Route>
