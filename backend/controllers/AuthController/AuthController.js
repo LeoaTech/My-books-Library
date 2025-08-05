@@ -8,7 +8,7 @@ const validator = require("validator");
 const send_email = require("../../utiliz/sendEmail");
 
 const db = require("../../config/dbConfig");
-
+const {pool} = require("../../config/dbConfig.js");
 
 // Generate Access JWT
 const generateToken = (data) => {
@@ -24,8 +24,207 @@ const refreshToken = (data) => {
   });
 };
 
-// Create New User Account
+// Database operation functions
+async function createEntity(client, entityData) {
+  const {
+    businessName,
+    country,
+    address,
+    city,
+    phone,
+    typeOfBooks,
+    hasMultipleBranches,
+    deliverIntercity,
+    description,
+  } = entityData;
+  const query = `
+    INSERT INTO entity (name, city,country, address, phone, type_of_books, deliver_inter_city,multiple_branches,description) VALUES ($1, $2, $3, $4,$5,$6,$7,$8,$9) RETURNING id`;
+  const values = [
+    businessName,
+    city,
+    country,
+    address,
+    phone,
+    typeOfBooks,
+    deliverIntercity,
+    hasMultipleBranches,
+    description,
+  ];
+  const result = await client.query(query, values);
+  return result.rows[0].id;
+}
+
+async function createBranch(client, branchData, entityId) {
+  const {  businessName, city, country, address, phone } = branchData;
+  const query = `
+    INSERT INTO branches (entity_id, name, city,country,address,phone)
+    VALUES ($1, $2, $3, $4, $5, $6)
+    RETURNING id;
+  `;
+  const values = [entityId, businessName, city, country, address, phone];
+  const result = await client.query(query, values);
+  return result.rows[0].id;
+}
+
+async function createUser(client, userData, branchId) {
+  const {
+    fullName,
+    email,
+    hashedPassword,
+    city,
+    country,
+    address,
+    phone,
+    role,
+  } = userData;
+
+  const query = `
+    INSERT INTO users (branch_id, name, email,password,city,country,address, phone, role_id)
+    VALUES ($1, $2, $3, $4,$5,$6,$7,$8,$9)
+    RETURNING id;
+  `;
+  const values = [
+    branchId,
+    fullName,
+    email,
+    hashedPassword,
+    city,
+    country,
+    address,
+    phone,
+    role,
+  ];
+  const result = await client.query(query, values);
+  return result.rows[0].id;
+}
+
+/* Create New User as a Library Owner */
+
 const RegisterUser = asyncHanlder(async (req, res) => {
+  const client = await pool.connect();
+  console.log(req.body);
+  try {
+    // Start a transaction
+    await client.query("BEGIN");
+
+    // Extract data from request body
+    if (!req.body.user) {
+      res.status(400);
+      throw Error("Invalid Form");
+    }
+
+    const {
+      fullName,
+      email,
+      password,
+      businessName,
+      city,
+      country,
+      address,
+      phone,
+      description,
+      typeOfBooks,
+      hasMultipleBranches,
+      deliverIntercity,
+    } = req.body.user;
+    // Validate input
+    if (!fullName || !email || !password || !businessName) {
+      res.status(400).json({ message: "Please add required fields" });
+
+      throw new Error("Missing required fields");
+    }
+
+    // Step 1: Create an Entity
+    const entity = {
+      businessName,
+      city,
+      country,
+      address,
+      city,
+      phone,
+      description,
+      typeOfBooks,
+      hasMultipleBranches,
+      deliverIntercity,
+    };
+    const entityId = await createEntity(client, entity);
+    console.log(entityId, "Entity Created");
+
+    // Step 2: Create a default branch as main branch
+
+    const branch = {
+      businessName,
+      city,
+      country,
+      address,
+      city,
+      phone,
+      entityId,
+    };
+    const branchId = await createBranch(client, branch, entityId);
+    console.log(branchId, "Branch Created");
+
+    // Step 3: Create new user with refernce to branch_id
+
+    const checkRole = await db.query(
+      "SELECT role_id FROM roles Where name=$1",
+      ["admin"]
+    );
+
+    // console.log(checkRole?.rows);
+    let role;
+
+    if (checkRole?.rowCount > 0) {
+      role = checkRole?.rows[0]?.role_id;
+    }
+
+    // check if user exists in DB
+    const userExists = await db.query("SELECT id FROM users Where email = $1", [
+      email,
+    ]);
+
+    if (userExists?.rowCount > 0) {
+      return res.status(400).json({ message: "User already exists" });
+      // throw new Error("User already exists");
+    }
+
+    // create hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt?.hash(password, salt);
+
+    const userDetails = {
+      fullName,
+      email,
+      hashedPassword,
+      city,
+      country,
+      address,
+      phone,
+      branchId,
+      role,
+    };
+
+    const userId = await createUser(client, userDetails, branchId);
+    console.log(userId, "User Created");
+
+    await client.query("COMMIT");
+
+    res.status(201).json({
+      message: "User account created successfully",
+      data: { entityId, branchId, userId },
+    });
+  } catch (error) {
+    // Rollback transaction 
+    await client.query("ROLLBACK");
+    console.error("Error creating user account:", error);
+    res.status(500).json({ error: "Failed to create user account" });
+  } finally {
+    client.release();
+  }
+});
+
+// Create New User Account
+const SignupUser = asyncHanlder(async (req, res) => {
   const { name, email, password } = req.body;
 
   try {
@@ -101,10 +300,9 @@ const LoginUser = asyncHanlder(async (req, res) => {
     }
     try {
       // Verify user email in DB
-      const userEmail = await db.query(
-        `SELECT * from users where email= $1`,
-        [email]
-      );
+      const userEmail = await db.query(`SELECT * from users where email= $1`, [
+        email,
+      ]);
       let user = userEmail?.rows[0];
 
       // console.log(user, "Login");
@@ -131,7 +329,7 @@ const LoginUser = asyncHanlder(async (req, res) => {
             },
           },
           process.env.JWT_SECRET,
-          { expiresIn: "30s" }    //Update Expired time in Production
+          { expiresIn: "30s" } //Update Expired time in Production
         );
 
         const user_info = { id: user.id, role_id: user?.role_id };
@@ -150,6 +348,19 @@ const LoginUser = asyncHanlder(async (req, res) => {
         } else {
           role_name = "";
         }
+
+        let vendorID;
+        if (role_name === "vendor") {
+          const findVendorID = await db.query(
+            `Select id From vendors where role_id=$1 AND name = $2`,
+            [user?.role_id, user.name]
+          );
+
+          console.log(findVendorID, "Find Vendor ID");
+
+          vendorID = findVendorID.rows[0].id;
+        }
+        console.log(vendorID, "Vendor ID");
 
         // Check if user id exists in Tokens table or not
         const isTokenExists = await db.query(
@@ -185,17 +396,26 @@ const LoginUser = asyncHanlder(async (req, res) => {
         res.cookie("refreshToken", refresh_token, {
           httpOnly: true,
           sameSite: "strict",
-          secure: false,
+          secure: false, //true for production
           maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day max
         });
         return res.send({
           AccessToken,
-          user: {
-            name: user?.name,
-            email: user?.email,
-            role: user?.role_id,
-            role_name: role_name,
-          },
+          user:
+            role_name === "vendor"
+              ? {
+                  name: user?.name,
+                  email: user?.email,
+                  role: user?.role_id,
+                  role_name: role_name,
+                  vendor_id: vendorID,
+                }
+              : {
+                  name: user?.name,
+                  email: user?.email,
+                  role: user?.role_id,
+                  role_name: role_name,
+                },
           message: "success",
         });
       } else {
@@ -375,10 +595,9 @@ const ForgetPassword = asyncHanlder(async (req, res) => {
 
   try {
     // check if user email exists
-    const userExists = await db.query(
-      "SELECT * FROM users WHERE email = $1",
-      [email]
-    );
+    const userExists = await db.query("SELECT * FROM users WHERE email = $1", [
+      email,
+    ]);
 
     let userData = userExists?.rows[0];
     // console.log(userExists?.rows[0], "User Found");
@@ -537,6 +756,7 @@ const ResetPassword = asyncHanlder(async (req, res) => {
 });
 
 module.exports = {
+  SignupUser,
   RegisterUser,
   LoginUser,
   Logout,
