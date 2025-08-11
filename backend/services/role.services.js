@@ -2,12 +2,14 @@
 
 const db = require("../config/dbConfig");
 
-const getRoles = async () => {
+const getRoles = async (roleId) => {
   try {
-    const permissionsQuery = `SELECT * FROM roles`;
-    const getAllPermissions = await db.query(permissionsQuery);
+    const permissionsQuery = `SELECT role_id, entity_id FROM roles where role_id =$1 `;
+    const getAllPermissions = await db.query(permissionsQuery, [roleId]);
 
     const roles = getAllPermissions?.rows;
+    console.log(roles, "Roles");
+    
     return roles.map((role) => role?.role_id); // Returning all role Ids
   } catch (error) {
     console.error("Error fetching roles:", error);
