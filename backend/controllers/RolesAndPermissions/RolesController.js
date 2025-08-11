@@ -55,31 +55,46 @@ const NewRole = asyncHanlder(async (req, res) => {
 
 // Update Existing Role
 const UpdateRole = asyncHanlder(async (req, res) => {
+  // console.log(req.params, "params", req.body, "Body");
+  const { role_id } = req.params;
+
+  if (!role_id) {
+    return res.status(400).json({ message: "Invalid Role ID" });
+  }
+
+  const roleData = req.body;
+  const { name, entityId } = roleData;
+
+  if (!entityId) {
+    return res.status(400).json({ message: "Entity ID Missing" });
+  }
   try {
-    console.log(req.params, req.body);
-
-    const { role_id } = req.params;
-    const roleData = req.body;
-    const { name } = roleData;
-
-    const findRoleId = await db.query(`SELECT * FROM roles WHERE role_id =$1`, [
-      role_id,
-    ]);
+    const findRoleId = await db.query(
+      `SELECT * FROM roles WHERE role_id =$1 and entity_id=$2`,
+      [role_id, entityId]
+    );
     // Check if role Id exists
     if (findRoleId?.rowCount == 0) {
-      res.status(400).json({ message: "RoleId not exists" });
+      return res.status(400).json({ message: "RoleId not exists" });
     } else {
-      const updateRoleQuery = `Update roles set name =$1 WHERE role_id = $2 Returning *`;
-      const updateRole = await db.query(updateRoleQuery, [name, role_id]);
+      const updateRoleQuery = `Update roles set name =$1 WHERE role_id = $2 and entity_id =$3 Returning *`;
+      const updateRole = await db.query(updateRoleQuery, [
+        name,
+        role_id,
+        entityId,
+      ]);
 
       console.log(updateRole?.rows[0]);
 
-      res
+      return res
         .status(200)
         .json({ message: "Update role", result: updateRole?.rows[0] });
     }
   } catch (error) {
     console.log(error);
+    res
+      .status(500)
+      .json({ message: error.message || "Failed to update the Role" });
   }
 });
 
