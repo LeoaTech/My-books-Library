@@ -1,13 +1,16 @@
 const asyncHanlder = require("express-async-handler");
 const db = require("../../config/dbConfig");
 
-//    Fetched All Roles from DB
+//    Fetched Roles from DB that belongs to a specific entity
 const FetchRoles = asyncHanlder(async (req, res) => {
-  try {
-    const rolesQuery = `SELECT * FROM roles`;
-    const getAllRoles = await db.query(rolesQuery);
+  // console.log(req.user, "User  Roles details");
 
-    // console.log(getAllRoles?.rows, "User Found");
+  const entityId = req.user.entityId || req.user.entity_id
+  try {
+    const rolesQuery = `SELECT * FROM roles where entity_id =$1`;
+    const getAllRoles = await db.query(rolesQuery, [entityId]);
+
+    console.log(getAllRoles?.rows, "Roles Found in DB");
     res.status(200).json({
       roles: getAllRoles?.rows,
       message: "All Roles Found ",
@@ -44,10 +47,9 @@ const UpdateRole = asyncHanlder(async (req, res) => {
     const roleData = req.body;
     const { name } = roleData;
 
-    const findRoleId = await db.query(
-      `SELECT * FROM roles WHERE role_id =$1`,
-      [role_id]
-    );
+    const findRoleId = await db.query(`SELECT * FROM roles WHERE role_id =$1`, [
+      role_id,
+    ]);
     // Check if role Id exists
     if (findRoleId?.rowCount == 0) {
       res.status(400).json({ message: "RoleId not exists" });
@@ -74,10 +76,9 @@ const DeleteRole = asyncHanlder(async (req, res) => {
 
     console.log(req.params);
 
-    const findRoleId = await db.query(
-      `SELECT * FROM roles WHERE role_id =$1`,
-      [role_id]
-    );
+    const findRoleId = await db.query(`SELECT * FROM roles WHERE role_id =$1`, [
+      role_id,
+    ]);
 
     const findUserRoleId = await db.query(
       `SELECT * FROM users2 WHERE role_id =$1`,
