@@ -8,8 +8,13 @@ const validator = require("validator");
 const send_email = require("../../utiliz/sendEmail");
 
 const db = require("../../config/dbConfig");
-const {pool} = require("../../config/dbConfig.js");
-
+const { pool } = require("../../config/dbConfig.js");
+const {
+  createEntity,
+  createBranch,
+  createRole,
+  createUser,
+} = require("../../helpers/user_onboarding.js");
 // Generate Access JWT
 const generateToken = (data) => {
   //5m in production
@@ -23,80 +28,6 @@ const refreshToken = (data) => {
     expiresIn: "3h", //in production 1 day
   });
 };
-
-// Database operation functions
-async function createEntity(client, entityData) {
-  const {
-    businessName,
-    country,
-    address,
-    city,
-    phone,
-    typeOfBooks,
-    hasMultipleBranches,
-    deliverIntercity,
-    description,
-  } = entityData;
-  const query = `
-    INSERT INTO entity (name, city,country, address, phone, type_of_books, deliver_inter_city,multiple_branches,description) VALUES ($1, $2, $3, $4,$5,$6,$7,$8,$9) RETURNING id`;
-  const values = [
-    businessName,
-    city,
-    country,
-    address,
-    phone,
-    typeOfBooks,
-    deliverIntercity,
-    hasMultipleBranches,
-    description,
-  ];
-  const result = await client.query(query, values);
-  return result.rows[0].id;
-}
-
-async function createBranch(client, branchData, entityId) {
-  const {  businessName, city, country, address, phone } = branchData;
-  const query = `
-    INSERT INTO branches (entity_id, name, city,country,address,phone)
-    VALUES ($1, $2, $3, $4, $5, $6)
-    RETURNING id;
-  `;
-  const values = [entityId, businessName, city, country, address, phone];
-  const result = await client.query(query, values);
-  return result.rows[0].id;
-}
-
-async function createUser(client, userData, branchId) {
-  const {
-    fullName,
-    email,
-    hashedPassword,
-    city,
-    country,
-    address,
-    phone,
-    role,
-  } = userData;
-
-  const query = `
-    INSERT INTO users (branch_id, name, email,password,city,country,address, phone, role_id)
-    VALUES ($1, $2, $3, $4,$5,$6,$7,$8,$9)
-    RETURNING id;
-  `;
-  const values = [
-    branchId,
-    fullName,
-    email,
-    hashedPassword,
-    city,
-    country,
-    address,
-    phone,
-    role,
-  ];
-  const result = await client.query(query, values);
-  return result.rows[0].id;
-}
 
 /* Create New User as a Library Owner */
 
@@ -164,19 +95,12 @@ const RegisterUser = asyncHanlder(async (req, res) => {
     const branchId = await createBranch(client, branch, entityId);
     console.log(branchId, "Branch Created");
 
-    // Step 3: Create new user with refernce to branch_id
+    //Step 3: Create a  default Admin Role
+    const roleId = await createRole(client, entityId);
 
-    const checkRole = await db.query(
-      "SELECT role_id FROM roles Where name=$1",
-      ["admin"]
-    );
+    console.log(roleId, "New Role Created for Entity ", entityId);
 
-    // console.log(checkRole?.rows);
-    let role;
-
-    if (checkRole?.rowCount > 0) {
-      role = checkRole?.rows[0]?.role_id;
-    }
+    // Step 4: Create new user with refernce to branch_id
 
     // check if user exists in DB
     const userExists = await db.query("SELECT id FROM users Where email = $1", [
@@ -200,8 +124,8 @@ const RegisterUser = asyncHanlder(async (req, res) => {
       country,
       address,
       phone,
-      branchId,
-      role,
+      roleId,
+      img_url: "",
     };
 
     const userId = await createUser(client, userDetails, branchId);
@@ -214,7 +138,7 @@ const RegisterUser = asyncHanlder(async (req, res) => {
       data: { entityId, branchId, userId },
     });
   } catch (error) {
-    // Rollback transaction 
+    // Rollback transaction
     await client.query("ROLLBACK");
     console.error("Error creating user account:", error);
     res.status(500).json({ error: "Failed to create user account" });
