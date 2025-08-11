@@ -54,6 +54,13 @@ const RoleModal = ({ entityId, isEdit, values, close }) => {
   };
 
 
+
+  const handleDelete = () => {
+    const deleteRoleData = { role_id: values?.role_id, entityId }
+    deleteRoleMutation(deleteRoleData)
+  }
+
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#64748B]/75 dark:bg-slate-300/65 lg:left-[18rem]">
       <div className="relative w-[90%] max-w-md bg-neutral-50 dark:border-[#2E3A47] dark:bg-[#24303F] p-10 rounded-md shadow-lg">
@@ -139,7 +146,7 @@ const RoleModal = ({ entityId, isEdit, values, close }) => {
 
               <div className="mt-10 flex justify-evenly gap-6">
                 <button
-                  onClick={() => deleteRoleMutation(values?.role_id)}
+                  onClick={handleDelete}
                   className="border-2 p-2 px-5 bg-red-400 text-white rounded-md text-[17px] hover:bg-red-600"
                 >
                   Yes

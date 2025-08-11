@@ -25,10 +25,11 @@ export const useRoles = () => {
   };
 
   /* Delete Role */
-  const deleteRole = async (roleId, entityId) => {
+  const deleteRole = async (roleData) => {
     setIsLoading(true);
     setError(null);
-    const response = await fetch(`${BASE_URL}/roles/remove/${roleId}`, {
+    const { role_id, entityId } = roleData;
+    const response = await fetch(`${BASE_URL}/roles/remove/${role_id}`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -50,12 +51,12 @@ export const useRoles = () => {
 
   /* Update Role */
 
-  const updateRole = async (roleData, entityId) => {
+  const updateRole = async (roleData) => {
     setIsLoading(true);
     setError(null);
-    console.log("Form Reached");
+    // console.log("Form Reached");
 
-    const { name, role_id,entityId } = roleData;
+    const { name, role_id, entityId } = roleData;
 
     const Id = Number(role_id);
 
