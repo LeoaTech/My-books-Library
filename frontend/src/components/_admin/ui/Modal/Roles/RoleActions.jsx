@@ -10,7 +10,7 @@ const schema = z.object({
   name: z.string().min(2, { message: "Please Enter a Role Name" }),
 });
 
-const RoleModal = ({ isEdit, values, close }) => {
+const RoleModal = ({ entityId, isEdit, values, close }) => {
   const queryClient = useQueryClient();
 
   const { updateRole, deleteRole, deleteRoleText } = useRoles();
@@ -49,7 +49,7 @@ const RoleModal = ({ isEdit, values, close }) => {
   });
 
   const onSubmit = async (data) => {
-    const updateRole = { ...data, role_id: values?.role_id };
+    const updateRole = { ...data, role_id: values?.role_id, entityId };
     await updateRoleMutation(updateRole);
   };
 
