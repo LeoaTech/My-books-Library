@@ -31,7 +31,7 @@ passport.use(
         // Check if the user already exists in the database
         const query = `
         SELECT 
-        u.id, u.email,u.name, u.password, u.branch_id, u.role_id,
+        u.id, u.email,u.name, u.branch_id, u.role_id,
         b.entity_id , b.name AS branch_name,
         e.name AS entity_name,
         r.name AS role_name
@@ -129,7 +129,7 @@ passport.deserializeUser(async (user, done) => {
 
   try {
     const query = `SELECT 
-        u.id, u.email,u.name, u.password, u.branch_id, u.role_id,
+        u.id, u.email,u.name, u.branch_id, u.role_id,
         b.entity_id , b.name AS branch_name,
         e.name AS entity_name,
         r.name AS role_name
