@@ -273,7 +273,6 @@ const LoginUser = asyncHanlder(async (req, res) => {
 
         const refresh_token = refreshToken(user_info); //refresh token
 
-    
         // Set the cookie with refresh token
         res.cookie("refreshToken", refresh_token, {
           httpOnly: true,
@@ -315,50 +314,18 @@ const LoginUser = asyncHanlder(async (req, res) => {
 // User Logout
 
 const Logout = asyncHanlder(async (req, res) => {
+  const cookies = req.cookies;
+  if (!cookies["refreshToken"]) {
+    return res.status(401).json({ message: "unauthorized Cookie not found" });
+  }
   try {
-    const cookies = req.cookies;
-    if (!cookies["refreshToken"]) {
-      return res.status(401).json({ message: "unauthorized Cookie not found" });
-    }
     if (cookies["refreshToken"]) {
       const TokenRefresh = cookies["refreshToken"];
-
-      // Check if refresh token from cookie is same that we saved in db
-      const foundJWToken = await db.query(
-        "select * from tokens where token = $1",
-        [TokenRefresh]
-      );
-
-      // console.log(foundJWToken?.rows[0]);
-      if (!foundJWToken) {
-        res.clearCookie("refreshToken", {
-          httpOnly: true,
-          sameSite: "none", //"strict",
-          secure: false,
-        });
-        return res.status(204).json({ message: "Cookie deleted" });
-      }
-
-      let expired_at = new Date();
-      // Delete the token from the db
-      try {
-        // Update Tokens table to remove the token data
-        const dbToken = await db.query(
-          `Update tokens set token=$1, expired_at=$2 where user_id= $3 RETURNING *`,
-          ["", expired_at, foundJWToken?.rows[0]?.user_id]
-        );
-
-        // console.log(dbToken?.rows[0]);
-      } catch (error) {
-        // console.log(error, "User token Insertion Failed");
-        return res.sendStatus(401);
-      }
-      // in production add the secure flag true with cookie
 
       res.clearCookie("refreshToken", {
         httpOnly: true,
         sameSite: "None", // "strict",
-        secure: true,
+        secure: false, //true,
         maxAge: 24 * 60 * 60 * 1000, //1 day
       });
       res.clearCookie("refreshToken", {
@@ -378,89 +345,90 @@ const Logout = asyncHanlder(async (req, res) => {
 
 // Get refersh token
 const RefreshToken = async (req, res) => {
-  try {
-    const cookies = req.cookies;
-    if (!cookies["refreshToken"]) {
-      return res.status(401).json({ message: "Unauthorized Access Denied" });
-    }
+  const cookies = req.cookies;
+  if (!cookies["refreshToken"]) {
+    return res.status(401).json({ message: "Unauthorized Access Denied" });
+  }
 
+  try {
     const TokenRefresh = cookies["refreshToken"];
 
-    // Check if refresh token from cookie is same that we saved in db
-    const foundJWToken = await db.query(
-      "select * from tokens where token = $1",
-      [TokenRefresh]
-    );
-
-    // Check if user id exists in table with this token user id
-    const foundUser = await db.query("select * from users where id =$1", [
-      foundJWToken?.rows[0]?.user_id,
-    ]);
-
-    // console.log(foundJWToken, "db token found");
-
-    if (!foundJWToken) {
-      return res
-        .status(401)
-        .json({ message: "Invalid Token... User not found" });
-    }
-
-    let userData;
-    if (foundUser) {
-      userData = foundUser?.rows[0];
-    }
-
-    // Find role name for Each role_id
-
-    const findRoleName = await db.query(
-      "SELECT name FROM roles WHERE role_id=$1",
-      [userData?.role_id]
-    );
-
-    let role_name;
-    if (findRoleName?.rowCount > 0) {
-      role_name = findRoleName?.rows[0]?.name;
-    } else {
-      role_name = "";
-    }
     // Verify Refresh token to generate new access token
     jwt.verify(
       TokenRefresh,
       process.env.JWT_REFRESH_SECRET,
       asyncHanlder(async (err, decoded) => {
-        if (err)
-          return res.json({
+        if (err) {
+          return res.status(401).json({
             error: err,
             message: "Forbidden Access.. Invalid Token ",
           });
+        }
+        console.log(decoded, "Decoded login cred");
+        
+        const result = await db.query(
+          `
+        SELECT 
+        u.id, u.email,u.name, u.branch_id, u.role_id,
+        b.entity_id , b.name AS branch_name,
+        e.name AS entity_name,
+        r.name AS role_name
+      FROM users u
+      JOIN branches b ON u.branch_id = b.id
+      JOIN entity e  ON b.entity_id  = e.id
+      JOIN roles r ON u.role_id = r.role_id
+      WHERE u.id = $1
+      `,
+          [decoded?.data?.userId]
+        );
 
+        console.log(result.rows[0], "Refresh Result");
+        
+        if (result.rows.length === 0) {
+          return res.status(401).json({ error: "Invalid refresh token" });
+        }
+
+        const user = result.rows[0];
+
+        console.log(user, "refresh");
+
+        const user_info = {
+          userId: user.id,
+          roleId: user.role_id,
+          branchId: user.branch_id,
+          entityId: user.entity_id,
+        };
         // If verified the http only cookie, grant new access token
         const accessToken = jwt.sign(
           {
-            UserInfo: {
-              id: foundJWToken?.rows[0]?.id,
-              role_id: userData?.role_id,
-            },
+            UserInfo: user_info,
           },
           process.env.JWT_SECRET,
-          { expiresIn: "40s" } //production for 5 min
+          { expiresIn: "10s" } //production for 1h
         );
 
         res.send({
           accessToken,
           user: {
-            name: userData?.name,
-            email: userData?.email,
-            role: userData?.role_id,
-            role_name: role_name,
+            id: user?.id,
+            name: user?.name,
+            email: user?.email,
+            roleId: user?.role_id,
+            role_name: user?.role_name,
+            branchId: user.branch_id,
+            branchName: user.branch_name,
+            entityId: user.entity_id,
+            entityName: user.entity_name,
           },
-          message: "Success to Authorized",
+          message: "Token Refreshed Successfully",
         });
       })
     );
   } catch (error) {
     console.log(error);
-    return res.json({ message: "UnAuthorized" });
+    return res
+      .status(401)
+      .json({ message: "UnAuthorized! Refresh Token is Invalid" });
   }
 };
 
