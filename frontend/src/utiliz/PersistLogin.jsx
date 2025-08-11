@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { useAuthContext } from "../hooks/useAuthContext";
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import useRefreshToken from "../hooks/useRefreshToken";
 
 const PersistLogin = () => {
   const [isLoading, setIsLoading] = useState(true);
-  const { auth, persist } = useAuthContext();
+  const { auth, persist, setAuth } = useAuthContext();
+  const navigate = useNavigate();
   const refresh = useRefreshToken();
+  // console.log(persist, "Persist", auth, "Auth");
 
   //   This effect wil call refresh token only when access token expired
   useEffect(() => {
@@ -15,20 +17,28 @@ const PersistLogin = () => {
       try {
         await refresh();
       } catch (error) {
-        console.log(error);
+        // Catch the refresh Token expired error 
+        // console.log(error);
+        if (error?.message == "Session expired, please log in again") {
+          // Clear auth state and redirect to login
+          setAuth(null);
+          localStorage.removeItem('auth-source');
+          localStorage.removeItem('user');
+          navigate('/', { state: { message: 'Your session has expired. Please log in again.' } });
+        }
       } finally {
         isMounted && setIsLoading(false);
       }
     };
 
-    !auth?.accessToken ? verifyRefreshToken() : setIsLoading(false);
+    persist && !auth?.accessToken ? verifyRefreshToken() : setIsLoading(false);
 
     return () => {
       isMounted = false;
     };
   }, []);
 
- 
+
   return (
     <>
       {!persist ? (
