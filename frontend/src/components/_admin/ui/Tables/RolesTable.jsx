@@ -3,13 +3,18 @@ import { NewRole, RoleModal } from "../Modal";
 import { useFetchRoles } from "../../../../hooks/users/roles/useFetchRole";
 import { MdEdit } from "react-icons/md";
 import { HiChevronDoubleLeft, HiChevronDoubleRight } from "react-icons/hi";
+import { useAuthContext } from "../../../../hooks/useAuthContext";
 
 const RolesTable = ({ open, setOpenRoleModal }) => {
   const { isPending, data } = useFetchRoles();
+
+  // Get the Entity ID linked to the current user
+  const { auth } = useAuthContext()
+
+  const EntityId = auth.entityId || null;
   const [editRole, setEditRole] = useState(false);
   const [deleteRole, setDeleteRole] = useState(false);
   const [roleData, setRoleData] = useState();
-
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage] = useState(8);
 
@@ -34,6 +39,8 @@ const RolesTable = ({ open, setOpenRoleModal }) => {
     setEditRole(false);
     setDeleteRole(false);
   };
+
+  // console.log(data?.roles);
 
   const currentRows = data?.roles?.slice(indexOfFirstRow, indexOfLastRow);
 
@@ -74,7 +81,7 @@ const RolesTable = ({ open, setOpenRoleModal }) => {
                   </p>
                 </td>
                 <td className="border-b border-[#eee] py-5 px-4 pl-5 dark:border-[#2E3A47] xl:pl-11">
-                {new Date(role?.created_at).toDateString()} {" "} - {" "}
+                  {new Date(role?.created_at).toDateString()} {" "} - {" "}
                   {new Date(role?.created_at).toLocaleTimeString()}                 </td>
                 <td className="border-b border-[#eee] py-5 px-8 dark:border-[#2E3A47]">
                   <div className="flex items-center space-x-3.5">
@@ -151,16 +158,16 @@ const RolesTable = ({ open, setOpenRoleModal }) => {
       </div>
 
       {/* Save New Role Modal */}
-      {open && <NewRole setOpenRoleModal={setOpenRoleModal} />}
+      {open && <NewRole entityId={EntityId} setOpenRoleModal={setOpenRoleModal} />}
 
       {/* UPDATE Role Modal */}
       {editRole && (
-        <RoleModal isEdit={editRole} values={roleData} close={closeModal} />
+        <RoleModal entityId={EntityId} isEdit={editRole} values={roleData} close={closeModal} />
       )}
 
       {/* DELETE Role Modal */}
       {deleteRole && (
-        <RoleModal close={closeModal} isEdit={editRole} values={roleData} />
+        <RoleModal entityId={EntityId} close={closeModal} isEdit={editRole} values={roleData} />
       )}
     </div>
   );
