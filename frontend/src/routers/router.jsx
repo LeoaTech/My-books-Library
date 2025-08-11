@@ -59,8 +59,14 @@ const router = createBrowserRouter(
 
       {/* Authentication Routes */}
       <Route element={<AuthLayout />}>
+
+        {/* App auth routes to register new library or sign in to their library */}
+        <Route path="/register" element={<Register />} />
+
+
+        {/* Library's routes to add new users, roles or customers */}
         <Route path="/signin" element={<SignIn />} />
-        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/signup" element={<SignUp />} />
         <Route path="/forgotpassword/:id/:token" element={<ResetPassword />} />
         <Route path="/forgot-password" element={<ForgetPassword />} />
       </Route>
@@ -68,6 +74,7 @@ const router = createBrowserRouter(
 
       <Route element={<PersistLogin />}>
         <Route path="/" element={<App />} />
+        {/* <Route path="/lib/:entity_id" element={} */}
 
         {/* Protected Dashboard Routes */}
         <Route element={<RequiredAuth allowedRoles={["admin", "vendor", "librarian"]} />}>
