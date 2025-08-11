@@ -224,9 +224,20 @@ const LoginUser = asyncHanlder(async (req, res) => {
     }
     try {
       // Verify user email in DB
-      const userEmail = await db.query(`SELECT * from users where email= $1`, [
-        email,
-      ]);
+      const userEmail = await db.query(
+        `SELECT 
+        u.id, u.email,u.name, u.password, u.branch_id, u.role_id,
+        b.entity_id , b.name AS branch_name,
+        e.name AS entity_name,
+        r.name AS role_name
+      FROM users u
+      JOIN branches b ON u.branch_id = b.id
+      JOIN entity e  ON b.entity_id  = e.id
+      JOIN roles r ON u.role_id = r.role_id
+      WHERE u.email = $1
+        `,
+        [email]
+      );
       let user = userEmail?.rows[0];
 
       // console.log(user, "Login");
@@ -242,80 +253,27 @@ const LoginUser = asyncHanlder(async (req, res) => {
         // throw new Error("Invalid Password");
       }
       // Email and password match
+      // console.log(user, "Login");
 
       if (user && matchPassword) {
-        // Assign a Token to the user
+        const user_info = {
+          userId: user.id,
+          roleId: user.role_id,
+          branchId: user.branch_id,
+          entityId: user.entity_id,
+        };
+        // Assign a Token to the user by role_id,branch_id,entity_id
         const AccessToken = jwt.sign(
           {
-            UserInfo: {
-              id: user.id,
-              role_id: user.role_id,
-            },
+            UserInfo: user_info,
           },
           process.env.JWT_SECRET,
-          { expiresIn: "30s" } //Update Expired time in Production
+          { expiresIn: "10s" }
         );
 
-        const user_info = { id: user.id, role_id: user?.role_id };
         const refresh_token = refreshToken(user_info); //refresh token
 
-        // Find role name for Each role_id
-
-        const findRoleName = await db.query(
-          "SELECT name FROM roles WHERE role_id=$1",
-          [user?.role_id]
-        );
-
-        let role_name;
-        if (findRoleName?.rowCount > 0) {
-          role_name = findRoleName?.rows[0]?.name;
-        } else {
-          role_name = "";
-        }
-
-        let vendorID;
-        if (role_name === "vendor") {
-          const findVendorID = await db.query(
-            `Select id From vendors where role_id=$1 AND name = $2`,
-            [user?.role_id, user.name]
-          );
-
-          console.log(findVendorID, "Find Vendor ID");
-
-          vendorID = findVendorID.rows[0].id;
-        }
-        console.log(vendorID, "Vendor ID");
-
-        // Check if user id exists in Tokens table or not
-        const isTokenExists = await db.query(
-          "SELECT * FROM tokens WHERE user_id=$1",
-          [user?.id]
-        );
-        const expired_at = new Date();
-        expired_at?.setDate(expired_at.getDate() + 1);
-        if (isTokenExists?.rowCount > 0) {
-          // Update Token info on sign in
-          try {
-            // create user
-            const dbToken = await db.query(
-              `Update tokens set token=$1, expired_at=$2 WHERE user_id=$3 RETURNING *`,
-              [refresh_token, expired_at, user?.id]
-            );
-          } catch (error) {
-            console.log(error, "User token update in db error");
-          }
-        } else {
-          try {
-            // create user refresh token in db on first login
-            const dbToken = await db.query(
-              `INSERT INTO tokens ( user_id, token, expired_at) VALUES ($1, $2, $3) RETURNING *`,
-              [user?.id, refresh_token, expired_at]
-            );
-          } catch (error) {
-            console.log(error, "User token insert in db error");
-          }
-        }
-
+    
         // Set the cookie with refresh token
         res.cookie("refreshToken", refresh_token, {
           httpOnly: true,
@@ -324,23 +282,21 @@ const LoginUser = asyncHanlder(async (req, res) => {
           maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day max
         });
         return res.send({
-          AccessToken,
-          user:
-            role_name === "vendor"
-              ? {
-                  name: user?.name,
-                  email: user?.email,
-                  role: user?.role_id,
-                  role_name: role_name,
-                  vendor_id: vendorID,
-                }
-              : {
-                  name: user?.name,
-                  email: user?.email,
-                  role: user?.role_id,
-                  role_name: role_name,
-                },
-          message: "success",
+          accessToken: AccessToken,
+          user: {
+            id: user?.id,
+            name: user?.name,
+            email: user?.email,
+            roleId: user?.role_id,
+            role_name: user?.role_name,
+            branchId: user.branch_id,
+            branchName: user.branch_name,
+            entityId: user.entity_id,
+            entityName: user.entity_name,
+            authSource: "email",
+          },
+          message: "Login Successfully",
+          redirect: `http://localhost:5173/`,
         });
       } else {
         return res.status(400).json({ error: "Invalid Credentials" });
