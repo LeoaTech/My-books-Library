@@ -106,12 +106,27 @@ const DeleteRole = asyncHanlder(async (req, res) => {
 
     console.log(req.params);
 
-    const findRoleId = await db.query(`SELECT * FROM roles WHERE role_id =$1`, [
-      role_id,
-    ]);
+    if (!role_id) {
+      res.status(400).json({ message: "Role ID Missing " });
+    }
+
+    const { entityId } = req.body;
+    if (!entityId) {
+      res
+        .status(400)
+        .json({ message: "Entity ID Missing, Failed to Delete Role ID" });
+    }
+    const findRoleId = await db.query(
+      `SELECT role_id FROM roles WHERE role_id =$1 and entity_id =$2`,
+      [role_id, entityId]
+    );
+
+    if (findRoleId.rowCount == 0) {
+      res.status(400).json({ message: "Role Id not Found" });
+    }
 
     const findUserRoleId = await db.query(
-      `SELECT * FROM users2 WHERE role_id =$1`,
+      `SELECT id FROM users WHERE role_id =$1`,
       [role_id]
     );
 
@@ -123,13 +138,9 @@ const DeleteRole = asyncHanlder(async (req, res) => {
       });
       return;
     } else {
-      if (findRoleId?.rowCount > 0) {
-        await db.query(`DELETE from roles WHERE role_id =$1`, [role_id]);
+      await db.query(`DELETE from roles WHERE role_id =$1`, [role_id]);
 
-        res.status(200).json({ message: "Delete Role" });
-      } else {
-        res.status(200).json({ message: "Role Id not Exists" });
-      }
+      res.status(200).json({ message: "Delete Role" });
     }
   } catch (error) {
     console.log(error);
