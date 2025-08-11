@@ -18,15 +18,17 @@ const fetchRoles = async ({ signal }) =>
         return null; // Ignore AbortError
       }
       console.error("Fetch error:", err);
-      throw err; // Re-throw other errors
+      throw err; // throw other errors
     });
 
 export const useFetchRoles = () => {
   const { auth } = useAuthContext();
+
+  const isAuth = auth?.accessToken ? true: false
   return useQuery({
     queryKey: ["roles"],
     queryFn: fetchRoles,
-    enabled: auth.auth,
+    enabled: isAuth ,
     throwOnError: (error) => error.name !== "AbortError", // Ignore AbortError in React Query
   });
 };
