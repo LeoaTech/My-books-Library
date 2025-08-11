@@ -5,7 +5,7 @@ const db = require("../../config/dbConfig");
 const FetchRoles = asyncHanlder(async (req, res) => {
   // console.log(req.user, "User  Roles details");
 
-  const entityId = req.user.entityId || req.user.entity_id
+  const entityId = req.user.entityId || req.user.entity_id;
   try {
     const rolesQuery = `SELECT * FROM roles where entity_id =$1`;
     const getAllRoles = await db.query(rolesQuery, [entityId]);
@@ -23,18 +23,33 @@ const FetchRoles = asyncHanlder(async (req, res) => {
 // Create New Role
 
 const NewRole = asyncHanlder(async (req, res) => {
-  try {
-    const roleData = req.body;
+  // console.log(req.body);
 
-    const { name } = roleData;
-    const addRoleQuery = `INSERT INTO roles (name) values ($1) Returning *`;
-    const saveNewRole = await db.query(addRoleQuery, [name]);
+  const roleData = req.body.roleForm;
+  // console.log(roleData)
+  const { name, entityId } = roleData;
+
+  if (!name) {
+    return res.status(400).json({ message: "Invalid Role Name" });
+  }
+  if (!entityId) {
+    return res.status(400).json({ message: "Entity ID Missing" });
+  }
+  let lowerCaseName = name.toLowerCase(); //always saved in lower case
+  try {
+    const addRoleQuery = `INSERT INTO roles (name,entity_id) values ($1,$2) Returning *`;
+    const saveNewRole = await db.query(addRoleQuery, [lowerCaseName, entityId]);
 
     console.log(saveNewRole?.rows[0]);
 
-    res.status(200).json({ message: "New Role", result: saveNewRole?.rows[0] });
+    res
+      .status(200)
+      .json({ message: "New Role", newRole: saveNewRole?.rows[0] }); //saveNewRole?.rows[0]
   } catch (error) {
     console.log(error);
+    res
+      .status(500)
+      .json({ message: error.message || "Failed to Create New Role" });
   }
 });
 
