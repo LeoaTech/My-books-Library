@@ -55,7 +55,7 @@ export const useRoles = () => {
     setError(null);
     console.log("Form Reached");
 
-    const { name, role_id } = roleData;
+    const { name, role_id,entityId } = roleData;
 
     const Id = Number(role_id);
 
