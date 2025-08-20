@@ -2,23 +2,29 @@ const asyncHanlder = require("express-async-handler");
 const db = require("../../config/dbConfig");
 
 const getAllUsers = asyncHanlder(async (req, res) => {
+  // console.log(req.user, "Query user");
   const userQuery = `SELECT
-u.id AS user_id,
-u.email,
-u.role_id,
-r.name AS role_name,
-u.name AS name,
-ARRAY_AGG(p.name) AS permissions
+    u.id AS user_id,
+    u.email,
+    uer.role_id,
+    uer.entity_id,
+    uer.branch_id,
+    r.name AS role_name,
+    u.name AS name,
+    ARRAY_AGG(p.name) AS permissions
 FROM
-public.users u
+    public.users u
 JOIN
-public.role_permissions rp ON u.role_id = rp.role_id
+    public.user_entity_roles uer ON u.id = uer.user_id
 JOIN
-public.roles r ON r.role_id = u.role_id
+    public.role_permissions rp ON uer.role_id = rp.role_id
 JOIN
-public.permissions p ON rp.permission_id = p.permission_id
+    public.roles r ON r.role_id = uer.role_id
+JOIN
+    public.permissions p ON rp.permission_id = p.permission_id
 GROUP BY
-u.id, u.email, u.role_id, r.name ; `;
+    u.id, u.email, uer.role_id, uer.entity_id, uer.branch_id, r.name, u.name;
+`;
 
   const userExists = await db.query(userQuery);
 
@@ -26,6 +32,44 @@ u.id, u.email, u.role_id, r.name ; `;
   res.status(200).json({
     data: userExists?.rows,
     message: "All users routes are available",
+  });
+});
+
+// Get a Specific Entity or a Library users only
+const getLibraryUsers = asyncHanlder(async (req, res) => {
+  // console.log(req.user, "Query user credentials");
+
+  const entityId= req?.user?.entityId || req.user?.entity_id;
+  const userQuery = `SELECT
+    u.id AS user_id,
+    u.email,
+    uer.role_id,
+    uer.entity_id,
+    uer.branch_id,
+    r.name AS role_name,
+    u.name AS name,
+    ARRAY_AGG(p.name) AS permissions
+FROM
+    public.users u
+JOIN
+    public.user_entity_roles uer ON u.id = uer.user_id
+JOIN
+    public.role_permissions rp ON uer.role_id = rp.role_id
+JOIN
+    public.roles r ON r.role_id = uer.role_id
+JOIN
+    public.permissions p ON rp.permission_id = p.permission_id
+WHERE
+    uer.entity_id = $1
+GROUP BY
+    u.id, u.email, uer.role_id, uer.entity_id, uer.branch_id, r.name, u.name; `;
+
+  const userExists = await db.query(userQuery, [entityId]);
+
+  // console.log(userExists?.rows, "User Found");
+  res.status(200).json({
+    data: userExists?.rows,
+    message: "Successfully fetched a library users ",
   });
 });
 
@@ -104,15 +148,13 @@ const DeleteUser = asyncHanlder(async (req, res) => {
   console.log(req.params);
 
   try {
-    const deleteUserQuery = await db.query(
-      `DELETE FROM users WHERE id=$1`,
-      [user_id]
-    ); 
+    const deleteUserQuery = await db.query(`DELETE FROM users WHERE id=$1`, [
+      user_id,
+    ]);
 
     console.log(deleteUserQuery?.rowCount);
 
     res.status(200).json({ message: "Delete. user Successfully" });
-
   } catch (error) {
     console.log(error);
   }
@@ -124,4 +166,5 @@ module.exports = {
   updateUserPrfile,
   getUserProfile,
   getAllUsers,
+  getLibraryUsers,
 };
