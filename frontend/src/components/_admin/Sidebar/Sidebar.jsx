@@ -206,7 +206,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
           </div>
 
           {/* <!-- Roles And Permissions Menu */}
-          {role === "admin" && (
+          {role === "owner" && (
             <div>
               <h3 className="mb-4 ml-4 text-md font-semibold text-[#8A99AF] border-b">
                 Roles and Permissions
