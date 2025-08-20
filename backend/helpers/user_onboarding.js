@@ -1,4 +1,64 @@
+const db = require("../config/dbConfig.js");
 
+// Generate subdomain from organization name
+function generateSubdomain(name) {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "")
+    .substring(0, 50);
+}
+
+// Check subdomain and get a unique subdomain
+
+async function checkSubdomain(client, subdomain) {
+  let newSubdomain = subdomain;
+  while (true) {
+    const subdomainCheck = await db.query(
+      "SELECT id FROM entity WHERE subdomain = $1",
+      [newSubdomain]
+    );
+
+    if (subdomainCheck.rows.length === 0) {
+      return newSubdomain;
+    }
+
+    // Append a random number to try again
+    newSubdomain = subdomain + Math.floor(Math.random() * 10000);
+  }
+}
+
+// allow all Permissions for Owner roles
+
+async function addPermissions(client, roleId) {
+  const getAllPermissions = await db.query(
+    `Select permission_id from permissions`
+  );
+
+  console.log(getAllPermissions.rowCount, "Get all permissions");
+
+  if (getAllPermissions.rows.length > 0) {
+    const values = getAllPermissions.rows
+      .map((p) => `(${roleId}, ${p.permission_id})`)
+      .join(",");
+
+    console.log(values, "Values");
+
+    const addPermissionQuery = `
+      INSERT INTO role_permissions (role_id, permission_id)
+      VALUES
+        ${values}
+      RETURNING *;
+    `;
+
+    const saveNewRolePermissions = await client.query(addPermissionQuery);
+    console.log(saveNewRolePermissions.rowCount);
+
+    return saveNewRolePermissions?.rows || [];
+  } else {
+    console.log("No Permissions founds");
+    return [];
+  }
+}
 
 // Database operation functions
 async function createEntity(client, entityData) {
@@ -57,7 +117,6 @@ async function createRole(client, entityId, role_type) {
   return result.rows[0];
 }
 
-
 async function createUser(client, userData) {
   const {
     fullName,
@@ -95,5 +154,7 @@ module.exports = {
   createEntity,
   createRole,
   createUser,
- 
+  addPermissions,
+  checkSubdomain,
+  generateSubdomain,
 };
