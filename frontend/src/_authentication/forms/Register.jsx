@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import LoadingSpinner from "../../components/_admin/Loader/LoadingSpinner";
 import { useSignup } from "../../hooks/useSignup";
 import { useNavigate } from "react-router-dom";
+import GoogleAuthLink from "./GoogleAuthLink";
 
 const schema = z.object({
     fullName: z.string(),
@@ -56,15 +57,21 @@ const Register = () => {
     return (
         <div className=" h-screen flex justify-center items-center ">
 
-            <div className="w-full max-w-2xl border border-[#E2E8F0] rounded-lg shadow-lg bg-white dark:border-[#2E3A47] dark:bg-[#24303F] flex flex-col">
+            <div className=" mt-2 w-full max-w-2xl border border-[#E2E8F0] rounded-lg shadow-lg bg-white dark:border-[#2E3A47] dark:bg-[#24303F] flex flex-col">
 
 
-                <h1 className="mt-2 text-2xl font-bold mb-6 text-gray-800 text-center">
+                <h1 className="mt-4 text-2xl font-bold mb-6 text-gray-800 text-center">
                     Create Account
                 </h1>
+                <div className=" flex justify-center items-center">
+                    <div className="custom-form">
+
+                        <GoogleAuthLink action="create_lib" />
+                    </div>
+                </div>
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                    <div className="overflow-y-auto p-6 sm:p-10 max-h-[calc(100vh-300px)]">
+                    <div className="overflow-y-auto p-6 sm:p-10 max-h-[calc(100vh-400px)]">
 
                         {/* User Account Details */}
                         <div>
