@@ -8,6 +8,8 @@ const {
   VerifyUserAuth,
   ResetPassword,
   SignupUser,
+  SigninUser,
+  SelectAccount,
 } = require("../../controllers/AuthController/AuthController.js");
 
 const router = express.Router();
@@ -17,10 +19,17 @@ router.post("/signup", SignupUser);
 
 // User Sign Up As a Library Owner
 
-router.post("/register",RegisterUser)
+router.post("/register",RegisterUser);
 
-// Log-in Route
+
+// Select an account
+router.post('/select-account', SelectAccount)
+
+// Log-in Route for Owner users only
 router.post("/signin", LoginUser);
+
+// Login to Library Domain directly.
+router.post("/login", SigninUser);
 
 // Logout Route for  email/password
 router.get("/user/logout", Logout);
