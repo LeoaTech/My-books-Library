@@ -6,6 +6,11 @@ const {
   createRole,
   createBranch,
   createUser,
+  addPermissions,
+  checkSubdomain,
+  generateSubdomain,
+  getEntity,
+  getBranch
 } = require("../../helpers/user_onboarding.js");
 const { pool } = require("../../config/dbConfig.js");
 
@@ -20,33 +25,138 @@ passport.use(
 
     async (request, accessToken, refreshToken, profile, done) => {
       const client = await pool.connect();
+      // Parse the state from the request
+      const stateBase64 = request.query.state || "";
+      let state;
+      try {
+        state = JSON.parse(Buffer.from(stateBase64, "base64").toString());
+        // console.log(state, "State");
+      } catch {
+        state = {};
+      }
+      const action = state.action || "login"; // Default to login if no action
 
       try {
-        console.log(profile, "USER PROFILE", refreshToken, "Tokens");
+        console.log(profile, "USER PROFILE", state);
         await client.query("BEGIN");
 
         if (!profile.email || !profile.displayName) {
           return done(new Error("Invalid Google profile data"), null);
         }
-        // Check if the user already exists in the database
-        const query = `
-        SELECT 
-        u.id, u.email,u.name, u.branch_id, u.role_id,
-        b.entity_id , b.name AS branch_name,
-        e.name AS entity_name,
-        r.name AS role_name
-      FROM users u
-      JOIN branches b ON u.branch_id = b.id
-      JOIN entity e  ON b.entity_id  = e.id
-      JOIN roles r ON u.role_id = r.role_id
-      WHERE u.email = $1
-        `;
-        const result = await db.query(query, [profile.email]);
+        let userId;
+        let userEntity = {};
+        if (action === "join_lib") {
+          const subdomain = state.subdomain;
+          if (!subdomain) {
+            throw new Error("Subdomain missing for library join");
+          }
 
-        let user;
-        if (result?.rows?.length > 0) {
-          user = result.rows[0].id;
-        } else {
+          // Check if the user already exists in the database
+          let userResult = await pool.query(
+            "SELECT id FROM users WHERE email = $1",
+            [profile.email]
+          );
+
+          if (userResult?.rows?.length > 0) {
+            // get the already existing user_id form db
+            userId = userResult.rows[0].id;
+          } else {
+            const userData = {
+              fullName: profile.displayName,
+              email: profile.email,
+              hashedPassword: "",
+              city: "",
+              country: "",
+              address: "",
+              phone: "",
+              img_url: profile?.picture || profile.photos?.[0]?.value,
+            };
+            // User doesn't exist, create a new user
+            const userResult = await createUser(client, userData);
+            console.log(userId, "User Created");
+
+            userId = userResult?.id;
+          }
+
+          const entityId = await getEntity(db, subdomain);
+
+          console.log("Step 1: ", entityId, " Entity Founded");
+
+          const branchId = await getBranch(db, entityId);
+
+          console.log("Step 2: ", branchId, "Branch Founded");
+
+          const role = await createRole(client, entityId, "customer");
+
+          console.log("Step 3: ", role.role_id, " role ID created");
+
+          const userRole = await client.query(
+            "INSERT INTO user_entity_roles (user_id, entity_id, branch_id, role_id) VALUES ($1, $2, $3, $4) RETURNING id",
+            [userId, entityId, branchId, role.role_id]
+          );
+
+          console.log("Step 4: ", userRole.rows[0], "User Entity Role Created");
+          await client.query("COMMIT");
+          userEntity = { userId, entityId, branchId, roleId: role.role_id };
+          return done(null, userEntity);
+        } else if (action === "create_lib") {
+          // Check if the user already exists in the database
+          let userResult = await pool.query(
+            "SELECT id FROM users WHERE email = $1",
+            [profile.email]
+          );
+
+          // User already exists
+          if (userResult?.rows?.length > 0) {
+            // get the already existing user_id form db
+            userId = userResult.rows[0].id;
+
+            // Check if user already has an "owner" role in any organization
+            const ownerCheck = await pool.query(
+              `
+              SELECT uer.user_id
+              FROM user_entity_roles uer
+              JOIN roles r ON uer.role_id = r.role_id
+              WHERE uer.user_id = $1 AND r.name = 'owner'
+             `,
+              [userId]
+            );
+
+            if (ownerCheck.rows.length > 0) {
+              await client.query("ROLLBACK");
+              return res.status(403).json({
+                error:
+                  "User already owns an Library. Please try with another email address to create library.",
+              });
+            }
+          } else {
+            // Before creating a user, Check if this email is not own a library
+            const userData = {
+              fullName: profile.displayName,
+              email: profile.email,
+              hashedPassword: "",
+              city: "",
+              country: "",
+              address: "",
+              phone: "",
+              img_url: profile?.picture || profile.photos?.[0]?.value,
+            };
+            // User doesn't exist, create a new user
+            const userResult = await createUser(client, userData);
+            console.log(userId, "User Created");
+
+            userId = userResult?.id;
+          }
+
+          // Generate a subdomain
+          const subdomain = generateSubdomain(profile.displayName);
+
+          console.log(subdomain, "subdomain created");
+
+          // make sure the subdomain for each entity_id is unique
+
+          const uniqueSubdomain = await checkSubdomain(client, subdomain);
+
           /* Create an Entity  */
 
           const entityData = {
@@ -60,52 +170,43 @@ passport.use(
             typeOfBooks: "",
             hasMultipleBranches: false,
             deliverIntercity: false,
+            uniqueSubdomain,
           };
-
           /* Create an Organization */
-          const entityId = await createEntity(client, entityData);
-          console.log(entityId, "entity Created");
+          const entity = await createEntity(client, entityData);
+          console.log(entity.id, "entity Created");
 
-          const branch = {
+          const branchData = {
             businessName: profile.displayName + "-branch",
             city: "",
             country: "",
             address: "",
             city: "",
             phone: "",
-            entityId,
+            entityId: entity.id,
           };
-          const branchId = await createBranch(client, branch, entityId);
-          console.log(branchId, "Branch Created");
+          const branch = await createBranch(client, branchData, entity.id);
+          console.log(branch.id, "Branch Created");
 
-          /* Create Role for this Entity ID */
-          const roleId = await createRole(client, entityId);
-          console.log(roleId, "Role Created");
+          /* Important: user Sign in with google account from library domain is customer */
+          const role = await createRole(client, entity.id, "owner");
+          console.log(role.role_id, "Role Created");
 
-          /* Create new user  */
-          const userData = {
-            fullName: profile.displayName,
-            email: profile.email,
-            hashedPassword: "",
-            city: "",
-            country: "",
-            address: "",
-            phone: "",
-            roleId,
-            img_url: profile?.picture || profile.photos?.[0]?.value,
-          };
-          // User doesn't exist, create a new user
-          const userId = await createUser(client, userData, branchId);
-          console.log(userId, "User Created");
+          // Add permissions => Allow all permissions to the `owner` role
+          const roleAdded = await addPermissions(client, role.role_id);
+          console.log(roleAdded, "Roles permissions added");
+
+          // Add the user Id associated entity, role_id and branch
+          const userRole = await client.query(
+            "INSERT INTO user_entity_roles (user_id, entity_id, branch_id, role_id) VALUES ($1, $2, $3, $4)",
+            [userId, entity.id, branch.id, role.role_id]
+          );
+          console.log(userRole, "Created new user with entity role");
           await client.query("COMMIT");
-
-          user = userId;
-
-          //  return the new user
-          return done(null, user);
+          userEntity = { userId,entityId: entity.id, branchId: branch.id, roleId: role.role_id };
+          return done(null, userEntity);
         }
-        // Return the existing user
-        return done(null, user);
+
       } catch (err) {
         // Handle errors
         await client.query("ROLLBACK");
@@ -125,20 +226,26 @@ passport.serializeUser((user, done) => {
 });
 
 passport.deserializeUser(async (user, done) => {
-  // console.log(user, "deserialize User");
+  console.log(user, "deserialize User");
 
   try {
-    const query = `SELECT 
-        u.id, u.email,u.name, u.branch_id, u.role_id,
-        b.entity_id , b.name AS branch_name,
-        e.name AS entity_name,
-        r.name AS role_name
-      FROM users u
-      JOIN branches b ON u.branch_id = b.id
-      JOIN entity e  ON b.entity_id  = e.id
-      JOIN roles r ON u.role_id = r.role_id
-      WHERE u.id= $1`;
-    const result = await db.query(query, [user]);
+    const result = await db.query(
+      `
+        SELECT 
+           uer.user_id, uer.entity_id, uer.branch_id, uer.role_id,
+           e.name AS entity_name, e.subdomain,
+           b.name AS branch_name,
+           r.name AS role_name,
+           u.email, u.name
+         FROM user_entity_roles uer
+         JOIN entity e ON uer.entity_id = e.id
+         JOIN branches b ON uer.branch_id = b.id
+         JOIN roles r ON uer.role_id = r.role_id
+         JOIN users u ON uer.user_id = u.id
+        WHERE uer.user_id = $1 AND uer.entity_id = $2 AND uer.branch_id = $3 AND uer.role_id = $4
+      `,
+      [user.userId, user.entityId, user.branchId, user.roleId]
+    );
 
     console.log(result.rows[0], "Deserialized user");
     if (result?.rows?.length > 0) {
