@@ -17,6 +17,8 @@ const {
   addPermissions,
   checkSubdomain,
   generateSubdomain,
+  getEntity,
+  getBranch,
 } = require("../../helpers/user_onboarding.js");
 // Generate Access JWT
 const generateToken = (data) => {
@@ -114,7 +116,7 @@ const RegisterUser = asyncHanlder(async (req, res) => {
       await client.query("ROLLBACK");
       return res.status(403).json({
         error:
-          "User already owns an Library. Please try with another email address to create library.",
+          "Failed to Create Library, User's email already associates to a Library as an owner",
       });
     }
     // Generate a subdomain
@@ -200,9 +202,6 @@ const RegisterUser = asyncHanlder(async (req, res) => {
     client.release();
   }
 });
-
-
-
 
 const LoginUser = asyncHanlder(async (req, res) => {
   const { email, password } = req.body;
@@ -317,6 +316,101 @@ const LoginUser = asyncHanlder(async (req, res) => {
   }
 });
 
+// Sign up to Join a Library from library domain (usign email and password)
+
+// Create New User Account
+const SignupUser = asyncHanlder(async (req, res) => {
+  const client = await pool.connect();
+
+  const { name, email, password, subdomain } = req.body;
+
+  if (!subdomain) {
+    return res
+      .status(400)
+      .json({
+        message: `No Domain is provided `,
+      });
+  }
+  console.log(req.body, "Domain Signup Form");
+
+  if (!name || !email || !password) {
+    res.status(400);
+    throw Error("Please add all required fields");
+  }
+  // Vaidation of Signup Form fileds
+  if (!validator.isEmail(email)) {
+    throw Error("Email must be a valid email");
+  }
+  // if (!validator.isStrongPassword(password)) {
+  //   throw Error("Please enter a strong password");
+  // }
+  try {
+    await client.query("BEGIN");
+
+    const entityId = await getEntity(db, subdomain);
+
+    // console.log("Step 1: ", entityId, " Entity Founded");
+
+    const branchId = await getBranch(db, entityId);
+
+    // console.log("Step 2: ", branchId, "Branch Founded");
+
+    const role = await createRole(client, entityId, "customer");
+
+    // console.log("Step 3: ", role.role_id, " role ID created");
+
+    // check if user with email exists in DB
+    const userExists = await db.query("SELECT id FROM users Where email = $1", [
+      email,
+    ]);
+
+    // console.log("Step 4: ", userExists, "user Founded");
+    let userId;
+    if (userExists?.rowCount == 0) {
+      // Create as a  New User
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt?.hash(password, salt);
+
+      const userDetails = {
+        fullName: name,
+        email,
+        hashedPassword,
+        city: "",
+        country: "",
+        address: "",
+        phone: "",
+        img_url: "",
+      };
+
+      const userResult = await createUser(client, userDetails);
+      userId = userResult.id;
+    } else {
+      userId = userExists?.rows[0]?.id;
+    }
+    // console.log("Step 5: ", userId, " add user email with new branch ");
+    // Add the user Id's associated entity, role_id and branch_id in the user_entity_roles table
+    const userRole = await client.query(
+      "INSERT INTO user_entity_roles (user_id, entity_id, branch_id, role_id) VALUES ($1, $2, $3, $4)",
+      [userId, entityId, branchId, role.role_id]
+    );
+
+    // console.log("Step 6: ",userRole.rows, "User Entity Role created");
+    await client.query("COMMIT");
+
+    return res.status(200).json({
+      message: "Congratulations, you signed up successfully, Please Login to your account",
+    });
+  } catch (error) {
+    await client.query("ROLLBACK");
+    return res
+      .status(500)
+      .json({ message: error.message || "Failed to signup user" });
+  } finally {
+    client.release();
+  }
+});
+
+// Sign in to a Library Domain (using email and password)
 // User Logout
 
 const Logout = asyncHanlder(async (req, res) => {
