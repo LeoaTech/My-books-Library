@@ -1,11 +1,10 @@
 import { useForm } from "react-hook-form";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import GoogleIcon from "../../assets/google.svg";
+import {  useNavigate, useParams } from "react-router-dom";
 import { useSignup } from "../../hooks/useSignup";
 import { useEffect } from "react";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { BASE_URL } from "../../utiliz/baseAPIURL";
+import GoogleAuthLink from "./GoogleAuthLink";
 
 const schema = z.object({
   name: z.string(),
@@ -15,7 +14,8 @@ const schema = z.object({
     .min(6, { message: "Password length must be at least 6 characters" }),
 });
 const Signup = () => {
-  const { search } = useLocation();
+
+  const params = useParams();
   const navigate = useNavigate();
   const { isLoading, error, signup, message } = useSignup();
   const {
@@ -39,31 +39,32 @@ const Signup = () => {
   const onSubmit = async (data) => {
     const { email, name, password } = data;
 
-    await signup(email, password, name);
+    await signup(email, password, name, params?.subdomain);
   };
 
   useEffect(() => {
-    if (isSubmitSuccessful) {
+   if(isSubmitSuccessful){
+     if (error == null) {
       setTimeout(() => {
         reset();
-        navigate("/signin"), 2000;
-      });
+        if (params.subdomain) {
+          navigate(`/${params.subdomain}/signin`)
+        } else {
+          navigate("/signin")
+        }
+
+      }, 2000);
     }
-  }, [reset, isSubmitSuccessful]);
+   }
+  }, [reset, error,isSubmitSuccessful]);
 
   return (
-    <div className="py-40 h-screen flex flex-1 justify-center items-center ">
+    <div className="h-screen flex flex-1 justify-center items-center ">
       <div className="rounded-lg border border-[#E2E8F0] bg-white p-20 shadow-lg dark:border-[#2E3A47] dark:bg-[#24303F]">
         <form className="custom-form" onSubmit={handleSubmit(onSubmit)}>
           <h1 className="form-title">Create account</h1>
           <div className="custom-form">
-            <Link
-              className="google-oauth-button"
-              to={`${BASE_URL}/auth/google`}
-            >
-              <img src={GoogleIcon} width={22} height={22} /> Continue with
-              Google
-            </Link>
+            {params.subdomain ? <GoogleAuthLink action="join_lib" subdomain={params.subdomain} /> : <GoogleAuthLink action="create_lib" />}
             <input
               className="custom-input"
               placeholder="Name"
@@ -90,6 +91,7 @@ const Signup = () => {
               className="custom-input"
               placeholder="Password"
               type="password"
+              autoComplete="current-password"
               {...register("password")}
             />
             {errors?.password?.message && (
@@ -117,7 +119,7 @@ const Signup = () => {
               Already have an Account?{" "}
               <span
                 className="text-[#3C50E0] cursor-pointer"
-                onClick={() => navigate("/signin")}
+                onClick={() => params?.subdomain ? navigate(`/${params.subdomain}/signin`) : navigate("/signin")}
               >
                 Sign In
               </span>
