@@ -325,11 +325,9 @@ const SignupUser = asyncHanlder(async (req, res) => {
   const { name, email, password, subdomain } = req.body;
 
   if (!subdomain) {
-    return res
-      .status(400)
-      .json({
-        message: `No Domain is provided `,
-      });
+    return res.status(400).json({
+      message: `No Domain is provided `,
+    });
   }
   console.log(req.body, "Domain Signup Form");
 
@@ -398,7 +396,8 @@ const SignupUser = asyncHanlder(async (req, res) => {
     await client.query("COMMIT");
 
     return res.status(200).json({
-      message: "Congratulations, you signed up successfully, Please Login to your account",
+      message:
+        "Congratulations, you signed up successfully, Please Login to your account",
     });
   } catch (error) {
     await client.query("ROLLBACK");
@@ -411,6 +410,130 @@ const SignupUser = asyncHanlder(async (req, res) => {
 });
 
 // Sign in to a Library Domain (using email and password)
+
+// Sign in from a Library Domain
+//!Warning  => Don't touch this
+const SigninUser = asyncHanlder(async (req, res) => {
+  const { email, password, subdomain } = req.body;
+  if (!email || !password) {
+    res.status(400);
+    throw new Error("Please add all fields");
+  }
+  try {
+    const userResult = await pool.query(
+      "SELECT id FROM users WHERE email = $1",
+      [email]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+    const userId = userResult.rows[0].id;
+
+    // If sign in request coming from a specific library domain
+    if (subdomain) {
+      // Get Subdomain entity_id;
+
+      const entityId = await getEntity(db, subdomain);
+
+      console.log("Step 1: ", entityId, " Entity Founded");
+
+      const associationResult = await db.query(
+        `
+      SELECT 
+        uer.user_id, uer.entity_id, uer.branch_id, uer.role_id,
+        e.name AS entity_name, e.subdomain,
+        b.name AS branch_name,
+        r.name AS role_name,
+        u.email,u.password, u.name
+      FROM user_entity_roles uer
+      JOIN entity e ON uer.entity_id = e.id
+      JOIN branches b ON uer.branch_id = b.id
+      JOIN roles r ON uer.role_id = r.role_id
+      JOIN users u ON uer.user_id = u.id
+      WHERE uer.user_id = $1 AND uer.entity_id =$2
+      `,
+        [userId, entityId]
+      );
+      let user = associationResult?.rows[0]; //
+      if (!user) {
+        return res
+          .status(401)
+          .json({
+            message: `Invalid Email, This email not belongs to ${subdomain} domain`,
+          });
+        // throw new Error("Invalid Email Address");
+      }
+
+      let matchPassword = await bcrypt.compare(password, user?.password);
+
+      if (!matchPassword) {
+        return res
+          .status(401)
+          .json({
+            message:
+              "Password for this Email is not matched. Please check your login credentials with domain",
+          });
+        // throw new Error("Invalid Password");
+      }
+      // Email and password match
+      console.log(user, "Login");
+
+      if (user && matchPassword) {
+        const user_info = {
+          userId: user.user_id,
+          roleId: user.role_id,
+          branchId: user.branch_id,
+          entityId: user.entity_id,
+          subdomain: user.subdomain,
+        };
+        // Assign a Token to the user by role_id,branch_id,entity_id
+        const AccessToken = jwt.sign(
+          {
+            UserInfo: user_info,
+          },
+          process.env.JWT_SECRET,
+          { expiresIn: "1m" }
+        );
+
+        const refresh_token = refreshToken(user_info); //refresh token
+
+        // Set the cookie with refresh token
+        res.cookie("refreshToken", refresh_token, {
+          httpOnly: true,
+          sameSite: "lax",
+          secure: false, //true for production
+          maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day max
+        });
+        res.json({
+          accessToken: AccessToken,
+          user: {
+            id: user?.id,
+            name: user?.name,
+            email: user?.email,
+            authSource: "email",
+            roleId: user?.role_id,
+            role_name: user?.role_name,
+            branchId: user.branch_id,
+            branchName: user.branch_name,
+            entityId: user.entity_id,
+            entityName: user.entity_name,
+            authSource: "email",
+            subdomain: user?.subdomain,
+          },
+          message: "Login Successfully",
+          redirect: `http://localhost:5173/${user.subdomain}`,
+        });
+      }
+    } else {
+      return res.status(400).json({ error: "Subdomain is not found" });
+    }
+  } catch (error) {
+    console.log(error, "Signin Failed");
+
+    res.status(400).json({ error: "Invalid Credentials" });
+  }
+});
 // User Logout
 
 const Logout = asyncHanlder(async (req, res) => {
@@ -715,4 +838,6 @@ module.exports = {
   ForgetPassword,
   VerifyUserAuth,
   ResetPassword,
+  SigninUser, 
+  SignupUser
 };
