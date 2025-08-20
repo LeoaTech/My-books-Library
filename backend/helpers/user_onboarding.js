@@ -1,3 +1,5 @@
+
+
 // Database operation functions
 async function createEntity(client, entityData) {
   const {
@@ -10,9 +12,10 @@ async function createEntity(client, entityData) {
     hasMultipleBranches,
     deliverIntercity,
     description,
+    uniqueSubdomain,
   } = entityData;
   const query = `
-    INSERT INTO entity (name, city,country, address, phone, type_of_books, deliver_inter_city,multiple_branches,description) VALUES ($1, $2, $3, $4,$5,$6,$7,$8,$9) RETURNING id`;
+    INSERT INTO entity (name, city,country, address, phone, type_of_books, deliver_inter_city,multiple_branches,description,subdomain) VALUES ($1, $2, $3, $4,$5,$6,$7,$8,$9,$10) RETURNING id`;
   const values = [
     businessName,
     city,
@@ -23,9 +26,10 @@ async function createEntity(client, entityData) {
     deliverIntercity,
     hasMultipleBranches,
     description,
+    uniqueSubdomain,
   ];
   const result = await client.query(query, values);
-  return result.rows[0].id;
+  return result.rows[0];
 }
 
 async function createBranch(client, branchData, entityId) {
@@ -37,22 +41,24 @@ async function createBranch(client, branchData, entityId) {
   `;
   const values = [entityId, businessName, city, country, address, phone];
   const result = await client.query(query, values);
-  return result.rows[0].id;
+  return result.rows[0];
 }
 
-async function createRole(client, entityId) {
+async function createRole(client, entityId, role_type) {
   const query = `
     INSERT INTO roles (entity_id, name)
     VALUES ($1, $2)
     RETURNING role_id;
   `;
-  const values = [entityId, "admin"];
+  const values = [entityId, role_type];
   const result = await client.query(query, values);
   console.log(result.rows[0], "Roles table");
 
-  return result.rows[0].role_id;
+  return result.rows[0];
 }
-async function createUser(client, userData, branchId) {
+
+
+async function createUser(client, userData) {
   const {
     fullName,
     email,
@@ -61,17 +67,16 @@ async function createUser(client, userData, branchId) {
     country,
     address,
     phone,
-    roleId,
+    // roleId,
     img_url,
   } = userData;
 
   const query = `
-    INSERT INTO users (branch_id, name, email,password,city,country,address, phone, role_id,img_url)
-    VALUES ($1, $2, $3, $4,$5,$6,$7,$8,$9,$10)
-    RETURNING id;
+    INSERT INTO users (name, email,password,city,country,address, phone, img_url)
+    VALUES ($1, $2, $3, $4,$5,$6,$7,$8)
+    RETURNING *;
   `;
   const values = [
-    branchId,
     fullName,
     email,
     hashedPassword,
@@ -79,11 +84,16 @@ async function createUser(client, userData, branchId) {
     country,
     address,
     phone,
-    roleId,
     img_url || "",
   ];
   const result = await client.query(query, values);
-  return result.rows[0].id;
+  return result.rows[0];
 }
 
-module.exports = { createBranch, createEntity, createRole, createUser };
+module.exports = {
+  createBranch,
+  createEntity,
+  createRole,
+  createUser,
+ 
+};
