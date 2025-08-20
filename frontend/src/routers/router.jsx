@@ -15,7 +15,6 @@ import {
   ResetPassword,
   SignIn,
   SignUp,
-  SignupPage
 } from "../_authentication/forms";
 import Shop from "../_root/pages/Shop";
 import Library from "../_root/pages/Library";
@@ -24,6 +23,7 @@ import PersistLogin from "../utiliz/PersistLogin";
 import RequiredAuth from "../utiliz/RequiredAuth";
 import InvalidToken from "../_authentication/forms/InvalidToken";
 import Register from "../_authentication/forms/Register";
+import Home from "../_root/pages/Home";
 
 const renderRoutes = (routes) => {
   return routes?.map((route, i) => {
@@ -66,18 +66,31 @@ const router = createBrowserRouter(
 
         {/* Library's routes to add new users, roles or customers */}
         <Route path="/signin" element={<SignIn />} />
-        <Route path="/signup" element={<SignUp />} />
         <Route path="/forgotpassword/:id/:token" element={<ResetPassword />} />
         <Route path="/forgot-password" element={<ForgetPassword />} />
       </Route>
       <Route path="/expired-link" element={<InvalidToken />} />
 
+
+      {/* Subdomain Library Routes */}
+      <Route element={<AuthLayout />}>
+
+        <Route path="/:subdomain/signin" element={<SignIn />} />
+        <Route path="/:subdomain/signup" element={<SignUp />} />
+        <Route path="/:subdomain/forgotpassword/:id/:token" element={<ResetPassword />} />
+        <Route path="/:subdomain/forgot-password" element={<ForgetPassword />} />
+      </Route>
+
+      <Route path="/:subdomain" element={<Home />} />
+
       <Route element={<PersistLogin />}>
+
         <Route path="/" element={<App />} />
-        {/* <Route path="/lib/:entity_id" element={} */}
+        <Route path="/:subdomain" element={<Home />} />
+
 
         {/* Protected Dashboard Routes */}
-        <Route element={<RequiredAuth allowedRoles={["admin", "vendor", "librarian"]} />}>
+        <Route element={<RequiredAuth allowedRoles={["owner"]} />}>
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<DashboardPage />} />
             {renderRoutes(routes)}
