@@ -5,15 +5,18 @@ require("dotenv").config();
 const bcrypt = require("bcryptjs");
 const validator = require("validator");
 
-const send_email = require("../../utiliz/sendEmail");
+const send_email = require("../../utiliz/sendEmail.js");
 
-const db = require("../../config/dbConfig");
+const db = require("../../config/dbConfig.js");
 const { pool } = require("../../config/dbConfig.js");
 const {
   createEntity,
   createBranch,
   createRole,
   createUser,
+  addPermissions,
+  checkSubdomain,
+  generateSubdomain,
 } = require("../../helpers/user_onboarding.js");
 // Generate Access JWT
 const generateToken = (data) => {
@@ -25,7 +28,7 @@ const generateToken = (data) => {
 
 const refreshToken = (data) => {
   return jwt.sign({ data }, process.env.JWT_REFRESH_SECRET, {
-    expiresIn: "3h", //in production 1 day
+    expiresIn: "3h", //in production 7 day
   });
 };
 
@@ -33,7 +36,7 @@ const refreshToken = (data) => {
 
 const RegisterUser = asyncHanlder(async (req, res) => {
   const client = await pool.connect();
-  console.log(req.body);
+  // console.log(req.body);
   try {
     // Start a transaction
     await client.query("BEGIN");
@@ -65,8 +68,66 @@ const RegisterUser = asyncHanlder(async (req, res) => {
       throw new Error("Missing required fields");
     }
 
+    // Check if user exists
+    let userResult = await client.query(
+      "SELECT id FROM users WHERE email = $1",
+      [email]
+    );
+    let userId;
+
+    if (userResult.rows.length === 0) {
+      // create hash password
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt?.hash(password, salt);
+
+      // Create new user
+      const userDetails = {
+        fullName,
+        email,
+        hashedPassword,
+        city,
+        country,
+        address,
+        phone,
+        img_url: "",
+      };
+
+      const userResult = await createUser(client, userDetails);
+      userId = userResult.id;
+    } else {
+      userId = userResult.rows[0].id;
+    }
+    console.log(userId, "User Created");
+
+    // Check if user already has an "owner" role in any other library(entity_id)
+    const ownerCheck = await pool.query(
+      `
+      SELECT uer.user_id
+      FROM user_entity_roles uer
+      JOIN roles r ON uer.role_id = r.role_id
+      WHERE uer.user_id = $1 AND r.name = 'owner'
+      `,
+      [userId]
+    );
+
+    if (ownerCheck.rows.length > 0) {
+      await client.query("ROLLBACK");
+      return res.status(403).json({
+        error:
+          "User already owns an Library. Please try with another email address to create library.",
+      });
+    }
+    // Generate a subdomain
+    const subdomain = generateSubdomain(businessName);
+
+    console.log(subdomain, "subdomain");
+
+    // make sure the subdomain for each entity_id is unique
+
+    const uniqueSubdomain = await checkSubdomain(client, subdomain);
+
     // Step 1: Create an Entity
-    const entity = {
+    const entityData = {
       businessName,
       city,
       country,
@@ -77,65 +138,58 @@ const RegisterUser = asyncHanlder(async (req, res) => {
       typeOfBooks,
       hasMultipleBranches,
       deliverIntercity,
+      uniqueSubdomain,
     };
-    const entityId = await createEntity(client, entity);
-    console.log(entityId, "Entity Created");
+    const entity = await createEntity(client, entityData);
+    console.log(entity.id, "Entity Created");
 
     // Step 2: Create a default branch as main branch
 
-    const branch = {
+    const branchData = {
       businessName,
       city,
       country,
       address,
       city,
       phone,
-      entityId,
+      entityId: entity.id,
     };
-    const branchId = await createBranch(client, branch, entityId);
-    console.log(branchId, "Branch Created");
+    const branch = await createBranch(client, branchData, entity.id);
+    console.log(branch.id, "Branch Created");
 
-    //Step 3: Create a  default Admin Role
-    const roleId = await createRole(client, entityId);
+    //Step 3: Create a  default 'owner' Role
+    const role = await createRole(client, entity.id, "owner");
 
-    console.log(roleId, "New Role Created for Entity ", entityId);
+    console.log(role.role_id, "New Role Created for Entity ", entity.id);
 
-    // Step 4: Create new user with refernce to branch_id
+    // Add permissions => Allow all permissions to the `owner` role
+    const roleAdded = await addPermissions(client, role.role_id);
+    console.log(roleAdded, "Roles Added");
+
+    // Step 4: Create new user associated branch_id, role_id, entity_id for user_id
 
     // check if user exists in DB
-    const userExists = await db.query("SELECT id FROM users Where email = $1", [
-      email,
-    ]);
+    const userRole = await client.query(
+      "INSERT INTO user_entity_roles (user_id, entity_id, branch_id, role_id) VALUES ($1, $2, $3, $4)",
+      [userId, entity.id, branch.id, role.role_id]
+    );
 
-    if (userExists?.rowCount > 0) {
-      return res.status(400).json({ message: "User already exists" });
-      // throw new Error("User already exists");
-    }
-
-    // create hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt?.hash(password, salt);
-
-    const userDetails = {
-      fullName,
-      email,
-      hashedPassword,
-      city,
-      country,
-      address,
-      phone,
-      roleId,
-      img_url: "",
-    };
-
-    const userId = await createUser(client, userDetails, branchId);
-    console.log(userId, "User Created");
+    console.log(userRole.rows, "User Entity Role created");
 
     await client.query("COMMIT");
 
     res.status(201).json({
-      message: "User account created successfully",
-      data: { entityId, branchId, userId },
+      message: "Library Created successfully",
+      user: { id: userId, email, name: fullName },
+      LibraryAccounts: {
+        entityId: entity.id,
+        entityName: entity.name,
+        subdomain: entity.subdomain,
+        branchId: branch.id,
+        branchName: branch.name,
+        roleId: role.id,
+        role_name: role.name,
+      },
     });
   } catch (error) {
     // Rollback transaction
@@ -147,167 +201,119 @@ const RegisterUser = asyncHanlder(async (req, res) => {
   }
 });
 
-// Create New User Account
-const SignupUser = asyncHanlder(async (req, res) => {
-  const { name, email, password } = req.body;
 
-  try {
-    if (!name || !email || !password) {
-      res.status(400);
-      throw Error("Please add all required fields");
-    }
-    // Vaidation of Signup Form fileds
-    if (!validator.isEmail(email)) {
-      throw Error("Email must be a valid email");
-    }
-    // if (!validator.isStrongPassword(password)) {
-    //   throw Error("Please enter a strong password");
-    // }
 
-    const checkRole = await db.query(
-      "SELECT role_id FROM roles Where name=  $1",
-      ["user"]
-    );
 
-    // console.log(checkRole?.rows);
-    let role;
-
-    if (checkRole?.rowCount > 0) {
-      role = checkRole?.rows[0]?.role_id;
-    }
-    try {
-      // check if user exists in DB
-      const userExists = await db.query(
-        "SELECT * FROM users Where email = $1",
-        [email]
-      );
-
-      if (userExists?.rowCount > 0) {
-        return res.status(400).json({ message: "User already exists" });
-        // throw new Error("User already exists");
-      }
-
-      // create hash password
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt?.hash(password, salt);
-
-      // Save User in DB
-      const user = await db.query(
-        `INSERT INTO users (name, email, password, role_id) VALUES ($1, $2, $3, $4) RETURNING *`,
-        [name, email, hashedPassword, role]
-      );
-
-      console.log(user.rowCount, "Inserted user in users Table");
-      if (user) {
-        return res.status(200).json({
-          message: "Success",
-        });
-      } else {
-        return res.status(400).json({ message: "User Registration failed" });
-      }
-    } catch (error) {
-      console.log(error);
-      return res.status(400).json({ message: "Invalid Credentials" });
-    }
-  } catch (error) {
-    return res.status(400).json({ message: error.message });
-  }
-});
-
-// Authenticate user Credentials on Logged in
 const LoginUser = asyncHanlder(async (req, res) => {
   const { email, password } = req.body;
+
+  if (!email || !password) {
+    res.status(400);
+    throw new Error("Please add all fields");
+  }
   try {
-    if (!email || !password) {
-      res.status(400);
-      throw new Error("Please add all fields");
+    // Verify user
+    const userResult = await pool.query(
+      "SELECT id, password FROM users WHERE email = $1",
+      [email]
+    );
+    if (userResult.rows.length === 0) {
+      return res.status(401).json({ error: "Invalid email or password" });
     }
-    try {
-      // Verify user email in DB
-      const userEmail = await db.query(
-        `SELECT 
-        u.id, u.email,u.name, u.password, u.branch_id, u.role_id,
-        b.entity_id , b.name AS branch_name,
-        e.name AS entity_name,
+
+    const user = userResult.rows[0];
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) {
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+    // Verify user email in DB
+    const associatedEntities = await db.query(
+      `
+      SELECT 
+        uer.user_id, uer.entity_id, uer.branch_id, uer.role_id,
+        e.name AS entity_name, e.subdomain,
+        b.name AS branch_name,
         r.name AS role_name
-      FROM users u
-      JOIN branches b ON u.branch_id = b.id
-      JOIN entity e  ON b.entity_id  = e.id
-      JOIN roles r ON u.role_id = r.role_id
-      WHERE u.email = $1
-        `,
-        [email]
-      );
-      let user = userEmail?.rows[0];
+      FROM user_entity_roles uer
+      JOIN entity e ON uer.entity_id = e.id
+      JOIN branches b ON uer.branch_id = b.id
+      JOIN roles r ON uer.role_id = r.role_id
+      WHERE uer.user_id = $1
+      `,
+      [user.id]
+    );
 
-      // console.log(user, "Login");
+    // console.log(associatedEntities, "Login");
 
-      if (!user) {
-        return res.status(401).json({ message: "Invalid Email" });
-        // throw new Error("Invalid Email Address");
-      }
-      let matchPassword = await bcrypt.compare(password, user?.password);
-
-      if (!matchPassword) {
-        return res.status(401).json({ message: "Invalid Password" });
-        // throw new Error("Invalid Password");
-      }
-      // Email and password match
-      // console.log(user, "Login");
-
-      if (user && matchPassword) {
-        const user_info = {
-          userId: user.id,
-          roleId: user.role_id,
-          branchId: user.branch_id,
-          entityId: user.entity_id,
-        };
-        // Assign a Token to the user by role_id,branch_id,entity_id
-        const AccessToken = jwt.sign(
-          {
-            UserInfo: user_info,
-          },
-          process.env.JWT_SECRET,
-          { expiresIn: "10s" }
-        );
-
-        const refresh_token = refreshToken(user_info); //refresh token
-
-        // Set the cookie with refresh token
-        res.cookie("refreshToken", refresh_token, {
-          httpOnly: true,
-          sameSite: "strict",
-          secure: false, //true for production
-          maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day max
-        });
-        return res.send({
-          accessToken: AccessToken,
-          user: {
-            id: user?.id,
-            name: user?.name,
-            email: user?.email,
-            roleId: user?.role_id,
-            role_name: user?.role_name,
-            branchId: user.branch_id,
-            branchName: user.branch_name,
-            entityId: user.entity_id,
-            entityName: user.entity_name,
-            authSource: "email",
-          },
-          message: "Login Successfully",
-          redirect: `http://localhost:5173/`,
-        });
-      } else {
-        return res.status(400).json({ error: "Invalid Credentials" });
-      }
-    } catch (error) {
-      console.log(error, "Signin");
-
-      return res.status(400).json({ error: "Invalid Credentials" });
+    if (associatedEntities.rows.length == 0) {
+      return res.status(401).json({ message: "Invalid User Credentials" });
+      // throw new Error("Invalid Email Address");
     }
-  } catch (err) {
-    console.log("err", "Sign in API");
-    return res.status(400).json({ message: err.message });
+
+    // if (user && matchPassword) {
+    //   const user_info = {
+    //     userId: user.id,
+    //     roleId: user.role_id,
+    //     branchId: user.branch_id,
+    //     entityId: user.entity_id,
+    //   };
+    //   // Assign a Token to the user by role_id,branch_id,entity_id
+    //   const AccessToken = jwt.sign(
+    //     {
+    //       UserInfo: user_info,
+    //     },
+    //     process.env.JWT_SECRET,
+    //     { expiresIn: "1m" }
+    //   );
+
+    //   const refresh_token = refreshToken(user_info); //refresh token
+
+    //   // Set the cookie with refresh token
+    //   res.cookie("refreshToken", refresh_token, {
+    //     httpOnly: true,
+    //     sameSite: "strict",
+    //     secure: false, //true for production
+    //     maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day max
+    //   });
+    //   return res.send({
+    //     accessToken: AccessToken,
+    //     user: {
+    //       id: user?.id,
+    //       name: user?.name,
+    //       email: user?.email,
+    //       roleId: user?.role_id,
+    //       role_name: user?.role_name,
+    //       branchId: user.branch_id,
+    //       branchName: user.branch_name,
+    //       entityId: user.entity_id,
+    //       entityName: user.entity_name,
+    //       authSource: "email",
+    //       subdomain: user.subdomain,
+    //     },
+    //     message: "Login Successfully",
+    //     redirect: `http://localhost:5173/${user.subdomain}`,
+    //   });
+    // } else {
+    //   return res.status(400).json({ error: "Invalid Credentials" });
+    // }
+
+    res.status(200).json({
+      message: "Login successful, select a Library",
+      user: { id: user.id, email },
+      LibraryAccounts: associatedEntities?.rows?.map((row) => ({
+        entityId: row.entity_id,
+        entityName: row.entity_name,
+        subdomain: row.subdomain,
+        branchId: row.branch_id,
+        branchName: row.branch_name,
+        roleId: row.role_id,
+        role_name: row.role_name,
+      })),
+    });
+  } catch (error) {
+    console.log(error, "Signin");
+
+    return res.status(400).json({ error: "Invalid Credentials" });
   }
 });
 
@@ -324,7 +330,7 @@ const Logout = asyncHanlder(async (req, res) => {
 
       res.clearCookie("refreshToken", {
         httpOnly: true,
-        sameSite: "None", // "strict",
+        sameSite: "lax", // "strict",
         secure: false, //true,
         maxAge: 24 * 60 * 60 * 1000, //1 day
       });
@@ -364,39 +370,41 @@ const RefreshToken = async (req, res) => {
             message: "Forbidden Access.. Invalid Token ",
           });
         }
-        console.log(decoded, "Decoded login cred");
-        
+        // console.log(decoded, "Decoded login cred");
+
         const result = await db.query(
-          `
-        SELECT 
-        u.id, u.email,u.name, u.branch_id, u.role_id,
-        b.entity_id , b.name AS branch_name,
-        e.name AS entity_name,
-        r.name AS role_name
-      FROM users u
-      JOIN branches b ON u.branch_id = b.id
-      JOIN entity e  ON b.entity_id  = e.id
-      JOIN roles r ON u.role_id = r.role_id
-      WHERE u.id = $1
+          `SELECT 
+        uer.user_id, uer.entity_id, uer.branch_id, uer.role_id,
+        e.name AS entity_name, e.subdomain,
+        b.name AS branch_name,
+        r.name AS role_name,
+        u.email, u.name
+      FROM user_entity_roles uer
+      JOIN entity e ON uer.entity_id = e.id
+      JOIN branches b ON uer.branch_id = b.id
+      JOIN roles r ON uer.role_id = r.role_id
+      JOIN users u ON uer.user_id = u.id
+      WHERE uer.user_id = $1 AND uer.entity_id = $2
       `,
-          [decoded?.data?.userId]
+          [decoded?.data?.userId, decoded?.data?.entityId]
         );
 
-        console.log(result.rows[0], "Refresh Result");
-        
+        // console.log(result.rows[0], "Refresh Result");
+
         if (result.rows.length === 0) {
           return res.status(401).json({ error: "Invalid refresh token" });
         }
 
         const user = result.rows[0];
 
-        console.log(user, "refresh");
+        // console.log(user, "refresh");
 
         const user_info = {
-          userId: user.id,
+          userId: user.user_id,
           roleId: user.role_id,
           branchId: user.branch_id,
           entityId: user.entity_id,
+          subdomain: user.subdomain,
         };
         // If verified the http only cookie, grant new access token
         const accessToken = jwt.sign(
@@ -404,7 +412,7 @@ const RefreshToken = async (req, res) => {
             UserInfo: user_info,
           },
           process.env.JWT_SECRET,
-          { expiresIn: "10s" } //production for 1h
+          { expiresIn: "5m" } //production for 1h
         );
 
         res.send({
@@ -419,6 +427,7 @@ const RefreshToken = async (req, res) => {
             branchName: user.branch_name,
             entityId: user.entity_id,
             entityName: user.entity_name,
+            subdomain: user.subdomain,
           },
           message: "Token Refreshed Successfully",
         });
