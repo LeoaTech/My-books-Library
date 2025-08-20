@@ -69,6 +69,7 @@ const checkAuth = async (req, res, next) => {
           req.roleId = decoded?.data.roleId;
           req.entityId = decoded?.data?.entityId;
           req.branchId = decoded?.data?.branchId;
+          req.subdomain = decoded?.data?.subdomain;
           next();
         }
       );
