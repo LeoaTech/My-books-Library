@@ -1,13 +1,12 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import GoogleIcon from "../../assets/google.svg";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useSignin } from "../../hooks/useSignin";
-import { BASE_URL } from "../../utiliz/baseAPIURL";
 import { useAuthContext } from "../../hooks/useAuthContext";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-
+import { toast } from "react-toastify";
+import GoogleAuthLink from "./GoogleAuthLink";
 const schema = z.object({
   email: z.string().email(),
   password: z
@@ -15,10 +14,11 @@ const schema = z.object({
     .min(6, { message: "Password length must be at least 6 characters" }),
 });
 const Signin = () => {
-  const { search } = useLocation();
+
   const navigate = useNavigate();
   const { persist, setPersist, googleAuth } = useAuthContext();
-
+  // console.log(useParams(), "params");
+  const params = useParams()
   const togglePersist = () => {
     setPersist((prev) => !prev);
   };
@@ -27,8 +27,16 @@ const Signin = () => {
     localStorage.setItem("persist", persist);
   }, [persist]);
 
-  const { isLoading, error, signin, message } = useSignin();
-  console.log(error, "google auth", googleAuth);
+
+  const LoginSuccess = () => toast.success("Login Successfully!", {
+    hideProgressBar: false,
+    closeOnClick: false,
+    pauseOnHover: true,
+    draggable: true,
+    theme: "dark",
+  })
+  const { isLoading, error, signin, message, login } = useSignin();
+  // console.log(error, "sign in error state",  message, "Sign in message");
   const {
     register,
     handleSubmit,
@@ -41,17 +49,35 @@ const Signin = () => {
   const onSubmit = async (data) => {
     const { email, password } = data;
 
-    await signin(email, password);
+    // Login from Library domain
+    if (params?.subdomain) {
+      await login(email, password, params?.subdomain)
+    } else {
+      // Sign in from app domai
+      await signin(email, password);
+    }
+
   };
+
+  // console.log(error, "Error");
+
 
   useEffect(() => {
     if (isSubmitSuccessful) {
+
       reset();
-      if (error == false) {
-        navigate("/");
+      if (error == null) {
+        localStorage.setItem("auth-source", "email");
+        LoginSuccess()
+        // setTimeout(() => {
+        // navigate("/");
+        // navigate("/select-library");
+
+        // }, 3000);
       }
     }
-  }, [isSubmitSuccessful, reset]);
+  }, [isSubmitSuccessful, navigate]);
+
 
   return (
     <div className="py-20 h-screen flex flex-1 justify-center items-center lg:py-40">
@@ -63,16 +89,15 @@ const Signin = () => {
         >
           <h1 className="form-title">Sign in</h1>
           <div className="custom-form">
-            <Link
-              className="google-oauth-button"
-              to={`${BASE_URL}/auth/google`}
-            >
-              <img src={GoogleIcon} width={22} height={22} /> Continue with
-              Google
-            </Link>
+            <div className="mt-4">
+
+              {params.subdomain ? <GoogleAuthLink action="join_lib" subdomain={params.subdomain} /> : <GoogleAuthLink action="create_lib" />}
+
+            </div>
             <input
               className="custom-input"
               placeholder="Email"
+              autoComplete="email"
               {...register("email")}
             />
             {errors?.email?.message && (
@@ -83,6 +108,7 @@ const Signin = () => {
               className="custom-input"
               placeholder="Password"
               type="password"
+              autoComplete="current-password"
               {...register("password")}
             />
             {errors?.password?.message && (
@@ -123,12 +149,21 @@ const Signin = () => {
 
             <p className="p-4 mt-2">
               Don&apos;t have an Account?{" "}
-              <span
+              {params && params?.subdomain ? <span
                 className="text-[#3C50E0] cursor-pointer"
-                onClick={() => navigate("/signup")}
+                onClick={() => navigate(`/${params?.subdomain}/signup`)}
               >
                 Sign Up
-              </span>
+              </span> : (
+                <>
+                  <span
+                    className="text-[#3C50E0] cursor-pointer"
+                    onClick={() => navigate("/register")}
+                  >
+                    Register
+                  </span></>
+              )}
+
             </p>
           </div>
         </form>
