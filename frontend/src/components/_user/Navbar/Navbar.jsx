@@ -6,14 +6,16 @@ import { useAuthContext } from "../../../hooks/useAuthContext";
 
 const Navbar = () => {
   const { logout, signout } = useLogout();
-
-  // let user = true;
   const { auth } = useAuthContext();
   const [isMenuOpen, setMenuOpen] = useState(false);
   const [isSticky, setStickyNav] = useState(false);
+
   const onToggle = () => {
     setMenuOpen(!isMenuOpen);
   };
+
+
+  // console.log(auth);
 
 
   useEffect(() => {
@@ -26,185 +28,177 @@ const Navbar = () => {
     };
 
     window.addEventListener("scroll", onScroll);
-
-    // Cleanup the event listener when the component unmounts
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-    };
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
   const headerLinks = [
-    {
-      title: "Library",
-      path: "/books",
-    },
-    {
-      title: "About",
-      path: "/about",
-    },
-    {
-      title: "Price",
-      path: "/price",
-    },
-    {
-      title: "Trendings",
-      path: "/trending",
-    },
+    { title: "Library", path: "/library" },
+    { title: "Shop", path: "/shop" },
   ];
+
   return (
-    <header className="w-full bg-white fixed top-0 left-0 right-0 transition-all ease-in duration-300 z-50">
-      {/* Left */}
+    <header className="w-full fixed top-0 left-0 right-0 z-50">
       <nav
-        className={`py-6 lg:px-24 px-4 z-50 ${
-          isSticky ? "sticky top-0 left-0 right-0 bg-purple-300 shadow-lg" : ""
-        }`}
+        className={`py-4 lg:px-24 px-4 transition-all duration-300 bg-[#776fff] 
+        ${isSticky ? "bg-white/20 backdrop-blur-md shadow-md" : "bg-[#776fff]"}`}
       >
-        <div className="flex justify-between items-center text-base gap-8">
+        <div className="flex justify-between items-center">
+          {/* Logo */}
           <Link
-            onClick={isMenuOpen && onToggle}
+            onClick={() => isMenuOpen && onToggle()}
             to="/"
-            className="text-2xl font-bold text-red-900"
+            className="text-2xl font-bold text-white"
           >
-            Book Store
+            LeoaTech{" "}
+            <span className="bg-gradient-to-tr from-[#50142d] to-[#584ff7] bg-clip-text text-transparent">
+              Library
+            </span>
           </Link>
-          {/* Centers Links of Header */}
 
-          <div className="text-sm font-medium text-center text-gray-500 border-b border-gray-200 ">
-            <ul className="flex flex-wrap -mb-px md:flex space-x-8 sm:hidden">
-              <li className="mr-2">
-                {headerLinks?.map(({ title, path }) => (
-                  <Link
-                    to={path}
-                    key={path}
-                    className="inline-block text-base text-meta-3 uppercase cursor-pointer p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-meta-1 "
-                  >
-                    {title}
-                  </Link>
-                ))}
+          {/* Desktop Links */}
+          {/* <ul className="hidden md:flex gap-8 text-white uppercase font-medium">
+            {headerLinks.map(({ title, path }) => (
+              <li key={path}>
+                <Link
+                  to={path}
+                  className="hover:text-purple-300 transition-colors"
+                >
+                  {title}
+                </Link>
               </li>
-            </ul>
-          </div>
+            ))}
+          </ul> */}
 
-          {/* Menu button for the small screen */}
-          <div className="md:hidden">
-            <button
-              className=" outline-none bg-white border-none text-black focus:outline-none"
-              onClick={onToggle}
-            >
-              {isMenuOpen ? (
-                <HiOutlineX className="h-5 w-5 text-black" />
-              ) : (
-                <HiMenu className="h-5 w-5 text-black" />
-              )}
-            </button>
-          </div>
-
-          <div
-            className={`${
-              isMenuOpen ? "hidden" : "hidden lg:flex gap-4 items-center"
-            }`}
-          >
-            <Link
-              className="block text-base text-blue uppercase cursor-pointer hover:text-red-400"
-              to="/cart"
-            >
-              <HiOutlineShoppingCart className="h-5 w-5 " />{" "}
+          {/* Right buttons (Desktop) */}
+          <div className="hidden md:flex items-center gap-4 text-white">
+            <Link to="/cart">
+              <HiOutlineShoppingCart className="h-5 w-5 hover:text-purple-300" />
             </Link>
 
-            {!auth?.role && (
+            {!auth?.roleId && (
               <>
-                <Link
-                  to="/signin"
-                  className="block text-base text-blue uppercase cursor-pointer hover:text-red-400"
-                >
+                <Link to="/signin" className="hover:text-purple-300">
                   Sign in
                 </Link>
                 <Link
-                  to="/signup"
-                  className="h-9 flex justify-center items-center px-4 ml-auto text-sm bg-blue-500 text-white rounded-lg text-center px-2 py-1 uppercase cursor-pointer hover:text-white hover:bg-secondary"
+                  to="/register"
+                  className="bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-400"
                 >
                   Sign up
                 </Link>
               </>
             )}
 
-            {auth?.role_name === "admin" && (
-              <Link to="/dashboard">Dashboard</Link>
+            {/* Redirect to subdomain */}
+            {['owner']?.includes(auth?.role_name) && (
+              <Link to={`/${auth?.subdomain}`} className="hover:text-purple-300">
+                {auth?.entityName?.toUpperCase()}
+              </Link>
             )}
-            {/* Sign Out for Email and Password Login */}
-            {auth?.role && !auth?.auth && <a onClick={logout}>Logout</a>}
 
-            {/* Sign out for Google Auth Login */}
-            {auth?.role && auth?.auth && <a onClick={signout}>Sign Out</a>}
+            {auth?.roleId && !auth?.auth && (
+              <button onClick={logout} className="hover:text-purple-300">
+                Logout
+              </button>
+            )}
+            {auth?.roleId && auth?.auth && (
+              <button onClick={signout} className="hover:text-purple-300">
+                Sign Out
+              </button>
+            )}
           </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            className="md:hidden text-white focus:outline-none"
+            onClick={onToggle}
+          >
+            {isMenuOpen ? (
+              <HiOutlineX className="h-6 w-6" />
+            ) : (
+              <HiMenu className="h-6 w-6" />
+            )}
+          </button>
         </div>
 
-        {/* Mobile Screen menu */}
-        <div
-          className={`space-y-8 px-8 mt-16 py-4 bg-slate-600 text-black md:hidden ${
-            isMenuOpen ? "block fixed top-0 right-0 left-0" : "hidden"
-          } `}
-        >
-          {headerLinks?.map(({ title, path }) => (
+        {/* Mobile Menu */}
+        {isMenuOpen && (
+          <div className="md:hidden mt-4 px-4 py-6 bg-white/20 backdrop-blur-lg rounded-lg shadow-lg space-y-4 text-white">
+            {/* {headerLinks.map(({ title, path }) => (
+              <Link
+                key={path}
+                to={path}
+                onClick={onToggle}
+                className="block uppercase text-base hover:text-purple-300"
+              >
+                {title}
+              </Link>
+            ))} */}
+
             <Link
-              to={path}
-              key={path}
+              // to="/cart"
               onClick={onToggle}
-              className="block text-base text-white uppercase cursor-pointer p-1 hover:text-salte-400 hover:rounded-lg hover:bg-slate-500"
+              className="flex items-center gap-2 uppercase hover:text-purple-300"
             >
-              {title}
-            </Link>
-          ))}
-          <div
-            onClick={onToggle}
-            className={`${
-              isMenuOpen ? "sm:hidden" : "hidden lg:flex gap-4 items-center"
-            }`}
-          >
-            <Link
-              className="flex justify-center- items-center text-base text-white uppercase cursor-pointer p-1 hover:text-salte-400 hover:bg-slate-500 hover:rounded-lg"
-              to="/cart"
-            >
-              <HiOutlineShoppingCart className="h-5 w-5 " /> Cart
+              <HiOutlineShoppingCart className="h-5 w-5" /> Cart
             </Link>
 
-            <Link
-              className=" mt-5 mb-5 flex justify-center- items-center text-base text-white uppercase cursor-pointer p-1 hover:text-salte-400 hover:bg-slate-500 hover:rounded-lg"
-              to="/dashboard"
-            >
-              {" "}
-              Admin Dashboard
-            </Link>
+            {['owner'].includes(auth?.role_name) && (
+              <Link
+                to={`/${auth?.subdomain}` || "/"}
+                onClick={onToggle}
+                className="block uppercase hover:text-purple-300"
+              >
+                {auth?.entityName?.toUpperCase() || "Dashboard"}
+              </Link>
+            )}
 
-            {!auth?.role && (
+            {!auth?.roleId && (
               <>
                 <Link
                   to="/signin"
-                  className="mt-5  mb-5 h-9 flex justify-center items-center p-4 ml-auto text-sm bg-transparent text-black rounded-lg   text-center px-2 py-1 uppercase cursor-pointer hover:bg-black hover:text-white"
+                  onClick={onToggle}
+                  className="block bg-transparent border border-white px-4 py-1 rounded-lg uppercase hover:bg-white hover:text-black"
                 >
                   Sign in
                 </Link>
                 <Link
-                  to="/signup"
-                  className="h-9 flex justify-center items-center px-4 ml-auto text-sm bg-blue-500 text-white rounded-lg text-white-900  text-center px-2 py-1 uppercase cursor-pointer hover:text-white-400 hover:bg-blue-300"
+                  to="/register"
+                  onClick={onToggle}
+                  className="block bg-blue-500 px-4 py-1 rounded-lg uppercase text-white hover:bg-blue-400"
                 >
                   Sign up
                 </Link>
               </>
             )}
 
-            {auth?.role && (
-              <a
-                onClick={logout}
-                className="h-9 mt-2 flex justify-center items-center px-4 ml-auto text-sm bg-blue-500 text-white rounded-lg text-white-900  text-center px-2 py-1 uppercase cursor-pointer hover:text-white-400 hover:bg-blue-300"
+            {/* {auth?.roleId && (
+              <button
+                onClick={() => {
+                  logout();
+                  onToggle();
+                }}
               >
                 Sign Out
-              </a>
+              </button>
+            )} */}
+
+            {auth?.roleId && !auth?.auth && (
+              <button onClick={logout} className="block w-full bg-blue-500 px-4 py-1 rounded-lg uppercase text-white hover:bg-blue-400">
+                Logout
+              </button>
+            )}
+            {auth?.roleId && auth?.auth && (
+              <button onClick={signout} className="block w-full bg-blue-500 px-4 py-1 rounded-lg uppercase text-white hover:bg-blue-400">
+                Sign Out
+              </button>
             )}
           </div>
-        </div>
+        )}
       </nav>
-    </header>
+    </header >
   );
 };
 
 export default Navbar;
+
