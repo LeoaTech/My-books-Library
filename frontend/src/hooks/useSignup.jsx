@@ -7,17 +7,19 @@ export const useSignup = () => {
   const [message, setMessage] = useState(false);
   const [isLoading, setIsLoading] = useState(null);
 
-  const signup = async (email, password, name) => {
+  const signup = async (email, password, name,subdomain) => {
     setIsLoading(true);
     setError(null);
 
     const response = await fetch(`${BASE_URL}/auth/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password, name }),
+      body: JSON.stringify({ email, password, name,subdomain }),
     });
     const result = await response.json();
 
+    // console.log("Response: " ,response, "Result", result);
+    
     if (!response.ok) {
       setIsLoading(false);
       setError(result.message || result.error);
@@ -41,7 +43,7 @@ export const useSignup = () => {
     });
     const result = await response.json();
 
-    console.log(result, "Registered user as an Admin");
+    // console.log(result, "Registered user as an Admin");
     
     if (!response.ok) {
       setIsLoading(false);
