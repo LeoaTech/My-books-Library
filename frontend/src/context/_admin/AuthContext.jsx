@@ -1,9 +1,12 @@
 import axios from "axios";
 import { createContext, useEffect, useReducer, useState } from "react";
-export const AuthContext = createContext();
-import {Navigate} from "react-router-dom"
-//Server URL
+import { Navigate } from "react-router-dom"
+import { BASE_URL } from "../../utiliz/baseAPIURL";
+
 const serverUrl = import.meta.env.VITE_SERVER_ENDPOINT;
+
+export const AuthContext = createContext();
+
 
 export const authReducer = (state, action) => {
   switch (action.type) {
@@ -15,6 +18,7 @@ export const authReducer = (state, action) => {
       return state;
   }
 };
+
 export const AuthContextProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, {
     user: null,
@@ -23,16 +27,15 @@ export const AuthContextProvider = ({ children }) => {
   const [auth, setAuth] = useState(null);
   // Identify the type of auth source
   const [googleAuth, setGoogleAuth] = useState(
-    localStorage.getItem("auth-source") =="google"|| false
+    localStorage.getItem("auth-source") == "google" || false
   );
-
-  // Persist Auth , It means the refresh token API will call automatically
   const [persist, setPersist] = useState(
     JSON.parse(localStorage?.getItem("persist")) || false
-  );
+  ); //Persist Auth State to refresh access token 
 
 
-  console.log(googleAuth, " is the Signed in Source");
+  console.log(localStorage.getItem('auth-source'), " is Auth Source")
+
 
   // To get Google Signin User credentials
   const getUser = async () => {
@@ -45,28 +48,25 @@ export const AuthContextProvider = ({ children }) => {
       console.log(response, "login success", data);
       //   save the json token to local storage;
       if (response.status === 200) {
-        localStorage.setItem("auth-source", "google");
-        localStorage.setItem("user", data?.user);
 
-        dispatch({ type: "Login", payload: data });
         if (data != null) {
+          localStorage.setItem("auth-source", "google");
+          localStorage.setItem("user", JSON.stringify(data?.user));
+
+          dispatch({ type: "Login", payload: data });
           setAuth({ ...data, accessToken: data?.accessToken });
+          // <Navigate to={`/${data.subdomain}`} replace />
+          const redirectURL = `/${data?.subdomain}`
+          return redirectURL;
+
         }
       }
     } catch (error) {
       console.log(error, "Error getting data");
-      <Navigate to="/signin" />
-      
+      <Navigate to="/signin" replace />
+
     }
   };
-
-  useEffect(() => {
-    if (googleAuth !="email") {
-      getUser();
-    } else {
-      console.log("No need to fetch users data")
-    }
-  }, [googleAuth]);
 
   return (
     <AuthContext.Provider
@@ -76,8 +76,9 @@ export const AuthContextProvider = ({ children }) => {
         persist,
         setPersist,
         auth,
+        googleAuth,
         setGoogleAuth,
-        setAuth,
+        setAuth,getUser
       }}
     >
       {children}
