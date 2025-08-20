@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useAuthContext } from "./useAuthContext";
 import { BASE_URL } from "../utiliz/baseAPIURL";
 import axios from "axios";
@@ -25,6 +25,7 @@ const serverUrl = import.meta.env.VITE_SERVER_ENDPOINT;
 export const useLogout = () => {
   const { dispatch, setAuth } = useAuthContext();
   const navigate = useNavigate();
+  const { subdomain } = useParams()
 
   // Email and Password Logout Method
   const logout = async () => {
@@ -35,14 +36,14 @@ export const useLogout = () => {
     setAuth(null);
     LogoutSuccess();
     localStorage.removeItem('user');
-    localStorage.setItem('persist', false)
+    localStorage.setItem('persist', true)
     // localStorage.setItem("auth-source", false);
     localStorage.setItem("color-theme", "light")
-    localStorage.removeItem("auth-source");
+    // localStorage.removeItem("auth-source");
     delete axios.defaults.headers.common['Authorization'];
 
     dispatch({ type: "Logout" });
-    navigate("/");
+    subdomain ? navigate(`/${subdomain}`) : navigate("/");
   };
 
   // Google Auth Signout Method
@@ -51,18 +52,19 @@ export const useLogout = () => {
       withCredentials: true,
     });
 
-    
+
     if (res.status === 200) {
       LogoutSuccess();
       dispatch({ type: "Logout" });
 
-      // localStorage.removeItem("google-auth");
       localStorage.removeItem("auth-source");
       localStorage.removeItem('user');
-      localStorage.setItem('persist', false)
+      localStorage.setItem('persist', true)
       setAuth(null);
       navigate("/");
       delete axios.defaults.headers.common['Authorization'];
+      subdomain ? navigate(`/${subdomain}`, { replace: true }) : navigate("/", { replace: true });
+
     } else {
       LogoutFailed()
       console.log("logout failed");
