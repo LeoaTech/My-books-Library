@@ -2,10 +2,10 @@
 
 const db = require("../config/dbConfig");
 
-const getRoles = async (roleId) => {
+const getRoles = async (entityId) => {
   try {
-    const permissionsQuery = `SELECT role_id, entity_id FROM roles where role_id =$1 `;
-    const getAllPermissions = await db.query(permissionsQuery, [roleId]);
+    const permissionsQuery = `SELECT role_id FROM roles where entity_id =$1 `;
+    const getAllPermissions = await db.query(permissionsQuery, [entityId]);
 
     const roles = getAllPermissions?.rows;
     console.log(roles, "Roles");

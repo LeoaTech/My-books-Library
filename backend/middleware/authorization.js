@@ -9,9 +9,18 @@ const checkRole = async (req, res, next) => {
 
   // TODO: Get also user Library's ID
   const userRoleId = req.user?.roleId;
+  const entityId = req.user?.entityId;
+
+  if (!entityId) {
+    return res
+      .status(401)
+      .json({
+        message: error.message || "Role Id must be associated to an Entity",
+      });
+  }
 
   try {
-    const allowedRoles = await RoleService.getRoles(userRoleId);
+    const allowedRoles = await RoleService.getRoles(entityId);
 
     if (!allowedRoles.includes(userRoleId)) {
       return res
