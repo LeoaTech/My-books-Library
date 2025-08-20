@@ -13,10 +13,30 @@ const refreshToken = (data) => {
   });
 };
 // Google Authentication
-router.get(
-  "/auth/google",
-  passport.authenticate("google", { scope: ["email", "profile"] })
-);
+
+router.get("/auth/google", (req, res, next) => {
+  const action = req.query.action; // e.g., 'create_lib' or 'join_lib'
+  const subdomain = req.query.subdomain; // Required for 'join_lib'
+
+  let stateObj = { action };
+
+  if (action === "join_lib") {
+    if (!subdomain) {
+      return res
+        .status(400)
+        .json({ error: "Subdomain required for library signup" });
+    }
+    stateObj.subdomain = subdomain;
+  }
+
+  // Encode state as base64 to safely pass JSON
+  const state = Buffer.from(JSON.stringify(stateObj)).toString("base64");
+
+  passport.authenticate("google", {
+    scope: ["email", "profile"],
+    state: state,
+  })(req, res, next);
+});
 
 // Callback routes for Success and Failure routes for Google Authentication
 
@@ -26,43 +46,6 @@ router.get(
     successRedirect: `http://localhost:5173/`, //Redirect to Client Home Page
     failureRedirect: "/auth/google/failure",
   })
-  // async (req, res) => {
-  //   console.log(req.user,"Req");
-
-  //   // Generate JWT
-
-  //   const user_info = { id: req.user.id, role_id: req.user?.role_id };
-  //   const refresh_token = refreshToken(user_info); //refresh token
-
-  //   // Set JWT in an HTTP-only cookie
-  //   res.cookie("refreshToken", refresh_token, {
-  //     httpOnly: true,
-  //     sameSite: "strict",
-  //     secure: false, //true for production
-  //     maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day max
-  //   });
-
-  //   const checkRole = await db.query(
-  //     "SELECT name FROM roles Where role_id=  $1",
-  //     [req.user?.role_id]
-  //   );
-  //   let role_name;
-
-  //   if (checkRole?.rowCount > 0) {
-  //     role_name = checkRole?.rows[0]?.name;
-  //   }
-  //   // res.redirect(`${process.env.CLIENT_URL}`);
-  //   res.status(200).json({
-  //     user: {
-  //       email: req.user.email,
-  //       name: req.user.name,
-  //       role: req.user.role_id,
-  //       role_name: role_name,
-  //       auth: true,
-  //     },
-  //     message: "Login success",
-  //   });
-  // }
 );
 
 // Logout routes for Google Authentication
@@ -90,54 +73,51 @@ router.get("/auth/logout", (req, res) => {
 router.get("/auth/google/failure", (req, res) => {
   console.log(req.user, "user Failed");
 
-  res.redirect("https://localhost:5173/signin");
+  res.json({redirectUrl:"http://localhost:5173/signin", message:"Failed to authenticate"});
 });
 
 // Successful google login Route
 
 router.get("/auth/login/success", async (req, res) => {
   if (req.user) {
-
-    console.log(req.user, "Google Success Signin")
-    // const checkRole = await db.query(
-    //   "SELECT name FROM roles Where role_id=  $1",
-    //   [req.user?.role_id]
-    // );
-    // let role_name;
-
-    // if (checkRole?.rowCount > 0) {
-    //   role_name = checkRole?.rows[0]?.name;
-    // }
+    // console.log(req.user, "Google Success Signin");
 
     const result = await db.query(
       `
-            SELECT 
-            u.id, u.email,u.name, u.branch_id, u.role_id,
-            b.entity_id , b.name AS branch_name,
-            e.name AS entity_name,
-            r.name AS role_name
-          FROM users u
-          JOIN branches b ON u.branch_id = b.id
-          JOIN entity e  ON b.entity_id  = e.id
-          JOIN roles r ON u.role_id = r.role_id
-          WHERE u.id = $1
-          `,
-      [req.user.id]
+     SELECT 
+        uer.user_id, uer.entity_id, uer.branch_id, uer.role_id,
+        e.name AS entity_name, e.subdomain,
+        b.name AS branch_name,
+        r.name AS role_name,
+        u.email,u.password, u.name
+      FROM user_entity_roles uer
+      JOIN entity e ON uer.entity_id = e.id
+      JOIN branches b ON uer.branch_id = b.id
+      JOIN roles r ON uer.role_id = r.role_id
+      JOIN users u ON uer.user_id = u.id
+      WHERE uer.user_id = $1 AND uer.entity_id = $2 AND uer.branch_id = $3 AND uer.role_id = $4
+      `,
+      [
+        req.user?.user_id,
+        req.user?.entity_id,
+        req.user.branch_id,
+        req.user.role_id,
+      ]
     );
 
-
-    console.log(result.rows[0],"DB User data")
+    // console.log(result.rows[0], "DB User data");
     if (result.rows.length === 0) {
-      return res.status(401).json({ error: "Invalid refresh token" });
+      return res.status(401).json({ error: "Invalid User Credentials" });
     }
 
     const user = result.rows[0];
 
     const user_info = {
-      userId: user.id,
+      userId: user.user_id,
       roleId: user.role_id,
       branchId: user.branch_id,
       entityId: user.entity_id,
+      subdomain: user.subdomain,
     };
     // Assign a Token to the user by role_id,branch_id,entity_id
     const AccessToken = jwt.sign(
@@ -145,18 +125,15 @@ router.get("/auth/login/success", async (req, res) => {
         UserInfo: user_info,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "10s" } //Update Expired time in Production
+      { expiresIn: "1m" } //Update Expired time in Production
     );
 
-    // { id: user.id, role_id: user?.role_id };
     const refresh_token = refreshToken(user_info);
-    // const user_info = { id: req.user.id, role_id: req.user?.role_id };
-    // const refresh_token = refreshToken(user_info); //refresh token
 
     // Set JWT in an HTTP-only cookie
     res.cookie("refreshToken", refresh_token, {
       httpOnly: true,
-      sameSite: "strict",
+      sameSite: "lax",
       secure: false, //true for production
       maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day max
     });
@@ -164,13 +141,9 @@ router.get("/auth/login/success", async (req, res) => {
     res.status(200).json({
       accessToken: AccessToken,
       user: {
-        //   email: req.user.email,
-        //   name: req.user.name,
-        //   role: req.user.role_id,
-        //   role_name: role_name,
         auth: true,
-        authSource:"google",
-        id: user?.id,
+        authSource: "google",
+        id: user?.user_id,
         name: user?.name,
         email: user?.email,
         roleId: user?.role_id,
@@ -179,8 +152,8 @@ router.get("/auth/login/success", async (req, res) => {
         branchName: user.branch_name,
         entityId: user.entity_id,
         entityName: user.entity_name,
+        subdomain: user.subdomain,
       },
-
       message: "Google Login success",
     });
   } else {
