@@ -149,6 +149,28 @@ async function createUser(client, userData) {
   return result.rows[0];
 }
 
+// Get the Entity Id belongs to Subdomain
+async function getEntity(db, subdomain) {
+  const subdomainCheck = await db.query(
+    "SELECT id FROM entity WHERE subdomain = $1",
+    [subdomain]
+  );
+
+  return subdomainCheck.rows[0].id;
+}
+
+// Get Branch Id belongs to that subdomain entity
+
+async function getBranch(db, entityId) {
+  const checkBranch = await db.query(
+    "SELECT id FROM branches WHERE entity_id = $1",
+    [entityId]
+  );
+
+  return checkBranch.rows[0].id;
+}
+
+
 module.exports = {
   createBranch,
   createEntity,
@@ -157,4 +179,6 @@ module.exports = {
   addPermissions,
   checkSubdomain,
   generateSubdomain,
+  getBranch,
+  getEntity
 };
