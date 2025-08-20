@@ -203,6 +203,9 @@ const RegisterUser = asyncHanlder(async (req, res) => {
   }
 });
 
+
+/* Login as an Owner  - other role_id users can't get into this */
+
 const LoginUser = asyncHanlder(async (req, res) => {
   const { email, password } = req.body;
 
@@ -213,7 +216,7 @@ const LoginUser = asyncHanlder(async (req, res) => {
   try {
     // Verify user
     const userResult = await pool.query(
-      "SELECT id, password FROM users WHERE email = $1",
+      "SELECT id FROM users WHERE email = $1",
       [email]
     );
     if (userResult.rows.length === 0) {
@@ -221,21 +224,23 @@ const LoginUser = asyncHanlder(async (req, res) => {
     }
 
     const user = userResult.rows[0];
-    const isValidPassword = await bcrypt.compare(password, user.password);
-    if (!isValidPassword) {
-      return res.status(401).json({ error: "Invalid email or password" });
-    }
+    // const isValidPassword = await bcrypt.compare(password, user.password);
+    // if (!isValidPassword) {
+    //   return res.status(401).json({ error: "Invalid email or password" });
+    // }
     // Verify user email in DB
     const associatedEntities = await db.query(
       `
-      SELECT 
+      SELECT
         uer.user_id, uer.entity_id, uer.branch_id, uer.role_id,
         e.name AS entity_name, e.subdomain,
         b.name AS branch_name,
-        r.name AS role_name
+        r.name AS role_name,
+        u.name, u.password, u.email
       FROM user_entity_roles uer
       JOIN entity e ON uer.entity_id = e.id
       JOIN branches b ON uer.branch_id = b.id
+      JOIN users u ON uer.user_id = u.id
       JOIN roles r ON uer.role_id = r.role_id
       WHERE uer.user_id = $1
       `,
@@ -249,70 +254,220 @@ const LoginUser = asyncHanlder(async (req, res) => {
       // throw new Error("Invalid Email Address");
     }
 
-    // if (user && matchPassword) {
-    //   const user_info = {
-    //     userId: user.id,
-    //     roleId: user.role_id,
-    //     branchId: user.branch_id,
-    //     entityId: user.entity_id,
-    //   };
-    //   // Assign a Token to the user by role_id,branch_id,entity_id
-    //   const AccessToken = jwt.sign(
-    //     {
-    //       UserInfo: user_info,
-    //     },
-    //     process.env.JWT_SECRET,
-    //     { expiresIn: "1m" }
-    //   );
 
-    //   const refresh_token = refreshToken(user_info); //refresh token
+    console.log(associatedEntities.rows, "Association for email ID");
+    
+    // Check if it has a role of owner
+    const ownerAssociation = associatedEntities.rows?.find(
+      (user) => user.role_name == "owner"
+    );
 
-    //   // Set the cookie with refresh token
-    //   res.cookie("refreshToken", refresh_token, {
-    //     httpOnly: true,
-    //     sameSite: "strict",
-    //     secure: false, //true for production
-    //     maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day max
-    //   });
-    //   return res.send({
-    //     accessToken: AccessToken,
-    //     user: {
-    //       id: user?.id,
-    //       name: user?.name,
-    //       email: user?.email,
-    //       roleId: user?.role_id,
-    //       role_name: user?.role_name,
-    //       branchId: user.branch_id,
-    //       branchName: user.branch_name,
-    //       entityId: user.entity_id,
-    //       entityName: user.entity_name,
-    //       authSource: "email",
-    //       subdomain: user.subdomain,
-    //     },
-    //     message: "Login Successfully",
-    //     redirect: `http://localhost:5173/${user.subdomain}`,
-    //   });
-    // } else {
-    //   return res.status(400).json({ error: "Invalid Credentials" });
-    // }
 
-    res.status(200).json({
-      message: "Login successful, select a Library",
-      user: { id: user.id, email },
-      LibraryAccounts: associatedEntities?.rows?.map((row) => ({
-        entityId: row.entity_id,
-        entityName: row.entity_name,
-        subdomain: row.subdomain,
-        branchId: row.branch_id,
-        branchName: row.branch_name,
-        roleId: row.role_id,
-        role_name: row.role_name,
-      })),
-    });
+    console.log(ownerAssociation, "Owner Association");
+    
+
+    // If the user credentials
+    if (!ownerAssociation) {
+      return res
+        .status(401)
+        .json({
+          error: "Invalid Credentials. Please Login from your domain Library",
+        });
+    }
+    if (!ownerAssociation.password) {
+      return res
+        .status(401)
+        .json({
+          error: "No password set for this Library (use Google OAuth?)",
+        });
+    }
+
+    const isValidPassword = await bcrypt.compare(
+      password,
+      ownerAssociation.password
+    );
+    if (!isValidPassword) {
+      return res
+        .status(401)
+        .json({ error: "Invalid password for this Library" });
+    }
+
+    if (ownerAssociation && isValidPassword) {
+      const user_info = {
+        userId: ownerAssociation.user_id,
+        roleId: ownerAssociation.role_id,
+        branchId: ownerAssociation.branch_id,
+        entityId: ownerAssociation.entity_id,
+        subdomain: ownerAssociation.subdomain,
+      };
+      // Assign a Token to the user by role_id,branch_id,entity_id
+      const AccessToken = jwt.sign(
+        {
+          UserInfo: user_info,
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: "1m" }
+      );
+
+      const refresh_token = refreshToken(user_info); //refresh token
+
+      // Set the cookie with refresh token
+      res.cookie("refreshToken", refresh_token, {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: false, //true for production
+        maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day max
+      });
+      res.json({
+        accessToken: AccessToken,
+        user: {
+          id: ownerAssociation?.user_id,
+          name: ownerAssociation?.name,
+          email: ownerAssociation?.email,
+          authSource: "email",
+          roleId: ownerAssociation?.role_id,
+          role_name: ownerAssociation?.role_name,
+          branchId: ownerAssociation.branch_id,
+          branchName: ownerAssociation.branch_name,
+          entityId: ownerAssociation.entity_id,
+          entityName: ownerAssociation.entity_name,
+          authSource: "email",
+          subdomain: ownerAssociation?.subdomain,
+        },
+        message: "Login Successfully",
+        redirect: `http://localhost:5173'/${ownerAssociation?.subdomain}`,
+      });
+      // res.status(200).json({
+      //   message: "Login successful, select a Library",
+      //   user: { id: user.id, email },
+      //   LibraryAccounts: associatedEntities?.rows?.map((row) => ({
+      //     entityId: row.entity_id,
+      //     entityName: row.entity_name,
+      //     subdomain: row.subdomain,
+      //     branchId: row.branch_id,
+      //     branchName: row.branch_name,
+      //     roleId: row.role_id,
+      //     role_name: row.role_name,
+      //   })),
+      // });
+    }
   } catch (error) {
     console.log(error, "Signin");
 
     return res.status(400).json({ error: "Invalid Credentials" });
+  }
+});
+
+// Select an account to sign in
+
+const SelectAccount = asyncHanlder(async (req, res) => {
+  console.log(req.body, "Select an Account");
+
+  const { userId, entityId, branchId, roleId, password } = req.body;
+  if (!userId || !entityId || !branchId || !roleId) {
+    return res.status(400).json({
+      error:
+        "User ID, entity ID, branch ID, role ID, and password are required",
+    });
+  }
+
+  try {
+    const associationResult = await db.query(
+      `SELECT 
+        uer.user_id, uer.entity_id, uer.branch_id, uer.role_id,
+        e.name AS entity_name, e.subdomain,
+        b.name AS branch_name,
+        r.name AS role_name,
+        u.email,u.password, u.name
+      FROM user_entity_roles uer
+      JOIN entity e ON uer.entity_id = e.id
+      JOIN branches b ON uer.branch_id = b.id
+      JOIN roles r ON uer.role_id = r.role_id
+      JOIN users u ON uer.user_id = u.id
+      WHERE uer.user_id = $1 AND uer.entity_id = $2 AND uer.branch_id = $3 AND uer.role_id = $4
+      `,
+      [userId, entityId, branchId, roleId]
+    );
+
+    console.log(associationResult.rows[0], "User Result on Select");
+
+    if (associationResult.rows.length === 0) {
+      return res
+        .status(403)
+        .json({ error: "Invalid library, branch, or role selection" });
+    }
+
+    const association = associationResult.rows[0];
+    console.log(association, "Association");
+
+    if (!association.password) {
+      return res
+        .status(401)
+        .json({ error: "No password set for this entity (use Google OAuth?)" });
+    }
+
+    const isValidPassword = await bcrypt.compare(
+      password,
+      association.password
+    );
+    if (!isValidPassword) {
+      return res
+        .status(401)
+        .json({ error: "Invalid password for this Library" });
+    }
+
+    const user_info = {
+      userId: userId,
+      roleId: roleId,
+      branchId: branchId,
+      entityId: entityId,
+      subdomain: association.subdomain,
+    };
+
+    // console.log(user_info, "User info for token");
+
+    // Assign a Token to the user by role_id,branch_id,entity_id
+    const AccessToken = jwt.sign(
+      {
+        UserInfo: user_info,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "5m" }
+    );
+
+    const refresh_token = refreshToken(user_info); //refresh token
+    // console.log(refresh_token, "Token");
+
+    // Set the cookie with refresh token
+    res.cookie("refreshToken", refresh_token, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: false, //true for production
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 day max
+      domain: ".localhost",
+    });
+    res.json({
+      accessToken: AccessToken,
+      user: {
+        id: association?.user_id,
+        name: association?.name,
+        email: association?.email,
+        authSource: "email",
+        roleId: association?.role_id,
+        role_name: association?.role_name,
+        branchId: association.branch_id,
+        branchName: association.branch_name,
+        entityId: association.entity_id,
+        entityName: association.entity_name,
+        authSource: "email",
+        subdomain: association?.subdomain,
+      },
+      message: "Login Successfully",
+      redirect: `http://localhost:5173'/${association?.subdomain}`,
+    });
+  } catch (error) {
+    console.error("Error selecting library:", error);
+    res.status(500).json({ error: "Failed to select a library account" });
   }
 });
 
@@ -457,23 +612,19 @@ const SigninUser = asyncHanlder(async (req, res) => {
       );
       let user = associationResult?.rows[0]; //
       if (!user) {
-        return res
-          .status(401)
-          .json({
-            message: `Invalid Email, This email not belongs to ${subdomain} domain`,
-          });
+        return res.status(401).json({
+          message: `Invalid Email, This email not belongs to ${subdomain} domain`,
+        });
         // throw new Error("Invalid Email Address");
       }
 
       let matchPassword = await bcrypt.compare(password, user?.password);
 
       if (!matchPassword) {
-        return res
-          .status(401)
-          .json({
-            message:
-              "Password for this Email is not matched. Please check your login credentials with domain",
-          });
+        return res.status(401).json({
+          message:
+            "Password for this Email is not matched. Please check your login credentials with domain",
+        });
         // throw new Error("Invalid Password");
       }
       // Email and password match
@@ -838,6 +989,7 @@ module.exports = {
   ForgetPassword,
   VerifyUserAuth,
   ResetPassword,
-  SigninUser, 
-  SignupUser
+  SigninUser,
+  SignupUser,
+  SelectAccount,
 };
