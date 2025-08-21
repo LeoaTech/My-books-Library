@@ -24,6 +24,7 @@ import RequiredAuth from "../utiliz/RequiredAuth";
 import InvalidToken from "../_authentication/forms/InvalidToken";
 import Register from "../_authentication/forms/Register";
 import Home from "../_root/pages/Home";
+import AuthFailurePage from "../_authentication/forms/AuthFailure";
 
 const renderRoutes = (routes) => {
   return routes?.map((route, i) => {
@@ -71,7 +72,8 @@ const router = createBrowserRouter(
       </Route>
       <Route path="/expired-link" element={<InvalidToken />} />
 
-
+      {/* Google Auth Failure Route */}
+      <Route path="/auth/failure" element={<AuthFailurePage />} />
       {/* Subdomain Library Routes */}
       <Route element={<AuthLayout />}>
 
