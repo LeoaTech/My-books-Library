@@ -15,8 +15,8 @@ const refreshToken = (data) => {
 // Google Authentication
 
 router.get("/auth/google", (req, res, next) => {
-  const action = req.query.action; // e.g., 'create_lib' or 'join_lib'
-  const subdomain = req.query.subdomain; // Required for 'join_lib'
+  const action = req.query.action; // 'create_lib' or 'join_lib'
+  const subdomain = req.query.subdomain;
 
   let stateObj = { action };
 
@@ -45,6 +45,8 @@ router.get(
   passport.authenticate("google", {
     successRedirect: `http://localhost:5173/`, //Redirect to Client Home Page
     failureRedirect: "/auth/google/failure",
+    failureMessage:true,
+    
   })
 );
 
@@ -68,16 +70,22 @@ router.get("/auth/logout", (req, res) => {
     res.json({ message: "Logout successful" });
   });
 });
+
 // Google Login Failure Routes
-
 router.get("/auth/google/failure", (req, res) => {
-  console.log(req.user, "user Failed");
 
-  res.json({redirectUrl:"http://localhost:5173/signin", message:"Failed to authenticate"});
+  const errorMessage = req.session.messages?.[0] || "Authentication failed";
+  console.log("Authentication failed:", errorMessage);
+
+  // Redirect to the client-side failure page with an error message
+  res.redirect(
+    `http://localhost:5173/auth/failure?error=${encodeURIComponent(
+      errorMessage
+    )}`
+  );
 });
 
 // Successful google login Route
-
 router.get("/auth/login/success", async (req, res) => {
   if (req.user) {
     // console.log(req.user, "Google Success Signin");
@@ -157,7 +165,9 @@ router.get("/auth/login/success", async (req, res) => {
       message: "Google Login success",
     });
   } else {
-    res.json({ user: null, message: "Login failed | Not Authenticated" });
+    res
+      .status(500)
+      .json({ user: null, message: "Login failed | Not Authenticated" });
   }
 });
 
