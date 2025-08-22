@@ -18,6 +18,8 @@ router.get("/auth/google", (req, res, next) => {
   const action = req.query.action; // 'create_lib' or 'join_lib'
   const subdomain = req.query.subdomain;
 
+  // console.log(action, subdomain);
+  
   let stateObj = { action };
 
   if (action === "join_lib") {
@@ -27,10 +29,15 @@ router.get("/auth/google", (req, res, next) => {
         .json({ error: "Subdomain required for library signup" });
     }
     stateObj.subdomain = subdomain;
+  } else if (action == "login") {
+    if (subdomain) {
+      stateObj.subdomain = subdomain;
+    }
   }
 
   // Encode state as base64 to safely pass JSON
   const state = Buffer.from(JSON.stringify(stateObj)).toString("base64");
+  console.log(state, "Auth route");
 
   passport.authenticate("google", {
     scope: ["email", "profile"],
@@ -45,8 +52,7 @@ router.get(
   passport.authenticate("google", {
     successRedirect: `http://localhost:5173/`, //Redirect to Client Home Page
     failureRedirect: "/auth/google/failure",
-    failureMessage:true,
-    
+    failureMessage: true,
   })
 );
 
@@ -73,7 +79,6 @@ router.get("/auth/logout", (req, res) => {
 
 // Google Login Failure Routes
 router.get("/auth/google/failure", (req, res) => {
-
   const errorMessage = req.session.messages?.[0] || "Authentication failed";
   console.log("Authentication failed:", errorMessage);
 
