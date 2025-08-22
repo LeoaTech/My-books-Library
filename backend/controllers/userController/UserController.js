@@ -40,6 +40,7 @@ const getLibraryUsers = asyncHanlder(async (req, res) => {
   // console.log(req.user, "Query user credentials");
 
   const entityId= req?.user?.entityId || req.user?.entity_id;
+  // Get all user's belongs to a Library
   const userQuery = `SELECT
     u.id AS user_id,
     u.email,
@@ -47,26 +48,20 @@ const getLibraryUsers = asyncHanlder(async (req, res) => {
     uer.entity_id,
     uer.branch_id,
     r.name AS role_name,
-    u.name AS name,
-    ARRAY_AGG(p.name) AS permissions
+    u.name AS name
 FROM
     public.users u
 JOIN
     public.user_entity_roles uer ON u.id = uer.user_id
 JOIN
-    public.role_permissions rp ON uer.role_id = rp.role_id
-JOIN
     public.roles r ON r.role_id = uer.role_id
-JOIN
-    public.permissions p ON rp.permission_id = p.permission_id
 WHERE
     uer.entity_id = $1
 GROUP BY
-    u.id, u.email, uer.role_id, uer.entity_id, uer.branch_id, r.name, u.name; `;
+    u.id, u.email, uer.role_id, uer.entity_id, uer.branch_id, r.name, u.name `;
 
-  const userExists = await db.query(userQuery, [entityId]);
+    const userExists = await db.query(userQuery, [entityId]);
 
-  // console.log(userExists?.rows, "User Found");
   res.status(200).json({
     data: userExists?.rows,
     message: "Successfully fetched a library users ",
@@ -109,32 +104,34 @@ const updateUserPrfile = asyncHanlder(async (req, res) => {
   res.status(200).json({ message: "Update user Successfully" });
 });
 
-// Update Role for Active User
+// Update User Role for a Library
 const UpdateRoles = asyncHanlder(async (req, res) => {
+  const entityId = req.user?.entityId || req.user?.entity_id;
   const userId = req.params.user_id;
   const newRoleID = req.body.newRoleId;
 
-  console.log(req.params, req.body);
-
-  const foundUserID = await db.query(`SELECT * from users where id= $1`, [
-    userId,
+  // console.log(req.params, req.body);
+  /* Verify if user_id exists in db for the entity_id */
+  const foundUserID = await db.query(`SELECT id from user_entity_roles where user_id= $1 and entity_id =$2`, [
+    userId, entityId
   ]);
   let user = foundUserID?.rows[0];
 
   console.log("found user", user);
   if (!user) {
-    return res.status(401).json({ message: "Invalid UserId" });
+    return res.status(401).json({ message: "Invalid User, User not Belongs to this Library" });
     // throw new Error("Invalid Email Address");
   }
 
   try {
-    // create user
+    // Update user role in the library
     const updateQuery = await db.query(
-      `UPDATE users SET role_id = $1 WHERE id = $2 RETURNING *`,
-      [newRoleID, userId]
+      `UPDATE user_entity_roles SET role_id = $1 WHERE user_id = $2 and entity_id = $3 RETURNING *`,
+      [newRoleID, userId, entityId]
     );
 
-    console.log(updateQuery?.rows[0]);
+   
+    // console.log(updateQuery?.rows[0],"Updated Role");
     return res.status(201).json({ message: "Updated Role for ", userId });
   } catch (error) {
     console.log(error, "User Role update Error in db");
