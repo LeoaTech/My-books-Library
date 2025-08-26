@@ -9,7 +9,7 @@ const checkRole = async (req, res, next) => {
 
   // TODO: Get also user Library's ID
   const userRoleId = req.user?.roleId || req?.user?.role_id;
-  const entityId = req.user?.entityId;
+  const entityId = req.user?.entityId || req?.user?.entity_id;
 
   if (!entityId) {
     return res
