@@ -19,6 +19,7 @@ const {
   generateSubdomain,
   getEntity,
   getBranch,
+  createDefaultRoles,
 } = require("../../helpers/user_onboarding.js");
 // Generate Access JWT
 const generateToken = (data) => {
@@ -70,7 +71,7 @@ const RegisterUser = asyncHanlder(async (req, res) => {
       throw new Error("Missing required fields");
     }
 
-    // Check if user exists
+    // Check if user already exists
     let userResult = await client.query(
       "SELECT id FROM users WHERE email = $1",
       [email]
@@ -101,7 +102,7 @@ const RegisterUser = asyncHanlder(async (req, res) => {
     }
     console.log(userId, "User Created");
 
-    // Check if user already has an "owner" role in any other library(entity_id)
+    // Check if user ID with the email already has an "owner" role in any other library(entity_id)
     const ownerCheck = await pool.query(
       `
       SELECT uer.user_id
@@ -112,21 +113,25 @@ const RegisterUser = asyncHanlder(async (req, res) => {
       [userId]
     );
 
+    /* user is already an owner of a Library */
     if (ownerCheck.rows.length > 0) {
-      await client.query("ROLLBACK");
+      await client.query("ROLLBACK"); // Stop Library Registeration Process
       return res.status(403).json({
         error:
           "Failed to Create Library, User's email already associates to a Library as an owner",
       });
     }
-    // Generate a subdomain
+    /*Continue with Library Registration Steps  */
+
+    // Generate a subdomain from the Business name
     const subdomain = generateSubdomain(businessName);
 
-    console.log(subdomain, "subdomain");
+    console.log(subdomain, "subdomain Created");
 
     // make sure the subdomain for each entity_id is unique
 
     const uniqueSubdomain = await checkSubdomain(client, subdomain);
+    console.log(uniqueSubdomain, "Refine - to add Unique subdomain");
 
     // Step 1: Create an Entity
     const entityData = {
@@ -143,12 +148,12 @@ const RegisterUser = asyncHanlder(async (req, res) => {
       uniqueSubdomain,
     };
     const entity = await createEntity(client, entityData);
-    console.log(entity.id, "Entity Created");
+    console.log(entity.id, "New Entity Created");
 
     // Step 2: Create a default branch as main branch
 
     const branchData = {
-      businessName,
+      businessName: businessName + "(main)",
       city,
       country,
       address,
@@ -159,13 +164,15 @@ const RegisterUser = asyncHanlder(async (req, res) => {
     const branch = await createBranch(client, branchData, entity.id);
     console.log(branch.id, "Branch Created");
 
-    //Step 3: Create a  default 'owner' Role
-    const role = await createRole(client, entity.id, "owner");
+    //Step 3: Create  default Roles for the Library (owner,vendor and customer)
+    const roles = await createDefaultRoles(client, entity.id);
 
-    console.log(role.role_id, "New Role Created for Entity ", entity.id);
+    console.log(roles, "New Role Created for Entity ", entity.id);
 
+    // Get the owner role_id from roles list
+    let ownerRole = roles.find((role) => role.name == "owner");
     // Add permissions => Allow all permissions to the `owner` role
-    const roleAdded = await addPermissions(client, role.role_id);
+    const roleAdded = await addPermissions(client, ownerRole.role_id);
     console.log(roleAdded, "Roles Added");
 
     // Step 4: Create new user associated branch_id, role_id, entity_id for user_id
@@ -173,7 +180,7 @@ const RegisterUser = asyncHanlder(async (req, res) => {
     // check if user exists in DB
     const userRole = await client.query(
       "INSERT INTO user_entity_roles (user_id, entity_id, branch_id, role_id) VALUES ($1, $2, $3, $4)",
-      [userId, entity.id, branch.id, role.role_id]
+      [userId, entity.id, branch.id, ownerRole.role_id]
     );
 
     console.log(userRole.rows, "User Entity Role created");
@@ -182,15 +189,17 @@ const RegisterUser = asyncHanlder(async (req, res) => {
 
     res.status(201).json({
       message: "Library Created successfully",
-      user: { id: userId, email, name: fullName },
-      LibraryAccounts: {
+      user: {
+        id: userId,
+        email,
+        name: fullName,
         entityId: entity.id,
         entityName: entity.name,
         subdomain: entity.subdomain,
         branchId: branch.id,
         branchName: branch.name,
-        roleId: role.id,
-        role_name: role.name,
+        roleId: ownerRole.role_id,
+        role_name: ownerRole.name,
       },
     });
   } catch (error) {
@@ -202,7 +211,6 @@ const RegisterUser = asyncHanlder(async (req, res) => {
     client.release();
   }
 });
-
 
 /* Login as an Owner  - other role_id users can't get into this */
 
@@ -254,17 +262,14 @@ const LoginUser = asyncHanlder(async (req, res) => {
       // throw new Error("Invalid Email Address");
     }
 
-
     console.log(associatedEntities.rows, "Association for email ID");
-    
+
     // Check if it has a role of owner
     const ownerAssociation = associatedEntities.rows?.find(
       (user) => user.role_name == "owner"
     );
 
-
     console.log(ownerAssociation, "Owner Association");
-    
 
     // If the user credentials
     if (!ownerAssociation) {
@@ -275,11 +280,9 @@ const LoginUser = asyncHanlder(async (req, res) => {
         });
     }
     if (!ownerAssociation.password) {
-      return res
-        .status(401)
-        .json({
-          error: "No password set for this Library (use Google OAuth?)",
-        });
+      return res.status(401).json({
+        error: "No password set for this Library (use Google OAuth?)",
+      });
     }
 
     const isValidPassword = await bcrypt.compare(
