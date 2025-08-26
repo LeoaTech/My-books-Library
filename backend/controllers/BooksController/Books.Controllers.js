@@ -21,8 +21,13 @@ const options = {
 // Get All Books
 
 const GetAllBooks = asyncHanlder(async (req, res) => {
-  try {
-    const getBooksList = await db.query(`SELECT
+  const user = req.user;
+
+  const entityId = user?.entityId || user?.entity_id;
+
+  console.log(req.user, "User Object", entityId,"Entity ID");
+  
+  /* const fetchBooksFromSingleBranch=`SELECT
     books.id,
     books.title,
     books.summary,
@@ -48,11 +53,69 @@ FROM
     public.books
 JOIN public.authors ON books.author = authors.id
 JOIN public.covers ON books.cover = covers.id
-JOIN public.vendors ON books.vendor_id = vendors.id
+LEFT JOIN public.vendors ON books.vendor_id = vendors.id   
 JOIN public.conditions ON books.condition = conditions.id
 JOIN public.branches ON books.branch_id = branches.id
 JOIN public.publishers ON books.publisher = publishers.id
-JOIN public.categories ON books.category = categories.id;`);
+JOIN public.categories ON books.category = categories.id 
+WHERE
+    branch_id = $1
+;` */
+
+  if (!entityId) {
+    res.status(400).json({ message: "No Library Exists " });
+  }
+  const fetchBooksFromMultipleBranches = `SELECT
+    books.id,
+    books.title,
+    books.summary,
+    books.member_price,
+    books.purchase_price,
+    books.discount_percentage,
+    books.publish_year,
+    branches.name AS branch_name,
+    vendors.id AS vendor_id,
+    authors.name AS author_name,
+    covers.name AS cover_name,
+    categories.name AS category_name,
+    conditions.name AS condition_name,
+    publishers.name AS publisher_name,
+    books.is_available AS Available,
+    books.comments,
+    books.added_by,
+    books.cover_img_url,
+    books.isbn,
+    books.credit,
+    books.created_at
+FROM
+    public.books
+JOIN public.authors ON books.author = authors.id
+JOIN public.covers ON books.cover = covers.id
+LEFT JOIN public.vendors ON books.vendor_id = vendors.id   
+JOIN public.conditions ON books.condition = conditions.id
+JOIN public.branches ON books.branch_id = branches.id
+JOIN public.publishers ON books.publisher = publishers.id
+JOIN public.categories ON books.category = categories.id
+WHERE
+    books.branch_id = ANY ($1); `;
+
+  // Get All the branches related to an Entity Id (for a specific library)
+
+  const getEntityBranches = `Select id from branches where entity_id = $1`;
+  try {
+    const getBranchIds = await db.query(getEntityBranches, [entityId]);
+    console.log(getBranchIds.rows, "Branches");
+    
+    if (getBranchIds.rowCount == 0) {
+      res
+        .status(400)
+        .json({ message: "No Books Exists for this Library", books: [] });
+    }
+
+    let branchIds = getBranchIds.rows.map((branch) => branch.id);
+    const getBooksList = await db.query(fetchBooksFromMultipleBranches, [
+      branchIds,
+    ]);
 
     console.log(getBooksList?.rowCount, "Books available");
     // if (getBooksList?.rowCount > 0) {
@@ -172,7 +235,7 @@ const CreateNewBook = asyncHanlder(async (req, res) => {
         options
       );
       console.log(uploadImg);
-      imagesUrls.push({...uploadImg});
+      imagesUrls.push({ ...uploadImg });
       // return uploadImg?.public_id;
     }
   } catch (error) {
