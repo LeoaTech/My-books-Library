@@ -1,8 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, lazy, Suspense } from "react";
+
+/* Icons */
 import { MdEdit, MdWarning } from "react-icons/md";
-import UpdatRolesModal from "../Modal/User/UpdatRolesModal";
-import ViewUserDetails from "../Modal/User/ViewUserDetails";
 import { HiChevronDoubleLeft, HiChevronDoubleRight } from "react-icons/hi";
+
+import Loader from "../../Loader/Loader";
+
+/* Lazy Load components */
+const UpdatRolesModal = lazy(() => import("../Modal/User/UpdatRolesModal"));
+const ViewUserDetails = lazy(() => import("../Modal/User/ViewUserDetails"));
 
 const UserTable = ({ users }) => {
   const [openModal, setOpenModal] = useState(false);
@@ -21,7 +27,7 @@ const UserTable = ({ users }) => {
 
   // Change page
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
-  console.log(users, "Result");
+  // console.log(users, "Result");
 
   // To View User Details
   const editUserDetails = (userId) => {
@@ -30,17 +36,20 @@ const UserTable = ({ users }) => {
     setOpenModal(!openModal);
   };
 
-  const deleteUserDetails = (userId) => {
-    const deleteUser = users?.find((user) => user?.user_id == userId);
-    setValues(deleteUser);
-    setOpenModal(!openModal);
-  };
+  // const deleteUserDetails = (userId) => {
+  //   const deleteUser = users?.find((user) => user?.user_id == userId);
+  //   setValues(deleteUser);
+  //   setOpenModal(!openModal);
+  // };
 
   const showUserDetails = (userId) => {
     setDetails(true);
     const activeUser = users?.find((user) => user?.user_id == userId);
     setValues(activeUser);
   };
+
+  console.log(users);
+
   return (
     <div className="rounded-lg border border-[#E2E8F0] bg-white px-5 pt-6 pb-2.5 shadow-default  max-w-full overflow-x-auto overflow-y-auto dark:border-[#2E3A47] dark:bg-[#24303F]  sm:px-7.5 xl:pb-1">
       <div className="max-w-full overflow-x-auto">
@@ -90,15 +99,14 @@ const UserTable = ({ users }) => {
                 <td className="border-b border-[#eee] py-5 px-4 dark:border-[#2E3A47]">
                   <div className="flex items-center space-x-3.5">
                     <div className="group relative m-2 flex justify-center">
-                      {/* <button className="rounded bg-amber-500 px-4 py-2 text-sm text-white shadow-sm">
-                                       Hover me!
-                                     </button> */}
-                      <span className="absolute w-[160px] -top-10 scale-0 transition-all rounded bg-red-400 p-2 text-xs text-neutral-200 group-hover:scale-100">
+
+                      {user.role_name == "owner" && <span className="absolute w-[160px] -top-10 scale-0 transition-all rounded bg-red-400 p-2 text-xs text-neutral-200 group-hover:scale-100">
                         <span className="flex gap-2 items-center">
-                          
+
                           <MdWarning /> Role cannot be modified!
                         </span>{" "}
-                      </span><button
+                      </span>}
+                      <button
                         className="text-green-500 hover:text-[#F0950C] disabled:text-gray-400"
                         onClick={() => editUserDetails(user?.user_id)}
                         disabled={user.role_name == "owner"}
@@ -193,12 +201,18 @@ const UserTable = ({ users }) => {
       </div>
       {/* Update Roles Modal */}
       {openModal && (
-        <UpdatRolesModal userData={values} setOpenModal={setOpenModal} />
+        <Suspense fallback={<Loader />}>
+          <UpdatRolesModal userData={values} setOpenModal={setOpenModal} />
+
+        </Suspense>
       )}
 
       {/*  View User Details*/}
 
-      {details && <ViewUserDetails userData={values} setDetails={setDetails} />}
+      {details && <Suspense fallback={<Loader />}>
+        <ViewUserDetails userData={values} setDetails={setDetails} />
+      </Suspense>
+      }
 
     </div>
   );
