@@ -26,7 +26,7 @@ const GetAllBooks = asyncHanlder(async (req, res) => {
     books.id,
     books.title,
     books.summary,
-    books.rental_price,
+    books.member_price,
     books.purchase_price,
     books.discount_percentage,
     books.publish_year,
@@ -54,7 +54,7 @@ JOIN public.branches ON books.branch_id = branches.id
 JOIN public.publishers ON books.publisher = publishers.id
 JOIN public.categories ON books.category = categories.id;`);
 
-    console.log(getBooksList?.rows);
+    console.log(getBooksList?.rowCount, "Books available");
     // if (getBooksList?.rowCount > 0) {
     res.status(200).json({
       books: getBooksList?.rows || [],
@@ -78,7 +78,7 @@ const GetBookById = asyncHanlder(async (req, res) => {
     books.id,
     books.title,
     books.summary,
-    books.rental_price,
+    books.member_price,
     books.purchase_price,
     books.discount_percentage,
     books.publish_year,
@@ -142,7 +142,7 @@ const CreateNewBook = asyncHanlder(async (req, res) => {
 
   const {
     title,
-    rental_price,
+    member_price,
     purchase_price,
     author,
     condition,
@@ -187,7 +187,7 @@ const CreateNewBook = asyncHanlder(async (req, res) => {
     const saveBook = await db.query(
       `INSERT INTO books (
           title,
-          rental_price,
+          member_price,
           purchase_price,
           author,
           condition,
@@ -208,7 +208,7 @@ const CreateNewBook = asyncHanlder(async (req, res) => {
           values ($1,$2,$3,$4,$5,$6,$7,$8,$9 ,$10,$11,$12,$13,$14,$15,$16,$17,$18) Returning *`,
       [
         title,
-        rental_price,
+        member_price,
         purchase_price,
         author,
         condition,
@@ -281,7 +281,7 @@ const UpdateBook = asyncHanlder(async (req, res) => {
   const { book } = req.body;
   const {
     title,
-    rental_price,
+    member_price,
     purchase_price,
     author,
     condition,
@@ -334,7 +334,7 @@ const UpdateBook = asyncHanlder(async (req, res) => {
     const updateBook = await db.query(
       `UPDATE books SET 
       title =$1,
-      rental_price=$2,
+      member_price=$2,
       purchase_price=$3,
       condition=$4,
       cover=$5,
@@ -355,7 +355,7 @@ const UpdateBook = asyncHanlder(async (req, res) => {
        Returning *`,
       [
         title,
-        rental_price,
+        member_price,
         purchase_price,
         condition,
         cover,
