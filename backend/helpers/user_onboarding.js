@@ -1,6 +1,6 @@
 const db = require("../config/dbConfig.js");
 
-// Generate subdomain from organization name
+// Generate subdomain from Library Business name
 function generateSubdomain(name) {
   return name
     .toLowerCase()
@@ -8,7 +8,7 @@ function generateSubdomain(name) {
     .substring(0, 50);
 }
 
-// Check subdomain and get a unique subdomain
+// Verify subdomain and get a unique subdomain
 
 async function checkSubdomain(client, subdomain) {
   let newSubdomain = subdomain;
@@ -75,7 +75,7 @@ async function createEntity(client, entityData) {
     uniqueSubdomain,
   } = entityData;
   const query = `
-    INSERT INTO entity (name, city,country, address, phone, type_of_books, deliver_inter_city,multiple_branches,description,subdomain) VALUES ($1, $2, $3, $4,$5,$6,$7,$8,$9,$10) RETURNING id`;
+    INSERT INTO entity (name, city,country, address, phone, type_of_books, deliver_inter_city,multiple_branches,description,subdomain) VALUES ($1, $2, $3, $4,$5,$6,$7,$8,$9,$10) RETURNING id,name`;
   const values = [
     businessName,
     city,
@@ -104,11 +104,29 @@ async function createBranch(client, branchData, entityId) {
   return result.rows[0];
 }
 
+// Add Default Roles
+async function createDefaultRoles(client, entityId) {
+  const roleTypes = ["owner", "customer", "vendor"];
+
+  try {
+    // Use Promise.all to wait for all role creations to complete
+    const roles = await Promise.all(
+      roleTypes.map(async (role_type) => {
+        return await createRole(client, entityId, role_type, true);
+      })
+    );
+    return roles;
+  } catch (error) {
+    console.error("Error creating default roles:", error);
+    throw error;
+  }
+}
+
 async function createRole(client, entityId, role_type) {
   const query = `
     INSERT INTO roles (entity_id, name)
     VALUES ($1, $2)
-    RETURNING role_id;
+    RETURNING role_id,name;
   `;
   const values = [entityId, role_type];
   const result = await client.query(query, values);
@@ -126,7 +144,6 @@ async function createUser(client, userData) {
     country,
     address,
     phone,
-    // roleId,
     img_url,
   } = userData;
 
@@ -167,18 +184,20 @@ async function getBranch(db, entityId) {
     [entityId]
   );
 
+  // Get the main branch entity Id
+  // const names = checkBranch.rows.filter((branch) => branch.name.includes("(main)"));
   return checkBranch.rows[0].id;
 }
-
 
 module.exports = {
   createBranch,
   createEntity,
+  createDefaultRoles,
   createRole,
   createUser,
   addPermissions,
   checkSubdomain,
   generateSubdomain,
   getBranch,
-  getEntity
+  getEntity,
 };
