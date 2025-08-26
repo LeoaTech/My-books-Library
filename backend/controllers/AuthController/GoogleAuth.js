@@ -3,14 +3,14 @@ const db = require("../../config/dbConfig");
 const GoogleStrategy = require("passport-google-oauth2").Strategy;
 const {
   createEntity,
-  createRole,
   createBranch,
   createUser,
   addPermissions,
   checkSubdomain,
   generateSubdomain,
   getEntity,
-  getBranch
+  getBranch,
+  createDefaultRoles,
 } = require("../../helpers/user_onboarding.js");
 const { pool } = require("../../config/dbConfig.js");
 
@@ -27,17 +27,17 @@ passport.use(
       const client = await pool.connect();
       // Parse the state from the request
       const stateBase64 = request.query.state || "";
+
       let state;
       try {
         state = JSON.parse(Buffer.from(stateBase64, "base64").toString());
-        // console.log(state, "State");
       } catch {
         state = {};
       }
       const action = state.action || "login"; // Default to login if no action
 
       try {
-        console.log(profile, "USER PROFILE", state);
+        // console.log("State ", state); //profile, "USER PROFILE",
         await client.query("BEGIN");
 
         if (!profile.email || !profile.displayName) {
@@ -46,6 +46,8 @@ passport.use(
         let userId;
         let userEntity = {};
         if (action === "join_lib") {
+          // console.log("Inside Join Lib Action");
+
           const subdomain = state.subdomain;
           if (!subdomain) {
             throw new Error("Subdomain missing for library join");
@@ -86,20 +88,51 @@ passport.use(
 
           console.log("Step 2: ", branchId, "Branch Founded");
 
-          const role = await createRole(client, entityId, "customer");
+          // Check if "customer" role already exists for this entity
+          const roleResult = await client.query(
+            "SELECT role_id FROM roles WHERE entity_id = $1 and name=$2 ",
+            [entityId, "customer"]
+          );
 
-          console.log("Step 3: ", role.role_id, " role ID created");
+          console.log(roleResult.rows, "Roles Exists");
 
-          const userRole = await client.query(
-            "INSERT INTO user_entity_roles (user_id, entity_id, branch_id, role_id) VALUES ($1, $2, $3, $4) RETURNING id",
+          let role;
+          if (roleResult.rows.length > 0) {
+            role = roleResult.rows[0];
+            console.log(
+              "Roles",
+              roleResult.rows,
+              "Step 3: Existing customer role from Library found",
+              role.role_id
+            );
+          }
+          // Check if user_entity_roles entry already exists
+          const userRoleCheck = await client.query(
+            "SELECT id FROM user_entity_roles WHERE user_id = $1 AND entity_id = $2 AND branch_id = $3 AND role_id = $4",
             [userId, entityId, branchId, role.role_id]
           );
 
-          console.log("Step 4: ", userRole.rows[0], "User Entity Role Created");
+          if (userRoleCheck.rows.length > 0) {
+            console.log("User already associated as customer");
+            userEntity = { userId, entityId, branchId, roleId: role.role_id };
+            return done(null, userEntity);
+          } else {
+            const userRole = await client.query(
+              "INSERT INTO user_entity_roles (user_id, entity_id, branch_id, role_id) VALUES ($1, $2, $3, $4) RETURNING id",
+              [userId, entityId, branchId, role.role_id]
+            );
+            console.log(
+              "Step 4: ",
+              userRole.rows[0],
+              "User Entity Role Created"
+            );
+          }
           await client.query("COMMIT");
           userEntity = { userId, entityId, branchId, roleId: role.role_id };
           return done(null, userEntity);
         } else if (action === "create_lib") {
+          // console.log("Inside Create Library Action");
+
           // Check if the user already exists in the database
           let userResult = await pool.query(
             "SELECT id FROM users WHERE email = $1",
@@ -124,9 +157,8 @@ passport.use(
 
             if (ownerCheck.rows.length > 0) {
               await client.query("ROLLBACK");
-              return res.status(403).json({
-                error:
-                  "User already owns an Library. Please try with another email address to create library.",
+              return done(null, false, {
+                message: "User already owns a library",
               });
             }
           } else {
@@ -177,7 +209,7 @@ passport.use(
           console.log(entity.id, "entity Created");
 
           const branchData = {
-            businessName: profile.displayName + "-branch",
+            businessName: profile.displayName + "-branch(main)", //to identify an entity Id main branch
             city: "",
             country: "",
             address: "",
@@ -188,25 +220,128 @@ passport.use(
           const branch = await createBranch(client, branchData, entity.id);
           console.log(branch.id, "Branch Created");
 
-          /* Important: user Sign in with google account from library domain is customer */
-          const role = await createRole(client, entity.id, "owner");
-          console.log(role.role_id, "Role Created");
+          /* Important: user Sign up with google account to create library will be act as an owner */
+          const roles = await createDefaultRoles(client, entity.id);
 
+          console.log(roles, "New Role Created for Entity ", entity.id);
+
+          // Get the owner role_id from roles list
+          let ownerRole = roles.find((role) => role.name == "owner");
           // Add permissions => Allow all permissions to the `owner` role
-          const roleAdded = await addPermissions(client, role.role_id);
+          const roleAdded = await addPermissions(client, ownerRole.role_id);
           console.log(roleAdded, "Roles permissions added");
+
 
           // Add the user Id associated entity, role_id and branch
           const userRole = await client.query(
             "INSERT INTO user_entity_roles (user_id, entity_id, branch_id, role_id) VALUES ($1, $2, $3, $4)",
-            [userId, entity.id, branch.id, role.role_id]
+            [userId, entity.id, branch.id, ownerRole.role_id]
           );
           console.log(userRole, "Created new user with entity role");
           await client.query("COMMIT");
-          userEntity = { userId,entityId: entity.id, branchId: branch.id, roleId: role.role_id };
+          userEntity = {
+            userId,
+            entityId: entity.id,
+            branchId: branch.id,
+            roleId: ownerRole.role_id,
+          };
           return done(null, userEntity);
-        }
+        } else {
+          // Default Login Action
 
+          console.log("Inside Login Action");
+
+          // Check if the user already exists in the database
+          let userResult = await pool.query(
+            "SELECT id FROM users WHERE email = $1",
+            [profile.email]
+          );
+
+          if (userResult.rows.length === 0) {
+            await client.query("ROLLBACK");
+            return done(null, false, {
+              message: "User not found. Please create or join a library first.",
+            });
+          }
+
+          // get the already existing user_id form db
+          userId = userResult.rows[0].id;
+          const subdomain = state.subdomain;
+
+          // console.log(subdomain);
+
+          if (subdomain) {
+            // console.log("Inside Library Domain Login Action", subdomain);
+
+            const entityId = await getEntity(db, subdomain);
+
+            console.log("Step 1: ", entityId, " Entity Founded");
+
+            const branchId = await getBranch(db, entityId);
+
+            console.log("Step 2: ", branchId, "Branch Founded");
+
+            // get the role_id belongs to that subdomain entity id and user_id.
+            // As one user_id must belongs to an entity and with one role_id ( user is associated with an entity with single )
+
+            const userRole = await client.query(
+              `
+            SELECT uer.entity_id, uer.branch_id, uer.role_id
+              FROM user_entity_roles uer
+              JOIN roles r ON uer.role_id = r.role_id
+              WHERE uer.user_id = $1 and uer.entity_id =$2
+              `,
+              [userId, entityId]
+            );
+
+            if (userRole.rows.length == 0) {
+              await client.query("ROLLBACK");
+              return done(null, false, {
+                message: "User is not found for the library domain",
+              });
+            }
+
+            userEntity = {
+              userId,
+              entityId,
+              branchId,
+              roleId: userRole.rows[0].role_id,
+            };
+
+            return done(null, userEntity);
+          } else {
+            // console.log("Inside Owner Login Action from app domain");
+
+            // Else check for owner login
+            const ownerCheck = await client.query(
+              `
+              SELECT uer.entity_id, uer.branch_id, uer.role_id
+              FROM user_entity_roles uer
+              JOIN roles r ON uer.role_id = r.role_id
+              WHERE uer.user_id = $1 AND r.name = 'owner'
+              `,
+              [userId]
+            );
+
+            // If not owner email
+            if (ownerCheck.rows.length === 0) {
+              await client.query("ROLLBACK");
+              return done(null, false, {
+                message:
+                  "User is not an owner of any library. Please check your domain",
+              });
+            }
+            ({
+              entity_id: entityId,
+              branch_id: branchId,
+              role_id: roleId,
+            } = ownerCheck.rows[0]);
+
+            userEntity = { userId, entityId, branchId, roleId };
+            await client.query("COMMIT");
+            return done(null, userEntity);
+          }
+        }
       } catch (err) {
         // Handle errors
         await client.query("ROLLBACK");
@@ -226,7 +361,7 @@ passport.serializeUser((user, done) => {
 });
 
 passport.deserializeUser(async (user, done) => {
-  console.log(user, "deserialize User");
+  // console.log(user, "deserialize User");
 
   try {
     const result = await db.query(
@@ -253,7 +388,10 @@ passport.deserializeUser(async (user, done) => {
       return done(null, result?.rows[0]);
     }
 
-    return done("User not found", null);
+    // return done("User not found", null);
+    return done(null, false, {
+      message: "User not found. Please create or join a library first.",
+    });
   } catch (error) {
     return done(error, null);
   }
