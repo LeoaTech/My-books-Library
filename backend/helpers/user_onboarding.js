@@ -189,6 +189,21 @@ async function getBranch(db, entityId) {
   return checkBranch.rows[0].id;
 }
 
+// Create a Dummy Vendor
+async function createDummyVendor(client, entity, roleId) {
+  const defaultVendorQuery = `
+      INSERT INTO vendors ( name,role_id)
+      VALUES ($1, $2)
+      RETURNING id;
+    `;
+  const defaultVendorResult = await client.query(defaultVendorQuery, [
+    `${entity.name} Vendor`,
+    roleId,
+  ]);
+  return defaultVendorResult.rows[0].id;
+
+}
+
 module.exports = {
   createBranch,
   createEntity,
@@ -200,4 +215,5 @@ module.exports = {
   generateSubdomain,
   getBranch,
   getEntity,
+  createDummyVendor,
 };
