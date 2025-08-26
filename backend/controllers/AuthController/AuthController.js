@@ -19,6 +19,7 @@ const {
   generateSubdomain,
   getEntity,
   getBranch,
+  createDummyVendor,
   createDefaultRoles,
 } = require("../../helpers/user_onboarding.js");
 // Generate Access JWT
@@ -174,6 +175,16 @@ const RegisterUser = asyncHanlder(async (req, res) => {
     // Add permissions => Allow all permissions to the `owner` role
     const roleAdded = await addPermissions(client, ownerRole.role_id);
     console.log(roleAdded, "Roles Added");
+
+     // Create a Dummy vendor
+    let vendorRole = roles.find((role) => role.name == "vendor");
+    
+    // Create dummy vendor_id for the Library
+
+    let vendorId = await createDummyVendor(client, entity, vendorRole.role_id);
+
+    console.log(vendorId, "Dummy Vendor Created");
+    
 
     // Step 4: Create new user associated branch_id, role_id, entity_id for user_id
 
