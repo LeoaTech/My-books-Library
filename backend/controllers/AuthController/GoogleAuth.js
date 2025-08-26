@@ -11,6 +11,7 @@ const {
   getEntity,
   getBranch,
   createDefaultRoles,
+  createDummyVendor,
 } = require("../../helpers/user_onboarding.js");
 const { pool } = require("../../config/dbConfig.js");
 
@@ -231,6 +232,18 @@ passport.use(
           const roleAdded = await addPermissions(client, ownerRole.role_id);
           console.log(roleAdded, "Roles permissions added");
 
+          // Create a Dummy vendor
+          let vendorRole = roles.find((role) => role.name == "vendor");
+
+          // Create dummy vendor_id for the Library
+
+          let vendorId = await createDummyVendor(
+            client,
+            entity,
+            vendorRole.role_id
+          );
+
+          console.log(vendorId, "Dummy Vendor for Library Added");
 
           // Add the user Id associated entity, role_id and branch
           const userRole = await client.query(
