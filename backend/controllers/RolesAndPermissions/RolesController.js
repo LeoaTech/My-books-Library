@@ -5,7 +5,7 @@ const db = require("../../config/dbConfig");
 const FetchRoles = asyncHanlder(async (req, res) => {
   // console.log(req.user, "User  Roles details");
 
-  const entityId = req.user.entityId || req.user.entity_id;
+  const entityId = req?.user?.entityId || req.user?.entity_id;
   try {
     const rolesQuery = `SELECT * FROM roles where entity_id =$1`;
     const getAllRoles = await db.query(rolesQuery, [entityId]);
