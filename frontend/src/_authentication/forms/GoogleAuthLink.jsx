@@ -3,16 +3,18 @@ import GoogleIcon from "../../assets/google.svg";
 const serverUrl = import.meta.env.VITE_SERVER_ENDPOINT;
 
 const GoogleAuthLink = ({ action, subdomain }) => {
-  const origin = window.location.origin; 
+  const origin = window.location.origin;
 
   //  the query string
   const queryParams = new URLSearchParams();
   // added these action 'create_lib' or 'join_lib'
-  queryParams.append('action', action); 
+  queryParams.append('action', action);
   queryParams.append('origin', origin); // Add the current domain
   // Join Library (sign up) or sign in to a Library domain
   if (action === 'join_lib' && subdomain) {
-    queryParams.append('subdomain', subdomain); 
+    queryParams.append('subdomain', subdomain);
+  } else if (action === "login" && subdomain) {   //  sign in to a Library domain
+    queryParams.append('subdomain', subdomain);
   }
   const authUrl = `${serverUrl}/auth/google?${queryParams.toString()}`;
 

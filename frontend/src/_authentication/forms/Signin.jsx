@@ -17,11 +17,11 @@ const Signin = () => {
 
   const navigate = useNavigate();
   const { persist, setPersist, googleAuth } = useAuthContext();
-  // console.log(useParams(), "params");
   const params = useParams()
   const togglePersist = () => {
     setPersist((prev) => !prev);
   };
+  // console.log(params, "params");
 
   useEffect(() => {
     localStorage.setItem("persist", persist);
@@ -91,7 +91,7 @@ const Signin = () => {
           <div className="custom-form">
             <div className="mt-4">
 
-              {params.subdomain ? <GoogleAuthLink action="join_lib" subdomain={params.subdomain} /> : <GoogleAuthLink action="create_lib" />}
+              {params?.subdomain ? <GoogleAuthLink action={"login"} subdomain={params?.subdomain} /> : <GoogleAuthLink action={'login'} />}
 
             </div>
             <input
