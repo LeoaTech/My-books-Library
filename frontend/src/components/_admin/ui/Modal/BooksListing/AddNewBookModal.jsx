@@ -4,11 +4,16 @@ import { useForm, Controller } from "react-hook-form";
 import { useSaveBook } from "../../../../../hooks/books/useSaveBook";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useFetchAuthors } from "../../../../../hooks/books/useFetchAuthors";
-import CreatableSelect from "react-select/creatable";
 import { useAuthor } from "../../../../../hooks/books/useSaveAuthor";
-import { useFetchConditions } from "../../../../../hooks/books/useFetchConditions";
+import {
+  useFetchConditions,
+  useConditionActions,
+} from "../../../../../hooks/books/useFetchConditions";
 import { useFetchCategories } from "../../../../../hooks/books/useFetchCategories";
-import { useFetchCovers } from "../../../../../hooks/books/useFetchCovers";
+import {
+  useCoverActions,
+  useFetchCovers,
+} from "../../../../../hooks/books/useFetchCovers";
 import { useFetchPublishers } from "../../../../../hooks/books/useFetchPublishers";
 import { usePublisher } from "../../../../../hooks/books/useAddPublisher";
 import { useFetchVendors } from "../../../../../hooks/books/useFetchVendors";
@@ -17,17 +22,33 @@ import { useAuthContext } from "../../../../../hooks/useAuthContext";
 import { bookSchema } from "../../../../../schemas/books";
 import { RxCross1 } from "react-icons/rx";
 import { newStyles } from "../../../shared/CreatableSelectCustomStyles";
+import CategoryCreatableSelect from "../../../Books/CategoryCreatableSelect";
+import { useCategoryActions } from "../../../../../hooks/books/useCategoriesActions";
+import CoversCreatableSelect from "../../../Books/CoversCreatableSelect";
+import ConditionsCreatableSelect from "../../../Books/ConditionsCreatableSelect";
+import CreatableSelect from "react-select/creatable";
 import FileUpload from "../../../shared/FileUpload";
 
 const AddNewBookModal = ({ setShowModal }) => {
-  const auth = useAuthContext();
+  const { auth } = useAuthContext();
   const queryClient = useQueryClient();
-  const [imagesList, setImagesList] = useState([]);
-
 
   const { error, message, addBook } = useSaveBook();
+  const [imagesList, setImagesList] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [covers, setCovers] = useState([]);
+  const [conditions, setConditions] = useState([]);
+  const [authors, setAuthors] = useState([]);
+  const [publisherList, setPublisherList] = useState([]);
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [value, setValue] = useState(null);
+
   const { addAuthor } = useAuthor();
   const { addPublisher } = usePublisher();
+  const { addCategory } = useCategoryActions();
+  const { addCover } = useCoverActions();
+  const { addConditionType } = useConditionActions();
 
   // Fetch all Authors
   const {
@@ -41,11 +62,18 @@ const AddNewBookModal = ({ setShowModal }) => {
     useFetchConditions();
 
   /* Fetch Categories List for Books */
-  const { isPending: isPendingCategories, data: categoriesData } =
-    useFetchCategories();
+  const {
+    isPending: isPendingCategories,
+    data: categoriesData,
+    refetch,
+  } = useFetchCategories();
 
   /* Fetch Types of Covers For Books */
-  const { isPending: isPendingCovers, data: coversData } = useFetchCovers();
+  const {
+    isPending: isPendingCovers,
+    data: coversData,
+    refetch: refetchCovers,
+  } = useFetchCovers();
 
   /* Fetch Publishers Lists */
   const { isPending: isPendingPublishers, data: publishersData } =
@@ -56,12 +84,6 @@ const AddNewBookModal = ({ setShowModal }) => {
 
   /* Fetch All Branch List */
   const { isPendingBranches, data: branchesData } = useFetchBranches();
-
-  const [authors, setAuthors] = useState([]);
-  const [publisherList, setPublisherList] = useState([]);
-
-  const [isLoading, setIsLoading] = useState(false);
-  const [value, setValue] = useState(null);
 
   const {
     register,
@@ -98,7 +120,12 @@ const AddNewBookModal = ({ setShowModal }) => {
   // Create New Author function for  creatable Author fields
   const handleCreate = async (inputValue) => {
     setIsLoading(true);
-    const res = await addAuthorMutation(inputValue);
+    const authorForm = {
+      name: inputValue,
+      link: "",
+      description: "",
+    };
+    const res = await addAuthorMutation(authorForm);
     setTimeout(async () => {
       const newOption = createOption(inputValue);
       setIsLoading(false);
@@ -106,11 +133,89 @@ const AddNewBookModal = ({ setShowModal }) => {
     }, 1000);
   };
 
-  // Create New Publisher function for creatable Publisher field
+  /* Create New Category   */
+  const handleCreateCategory = async (inputValue) => {
+    console.log(inputValue, "Value");
 
+    try {
+      // Assuming you have an API endpoint to create a new category
+      const newCategory = await addCategory(inputValue);
+      console.log(newCategory, "API response");
+
+      const newOption = createOption(inputValue);
+      // Update your categories data
+      // You might need to refetch categories or update the local state
+      refetch();
+      // setValue(newOption);
+      setCategories(...categories, {
+        value: newCategory.id,
+        label: newCategory.name,
+      });
+      setValue("category", { value: newCategory.id, label: newCategory.name });
+    } catch (error) {
+      console.error("Error creating category:", error);
+    }
+  };
+  /* Create New Cover Type   */
+
+  const handleCreateCovers = async (inputValue) => {
+    console.log(inputValue, "cover value");
+
+    try {
+      // Assuming you have an API endpoint to create a new category
+      const newCovers = await addCover(inputValue);
+      console.log(newCovers, "API response");
+
+      const newOption = createOption(inputValue);
+
+      setCovers([
+        ...covers,
+        { value: newCovers?.covers?.id, label: newCovers?.covers?.name },
+      ]);
+      setValue("cover", {
+        value: newCovers?.covers?.id,
+        label: newCovers?.covers?.name,
+      });
+    } catch (error) {
+      console.error("Error creating category:", error);
+    }
+  };
+  /* Create New Condition type for book   */
+  const handleCreateConditions = async (inputValue) => {
+    console.log(inputValue, "condition value");
+
+    try {
+      // Assuming you have an API endpoint to create a new category
+      const newCondition = await addConditionType(inputValue);
+      console.log(newCondition, "API response");
+
+      const newOption = createOption(inputValue);
+
+      setConditions([
+        ...conditions,
+        {
+          value: newCondition?.conditions?.id,
+          label: newCondition?.conditions?.name,
+        },
+      ]);
+      setValue("condition", {
+        value: newCondition?.conditions?.id,
+        label: newCondition?.conditions?.name,
+      });
+    } catch (error) {
+      console.error("Error creating category:", error);
+    }
+  };
+
+  // Create New Publisher function for creatable Publisher field
   const onPublisherCreate = async (inputField) => {
     setIsLoading(true);
-    const res = await addPublisherMutation(inputField);
+    const publisherForm = {
+      name: inputField,
+      link: "",
+      description: "",
+    };
+    const res = await addPublisherMutation(publisherForm);
     setTimeout(async () => {
       const newOption = createOption(inputField);
       setIsLoading(false);
@@ -123,9 +228,9 @@ const AddNewBookModal = ({ setShowModal }) => {
   const { mutateAsync: addBookMutation } = useMutation({
     mutationFn: addBook,
     onSuccess: (data) => {
-      // reset();
-      console.log(data);
-
+      reset();
+      // console.log(data);
+      toast.success("Book Saved Successfully");
       setShowModal(false);
     },
     onSettled: () => {
@@ -167,23 +272,25 @@ const AddNewBookModal = ({ setShowModal }) => {
 
   /* Save Book Details Form function */
   const onSubmit = async (data) => {
+    // console.log(data);
 
     // updated all fields values
     const booksForm = {
       ...data,
       author: selectedAuthor?.value,
-      cover: selectedCover,
-      category: selectedCategory,
+      cover: selectedCover?.value,
+      category: selectedCategory?.value,
       cover_img_url: [...imagesList],
       publisher: selectedPublisher?.value,
-      condtion: selectedCondition,
-      role_id: auth?.user?.role,
+      condition: selectedCondition?.value,
+      role_id: auth?.roleId,
+      added_by: auth?.role_name,
     };
-    await addBookMutation(booksForm);  //add book mutation
+
+    // console.log(booksForm, "Form Details of Book");
+
+    await addBookMutation(booksForm); //add book mutation
   };
-
-
-
 
   if (
     isPendingAuthors ||
@@ -208,13 +315,14 @@ const AddNewBookModal = ({ setShowModal }) => {
   }
 
   if (
-    !authorsData || isAuthorFetchingError &&
-    !categoriesData &&
-    !conditionsData &&
-    !coversData &&
-    !publishersData &&
-    !vendorsData &&
-    !branchesData
+    !authorsData ||
+    (isAuthorFetchingError &&
+      !categoriesData &&
+      !conditionsData &&
+      !coversData &&
+      !publishersData &&
+      !vendorsData &&
+      !branchesData)
   ) {
     return (
       <div className="flex justify-center items-center fixed inset-0 bg-[#64748B] bg-opacity-75 transition-opacity">
@@ -262,13 +370,14 @@ const AddNewBookModal = ({ setShowModal }) => {
                     <div className="w-full xl:w-1/2">
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
                         Title
+                        <span className="text-red-600">*</span>
                       </label>
                       <input
                         autoFocus
                         type="text"
                         name="title"
                         placeholder="Add Title"
-                        {...register("title")}
+                        {...register("title", { required: true })}
                         className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                       />
                       {errors?.title?.message && (
@@ -280,11 +389,10 @@ const AddNewBookModal = ({ setShowModal }) => {
 
                     <div className="w-full xl:w-1/2">
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
-                        Author
+                        Author <span className="text-red-600">*</span>
                       </label>
 
                       <Controller
-                        // className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:focus:border-[#3C50E0]"
                         control={control}
                         name="author"
                         render={({ field }) => (
@@ -319,18 +427,18 @@ const AddNewBookModal = ({ setShowModal }) => {
                   <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
                     <div className="w-full xl:w-1/2" autoFocus>
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
-                        Rental Price
+                        Member Price
                       </label>
                       <input
                         type="text"
-                        name="rental_price"
-                        placeholder="Add Rent Price"
-                        {...register("rental_price")}
+                        name="member_price"
+                        placeholder="Add Member Price"
+                        {...register("member_price")}
                         className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                       />
-                      {errors?.rental_price?.message && (
+                      {errors?.member_price?.message && (
                         <p className="format-message error">
-                          {errors.rental_price.message}
+                          {errors?.member_price?.message}
                         </p>
                       )}
                     </div>
@@ -356,147 +464,55 @@ const AddNewBookModal = ({ setShowModal }) => {
                   </div>
                   {/* Third Row fields */}
                   <div className="mt-2 mb-4.5 flex flex-col gap-2 md:flex-row md:gap-9">
-                    <div className="w-full xl:w-1/2">
-                      <label
-                        className="mb-2.5 block text-[#0284c7] dark:text-white"
-                        htmlFor="condition"
-                      >
-                        Condition
-                      </label>
-                      <div className="relative z-20 bg-transparent dark:bg-form-input">
-                        <select
-                          className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:text-neutral-100 dark:focus:text-neutral-100 dark:focus:border-[#3C50E0]"
-                          name="condition"
-                          {...register("condition")}
-                        >
-                          <option disabled>Select</option>
-                          {conditionsData?.conditions?.map((condition) => (
-                            <option key={condition.id} value={condition.id}>
-                              {condition?.name}
-                            </option>
-                          ))}
-                        </select>
-
-                        <span className="absolute top-1/2 right-4 z-30 -translate-y-1/2">
-                          <svg
-                            className=" dark:text-white fill-current"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <g opacity="0.8">
-                              <path
-                                fillRule="evenodd"
-                                clipRule="evenodd"
-                                d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
-                                fill=""
-                              ></path>
-                            </g>
-                          </svg>
-                        </span>
-                      </div>
-                    </div>
-                    <div className="w-full xl:w-1/2">
-                      <label
-                        className="mb-2.5 block text-[#0284c7] dark:text-white"
-                        htmlFor="cover"
-                      >
-                        Cover
-                      </label>
-                      <div className="relative z-20 bg-transparent dark:bg-form-input">
-                        <select
-                          className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:text-neutral-100 dark:focus:text-neutral-100 dark:focus:border-[#3C50E0]"
-                          name="cover"
-                          {...register("cover")}
-                        >
-                          <option disabled>Select</option>
-
-                          {coversData?.covers &&
-                            coversData?.covers?.map((cover) => (
-                              <option key={cover?.id} value={cover?.id}>
-                                {cover?.name}
-                              </option>
-                            ))}
-                        </select>
-                        <span className="absolute top-1/2 right-4 z-30 -translate-y-1/2">
-                          <svg
-                            className=" dark:text-white fill-current"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <g opacity="0.8">
-                              <path
-                                fillRule="evenodd"
-                                clipRule="evenodd"
-                                d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
-                                fill=""
-                              ></path>
-                            </g>
-                          </svg>
-                        </span>
-                      </div>
-                    </div>
+                 
+                    <ConditionsCreatableSelect
+                      control={control}
+                      errors={errors}
+                      isPendingConditions={isPendingConditions}
+                      conditionsData={conditionsData}
+                      register={register}
+                      setConditions={setConditions}
+                      conditions={conditions}
+                      handleCreateConditions={handleCreateConditions}
+                    />
+                  
+                    <CoversCreatableSelect
+                      control={control}
+                      errors={errors}
+                      isPendingCovers={isPendingCovers}
+                      coversData={coversData}
+                      register={register}
+                      setCovers={setCovers}
+                      covers={covers}
+                      handleCreateCovers={handleCreateCovers}
+                    />
+                  
                   </div>
 
                   {/* Fourth Row Fields */}
                   <div className="mt-2 mb-4.5 flex flex-col gap-2 md:flex-row md:gap-9">
-                    <div className="w-full xl:w-1/2">
-                      <label
-                        className="mb-2.5 block text-[#0284c7] dark:text-white"
-                        htmlFor="category"
-                      >
-                        Category
-                      </label>
-                      <div className="relative z-20 bg-transparent dark:bg-form-input">
-                        <select
-                          className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:text-neutral-100 dark:focus:text-neutral-100 dark:focus:border-[#3C50E0]"
-                          name="category"
-                          {...register("category")}
-                        >
-                          <option disabled>Select</option>
+                  
 
-                          {categoriesData?.categories &&
-                            categoriesData?.categories?.map((category) => (
-                              <option key={category?.id} value={category?.id}>
-                                {category?.name}
-                              </option>
-                            ))}{" "}
-                        </select>
-                        <span className="absolute top-1/2 right-4 z-30 -translate-y-1/2">
-                          <svg
-                            className=" dark:text-white fill-current"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <g opacity="0.8">
-                              <path
-                                fillRule="evenodd"
-                                clipRule="evenodd"
-                                d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
-                                fill=""
-                              ></path>
-                            </g>
-                          </svg>
-                        </span>
-                      </div>
-                    </div>
+                    <CategoryCreatableSelect
+                      control={control}
+                      errors={errors}
+                      isPendingCategories={isPendingCategories}
+                      categoriesData={categoriesData}
+                      register={register}
+                      setCategories={setCategories}
+                      categories={categories}
+                      handleCreateCategory={handleCreateCategory}
+                    />
                     <div className="mb-4.5 w-full xl:w-1/2">
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
-                        ISBN <span className="text-meta-1">*</span>
+                        ISBN
+                        <span className="text-red-600">*</span>
                       </label>
                       <input
                         name="isbn"
                         type="text"
                         placeholder="Enter ISBN "
-                        {...register("isbn")}
+                        {...register("isbn", { required: true })}
                         className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                       />
                       {errors?.isbn?.message && (
@@ -511,12 +527,11 @@ const AddNewBookModal = ({ setShowModal }) => {
                   <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
                     <div className="w-full xl:w-1/2">
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
-                        Publisher
+                        Publisher <span className="text-red-600">*</span>
                       </label>
 
                       <Controller
                         control={control}
-                        // className="bg-white dark:bg-slate-800"
                         name="publisher"
                         render={({ field }) => (
                           <CreatableSelect
@@ -539,9 +554,9 @@ const AddNewBookModal = ({ setShowModal }) => {
                         )}
                       />
 
-                      {errors?.author?.message && (
+                      {errors?.publisher?.message && (
                         <p className="format-message error">
-                          {errors.author.message}
+                          {errors.publisher.message}
                         </p>
                       )}
                     </div>
@@ -588,13 +603,13 @@ const AddNewBookModal = ({ setShowModal }) => {
 
                     <div className="w-full xl:w-1/2">
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
-                        Credits
+                        Credits <span className="text-red-600">*</span>
                       </label>
                       <input
                         type="text"
                         name="credit"
                         placeholder="Add Credits"
-                        {...register("credit")}
+                        {...register("credit", { required: true })}
                         className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                       />
                       {errors?.credit?.message && (
@@ -608,52 +623,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                   {/* Seventh Row */}
 
                   <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
-                    <div className="w-full xl:w-1/2" autoFocus>
-                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
-                        Vendor
-                      </label>
-
-                      <div className="relative z-20 bg-transparent dark:bg-form-input">
-                        <select
-                          className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:text-neutral-100 dark:focus:text-neutral-100 dark:focus:border-[#3C50E0]"
-                          name="vendor_id"
-                          {...register("vendor_id")}
-                        >
-                          <option disabled>Select</option>
-
-                          {vendorsData?.vendors &&
-                            vendorsData?.vendors?.map((vendor) => (
-                              <option key={vendor?.id} value={vendor?.id}>
-                                {vendor?.name}
-                              </option>
-                            ))}{" "}
-                        </select>
-                        <span className="absolute top-1/2 right-4 z-30 -translate-y-1/2">
-                          <svg
-                            className=" dark:text-white fill-current"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <g opacity="0.8">
-                              <path
-                                fillRule="evenodd"
-                                clipRule="evenodd"
-                                d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
-                                fill=""
-                              ></path>
-                            </g>
-                          </svg>
-                        </span>
-                      </div>
-                      {errors?.vendor_id?.message && (
-                        <p className="format-message error">
-                          {errors.vendor_id.message}
-                        </p>
-                      )}
-                    </div>
+                    
 
                     <div className="w-full xl:w-1/2">
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
@@ -663,10 +633,9 @@ const AddNewBookModal = ({ setShowModal }) => {
                         <select
                           className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:text-neutral-100 dark:focus:text-neutral-100 dark:focus:border-[#3C50E0]"
                           name="branch_id"
-                          {...register("branch_id")}
+                          {...register("branch_id", { required: true })}
                         >
                           <option disabled>Select</option>
-
                           {branchesData?.branches &&
                             branchesData?.branches?.map((branch) => (
                               <option key={branch?.id} value={branch?.id}>
@@ -735,7 +704,6 @@ const AddNewBookModal = ({ setShowModal }) => {
                         setImagesList={setImagesList}
                         imagesList={imagesList}
                       />
-
                     </div>
                   </div>
 
@@ -751,7 +719,9 @@ const AddNewBookModal = ({ setShowModal }) => {
                             {...register("isAvailable")}
                             className="rounded bg-gray-200 border-transparent h-4 w-4 p-5 ml-2 focus:border-transparent focus:bg-gray-200 text-gray-700 focus:ring-1 focus:ring-offset-2 focus:ring-gray-500"
                           />
-                          <span className="ml-2  text-[#0284c7] dark:text-white">Available </span>
+                          <span className="ml-2  text-[#0284c7] dark:text-white">
+                            Available{" "}
+                          </span>
                         </label>
                       </div>
                     </div>
