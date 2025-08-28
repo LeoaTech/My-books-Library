@@ -9,29 +9,17 @@ const CoversCreatableSelect = ({
   isPendingCovers,
   coversData,
   handleCreateCovers,
-  setCovers,
-  covers }) => {
+}) => {
 
-  console.log(coversData, "cover component", covers);
+  console.log(coversData, "cover component");
 
-  useEffect(() => {
-    if (coversData?.covers?.length > 0) {
-      setCovers(coversData?.covers?.map(cover => ({
-        value: cover.id,
-        label: cover.name
-      })) || [])
-    }
-  }, [coversData?.covers])
-
-
-  // Transform covers data into react-select format
-  // const coverOptions = useMemo(() =>
-  //     coversData?.covers?.map(cover => ({
-  //         value: cover.id,
-  //         label: cover.name
-  //     })) || [],
-  //     [coversData]
-  // );
+  const coverOption = useMemo(() =>
+    coversData?.covers?.map(cover => ({
+      value: cover.id,
+      label: cover.name
+    })) ?? [],
+    [coversData]
+  );
 
 
   return (
@@ -46,20 +34,23 @@ const CoversCreatableSelect = ({
         render={({ field }) => (
           <CreatableSelect
             {...field}
-            options={covers}
+            options={coverOption}
             isClearable
             isDisabled={isPendingCovers}
             isLoading={isPendingCovers}
             styles={newStyles}
-            onChange={(newValue, actionMeta) => {
+            onChange={async (newValue, actionMeta) => {
               if (actionMeta.action === "create-option") {
-                handleCreateCovers(newValue.label);
+                await handleCreateCovers(newValue.label);
               } else {
                 field.onChange(newValue);
               }
             }}
+
+
             value={field.value}
-            placeholder="Select cover..."
+            placeholder="Select or type a cover..."
+            id="cover"
           />
         )}
       />
