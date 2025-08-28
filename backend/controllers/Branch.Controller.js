@@ -17,9 +17,21 @@ const FetchAllBranch = asyncHanlder(async (req, res) => {
 });
 
 
-/* Fetch Branch By ID */
-
-
 /* Fetch All branches by Entity ID */
 
-module.exports = {FetchAllBranch}
+const FetchEntityBranches = asyncHanlder(async (req, res) => {
+  const entityId = req.user.entityId || req.user.entity_id;
+  try {
+    const branchesQuery = `SELECT * FROM branches where entity_id = $1`;
+    const getAllBranches = await db.query(branchesQuery, [entityId]);
+
+    res.status(200).json({
+      branches: getAllBranches?.rows,
+      message: "Branches fetched associate to the Library ",
+    });
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+module.exports = { FetchAllBranch, FetchEntityBranches };
