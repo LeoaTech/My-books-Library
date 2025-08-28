@@ -16,7 +16,7 @@ import { useFetchVendors } from "../../../../../hooks/books/useFetchVendors";
 import { useFetchBranches } from "../../../../../hooks/books/useFetchBranches";
 import { FetchBookById } from "../../../../../api/books";
 import { RxCross1 } from "react-icons/rx";
-import { bookSchema, EditBookSchema } from "../../../../../schemas/books";
+import { bookSchema } from "../../../../../schemas/books";
 import { newStyles } from "../../../shared/CreatableSelectCustomStyles";
 import FileUpload from "../../../shared/FileUpload";
 import { useCategoryActions } from "../../../../../hooks/books/useCategoriesActions";
