@@ -8,30 +8,17 @@ const CategoryCreatableSelect = ({
     errors,
     isPendingCategories,
     categoriesData,
-    handleCreateCategory,
-    setCategories,
-    categories }) => {
+    handleCreateCategory }) => {
 
-    console.log(categoriesData, "Inside the component", categories);
+    console.log(categoriesData, "Inside the component");
 
-    useEffect(() => {
-        if (categoriesData?.categories?.length > 0) {
-            setCategories(categoriesData?.categories?.map(category => ({
-                value: category.id,
-                label: category.name
-            })) || [])
-        }
-    }, [categoriesData?.categories, setCategories])
-
-
-    // Transform categories data into react-select format
-    // const categoryOptions = useMemo(() =>
-    //     categoriesData?.categories?.map(category => ({
-    //         value: category.id,
-    //         label: category.name
-    //     })) || [],
-    //     [categoriesData]
-    // );
+    const categoryOptions = useMemo(() =>
+        categoriesData?.categories?.map(category => ({
+            value: category.id,
+            label: category.name
+        })) || [],
+        [categoriesData]
+    );
 
 
     return (
@@ -46,14 +33,16 @@ const CategoryCreatableSelect = ({
                 render={({ field }) => (
                     <CreatableSelect
                         {...field}
-                        options={categories}
+                        options={categoryOptions}
                         isClearable
                         isDisabled={isPendingCategories}
                         isLoading={isPendingCategories}
                         styles={newStyles}
-                        onChange={(newValue, actionMeta) => {
+                        onChange={async (newValue, actionMeta) => {
                             if (actionMeta.action === "create-option") {
-                                handleCreateCategory(newValue.label);
+                                const newCategory = await handleCreateCategory(newValue.label);
+                                // const newOption = { value: newCategory?.id, label: newCategory?.name };
+                                // field.onChange(newOption);
                             } else {
                                 field.onChange(newValue);
                             }
