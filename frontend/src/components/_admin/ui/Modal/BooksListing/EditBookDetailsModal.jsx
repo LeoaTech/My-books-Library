@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, Controller } from "react-hook-form";
@@ -7,46 +7,60 @@ import { useSaveBook } from "../../../../../hooks/books/useSaveBook";
 import { useFetchAuthors } from "../../../../../hooks/books/useFetchAuthors";
 import CreatableSelect from "react-select/creatable";
 import { useAuthor } from "../../../../../hooks/books/useSaveAuthor";
-import { useFetchConditions } from "../../../../../hooks/books/useFetchConditions";
+import { useConditionActions, useFetchConditions } from "../../../../../hooks/books/useFetchConditions";
 import { useFetchCategories } from "../../../../../hooks/books/useFetchCategories";
-import { useFetchCovers } from "../../../../../hooks/books/useFetchCovers";
+import { useCoverActions, useFetchCovers } from "../../../../../hooks/books/useFetchCovers";
 import { useFetchPublishers } from "../../../../../hooks/books/useFetchPublishers";
 import { usePublisher } from "../../../../../hooks/books/useAddPublisher";
 import { useFetchVendors } from "../../../../../hooks/books/useFetchVendors";
 import { useFetchBranches } from "../../../../../hooks/books/useFetchBranches";
 import { FetchBookById } from "../../../../../api/books";
 import { RxCross1 } from "react-icons/rx";
-import { EditBookSchema } from "../../../../../schemas/books";
+import { bookSchema, EditBookSchema } from "../../../../../schemas/books";
 import { newStyles } from "../../../shared/CreatableSelectCustomStyles";
 import FileUpload from "../../../shared/FileUpload";
+import { useCategoryActions } from "../../../../../hooks/books/useCategoriesActions";
+import ConditionsCreatableSelect from "../../../Books/ConditionsCreatableSelect";
+import CoversCreatableSelect from "../../../Books/CoversCreatableSelect";
+import CategoryCreatableSelect from "../../../Books/CategoryCreatableSelect";
+import { useAuthContext } from "../../../../../hooks/useAuthContext";
 
 const EditBookDetailsModal = ({ close, bookValue }) => {
-  const { error, message, updateBook } = useSaveBook();
+  const { auth } = useAuthContext();
   const queryClient = useQueryClient();
-  const [imagesList, setImagesList] = useState([]);
-  const [authorValue, setAuthorValue] = useState();
-  const [publisherValue, setPublisherValue] = useState();
 
-  const { data: bookDetail } = useQuery({
+  const { error, message, updateBook } = useSaveBook();
+  const [imagesList, setImagesList] = useState([]);
+  // console.log(bookValue, "ID");
+
+
+  const { data: bookDetail, isPending: isBookLoading, error: isBookError } = useQuery({
     queryFn: () => FetchBookById(bookValue),
     queryKey: ["books", { bookValue }],
   });
 
+
   const { addAuthor } = useAuthor();
   const { addPublisher } = usePublisher();
+  const { addCategory } = useCategoryActions();
+  const { addCover } = useCoverActions();
+  const { addConditionType } = useConditionActions();
+
+
   const {
     isPending: isPendingAuthors,
     isError,
     data: authorsData,
   } = useFetchAuthors();
 
-  const { isPending: isPendingConditions, data: conditionsData } =
+  const { isPending: isPendingConditions, data: conditionsData, refetch: refetchCondition,
+  } =
     useFetchConditions();
 
-  const { isPending: isPendingCategories, data: categoriesData } =
+  const { isPending: isPendingCategories, data: categoriesData, refetch: refetchCategory } =
     useFetchCategories();
 
-  const { isPending: isPendingCovers, data: coversData } = useFetchCovers();
+  const { isPending: isPendingCovers, data: coversData, refetch: refetchCovers } = useFetchCovers();
 
   const { isPending: isPendingPublishers, data: publishersData } =
     useFetchPublishers();
@@ -54,12 +68,26 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
   const { isPending: isPendingVendors, data: vendorsData } = useFetchVendors();
 
   const { isPendingBranches, data: branchesData } = useFetchBranches();
-  const [authors, setAuthors] = useState([]);
-  const [publisherList, setPublisherList] = useState([]);
 
-  const [isLoading, setIsLoading] = useState(false);
-  const [value, setValue] = useState(null);
-  const [data, setData] = useState();
+
+  // Memoize options
+  const authorOptions = useMemo(
+    () =>
+      authorsData?.authors?.map((author) => ({
+        value: author.id,
+        label: author.name,
+      })) ?? [],
+    [authorsData]
+  );
+
+  const publisherOptions = useMemo(
+    () =>
+      publishersData?.publishers?.map((publisher) => ({
+        value: publisher.id,
+        label: publisher.name,
+      })) ?? [],
+    [publishersData]
+  );
 
   const { mutateAsync: addAuthorMutation } = useMutation({
     mutationFn: addAuthor,
@@ -75,72 +103,95 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
     },
   });
 
-  const handleCreate = async (inputValue) => {
-    setIsLoading(true);
-    const res = await addAuthorMutation(inputValue);
-    setTimeout(async () => {
-      const newOption = createOption(inputValue);
-      setIsLoading(false);
-      setValue(newOption);
-    }, 1000);
-  };
+  const handleCreate = useCallback(async (inputValue) => {
+    try {
+      const authorForm = {
+        name: inputValue,
+        link: "",
+        description: "",
+      };
+      const newAuthor = await addAuthorMutation(authorForm);
+      return newAuthor;
+    } catch (error) {
+      // console.log(error, "Failed to create author");
+      return null
+    }
+  }, [addAuthorMutation]);
 
-  const onPublisherCreate = async (inputField) => {
-    setIsLoading(true);
-    const res = await addPublisherMutation(inputField);
-    setTimeout(async () => {
-      const newOption = createOption(inputField);
-      setIsLoading(false);
-      setValue(newOption);
-    }, 1000);
-  };
+  /* Create New Category   */
+  const handleCreateCategory = useCallback(
+    async (inputValue) => {
+      // console.log(inputValue, "Value");
+
+      try {
+        const newCategory = await addCategory(inputValue);
+        // console.log(newCategory, "API response");
+        await refetchCategory();
+        return newCategory;
+      } catch (error) {
+        console.error("Error creating category:", error);
+        return;
+      }
+    },
+    [addCategory, refetchCategory]
+  );
+  /* Create New Cover Type   */
+
+  const handleCreateCovers = useCallback(
+    async (inputValue) => {
+      // console.log(inputValue, "cover value");
+
+      try {
+        const newCovers = await addCover(inputValue);
+        // console.log(newCovers, "API response");
+        await refetchCovers();
+        return newCovers;
+      } catch (error) {
+        console.error("Error creating cover:", error);
+        return;
+      }
+    },
+    [addCover, refetchCovers]
+  );
+  /* Create New Condition type for book   */
+  const handleCreateConditions = useCallback(
+    async (inputValue) => {
+      // console.log(inputValue, "condition value");
+
+      try {
+        const newCondition = await addConditionType(inputValue);
+        // console.log(newCondition, "API response");
+        await refetchCondition();
+        return newCondition;
+      } catch (error) {
+        console.error("Error creating condition:", error);
+        return;
+      }
+    },
+    [addConditionType, refetchCondition]
+  );
+
+  // Create New Publisher function for creatable Publisher field
+  const onPublisherCreate = useCallback(
+    async (inputField) => {
+      const publisherForm = {
+        name: inputField,
+        link: "",
+        description: "",
+      };
+      const newPublisher = await addPublisherMutation(publisherForm);
+      return newPublisher;
+    },
+    [addPublisherMutation]
+  );
 
   const createOption = (label) => ({
     label,
     value: label.toLowerCase().replace(/\W/g, ""),
   });
 
-  console.log(bookDetail, "Edit book details");
+  // console.log(bookDetail, "Edit book details");
 
-  useEffect(() => {
-    if (authorsData) {
-      const authorList = authorsData?.authors?.map((author) => ({
-        value: author.id,
-        label: author.name,
-      }));
-      setAuthors([...authorList]);
-
-      if (bookDetail) {
-        const defaultAuthor = authorsData?.authors?.find(
-          (author) => author?.name === bookDetail?.book?.author_name
-        );
-        setAuthorValue({
-          label: defaultAuthor?.name,
-          value: defaultAuthor?.id,
-        });
-      }
-    }
-  }, [authorsData, bookDetail]);
-
-  useEffect(() => {
-    if (publishersData) {
-      const publisherList = publishersData?.publishers?.map((publisher) => ({
-        value: publisher.id,
-        label: publisher.name,
-      }));
-      setPublisherList([...publisherList]);
-
-      if (bookDetail) {
-        const defaultPublisher = publishersData?.publishers?.find(
-          (pub) => pub.name === bookDetail?.book?.publisher_name
-        );
-        setPublisherValue({
-          label: defaultPublisher?.name,
-          value: defaultPublisher?.id,
-        });
-      }
-    }
-  }, [publishersData, bookDetail]);
 
   const {
     register,
@@ -150,41 +201,87 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
     watch,
     formState: { errors, isSubmitSuccessful, isSubmitting, isValid, isDirty },
   } = useForm({
-    defaultValues: {
-      ...bookDetail?.book,
-      author: authorValue || {
-        label: bookDetail?.book?.author_name,
-        value: bookDetail?.book?.author_id,
-      },
-      publisher: publisherValue,
-      // imagesList: bookDetail?.book?.cover_img_url
-    },
-    resolver: zodResolver(EditBookSchema),
+    defaultValues: useMemo(
+      () => ({
+        title: bookDetail?.book?.title || '',
+        author: bookDetail?.book
+          ? { value: bookDetail.book.author, label: bookDetail.book.author_name }
+          : null,
+        publisher: bookDetail?.book
+          ? { value: bookDetail.book.publisher, label: bookDetail.book.publisher_name }
+          : null,
+        category: bookDetail?.book
+          ? { value: bookDetail.book.category, label: bookDetail.book.category_name }
+          : null,
+        cover: bookDetail?.book
+          ? { value: bookDetail.book.cover, label: bookDetail.book.cover_name }
+          : null,
+        condition: bookDetail?.book
+          ? { value: bookDetail.book.condition, label: bookDetail.book.condition_name }
+          : null,
+        // branch_id: bookDetail?.book ? { value: bookDetail.book.branch_id, label: bookDetail.book.branch_name } : null,
+        isbn: bookDetail?.book?.isbn || '',
+        isAvailable: bookDetail?.book?.isAvailable || false,
+        member_price: bookDetail?.book?.member_price || "",
+        purchase_price: bookDetail?.book?.purchase_price || "",
+        vendor_id: bookDetail?.book?.vendor_id || null,
+        branch_id: bookDetail?.book?.branch_id || null,
+        cover_img_url: bookDetail?.book?.cover_img_url || [],
+        discount_percentage: bookDetail?.book?.discount_percentage || '',
+        summary: bookDetail?.book?.summary || '',
+        publish_year: bookDetail?.book?.publish_year || '',
+        credit: bookDetail?.book?.credit || '',
+      }),
+      [bookDetail]
+    ),
+    resolver: zodResolver(bookSchema),
     mode: "all",
   });
 
   useEffect(() => {
+    // console.log("Render component");
+
     reset({
       ...bookDetail?.book,
-      author: authorValue,
-      publisher: publisherValue,
+      author: {
+        label: bookDetail?.book?.author_name,
+        value: bookDetail?.book?.author,
+      },
+      publisher: {
+        label: bookDetail?.book?.publisher_name,
+        value: bookDetail?.book?.publisher,
+      },
+      cover: {
+        label: bookDetail?.book?.cover_name,
+        value: bookDetail?.book?.cover,
+      },
+      condition: {
+        label: bookDetail?.book?.condition_name,
+        value: bookDetail?.book?.condition,
+      },
+      category: {
+        label: bookDetail?.book?.category_name,
+        value: bookDetail?.book?.category,
+      },
     });
-  }, [bookDetail, authorValue, publisherValue]);
+  }, [reset, bookDetail?.book]);
 
   // update the existing cover_images url in the imagesList
   useEffect(() => {
     if (bookDetail?.book?.cover_img_url?.length > 0) {
+      // console.log(typeof bookDetail.book.cover_img_url, "Cover images", bookDetail?.book?.cover_img_url);
       setImagesList(bookDetail.book.cover_img_url);
     } else {
       setImagesList([])
     }
-  }, [bookDetail]);
+  }, [bookDetail?.book?.cover_img_url]);
 
-  const selectedAuthor = watch("author");
-  const selectedCondition = watch("condition");
-  const selectedCategory = watch("category");
-  const selectedCover = watch("cover");
-  const selectedPublisher = watch("publisher");
+  // const selectedAuthor = watch("author");
+  // const selectedCondition = watch("condition");
+  // const selectedCategory = watch("category");
+  // const selectedCover = watch("cover");
+  // const selectedPublisher = watch("publisher");
+  // const selectedBranch = watch("branch_id")
   // Mutation to Update Book Details
   const { mutateAsync: updateBookMutation } = useMutation({
     mutationFn: updateBook,
@@ -195,33 +292,38 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
     },
   });
 
-  const onSubmit = async (updateData) => {
-    const booksForm = {
-      ...updateData,
-      bookId: bookValue,
-      author: selectedAuthor?.value,
-      cover: selectedCover == undefined ? selectedCover : updateData?.cover,
-      category:
-        selectedCategory == undefined ? selectedCategory : updateData?.category,
-      cover_img_url:
-        imagesList?.length > 0
-          ? [...imagesList]
-          : bookDetail?.book?.cover_img_url,
-      publisher: selectedPublisher?.value,
-      condition:
-        selectedCondition == undefined
-          ? selectedCondition
-          : updateData?.condition,
-      imageUpdated: imagesList?.length > 0 ? true : false,
-    };
+  // console.log(selectedAuthor, "Selected Author",
+  //   selectedCategory, "Category",
+  //   selectedCondition, "Condition",
+  //   selectedCover, "Cover",
+  //   selectedPublisher, "publisher",
+  //   selectedBranch, "Branch"
+  // );
 
-    // console.log(booksForm);
-    // const updateFormData = { ...updateData, id: data[0]?.id };
-    await updateBookMutation(booksForm);
-  };
+  console.log(errors, "Errors", isValid);
+
+  const onSubmit = useCallback(async (updateData) => {
+    try {
+      const booksForm = {
+        ...updateData,
+        bookId: bookValue,
+        cover_img_url:
+          imagesList?.length > 0
+            ? [...imagesList]
+            : bookDetail?.book?.cover_img_url,
+        imageUpdated: imagesList?.length > 0 ? true : false,
+      };
+
+      console.log(booksForm, "Form Edit");
+      await updateBookMutation(booksForm);
+    } catch (error) {
+      console.log(error, "Error updating Form");
+
+    }
+  }, [updateBookMutation, imagesList, bookValue]);
 
 
-  console.log(imagesList, "Uploaded images");
+  // console.log(imagesList, "Uploaded images");
 
 
   if (
@@ -231,7 +333,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
     isPendingCovers ||
     isPendingPublishers ||
     isPendingVendors ||
-    isPendingBranches
+    isPendingBranches || bookValue && isBookLoading
   ) {
     return (
       <div className="flex justify-center items-center fixed inset-0 bg-[#64748B] bg-opacity-75 transition-opacity">
@@ -253,7 +355,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
     !coversData &&
     !publishersData &&
     !vendorsData &&
-    !branchesData
+    !branchesData || !bookDetail?.book
   ) {
     return (
       <div className="flex justify-center items-center fixed inset-0 bg-[#64748B] bg-opacity-75 transition-opacity">
@@ -329,19 +431,20 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                         render={({ field }) => (
                           <CreatableSelect
                             {...field}
-                            options={authors}
+                            options={authorOptions}
                             isClearable
-                            isDisabled={isLoading}
-                            isLoading={isLoading}
+                            isDisabled={isPendingAuthors}
+                            isLoading={isPendingAuthors}
                             styles={newStyles}
-                            onChange={(newValue, actionMeta) => {
+                            onChange={async (newValue, actionMeta) => {
                               if (actionMeta.action === "create-option") {
-                                handleCreate(newValue.label);
+                                await handleCreate(newValue.label);
                               } else {
                                 field.onChange(newValue);
                               }
                             }}
                             value={field?.value}
+
                           />
                         )}
                       />
@@ -362,14 +465,14 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                       </label>
                       <input
                         type="text"
-                        name="rental_price"
+                        name="member_price"
                         placeholder="Add Rent Price"
-                        {...register("rental_price")}
+                        {...register("member_price")}
                         className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                       />
-                      {errors?.rental_price?.message && (
+                      {errors?.member_price?.message && (
                         <p className="format-message error">
-                          {errors.rental_price.message}
+                          {errors.member_price.message}
                         </p>
                       )}
                     </div>
@@ -396,143 +499,35 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
 
                   {/* Third Row fields */}
                   <div className="mt-2 mb-4.5 flex flex-col gap-2 md:flex-row md:gap:9">
-                    <div className="w-full xl:w-1/2">
-                      <label
-                        className="mb-2.5 block text-[#0284c7] dark:text-white"
-                        htmlFor="condition"
-                      >
-                        Condition
-                      </label>
-                      <div className="relative z-20 bg-transparent dark:bg-[#1d2a39]">
-                        <select
-                          className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:text-neutral-100 dark:focus:text-neutral-100 dark:focus:border-[#3C50E0]"
-                          name="condition"
-                          {...register("condition")}
-                        >
-                          <option value={bookDetail?.book?.condition_id}>
-                            {bookDetail?.book?.condition_name}
-                          </option>
-                          {conditionsData?.conditions?.map((condition) => (
-                            <option key={condition.id} value={condition.id}>
-                              {condition?.name}
-                            </option>
-                          ))}
-                        </select>
-                        <span className="absolute top-1/2 right-4 z-30 -translate-y-1/2">
-                          <svg
-                            className=" dark:text-white fill-current"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <g opacity="0.8">
-                              <path
-                                fillRule="evenodd"
-                                clipRule="evenodd"
-                                d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
-                                fill=""
-                              ></path>
-                            </g>
-                          </svg>
-                        </span>
-                      </div>
-                    </div>
-                    <div className="w-full xl:w-1/2">
-                      <label
-                        className="mb-2.5 block text-[#0284c7] dark:text-white"
-                        htmlFor="cover"
-                      >
-                        Cover
-                      </label>
-                      <div className="relative z-20 bg-transparent dark:bg-form-input">
-                        <select
-                          className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:text-neutral-100 dark:focus:text-neutral-100 dark:focus:border-[#3C50E0]"
-                          name="cover"
-                          {...register("cover")}
-                        >
-                          <option value={bookDetail?.book?.cover_id}>
-                            {bookDetail?.book?.cover_name}
-                          </option>
 
-                          {coversData?.covers &&
-                            coversData?.covers?.map((cover) => (
-                              <option key={cover?.id} value={cover?.id}>
-                                {cover?.name}
-                              </option>
-                            ))}
-                        </select>
 
-                        <span className="absolute top-1/2 right-4 z-30 -translate-y-1/2">
-                          <svg
-                            className=" dark:text-white fill-current"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <g opacity="0.8">
-                              <path
-                                fillRule="evenodd"
-                                clipRule="evenodd"
-                                d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
-                                fill=""
-                              ></path>
-                            </g>
-                          </svg>
-                        </span>
-                      </div>
-                    </div>
+                    <ConditionsCreatableSelect
+                      control={control}
+                      errors={errors}
+                      isPendingConditions={isPendingConditions}
+                      conditionsData={conditionsData}
+                      handleCreateConditions={handleCreateConditions}
+                    />
+
+                    <CoversCreatableSelect
+                      control={control}
+                      errors={errors}
+                      isPendingCovers={isPendingCovers}
+                      coversData={coversData}
+                      handleCreateCovers={handleCreateCovers}
+                    />
                   </div>
 
                   {/* Fourth Row Fields */}
                   <div className="mt-2 mb-4.5 flex flex-col gap-2 md:flex-row md:gap:9">
-                    <div className="w-full xl:w-1/2">
-                      <label
-                        className="mb-2.5 block text-[#0284c7] dark:text-white"
-                        htmlFor="category"
-                      >
-                        Category
-                      </label>
-                      <div className="relative z-20 bg-transparent dark:bg-form-input">
-                        <select
-                          className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:text-neutral-100 dark:focus:text-neutral-100 dark:focus:border-[#3C50E0]"
-                          name="category"
-                          {...register("category")}
-                        >
-                          <option value={bookDetail?.book?.category_id}>
-                            {bookDetail?.book?.category_name}
-                          </option>
-                          {categoriesData?.categories &&
-                            categoriesData?.categories?.map((category) => (
-                              <option key={category?.id} value={category?.id}>
-                                {category?.name}
-                              </option>
-                            ))}{" "}
-                        </select>
-                        <span className="absolute top-1/2 right-4 z-30 -translate-y-1/2">
-                          <svg
-                            className=" dark:text-white fill-current"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <g opacity="0.8">
-                              <path
-                                fillRule="evenodd"
-                                clipRule="evenodd"
-                                d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
-                                fill=""
-                              ></path>
-                            </g>
-                          </svg>
-                        </span>
-                      </div>
-                    </div>
+
+                    <CategoryCreatableSelect
+                      control={control}
+                      errors={errors}
+                      isPendingCategories={isPendingCategories}
+                      categoriesData={categoriesData}
+                      handleCreateCategory={handleCreateCategory}
+                    />
                     <div className="mb-4.5 w-full xl:w-1/2">
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
                         ISBN <span className="text-meta-1">*</span>
@@ -566,15 +561,15 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                         render={({ field }) => (
                           <CreatableSelect
                             {...field}
-                            options={publisherList}
+                            options={publisherOptions}
                             isClearable
-                            isDisabled={isLoading}
-                            isLoading={isLoading}
+                            isDisabled={isPendingPublishers}
+                            isLoading={isPendingPublishers}
                             styles={newStyles}
-                            onChange={(newValue, actionMeta) => {
+                            onChange={async (newValue, actionMeta) => {
                               // Use actionMeta.action to check if the change is a creation
                               if (actionMeta.action === "create-option") {
-                                onPublisherCreate(newValue.label); // Pass the label of the new option
+                                await onPublisherCreate(newValue.label); // Pass the label of the new option
                               } else {
                                 field.onChange(newValue); // Regular option selected
                               }
@@ -636,7 +631,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                         Credits
                       </label>
                       <input
-                        type="text"
+                        type="number"
                         name="credit"
                         placeholder="Add Credits"
                         {...register("credit")}
@@ -651,7 +646,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                   </div>
                   {/* Seventh Row */}
                   <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap:9">
-                    <div className="w-full xl:w-1/2" autoFocus>
+                    {/* <div className="w-full xl:w-1/2" autoFocus>
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
                         Vendor
                       </label>
@@ -698,7 +693,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                           {errors.vendor_id.message}
                         </p>
                       )}
-                    </div>
+                    </div> */}
 
                     <div className="w-full xl:w-1/2">
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
@@ -709,13 +704,14 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                           className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:text-neutral-100 dark:focus:text-neutral-100 dark:focus:border-[#3C50E0]"
                           name="branch_id"
                           {...register("branch_id")}
-                          defaultValue={branchesData?.branches?.find(
-                            (branch) => {
-                              if (branch.name == bookDetail?.book?.branch_name)
-                                return branch.id;
-                            }
-                          )}
+                        // defaultValue={branchesData?.branches?.find(
+                        //   (branch) => {
+                        //     if (branch.name == bookDetail?.book?.branch_name)
+                        //       return branch.id;
+                        //   }
+                        // )}
                         >
+                          <option value="" disabled>Select</option>
                           {branchesData?.branches &&
                             branchesData?.branches?.map((branch) => (
                               <option key={branch?.id} value={branch?.id}>
@@ -795,7 +791,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                             type="checkbox"
                             name="available"
                             {...register("available")}
-                            className="rounded bg-gray-200 border-transparent h-4 w-4 p-5 ml-2 focus:border-transparent focus:bg-gray-200 text-gray-700 focus:ring-1 focus:ring-offset-2 focus:ring-gray-500"
+                            className="rounded bg-gray-200 border-transparent h-4 w-4 p-5 ml-2 focus:border-transparent focus:bg-gray-200 dark:text-white text-gray-700 focus:ring-1 focus:ring-offset-2 focus:ring-gray-500"
                           />
                           <span className="ml-2">Available </span>
                         </label>
