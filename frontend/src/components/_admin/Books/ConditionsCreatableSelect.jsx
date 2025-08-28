@@ -9,31 +9,19 @@ const ConditionsCreatableSelect = ({
     isPendingConditions,
     conditionsData,
     handleCreateConditions,
-    setConditions,
-    conditions }) => {
+}) => {
 
-    console.log(conditionsData, "Inside the component", conditions);
+    console.log(conditionsData, "Inside the component");
 
-    useEffect(() => {
-        if (conditionsData?.conditions?.length > 0) {
-            setConditions(conditionsData?.conditions?.map(condition => ({
-                value: condition.id,
-                label: condition.name
-            })) || [])
-        }
-    }, [conditionsData?.conditions, setConditions])
+    const conditionOptions = useMemo(() =>
+        conditionsData?.conditions?.map(condition => ({
+            value: condition.id,
+            label: condition.name
+        })) ?? [],
+        [conditionsData]
+    );
 
-
-    // Transform conditions data into react-select format
-    // const conditionOptions = useMemo(() =>
-    //     conditionsData?.conditions?.map(condition => ({
-    //         value: condition.id,
-    //         label: condition.name
-    //     })) || [],
-    //     [conditionsData]
-    // );
-
-   return (
+    return (
         <div className="w-full xl:w-1/2">
             <label className="mb-2.5 block text-[#0284c7] dark:text-white">
                 Condition <span className="text-red-600">*</span>
@@ -45,20 +33,21 @@ const ConditionsCreatableSelect = ({
                 render={({ field }) => (
                     <CreatableSelect
                         {...field}
-                        options={conditions}
+                        options={conditionOptions}
                         isClearable
                         isDisabled={isPendingConditions}
                         isLoading={isPendingConditions}
                         styles={newStyles}
-                        onChange={(newValue, actionMeta) => {
+                        onChange={async (newValue, actionMeta) => {
                             if (actionMeta.action === "create-option") {
-                                handleCreateConditions(newValue.label);
+                                await handleCreateConditions(newValue.label);
                             } else {
                                 field.onChange(newValue);
                             }
                         }}
                         value={field.value}
                         placeholder="Select or type a condition..."
+                        id="condition"
                     />
                 )}
             />
