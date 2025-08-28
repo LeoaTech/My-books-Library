@@ -13,21 +13,27 @@ import {
 export default function FileUpload({ imagesList, setImagesList }) {
     const inputRef = useRef(null);
 
+    const maxImages = 5;
     const handleFileSelect = async (e) => {
         if (!e.target.files?.length) return;
 
         const newFiles = Array.from(e.target.files);
+        const currentCount = imagesList?.length || 0;
+        const remainingSlots = maxImages - currentCount;
+
+        if (remainingSlots <= 0) return; // No slots available
+
+        // Limit new files to remaining slots
+        const filesToAdd = newFiles.slice(0, remainingSlots);
 
         // Filter to only add new files (non-duplicates)
         const existingNames = imagesList
-            ?.filter((item) => item?.name) // only new File objects have .name
+            ?.filter((item) => item?.name)
             ?.map((f) => f.name) || [];
 
-        const uniqueNewFiles = newFiles.filter(
+        const uniqueNewFiles = filesToAdd.filter(
             (f) => !existingNames?.includes(f.name)
         );
-
-
 
         if (!uniqueNewFiles.length) return;
 
@@ -46,9 +52,6 @@ export default function FileUpload({ imagesList, setImagesList }) {
 
         if (inputRef.current) inputRef.current.value = '';
     };
-
-
-    // Convert Raw File object to base64
 
     const fileToBase64 = (file) =>
         new Promise((resolve, reject) => {
@@ -83,15 +86,23 @@ export default function FileUpload({ imagesList, setImagesList }) {
         <div className="flex flex-col gap-4">
             <h2 className="text-xl font-bold text-[#2c3745] dark:text-white">Select Media</h2>
             <div className="flex gap-2">
-                <FileInput inputRef={inputRef} onFileSelect={handleFileSelect} />
+                <FileInput
+                    maxImages={maxImages}
+                    imagesList={imagesList}
+                    inputRef={inputRef} onFileSelect={handleFileSelect} />
                 <button
+                    type="button"
                     onClick={() => setImagesList([])}
                     className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded disabled:opacity-50"
-                    disabled={imagesList?.length === 0 || imagesList?.length == 5}
                 >
                     <FaTrash size={16} />
                     Clear All
                 </button>
+                {imagesList?.length >= maxImages && (
+                    <p className="text-sm text-red-500">
+                        Maximum of 5 images allowed for book cover.
+                    </p>
+                )}
             </div>
 
             {imagesList?.length > 0 && (
@@ -131,6 +142,7 @@ export default function FileUpload({ imagesList, setImagesList }) {
                                     </div>
                                 </div>
                                 <button
+                                    type='button'
                                     onClick={() => removeFile(idx)}
                                     className="text-white hover:text-red-400"
                                 >
@@ -152,7 +164,7 @@ export default function FileUpload({ imagesList, setImagesList }) {
 
 
 
-function FileInput({ inputRef, onFileSelect }) {
+function FileInput({ inputRef, onFileSelect, maxImages, imagesList }) {
     return (
         <>
             <input
@@ -163,6 +175,8 @@ function FileInput({ inputRef, onFileSelect }) {
                 className="hidden"
                 id="file-upload"
                 accept="image/*,video/*,audio/*"
+                disabled={imagesList?.length >= maxImages}
+
             />
             <label
                 htmlFor="file-upload"
