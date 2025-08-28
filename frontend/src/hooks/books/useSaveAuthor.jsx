@@ -6,20 +6,34 @@ export const useAuthor = () => {
   const [isLoading, setIsLoading] = useState(null);
   const [message, setMessage] = useState(null);
 
-  const addAuthor = async (name) => {
+  // Create New Author
+  const addAuthor = async (data) => {
     setIsLoading(true);
     setError(null);
 
-    const response = await fetch(`${BASE_URL}/authors/new`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({name:name}),
-    });
+    // console.log(data, "Author name");
 
-    const result = await response.json(); //response?.data;
-    // console.log(result, "Author Save Result");
+    try {
+      const response = await fetch(`${BASE_URL}/authors/new`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ authorsForm: data }),
+      });
+
+      const result = await response.json(); //response?.data;
+      console.log(result, "Author Save Result");
+      setError(null);
+      setMessage(result.message);
+      return result;
+    } catch (error) {
+      console.log(error);
+      setError(error.message);
+    } finally {
+      setIsLoading(false)
+    }
   };
+
 
   return { isLoading, error, message, addAuthor };
 };
