@@ -179,11 +179,11 @@ const BookDetailsModal = ({ data, close }) => {
 
                   <p className="flex items-center gap-2 mb-3 text-md text-[#282b2c] dark:text-white font-medium">
                     <span className="flex items-center gap-2 text-[#799db8] text-medium font-medium">
-                      <TbBasketDiscount /> RENT PRICE
+                      <TbBasketDiscount /> MEMBER PRICE
                     </span>
                     <span className=" flex items-center gap-2 mx-5 py-0.5 px-3 rounded-xl text-[#434d5d] text-2xl dark:text-white">
                       <FaDollarSign className="text-sm h-12" />{" "}
-                      {bookDetails?.book?.rental_price}
+                      {bookDetails?.book?.member_price}
                     </span>
                   </p>
 
