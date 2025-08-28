@@ -84,8 +84,8 @@ const Tables = ({ hasPermission, searchQuery }) => {
         cell: (info) => info.renderValue(),
         footer: (info) => info.column.id,
       }),
-      columnHelper.accessor("rental_price", {
-        header: () => <span>Rental Price</span>,
+      columnHelper.accessor("member_price", {
+        header: () => <span>Member Price</span>,
         footer: (info) => info.column.id,
       }),
       columnHelper.accessor("purchase_price", {
@@ -115,14 +115,14 @@ const Tables = ({ hasPermission, searchQuery }) => {
 
           return (
             <div className=" max-w-[120px] flex gap-3">
-              {hasPermission("EDIT") ? (
+              {/* {hasPermission("EDIT") ? ( */}
                 <button
                   onClick={() => editBookDetails(bookId)}
                   className="text-green-600"
                 >
                   <MdEdit />
                 </button>
-              ) : (
+           {/*    ) : (
                 <div className="group relative m-2 flex justify-center">
                   <span className="absolute -top-10 scale-0 transition-all px-3 py-1 rounded bg-gray-800 p-2 text-xs text-red-500 group-hover:scale-100">
                     Access Denied!
@@ -131,7 +131,7 @@ const Tables = ({ hasPermission, searchQuery }) => {
                     <MdEdit />
                   </button>
                 </div>
-              )}
+               )} */}
 
               <button
                 onClick={() => viewBookDetails(bookId)}
@@ -139,14 +139,14 @@ const Tables = ({ hasPermission, searchQuery }) => {
               >
                 <MdOutlineRemoveRedEye />
               </button>
-              {hasPermission("DELETE") ? (
+              {/* {hasPermission("DELETE") ? ( */}
                 <button
                   onClick={() => deleteBookDetails(bookId, bookTitle)}
                   className="text-red-500"
                 >
                   <MdOutlineDeleteOutline />
                 </button>
-              ) : (
+              {/* ) : (
                 <div className="group relative m-2 flex justify-center">
                   <span className="absolute -top-10 scale-0 transition-all rounded bg-gray-800 p-2 text-xs text-red-500 group-hover:scale-100">
                     Access Denied!
@@ -155,7 +155,7 @@ const Tables = ({ hasPermission, searchQuery }) => {
                     <MdOutlineDeleteOutline />
                   </button>
                 </div>
-              )}
+               )}  */}
             </div>
           );
         },
