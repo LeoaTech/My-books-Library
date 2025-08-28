@@ -22,8 +22,40 @@ const GetBookCondition = asyncHanlder(async (req, res) => {
   }
 });
 
+/* Create New Condition */
+
+const CreateCondition = asyncHanlder(async (req, res) => {
+  console.log(req.body);
+
+  const entityId = req?.user?.entityId || req?.user?.entity_id;
+
+  if (!entityId) {
+    return res.status(403).json("Invalid Request, No Library ID provided");
+  }
+  try {
+    if (!req.body.name) {
+      return res.status(400).json("Invalid condition name");
+    }
+    const updateCondition = await db.query(
+      `INSERT INTO conditions (name, entity_id) VALUES ($1, $2) RETURNING id,name`,
+      [req.body.name, entityId]
+    );
+
+    console.log(updateCondition?.rows[0], "condition Saved");
+
+    res.status(200).json({
+      conditions: updateCondition?.rows[0],
+      message: "condition Saved Successfully ",
+    });
+  } catch (error) {
+    console.log(error, "Error creating new condition");
+    res.status(500).json({
+      error,
+      message: error.message || "Error Creating condition",
+    });
+  }
+});
 
 
 
-
-module.exports = { GetBookCondition };
+module.exports = { GetBookCondition ,CreateCondition};
