@@ -25,34 +25,34 @@ const Listing = () => {
 
   const selectedRole = auth?.role;
 
-  const { data: permissionsList, isPending: PendingPermissions } = useQuery({
-    queryFn: () => fetchPermissionsByRoleID(selectedRole),
-    queryKey: ["role-permissions", { selectedRole }],
-    enabled: !!selectedRole,
-  });
+  // const { data: permissionsList, isPending: PendingPermissions } = useQuery({
+  //   queryFn: () => fetchPermissionsByRoleID(selectedRole),
+  //   queryKey: ["role-permissions", { selectedRole }],
+  //   enabled: !!selectedRole,
+  // });
 
-  // Find Permissions ID Related to Books Listings
-  useEffect(() => {
-    if (permissionsList) {
-      const booksPermissions = permissionsList?.permissions.filter(
-        (permission) =>
-          permission?.permission_name.includes("BOOK" || "Book" || "book") //filter all permissions related to books listings
-      );
-      setAccessAction(booksPermissions);
-    }
-  }, [permissionsList]);
+  // // Find Permissions ID Related to Books Listings
+  // useEffect(() => {
+  //   if (permissionsList) {
+  //     const booksPermissions = permissionsList?.permissions.filter(
+  //       (permission) =>
+  //         permission?.permission_name.includes("BOOK" || "Book" || "book") //filter all permissions related to books listings
+  //     );
+  //     setAccessAction(booksPermissions);
+  //   }
+  // }, [permissionsList]);
 
-  // Function to check if a user has a specific permission
-  const hasPermission = (permissionName) => {
-    return accessAction.some((permission) =>
-      permission.permission_name.includes(permissionName)
-    );
-  };
+  // // Function to check if a user has a specific permission
+  // const hasPermission = (permissionName) => {
+  //   return accessAction.some((permission) =>
+  //     permission.permission_name.includes(permissionName)
+  //   );
+  // };
   // console.log(accessAction, "Access actions");
 
-  if (PendingPermissions) {
-    return <h1>Loading...</h1>; //Update Loader Here with animation
-  }
+  // if (PendingPermissions) {
+  //   return <h1>Loading...</h1>; //Update Loader Here with animation
+  // }
 
   return (
     <>
@@ -78,7 +78,7 @@ const Listing = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
             {/* Authhorized roles can access Create Book Form  */}
-            {hasPermission("CREATE") ? (
+            {/*  {hasPermission("CREATE") ? ( */}
               <button
                 className="bg-[#758aae] text-white active:bg-[#80CAEE] 
       font-medium rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 px-2 py-2 md:px-3 "
@@ -89,12 +89,10 @@ const Listing = () => {
                   <HiPlus /> New Book
                 </span>
               </button>
-            ) : (
+            {/* ) : ( 
               <>
                 <div className="group relative m-2 flex justify-center">
-                  {/* <button className="rounded bg-amber-500 px-4 py-2 text-sm text-white shadow-sm">
-                    Hover me!
-                  </button> */}
+                 
                   <span className="absolute -top-10 scale-0 transition-all rounded bg-gray-800 p-2 text-xs text-red-500 group-hover:scale-100">
                     <span className="flex gap-2 items-center">
                       {" "}
@@ -113,21 +111,21 @@ const Listing = () => {
                   </button>
                 </div>
               </>
-            )}
+            )} */}
           </div>
 
 
           {/* Show Table Only when Role has Read Authority */}
-          {hasPermission("READ") ? (
+          {/* {hasPermission("READ") ? ( */}
             <Suspense fallback={<SkeletonTable rows={7} columns={7} />}>
-              <ListingTable hasPermission={hasPermission} searchQuery={searchQuery} />
+              <ListingTable hasPermission={true} searchQuery={searchQuery} />
 
             </Suspense>
-          ) : (
+          {/* ) : (
             <Suspense fallback={<Loader />}>
               <UnAuthorizedRoles />
             </Suspense>
-          )}
+          )} */}
         </>
       ) : (
         <Suspense fallback={<Loader />}>
