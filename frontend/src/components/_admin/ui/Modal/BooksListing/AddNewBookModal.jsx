@@ -28,7 +28,7 @@ import CoversCreatableSelect from "../../../Books/CoversCreatableSelect";
 import ConditionsCreatableSelect from "../../../Books/ConditionsCreatableSelect";
 import CreatableSelect from "react-select/creatable";
 import FileUpload from "../../../shared/FileUpload";
-
+import { toast } from "react-toastify";
 const AddNewBookModal = ({ setShowModal }) => {
   const { auth } = useAuthContext();
   const queryClient = useQueryClient();
@@ -64,14 +64,7 @@ const AddNewBookModal = ({ setShowModal }) => {
 
   const { error, message, addBook } = useSaveBook();
   const [imagesList, setImagesList] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [covers, setCovers] = useState([]);
-  const [conditions, setConditions] = useState([]);
-  // const [authors, setAuthors] = useState([]);
-  // const [publishers, setPublishers] = useState([]);
 
-  // const [isLoading, setIsLoading] = useState(false);
-  // const [value, setValue] = useState(null);
 
   const { addAuthor } = useAuthor();
   const { addPublisher } = usePublisher();
@@ -244,12 +237,15 @@ const AddNewBookModal = ({ setShowModal }) => {
     onSuccess: (data) => {
       reset();
       // console.log(data);
-      toast.success("Book Saved Successfully");
+      toast.success(message);
       setShowModal(false);
     },
     onSettled: () => {
       queryClient.invalidateQueries(["books"]); // invalidate books query to refetch
     },
+    onError:()=>{
+      toast.error(message||"Failed to add book")
+    }
   });
 
   const selectedAuthor = watch("author");
@@ -265,7 +261,7 @@ const AddNewBookModal = ({ setShowModal }) => {
   //   selectedCover,"Cover",
   //   selectedPublisher,"publisher"
   // );
-  
+
   // const createOption = (label) => ({
   //   label,
   //   value: label.toLowerCase().replace(/\W/g, ""),
@@ -282,6 +278,7 @@ const AddNewBookModal = ({ setShowModal }) => {
       cover_img_url: [...imagesList],
       publisher: selectedPublisher?.value,
       condition: selectedCondition?.value,
+      vendor_id: data?.vendor_id == "" ? null : data?.vendor_id,
       role_id: auth?.roleId,
       added_by: auth?.role_name,
     };
@@ -335,7 +332,7 @@ const AddNewBookModal = ({ setShowModal }) => {
       </div>
     );
   }
-// console.log(errors, "Form Error", isValid);
+  // console.log(errors, "Form Error", isValid);
 
   return (
     <div className="fixed left-0 top-0  inset-0 bg-[#64748B] bg-opacity-75 transition-opacity dark:bg-slate-400 dark:bg-opacity-75 lg:left-[18rem]">
@@ -613,6 +610,52 @@ const AddNewBookModal = ({ setShowModal }) => {
                   {/* Seventh Row */}
 
                   <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
+                    {vendorsData?.vendors.length > 0 && <div className="w-full xl:w-1/2" autoFocus>
+                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
+                        Vendor
+                      </label>
+
+                      <div className="relative z-20 bg-transparent dark:bg-form-input">
+                        <select
+                          className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:text-neutral-100 dark:focus:text-neutral-100 dark:focus:border-[#3C50E0]"
+                          name="vendor_id"
+                          {...register("vendor_id", { required: true })}
+                        >
+                          <option disabled>Select</option>
+
+                          {vendorsData?.vendors &&
+                            vendorsData?.vendors?.map((vendor) => (
+                              <option key={vendor?.id} value={vendor?.id}>
+                                {vendor?.name}
+                              </option>
+                            ))}{" "}
+                        </select>
+                        <span className="absolute top-1/2 right-4 z-30 -translate-y-1/2">
+                          <svg
+                            className=" dark:text-white fill-current"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <g opacity="0.8">
+                              <path
+                                fillRule="evenodd"
+                                clipRule="evenodd"
+                                d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
+                                fill=""
+                              ></path>
+                            </g>
+                          </svg>
+                        </span>
+                      </div>
+                      {errors?.vendor_id?.message && (
+                        <p className="format-message error">
+                          {errors.vendor_id.message}
+                        </p>
+                      )}
+                    </div>}
                     <div className="w-full xl:w-1/2">
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
                         Branch
