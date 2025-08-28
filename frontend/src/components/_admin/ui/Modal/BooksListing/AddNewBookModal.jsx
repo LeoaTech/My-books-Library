@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, Controller } from "react-hook-form";
 import { useSaveBook } from "../../../../../hooks/books/useSaveBook";
@@ -33,16 +33,45 @@ const AddNewBookModal = ({ setShowModal }) => {
   const { auth } = useAuthContext();
   const queryClient = useQueryClient();
 
+  const {
+    register,
+    control,
+    handleSubmit,
+    reset,
+    watch,
+    formState: { errors, isSubmitting, isValid, isDirty },
+  } = useForm({
+    defaultValues: {
+      title: "",
+      author: null,
+      publisher: null,
+      category: null,
+      cover: null,
+      condition: "",
+      isbn: "",
+      isAvailable: false,
+      vendor_id: null,
+      branch_id: null,
+      cover_img_url: [],
+      discount_percentage: "",
+      summary: "",
+      publish_year: "",
+      credit: "",
+    },
+    resolver: zodResolver(bookSchema),
+    mode: "all",
+  });
+
   const { error, message, addBook } = useSaveBook();
   const [imagesList, setImagesList] = useState([]);
   const [categories, setCategories] = useState([]);
   const [covers, setCovers] = useState([]);
   const [conditions, setConditions] = useState([]);
-  const [authors, setAuthors] = useState([]);
-  const [publisherList, setPublisherList] = useState([]);
+  // const [authors, setAuthors] = useState([]);
+  // const [publishers, setPublishers] = useState([]);
 
-  const [isLoading, setIsLoading] = useState(false);
-  const [value, setValue] = useState(null);
+  // const [isLoading, setIsLoading] = useState(false);
+  // const [value, setValue] = useState(null);
 
   const { addAuthor } = useAuthor();
   const { addPublisher } = usePublisher();
@@ -58,14 +87,17 @@ const AddNewBookModal = ({ setShowModal }) => {
   } = useFetchAuthors();
 
   /* Fetch Type of Condition For Books */
-  const { isPending: isPendingConditions, data: conditionsData } =
-    useFetchConditions();
+  const {
+    isPending: isPendingConditions,
+    data: conditionsData,
+    refetch: refetchCondition,
+  } = useFetchConditions();
 
   /* Fetch Categories List for Books */
   const {
     isPending: isPendingCategories,
     data: categoriesData,
-    refetch,
+    refetch: refetchCategory,
   } = useFetchCategories();
 
   /* Fetch Types of Covers For Books */
@@ -85,22 +117,6 @@ const AddNewBookModal = ({ setShowModal }) => {
   /* Fetch All Branch List */
   const { isPendingBranches, data: branchesData } = useFetchBranches();
 
-  const {
-    register,
-    control,
-    handleSubmit,
-    reset,
-    watch,
-    formState: { errors, isSubmitting, isValid, isDirty },
-  } = useForm({
-    defaultValues: {
-      author: "1",
-      publisher: "1",
-    },
-    resolver: zodResolver(bookSchema),
-    mode: "all",
-  });
-
   /* Mutation to Create New Author  */
   const { mutateAsync: addAuthorMutation } = useMutation({
     mutationFn: addAuthor,
@@ -117,111 +133,109 @@ const AddNewBookModal = ({ setShowModal }) => {
     },
   });
 
+  // Memoize options
+  const authorOptions = useMemo(
+    () =>
+      authorsData?.authors?.map((author) => ({
+        value: author.id,
+        label: author.name,
+      })) ?? [],
+    [authorsData]
+  );
+
+  const publisherOptions = useMemo(
+    () =>
+      publishersData?.publishers?.map((publisher) => ({
+        value: publisher.id,
+        label: publisher.name,
+      })) ?? [],
+    [publishersData]
+  );
+
   // Create New Author function for  creatable Author fields
-  const handleCreate = async (inputValue) => {
-    setIsLoading(true);
-    const authorForm = {
-      name: inputValue,
-      link: "",
-      description: "",
-    };
-    const res = await addAuthorMutation(authorForm);
-    setTimeout(async () => {
-      const newOption = createOption(inputValue);
-      setIsLoading(false);
-      setValue(newOption);
-    }, 1000);
-  };
+  const handleCreateAuthor = useCallback(
+    async (inputValue) => {
+      try {
+        const authorForm = {
+          name: inputValue,
+          link: "",
+          description: "",
+        };
+        const newAuthor = await addAuthorMutation(authorForm);
+        return newAuthor;
+      } catch (error) {
+        console.error("Error creating author:", error);
+      }
+    },
+    [addAuthorMutation]
+  );
 
   /* Create New Category   */
-  const handleCreateCategory = async (inputValue) => {
-    console.log(inputValue, "Value");
+  const handleCreateCategory = useCallback(
+    async (inputValue) => {
+      console.log(inputValue, "Value");
 
-    try {
-      // Assuming you have an API endpoint to create a new category
-      const newCategory = await addCategory(inputValue);
-      console.log(newCategory, "API response");
-
-      const newOption = createOption(inputValue);
-      // Update your categories data
-      // You might need to refetch categories or update the local state
-      refetch();
-      // setValue(newOption);
-      setCategories(...categories, {
-        value: newCategory.id,
-        label: newCategory.name,
-      });
-      setValue("category", { value: newCategory.id, label: newCategory.name });
-    } catch (error) {
-      console.error("Error creating category:", error);
-    }
-  };
+      try {
+        const newCategory = await addCategory(inputValue);
+        console.log(newCategory, "API response");
+        await refetchCategory();
+        return newCategory;
+      } catch (error) {
+        console.error("Error creating category:", error);
+        return;
+      }
+    },
+    [addCategory, refetchCategory]
+  );
   /* Create New Cover Type   */
 
-  const handleCreateCovers = async (inputValue) => {
-    console.log(inputValue, "cover value");
+  const handleCreateCovers = useCallback(
+    async (inputValue) => {
+      console.log(inputValue, "cover value");
 
-    try {
-      // Assuming you have an API endpoint to create a new category
-      const newCovers = await addCover(inputValue);
-      console.log(newCovers, "API response");
-
-      const newOption = createOption(inputValue);
-
-      setCovers([
-        ...covers,
-        { value: newCovers?.covers?.id, label: newCovers?.covers?.name },
-      ]);
-      setValue("cover", {
-        value: newCovers?.covers?.id,
-        label: newCovers?.covers?.name,
-      });
-    } catch (error) {
-      console.error("Error creating category:", error);
-    }
-  };
+      try {
+        const newCovers = await addCover(inputValue);
+        console.log(newCovers, "API response");
+        await refetchCovers();
+        return newCovers;
+      } catch (error) {
+        console.error("Error creating cover:", error);
+        return;
+      }
+    },
+    [addCover, refetchCovers]
+  );
   /* Create New Condition type for book   */
-  const handleCreateConditions = async (inputValue) => {
-    console.log(inputValue, "condition value");
+  const handleCreateConditions = useCallback(
+    async (inputValue) => {
+      console.log(inputValue, "condition value");
 
-    try {
-      // Assuming you have an API endpoint to create a new category
-      const newCondition = await addConditionType(inputValue);
-      console.log(newCondition, "API response");
-
-      const newOption = createOption(inputValue);
-
-      setConditions([
-        ...conditions,
-        {
-          value: newCondition?.conditions?.id,
-          label: newCondition?.conditions?.name,
-        },
-      ]);
-      setValue("condition", {
-        value: newCondition?.conditions?.id,
-        label: newCondition?.conditions?.name,
-      });
-    } catch (error) {
-      console.error("Error creating category:", error);
-    }
-  };
+      try {
+        const newCondition = await addConditionType(inputValue);
+        console.log(newCondition, "API response");
+        await refetchCondition();
+        return newCondition;
+      } catch (error) {
+        console.error("Error creating condition:", error);
+        return;
+      }
+    },
+    [addConditionType, refetchCondition]
+  );
 
   // Create New Publisher function for creatable Publisher field
-  const onPublisherCreate = async (inputField) => {
-    setIsLoading(true);
-    const publisherForm = {
-      name: inputField,
-      link: "",
-      description: "",
-    };
-    const res = await addPublisherMutation(publisherForm);
-    setTimeout(async () => {
-      const newOption = createOption(inputField);
-      setIsLoading(false);
-      setValue(newOption);
-    }, 1000);
-  };
+  const onPublisherCreate = useCallback(
+    async (inputField) => {
+      const publisherForm = {
+        name: inputField,
+        link: "",
+        description: "",
+      };
+      const newPublisher = await addPublisherMutation(publisherForm);
+      return newPublisher;
+    },
+    [addPublisherMutation]
+  );
 
   /* Add Book Mutation  */
 
@@ -244,37 +258,22 @@ const AddNewBookModal = ({ setShowModal }) => {
   const selectedCover = watch("cover");
   const selectedPublisher = watch("publisher");
 
-  const createOption = (label) => ({
-    label,
-    value: label.toLowerCase().replace(/\W/g, ""),
-  });
-  /* Effect to update Author List options after creating new field */
-  useEffect(() => {
-    if (authorsData) {
-      const authorList = authorsData?.authors?.map((author) => ({
-        value: author.id,
-        label: author.name,
-      }));
-      setAuthors([...authorList]);
-    }
-  }, [authorsData]);
-  /* Effect to update Publisherr List options after creating new field */
 
-  useEffect(() => {
-    if (publishersData) {
-      const publisherList = publishersData?.publishers?.map((publisher) => ({
-        value: publisher.id,
-        label: publisher.name,
-      }));
-      setPublisherList([...publisherList]);
-    }
-  }, [publishersData]);
+  // console.log(selectedAuthor, "Selected Author",
+  //   selectedCategory, "Category",
+  //   selectedCondition, "Condition",
+  //   selectedCover,"Cover",
+  //   selectedPublisher,"publisher"
+  // );
+  
+  // const createOption = (label) => ({
+  //   label,
+  //   value: label.toLowerCase().replace(/\W/g, ""),
+  // });
 
   /* Save Book Details Form function */
   const onSubmit = async (data) => {
     // console.log(data);
-
-    // updated all fields values
     const booksForm = {
       ...data,
       author: selectedAuthor?.value,
@@ -336,6 +335,7 @@ const AddNewBookModal = ({ setShowModal }) => {
       </div>
     );
   }
+// console.log(errors, "Form Error", isValid);
 
   return (
     <div className="fixed left-0 top-0  inset-0 bg-[#64748B] bg-opacity-75 transition-opacity dark:bg-slate-400 dark:bg-opacity-75 lg:left-[18rem]">
@@ -398,19 +398,21 @@ const AddNewBookModal = ({ setShowModal }) => {
                         render={({ field }) => (
                           <CreatableSelect
                             {...field}
-                            options={authors}
+                            options={authorOptions}
                             isClearable
-                            isDisabled={isLoading}
-                            isLoading={isLoading}
+                            isDisabled={isPendingAuthors}
+                            isLoading={isPendingAuthors}
                             styles={newStyles}
-                            onChange={(newValue, actionMeta) => {
+                            onChange={async (newValue, actionMeta) => {
                               if (actionMeta.action === "create-option") {
-                                handleCreate(newValue.label);
+                                await handleCreateAuthor(newValue.label);
                               } else {
                                 field.onChange(newValue);
                               }
                             }}
                             value={field.value}
+                            placeholder="Select or type an Author..."
+                            id="author"
                           />
                         )}
                       />
@@ -464,43 +466,30 @@ const AddNewBookModal = ({ setShowModal }) => {
                   </div>
                   {/* Third Row fields */}
                   <div className="mt-2 mb-4.5 flex flex-col gap-2 md:flex-row md:gap-9">
-                 
                     <ConditionsCreatableSelect
                       control={control}
                       errors={errors}
                       isPendingConditions={isPendingConditions}
                       conditionsData={conditionsData}
-                      register={register}
-                      setConditions={setConditions}
-                      conditions={conditions}
                       handleCreateConditions={handleCreateConditions}
                     />
-                  
+
                     <CoversCreatableSelect
                       control={control}
                       errors={errors}
                       isPendingCovers={isPendingCovers}
                       coversData={coversData}
-                      register={register}
-                      setCovers={setCovers}
-                      covers={covers}
                       handleCreateCovers={handleCreateCovers}
                     />
-                  
                   </div>
 
                   {/* Fourth Row Fields */}
                   <div className="mt-2 mb-4.5 flex flex-col gap-2 md:flex-row md:gap-9">
-                  
-
                     <CategoryCreatableSelect
                       control={control}
                       errors={errors}
                       isPendingCategories={isPendingCategories}
                       categoriesData={categoriesData}
-                      register={register}
-                      setCategories={setCategories}
-                      categories={categories}
                       handleCreateCategory={handleCreateCategory}
                     />
                     <div className="mb-4.5 w-full xl:w-1/2">
@@ -536,20 +525,21 @@ const AddNewBookModal = ({ setShowModal }) => {
                         render={({ field }) => (
                           <CreatableSelect
                             {...field}
-                            options={publisherList}
+                            options={publisherOptions}
                             isClearable
-                            isDisabled={isLoading}
-                            isLoading={isLoading}
+                            isDisabled={isPendingPublishers}
+                            isLoading={isPendingPublishers}
                             styles={newStyles}
-                            onChange={(newValue, actionMeta) => {
-                              // Use actionMeta.action to check if the change is a creation
+                            onChange={async (newValue, actionMeta) => {
                               if (actionMeta.action === "create-option") {
-                                onPublisherCreate(newValue.label); // Pass the label of the new option
+                                await onPublisherCreate(newValue.label);
                               } else {
-                                field.onChange(newValue); // Regular option selected
+                                field.onChange(newValue); //select existing option
                               }
                             }}
                             value={field.value}
+                            placeholder="Select or type a publisher..."
+                            id="publisher"
                           />
                         )}
                       />
@@ -606,7 +596,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                         Credits <span className="text-red-600">*</span>
                       </label>
                       <input
-                        type="text"
+                        type="number"
                         name="credit"
                         placeholder="Add Credits"
                         {...register("credit", { required: true })}
@@ -623,8 +613,6 @@ const AddNewBookModal = ({ setShowModal }) => {
                   {/* Seventh Row */}
 
                   <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
-                    
-
                     <div className="w-full xl:w-1/2">
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
                         Branch
