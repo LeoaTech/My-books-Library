@@ -83,7 +83,7 @@ const router = createBrowserRouter(
         <Route path="/:subdomain/forgot-password" element={<ForgetPassword />} />
       </Route>
 
-      <Route path="/:subdomain" element={<Home />} />
+      {/* <Route path="/:subdomain" element={<Home />} /> */}
 
       <Route element={<PersistLogin />}>
 

@@ -7,7 +7,10 @@ import ReturnsIcon from "../assets/returns.svg";
 import ShippedIcon from "../assets/ship1.svg";
 import QCIcon from "../assets/qc.svg";
 import ShippingIcon from "../assets/shipment.svg";
-import { MdCalendarMonth } from "react-icons/md";
+import { MdCalendarMonth, MdOutlineCheckCircleOutline } from "react-icons/md";
+import { GrSettingsOption } from "react-icons/gr";
+import { IoSettings, IoSettingsSharp } from "react-icons/io5";
+
 // use lazy for better code splitting, a.k.a. load faster
 
 const NotificationsPage = lazy(() => import("../_admin/pages/Notifications"));
@@ -21,7 +24,12 @@ const Returns = lazy(() => import("../_admin/pages/Returns"));
 const Users = lazy(() => import("../_admin/pages/Users"));
 const Permissions = lazy(() => import("../_admin/pages/Permissions"));
 const Profile = lazy(() => import("../_admin/pages/Profile"));
-
+const CustomerSettings = lazy(() =>
+  import("../components/_admin/Settings/CustomerSettings")
+);
+const ManageSettings = lazy(() =>
+  import("../components/_admin/Settings/ManageSettings")
+);
 /**
  * ⚠ These are internal routes!
  * They will be rendered inside the app, using the default `containers/Layout`.
@@ -80,6 +88,30 @@ const routes = [
     path: "/dashboard/bookings",
     icon: MdCalendarMonth,
     component: Bookings,
+  },
+  {
+    title: "Settings",
+    icon: IoSettings,
+    subRoutes: [
+      {
+        title: "Customer Settings",
+        icon: GrSettingsOption,
+        path: "/dashboard/customersettings",
+        component: CustomerSettings,
+      },
+      // {
+      //   title: "App Settings",
+      //   icon: IoSettingsSharp,
+      //   path: "/dashboard/appsettings",
+      //   component: CustomerSettings,
+      // },
+      {
+        title: "Manage Data",
+        icon: MdOutlineCheckCircleOutline,
+        path: "/dashboard/managedata",
+        component: ManageSettings,
+      },
+    ],
   },
 ];
 
