@@ -2,6 +2,7 @@ const express = require("express");
 const {
   FetchPublishers,
   AddNewPublisher,
+  UpdatePublisher,
 } = require("../controllers/Publishers.Controller");
 const { checkAuth } = require("../middleware/authMiddleware");
 
@@ -15,7 +16,7 @@ router.post("/new", AddNewPublisher);
 
 // PUT:Update Publisher details
 
-router.put("/update/:publisher_id");
+router.put("/update/:publisher_id", UpdatePublisher);
 
 // DeleteL remove Publisher
 
