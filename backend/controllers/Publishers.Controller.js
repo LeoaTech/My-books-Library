@@ -58,7 +58,44 @@ const AddNewPublisher = asyncHanlder(async (req, res) => {
   }
 });
 
+/* Update Publisher Details */
+
+const UpdatePublisher = asyncHanlder(async (req, res) => {
+  // console.log(req.body);
+  try {
+    if (!req.body.publishersForm) {
+      return res.status(400).json("Invalid Publishers Details");
+    }
+
+    if (!req.params.publisher_id) {
+      return res.status(400).json({
+        message: "Invalid Publisher ID",
+      });
+    }
+
+    const { name, links, description } = req.body.publishersForm;
+    const { publisher_id } = req.params;
+    const createPublisherQuery = await db.query(
+      `UPDATE publishers SET name=$1, links=$2, description=$3 Where id=$4`,
+      [name, links, description, publisher_id]
+    );
+
+    console.log(createPublisherQuery?.rows[0], "Publisher Updated");
+
+    res.status(200).json({
+      publishers: createPublisherQuery?.rows[0],
+      message: "Publisher Updated Successfully ",
+    });
+  } catch (error) {
+    console.log(error, "Error Updating publisher");
+    res.status(500).json({
+      error,
+      message: error.message || "Error Updating Publisher",
+    });
+  }
+});
 
 
 
-module.exports = { FetchPublishers ,AddNewPublisher};
+
+module.exports = { FetchPublishers, AddNewPublisher, UpdatePublisher };
