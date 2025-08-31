@@ -56,6 +56,44 @@ const CreateCondition = asyncHanlder(async (req, res) => {
   }
 });
 
+/* Update condition Details */
+
+const UpdateCondition = asyncHanlder(async (req, res) => {
+  // console.log(req.body);
+  try {
+    if (!req.body.name) {
+      return res.status(400).json("Invalid condition name");
+    }
+
+    if (!req.params.condition_id) {
+      return res.status(400).json({
+        message: "Invalid Condition ID",
+      });
+    }
+
+    const { name } = req.body;
+    const { condition_id } = req.params;
+    const updateCondition = await db.query(
+      `UPDATE conditions SET name=$1 Where id=$2`,
+      [name, condition_id]
+    );
+
+    console.log(updateCondition?.rows[0], "condition Updated");
+
+    res.status(200).json({
+      categories: updateCondition?.rows[0],
+      message: "condition Updated Successfully ",
+    });
+  } catch (error) {
+    console.log(error, "Error Updating conditions");
+    res.status(500).json({
+      error,
+      message: error.message || "Error Updating condition",
+    });
+  }
+});
 
 
-module.exports = { GetBookCondition ,CreateCondition};
+
+
+module.exports = { GetBookCondition, CreateCondition, UpdateCondition };
