@@ -13,13 +13,13 @@ export const useConditionActions = () => {
     setError(null);
 
     console.log(data, "Condition name");
-    
+
     try {
       const response = await fetch(`${BASE_URL}/conditions/new`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({name:data}),
+        body: JSON.stringify({ name: data }),
       });
 
       const result = await response.json(); //response?.data;
@@ -34,9 +34,36 @@ export const useConditionActions = () => {
       setIsLoading(false)
     }
   };
+  /* Update Authors Details */
+
+  const updateCondition = async (data) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`${BASE_URL}/conditions/update/${data.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ name: data.name }),
+      });
+
+      const result = await response.json(); //response?.data;
+      // console.log(result, "Condition updated Result");
+      setError(null);
+      setMessage(result.message);
+      return result;
+    } catch (error) {
+      console.log(error);
+      setError(error.message);
+    } finally {
+      setIsLoading(false)
+    }
+  };
 
 
-  return { isLoading, error, message, addConditionType };
+
+  return { isLoading, error, message, addConditionType, updateCondition };
 };
 
 
@@ -45,7 +72,7 @@ export const useConditionActions = () => {
 const fetchConditions = async ({ signal }) =>
   await fetch(`${BASE_URL}/conditions`, { signal, credentials: "include" })
     .then((res) => {
-        // console.log(res,"Conditions fetched")
+      // console.log(res,"Conditions fetched")
       if (!res.ok) {
         throw new Error("Couldn't fetch Book condition types");
       } else {
