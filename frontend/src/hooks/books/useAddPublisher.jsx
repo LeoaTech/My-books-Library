@@ -60,5 +60,30 @@ export const usePublisher = () => {
   };
 
 
-  return { isLoading, error, addPublisher, updatePublisher, message };
+  /* Delete a Publisher */
+
+  const deletePublisher = async (data) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`${BASE_URL}/publishers/remove/${data}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+
+      const result = await response.json(); //response?.data;
+      // console.log(result, "Author deleted Result");
+      setError(null);
+      setMessage(result.message);
+      return result;
+    } catch (error) {
+      console.log(error);
+      setError(error.message);
+    } finally {
+      setIsLoading(false)
+    }
+  };
+  return { isLoading, error, addPublisher, updatePublisher, deletePublisher, message };
 };
