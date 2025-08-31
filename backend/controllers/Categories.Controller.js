@@ -56,4 +56,43 @@ const AddNewCategory = asyncHanlder(async (req, res) => {
   }
 });
 
-module.exports = { GetCategories, AddNewCategory };
+/* Update Category Details */
+
+const UpdateCategory = asyncHanlder(async (req, res) => {
+  // console.log(req.body);
+  try {
+    if (!req.body.name) {
+      return res.status(400).json("Invalid Category Details");
+    }
+
+    if (!req.params.category_id) {
+      return res.status(400).json({
+        message: "Invalid Category's ID",
+      });
+    }
+
+    const { name } = req.body;
+    const { category_id } = req.params;
+    const updateCategory = await db.query(
+      `UPDATE categories SET name=$1 Where id=$2 Returning *`,
+      [name, category_id]
+    );
+
+    console.log(updateCategory?.rows[0], "Category Updated");
+
+    res.status(200).json({
+      categories: updateCategory?.rows[0],
+      message: "Category Updated Successfully ",
+    });
+  } catch (error) {
+    console.log(error, "Error Updating category");
+    res.status(500).json({
+      error,
+      message: error.message || "Error Updating Category",
+    });
+  }
+});
+
+
+
+module.exports = { GetCategories, AddNewCategory, UpdateCategory};
