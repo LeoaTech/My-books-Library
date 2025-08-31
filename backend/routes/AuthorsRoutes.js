@@ -1,7 +1,8 @@
 const express = require("express");
 const {
   FetchAllAuthors,
-  AddNewAuthor
+  AddNewAuthor,
+  UpdateAuthor,
 } = require("../controllers/Authors.Controller");
 const { checkAuth } = require("../middleware/authMiddleware");
 
@@ -17,7 +18,7 @@ router.post("/new", AddNewAuthor);
 
 // PUT:Update Author details
 
-router.put("/update/:author_id");
+router.put("/update/:author_id", UpdateAuthor);
 
 // DeleteL remove Author
 
