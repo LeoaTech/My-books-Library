@@ -1,6 +1,7 @@
 const express = require("express");
 const {
   GetBookCondition,
+  UpdateCondition,
   CreateCondition,
 } = require("../controllers/Conditions.Controller");
 const { checkAuth } = require("../middleware/authMiddleware");
@@ -15,6 +16,7 @@ router.post("/new", CreateCondition);
 
 // PUT:Update Conditions types
 
-router.put("/update/:condition_id");
+router.put("/update/:condition_id", UpdateCondition);
 
+router.delete("/remove/:condition_id");
 module.exports = router;
