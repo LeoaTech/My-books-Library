@@ -38,7 +38,7 @@ export const useCategoryActions = () => {
   const updateCategory = async (data) => {
     setIsLoading(true);
     setError(null);
-    // console.log(data, "update category request");
+    // console.log(data, "update");
 
     try {
       const response = await fetch(`${BASE_URL}/categories/update/${data.id}`, {
@@ -62,7 +62,31 @@ export const useCategoryActions = () => {
   };
 
 
+  /* Delete an Category */
 
+  const deleteCategory = async (data) => {
+    setIsLoading(true);
+    setError(null);
 
-  return { isLoading, error, message, addCategory, updateCategory };
+    try {
+      const response = await fetch(`${BASE_URL}/categories/remove/${data}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+
+      const result = await response.json(); //response?.data;
+      // console.log(result, "Category deleted Result");
+      setError(null);
+      setMessage(result.message);
+      return result;
+    } catch (error) {
+      console.log(error);
+      setError(error.message);
+    } finally {
+      setIsLoading(false)
+    }
+  };
+
+  return { isLoading, error, message, addCategory, updateCategory, deleteCategory };
 };
