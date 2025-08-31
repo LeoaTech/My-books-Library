@@ -13,13 +13,13 @@ export const useCoverActions = () => {
     setError(null);
 
     // console.log(data, "Cover name");
-    
+
     try {
       const response = await fetch(`${BASE_URL}/covers/new`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({name:data}),
+        body: JSON.stringify({ name: data }),
       });
 
       const result = await response.json(); //response?.data;
@@ -34,9 +34,36 @@ export const useCoverActions = () => {
       setIsLoading(false)
     }
   };
+  /* Update Authors Details */
+
+  const updateCover = async (data) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`${BASE_URL}/covers/update/${data.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ name: data.name }),
+      });
+
+      const result = await response.json(); //response?.data;
+      // console.log(result, "Cover updated Result");
+      setError(null);
+      setMessage(result.message);
+      return result;
+    } catch (error) {
+      console.log(error);
+      setError(error.message);
+    } finally {
+      setIsLoading(false)
+    }
+  };
 
 
-  return { isLoading, error, message, addCover };
+
+  return { isLoading, error, message, addCover, updateCover };
 };
 
 // API CALL to FETCH TYPES OF BOOK COVERS
@@ -44,7 +71,7 @@ export const useCoverActions = () => {
 const fetchCovers = async ({ signal }) =>
   await fetch(`${BASE_URL}/covers`, { signal, credentials: "include" })
     .then((res) => {
-        // console.log(res,"Covers fetched")
+      // console.log(res,"Covers fetched")
       if (!res.ok) {
         throw new Error("Couldn't fetch Types of COVERS for books");
       } else {
