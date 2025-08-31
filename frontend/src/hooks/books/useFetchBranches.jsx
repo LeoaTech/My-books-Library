@@ -64,8 +64,44 @@ export const useBranchActions = () => {
   };
 
 
+  /* Delete a Branch */
 
-  return { isLoading, error, message, addBranch, updateBranch };
+  const deleteBranch = async (data) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`${BASE_URL}/branches/remove/${data}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+
+      const result = await response.json(); //response?.data;
+      // console.log(result, "Branch deleted Result");
+      setError(null);
+      setMessage(result.message);
+      toast.error(result.message, {
+        position:"bottom-center",
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: true,
+        theme: "dark",
+      })
+      return result;
+    } catch (error) {
+      console.log(error);
+      setError(error.message);
+      setMessage(error.message);
+      toast.error(error.message)
+    } finally {
+      setIsLoading(false)
+    }
+  };
+
+  return { isLoading, error, message, addBranch, updateBranch, deleteBranch };
 };
 
 //  Get All Branches of an Entity
