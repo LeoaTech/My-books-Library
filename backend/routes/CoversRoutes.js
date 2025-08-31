@@ -2,8 +2,7 @@ const express = require("express");
 const {
   getBookCovers,
   AddCoverType,
-
-} = require("../controllers/Cover.Controller");
+  UpdateCover} = require("../controllers/Cover.Controller");
 const { checkAuth } = require("../middleware/authMiddleware");
 
 const router = express.Router();
@@ -16,6 +15,9 @@ router.post("/new", AddCoverType);
 
 // PUT:Update Cover type
 
-router.put("/update/:cover_id");
+router.put("/update/:cover_id", UpdateCover);
+
+
+router.delete("/remove/:cover_id")
 
 module.exports = router;
