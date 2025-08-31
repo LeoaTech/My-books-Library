@@ -12,7 +12,7 @@ export const useAuthor = () => {
     setError(null);
 
     // console.log(data, "Author name");
-
+    
     try {
       const response = await fetch(`${BASE_URL}/authors/new`, {
         method: "POST",
@@ -33,7 +33,34 @@ export const useAuthor = () => {
       setIsLoading(false)
     }
   };
+  /* Update Authors Details */
+
+  const updateAuthor = async (data) => {
+    setIsLoading(true);
+    setError(null);
+    // console.log(data,"Update Author");
+    
+    try {
+      const response = await fetch(`${BASE_URL}/authors/update/${data.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ authorsForm: data }),
+      });
+
+      const result = await response.json(); //response?.data;
+      // console.log(result, "Author updated Result");
+      setError(null);
+      setMessage(result.message);
+      return result;
+    } catch (error) {
+      console.log(error);
+      setError(error.message);
+    } finally {
+      setIsLoading(false)
+    }
+  };
 
 
-  return { isLoading, error, message, addAuthor };
+  return { isLoading, error, message, addAuthor ,updateAuthor};
 };
