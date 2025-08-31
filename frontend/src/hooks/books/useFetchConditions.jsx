@@ -62,8 +62,33 @@ export const useConditionActions = () => {
   };
 
 
+  /* Delete an Condition */
 
-  return { isLoading, error, message, addConditionType, updateCondition };
+  const deleteCondition = async (data) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`${BASE_URL}/conditions/remove/${data}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+
+      const result = await response.json(); //response?.data;
+      console.log(result, "Condition deleted Result");
+      setError(null);
+      setMessage(result.message);
+      return result;
+    } catch (error) {
+      console.log(error);
+      setError(error.message);
+    } finally {
+      setIsLoading(false)
+    }
+  };
+
+  return { isLoading, error, message, addConditionType, updateCondition, deleteCondition };
 };
 
 
