@@ -32,5 +32,33 @@ export const usePublisher = () => {
     }
   };
 
-  return { isLoading, error, addPublisher,  message };
+
+  /* Update Publisher Details */
+
+  const updatePublisher = async (data) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`${BASE_URL}/publishers/update/${data.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ publishersForm: data }),
+      });
+
+      const result = await response.json(); //response?.data;
+      setError(null);
+      setMessage(result.message);
+      return result;
+    } catch (error) {
+      console.log(error);
+      setError(error.message);
+    } finally {
+      setIsLoading(false)
+    }
+  };
+
+
+  return { isLoading, error, addPublisher, updatePublisher, message };
 };
