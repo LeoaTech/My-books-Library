@@ -58,8 +58,44 @@ const AddNewAuthor = asyncHanlder(async (req, res) => {
   }
 });
 
+/* Update Author Details */
+
+const UpdateAuthor = asyncHanlder(async (req, res) => {
+  // console.log(req.body, req.params);
+  try {
+    if (!req.body.authorsForm) {
+      return res.status(400).json("Invalid Authors Details");
+    }
+
+    if (!req.params.author_id) {
+      return res.status(400).json({
+        message: "Invalid Author's ID",
+      });
+    }
+
+    const { name, links, description } = req.body.authorsForm;
+    const { author_id } = req.params;
+    const updateAuthorQuery = await db.query(
+      `UPDATE authors SET name=$1, links=$2, description=$3 Where id=$4 RETURNING *`,
+      [name, links, description, author_id]
+    );
+
+    console.log(updateAuthorQuery?.rows[0], "Authors Updated");
+
+    res.status(200).json({
+      authors: updateAuthorQuery?.rows[0],
+      message: "Authors Updated Successfully ",
+    });
+  } catch (error) {
+    console.log(error, "Error Updating author");
+    res.status(500).json({
+      error,
+      message: error.message || "Error Updating Authors",
+    });
+  }
+});
 
 
 
 
-module.exports = { FetchAllAuthors, AddNewAuthor };
+module.exports = { FetchAllAuthors, AddNewAuthor,  UpdateAuthor };
