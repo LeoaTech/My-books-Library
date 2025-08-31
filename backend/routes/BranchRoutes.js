@@ -1,11 +1,12 @@
 const express = require("express");
 const {
-  FetchAllBranch,
+  // FetchAllBranch,
   FetchEntityBranches,
+  CreateNewBranch,
+  UpdateBranch,
 } = require("../controllers/Branch.Controller");
-const {checkAuth} = require("../middleware/authMiddleware")
+const { checkAuth } = require("../middleware/authMiddleware");
 const router = express.Router();
-
 
 // Verify that user must be logged in
 
@@ -17,9 +18,12 @@ router.use(checkAuth);
 router.get("/", FetchEntityBranches);
 
 // POST: Add New Branch
-router.post("/new");
+router.post("/new", CreateNewBranch);
 
 // PUT:Update Branch details
 
-router.put("/update/:branch_id");
+router.put("/update/:branch_id", UpdateBranch);
+
+router.delete("/remove/:branch_id");
+
 module.exports = router;
