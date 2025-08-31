@@ -34,7 +34,7 @@ export const useCoverActions = () => {
       setIsLoading(false)
     }
   };
-  /* Update Authors Details */
+  /* Update Cover Details */
 
   const updateCover = async (data) => {
     setIsLoading(true);
@@ -62,8 +62,33 @@ export const useCoverActions = () => {
   };
 
 
+  /* Delete an Cover */
 
-  return { isLoading, error, message, addCover, updateCover };
+  const deleteCover = async (data) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`${BASE_URL}/covers/remove/${data}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+
+      const result = await response.json(); //response?.data;
+      // console.log(result, "Cover deleted Result");
+      setError(null);
+      setMessage(result.message);
+      return result;
+    } catch (error) {
+      console.log(error);
+      setError(error.message);
+    } finally {
+      setIsLoading(false)
+    }
+  };
+
+  return { isLoading, error, message, addCover, updateCover, deleteCover };
 };
 
 // API CALL to FETCH TYPES OF BOOK COVERS
