@@ -24,6 +24,16 @@ import Register from "../_authentication/forms/Register";
 import Home from "../_root/pages/Home";
 import AuthFailurePage from "../_authentication/forms/AuthFailure";
 
+
+// guest/user pages
+import Shop from "../_root/pages/Shop";
+import Library from "../_root/pages/Library";
+import BookOverview from "../_root/pages/BookOverview";
+import MyProfile from "../_root/pages/UserProfile/index";
+import AccountSettings from "../_root/pages/UserProfile/AccountSettings";
+import MyOrdersHistory from "../_root/pages/UserProfile/MyOrdersHistory";
+import Membership from "../_root/pages/UserProfile/Membership";
+// import Billing from "../_root/pages/UserProfile/Billing";
 const renderRoutes = (routes) => {
   return routes?.map((route, i) => {
     const { component: Component, path, subRoutes } = route;
@@ -60,7 +70,7 @@ const router = createBrowserRouter(
       <Route path="account" element={<AccountSettings />}></Route>
       <Route path="orders" element={<MyOrdersHistory />}></Route>
       <Route path="membership" element={<Membership />}></Route>
-      <Route path="billing" element={<Billing />}></Route>
+      {/* <Route path="billing" element={<Billing />}></Route> */}
       {/* Authentication Routes */}
       <Route element={<AuthLayout />}>
 
