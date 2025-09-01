@@ -14,7 +14,7 @@ async function checkSubdomain(client, subdomain) {
   let newSubdomain = subdomain;
   while (true) {
     const subdomainCheck = await db.query(
-      "SELECT id FROM entity WHERE subdomain = $1",
+      "SELECT id FROM entities WHERE subdomain = $1",
       [newSubdomain]
     );
 
@@ -75,7 +75,7 @@ async function createEntity(client, entityData) {
     uniqueSubdomain,
   } = entityData;
   const query = `
-    INSERT INTO entity (name, city,country, address, phone, type_of_books, deliver_inter_city,multiple_branches,description,subdomain) VALUES ($1, $2, $3, $4,$5,$6,$7,$8,$9,$10) RETURNING id,name`;
+    INSERT INTO entities (name, city,country, address, phone, type_of_books, deliver_inter_city,multiple_branches,description,subdomain) VALUES ($1, $2, $3, $4,$5,$6,$7,$8,$9,$10) RETURNING id,name`;
   const values = [
     businessName,
     city,
@@ -169,7 +169,7 @@ async function createUser(client, userData) {
 // Get the Entity Id belongs to Subdomain
 async function getEntity(db, subdomain) {
   const subdomainCheck = await db.query(
-    "SELECT id FROM entity WHERE subdomain = $1",
+    "SELECT id FROM entities WHERE subdomain = $1",
     [subdomain]
   );
 
