@@ -43,7 +43,7 @@ app.use(
 );
 app.use(
   cors({
-   origin:"https://my-books-library-client-rkgki8zaf-razaakomals-projects.vercel.app/",
+   origin:`${process.env.CLIENT_URL}`,
     methods: "GET,POST,PUT,DELETE",
     credentials: true,
   })
