@@ -27,22 +27,23 @@ const bookingRoutes = require("./routes/BookingsRoutes/index.js");
 const port = process.env.PORT || 8100;
 
 const app = express();
-
-app.use(passport.initialize());
-
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: false || process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      // maxAge: 3600000,
+      maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day max
+    },
   })
 );
-
-app.use(passport.session());
-
 app.use(
   cors({
-    origin: [process.env.CLIENT_URL, "process.env.SERVER_URL"],
+    origin: ["http://localhost:5173", "http://localhost:8000","https://my-books-library-blush.vercel.app/"],
     methods: "GET,POST,PUT,DELETE",
     credentials: true,
   })
@@ -52,6 +53,9 @@ app.use(bodyParser.json({ limit: "100mb" }));
 app.use(bodyParser.urlencoded({ limit: "100mb", extended: true }));
 app.use(express.json());
 app.use(cookieParser()); //cookies middleware
+app.use(passport.initialize());
+
+app.use(passport.session());
 
 // * Routes
 app.use("/", googleOAuthRouter);
@@ -76,9 +80,11 @@ app.use(bookingRoutes);
 
 app.use(notfound);
 app.use(errorHanlder);
-app.get("/test", (req, res) => {
+
+app.get("/", (req, res) => {
   res.send("Home Page");
 });
+
 
 app.listen(port, () => {
   console.log("Server is listening on port", port);
