@@ -104,7 +104,7 @@ router.get("/auth/login/success", async (req, res) => {
         r.name AS role_name,
         u.email,u.password, u.name
       FROM user_entity_roles uer
-      JOIN entity e ON uer.entity_id = e.id
+      JOIN entities e ON uer.entity_id = e.id
       JOIN branches b ON uer.branch_id = b.id
       JOIN roles r ON uer.role_id = r.role_id
       JOIN users u ON uer.user_id = u.id
