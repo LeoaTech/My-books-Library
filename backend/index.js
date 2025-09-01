@@ -43,7 +43,7 @@ app.use(
 );
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:8000","https://my-books-library-blush.vercel.app/"],
+    origin: ["http://localhost:5173", "http://localhost:8000","https://my-books-library-onp3ebl8o-razaakomals-projects.vercel.app/","https://my-books-library-blush.vercel.app/"],
     methods: "GET,POST,PUT,DELETE",
     credentials: true,
   })
