@@ -7,7 +7,7 @@ export const useRoles = () => {
   const [message, setMessage] = useState(null);
   const [deleteRoleText, setDeleteRoleText] = useState(null);
 
-  const newRole = async (name) => {
+  const newRole = async (newRole) => {
     setIsLoading(true);
     setError(null);
     console.log("Form Reached");
@@ -16,7 +16,7 @@ export const useRoles = () => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify(name),
+      body: JSON.stringify({ roleForm: newRole }),
     });
 
     console.log(response, "Roles Form Response");
@@ -25,13 +25,15 @@ export const useRoles = () => {
   };
 
   /* Delete Role */
-  const deleteRole = async (roleId) => {
+  const deleteRole = async (roleData) => {
     setIsLoading(true);
     setError(null);
-    const response = await fetch(`${BASE_URL}/roles/remove/${roleId}`, {
+    const { role_id, entityId } = roleData;
+    const response = await fetch(`${BASE_URL}/roles/remove/${role_id}`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
+      body: JSON.stringify({ entityId }),
     });
 
     console.log(response, "Roles Form Response");
@@ -52,9 +54,9 @@ export const useRoles = () => {
   const updateRole = async (roleData) => {
     setIsLoading(true);
     setError(null);
-    console.log("Form Reached");
+    // console.log("Form Reached");
 
-    const { name, role_id } = roleData;
+    const { name, role_id, entityId } = roleData;
 
     const Id = Number(role_id);
 
@@ -62,7 +64,7 @@ export const useRoles = () => {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ name }),
+      body: JSON.stringify({ name, entityId }),
     });
 
     console.log(response, "Roles Form Response");
@@ -70,5 +72,13 @@ export const useRoles = () => {
     console.log(result, "Result");
   };
 
-  return { isLoading, error, message, newRole, updateRole, deleteRole, deleteRoleText };
+  return {
+    isLoading,
+    error,
+    message,
+    newRole,
+    updateRole,
+    deleteRole,
+    deleteRoleText,
+  };
 };

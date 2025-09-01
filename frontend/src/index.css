@@ -35,10 +35,6 @@ body {
   position: relative;
 }
 
-@layer base {
-  body {
-  }
-}
 
 button {
   cursor: pointer;
@@ -46,21 +42,21 @@ button {
 
 .app {
   width: 100vw;
-  height: calc(100vh - 80px);
-  background-image: url("./assets/default-background.svg");
+  /* height: calc(100vh - 80px); */
+  /* background-image: url("./assets/default-background.svg"); */
   left: 0;
-  top: 80px;
+  /* top: 80px; */
   position: fixed;
   z-index: 0;
 }
 
 .bg-img {
   padding: 20px;
-  /* background-color: red; */
-  background-image: url("./assets/bg-1.jpg");
-  height: 100vh;  width: 100%;
-  /* opacity: 0.6; */
-  background-size:cover;
+  /* background-image: url("./assets/default-background.svg"); */
+  height: 100vh;
+  width: 100%;
+  /* opacity: 0.7; */
+  background-size: cover;
   overflow: hidden;
   background-position: center;
 }
@@ -324,8 +320,7 @@ button {
   color: green;
 }
 
-
-.format-message{
+.format-message {
   font-size: 14px;
   margin: 0 10px;
 }
@@ -351,3 +346,44 @@ button {
   padding-bottom: 8;
 }
 
+
+
+
+::-webkit-scrollbar{
+  cursor: pointer;
+  width: 8px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track{
+ background: #7a88b3;
+ border-radius: 5px;
+
+}
+
+
+::-webkit-scrollbar-thumb{
+  background: #303030;
+  border-radius: 5px;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -o-border-radius: 5px;
+}
+
+
+::-webkit-scrollbar-thumb:hover{
+  background: #575757;
+}
+
+
+
+/* Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}

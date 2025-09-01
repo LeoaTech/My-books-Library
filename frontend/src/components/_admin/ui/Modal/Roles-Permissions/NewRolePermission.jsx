@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchPermissionsByRole } from "../../../../../hooks/roles_permissions/useFetchRolesPermissions";
 import { useFetchRoles } from "../../../../../hooks/users/roles/useFetchRole";
 import { useRolesPermissions } from "../../../../../hooks/roles_permissions/useRolesPermissions";
+import { RxCross1 } from "react-icons/rx";
 
 const AddRolePermission = ({ setOpenModal }) => {
   const queryClient = useQueryClient();
@@ -42,10 +43,24 @@ const AddRolePermission = ({ setOpenModal }) => {
     await addRolePermissionMutation(permissionsForRole);
   };
   return (
-    <div className="flex justify-center items-center fixed inset-1 bg-opacity-75  bg-slate-400 transition-opacity">
-      <div className="mx-10 p-10  bg-white rounded-md flex flex-col justify-center items-center xs:w-full md:w-2/3 lg:w-1/3 md:mx-20 lg:mx-30">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#64748B]/75 dark:bg-slate-300/65 lg:left-[18rem]">
+      <div className="relative w-[90%] max-w-md bg-neutral-50 dark:border-[#2E3A47] dark:bg-[#24303F] p-10 rounded-md shadow-lg">
+        {/* Modal Close Button */}
+        <div className="absolute top-4 right-4">
+          <RxCross1
+            style={{
+              height: 18,
+              width: 23,
+              cursor: "pointer",
+              color: "#FFF",
+              strokeWidth: 2,
+            }}
+            onClick={() => setOpenModal(prev => !prev)}
+          />
+        </div>
+
         <div className="flex flex-col justify-between items-center gap-5">
-          <h1 className="text-[17px] font-bold ">New Permission</h1>
+          <h1 className="text-[17px] font-bold ">Assign New Permission</h1>
           <form onSubmit={handleSubmit(onSubmit)} className="p-5">
             <div className="mt-2 mb-4.5 flex flex-col gap-2 md:flex-row md:gap:9">
               <div className="w-full ">
@@ -57,9 +72,10 @@ const AddRolePermission = ({ setOpenModal }) => {
                 </label>
                 <div className="relative z-20 bg-transparent dark:bg-form-input">
                   {allRoles && (
+
                     <select
                       autoFocus
-                      className="relative z-20 w-full appearance-none rounded-sm border border-[#abc6e8] bg-transparent py-3 px-5 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
+                      className="relative z-20 w-full appearance-none rounded-sm border border-[#abc6e8] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                       name="role_name"
                       {...register("role_id")}
                     >
@@ -104,7 +120,7 @@ const AddRolePermission = ({ setOpenModal }) => {
                     data?.permissions?.map((permission, index) => (
                       <div key={index} className="flex justify-center items-center gap-4">
                         <input
-                        className="h-4 w-4 border-"
+                          className="h-4 w-4 border-"
                           type="checkbox"
                           name="permission_id"
                           id="permission_id"
@@ -121,20 +137,17 @@ const AddRolePermission = ({ setOpenModal }) => {
                 </p>
               )}
             </div>
-            <div className="mt-5 flex justify-evenly items-center p-5  ">
+            <div className="mt-5 flex justify-end p-5 gap-5  ">
               {" "}
-              <input
-                className="cursor-pointer  text-blue-800 hover:text-blue-400"
-                disabled={!isDirty || isSubmitting}
-                type="submit"
-                value="Add Permissions"
-              />
-              <input
+              <button
+                className="rounded-md bg-[#FFBA00] px-4 py-2 text-sm font-semibold text-white shadow-sm disabled:opacity-50"
+
+                disabled={!isDirty || isSubmitting }
+              >Add Permissions</button>
+              <button
                 onClick={() => setOpenModal((prev) => !prev)}
-                className="cursor-pointer text-red-500 hover:text-red-400"
-                type="button"
-                value="Close"
-              />
+                className="rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+              >Close</button>
             </div>{" "}
             {errors && (
               <span className="text-meta-1 text-sm">

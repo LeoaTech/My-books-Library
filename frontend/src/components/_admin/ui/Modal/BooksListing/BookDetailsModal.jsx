@@ -1,11 +1,11 @@
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { FetchBookById } from "../../../../api/books";
+import { FetchBookById } from "../../../../../api/books";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import NoImage from "../../../../assets/no-image.png";
+import NoImage from "../../../../../assets/no-image.png";
 import { useState } from "react";
-import { useSaveBook } from "../../../../hooks/books/useSaveBook";
+import { useSaveBook } from "../../../../../hooks/books/useSaveBook";
 import { RxCross1 } from "react-icons/rx";
 import { MdOutlineReviews, MdOutlineWbIncandescent } from "react-icons/md";
 import { BiCategory, BiBarcode, BiPurchaseTagAlt } from "react-icons/bi";
@@ -96,7 +96,7 @@ const BookDetailsModal = ({ data, close }) => {
         </div>
         <div className=" md:mx-20">
           <div className="p-10 relative rounded-md border border-[#E2E8F0] bg-white shadow-lg dark:border-[#2E3A47] dark:bg-[#24303F] md:px-8 md:py-8 ">
-            <div className="text-center bg-slate-100 shadow-md mb-5 rounded-sm p-3 border-b border-blue-200  py-4 px-6.5 dark:border-[#2E3A47]">
+            <div className="text-center bg-slate-100 shadow-md mb-5 rounded-sm p-3 border-b border-blue-200  py-4 px-6.5 dark:border-[#2E3A47] dark:bg-[#2E3A47]">
               <h3 className="text-center font-bold text-[#313D4A] dark:text-white">
                 <span className="text-3xl">
                   {bookDetails?.book?.title?.toUpperCase()}
@@ -113,15 +113,19 @@ const BookDetailsModal = ({ data, close }) => {
                     {...settings}
                     className="w-full h-[400px] lg:w-[400px] lg:h-[410px]"
                   >
-                    {bookDetails?.book?.cover_img_url?.map((image) => (
+                    {bookDetails?.book?.cover_img_url?.length >0 ? bookDetails?.book?.cover_img_url?.map((image) => (
                       <div key={image?.public_id}>
                         <img
-                          src={image?.secureURL || NoImage}
+                          src={image?.secure_url || NoImage}
                           alt="book_cover"
                           className="w-full h-[380px] object-contain overflow-hidden "
                         />
                       </div>
-                    ))}
+                    )):<img
+                          src={NoImage}
+                          alt="No Image Found"
+                          className="w-full h-[380px] object-contain overflow-hidden "
+                        />}
                   </Slider>
                 </div>
                 <div className="mt-20 py-10 flex flex-col flex-grow gap-2 md:mt-0 ">
@@ -175,11 +179,11 @@ const BookDetailsModal = ({ data, close }) => {
 
                   <p className="flex items-center gap-2 mb-3 text-md text-[#282b2c] dark:text-white font-medium">
                     <span className="flex items-center gap-2 text-[#799db8] text-medium font-medium">
-                      <TbBasketDiscount /> RENT PRICE
+                      <TbBasketDiscount /> MEMBER PRICE
                     </span>
                     <span className=" flex items-center gap-2 mx-5 py-0.5 px-3 rounded-xl text-[#434d5d] text-2xl dark:text-white">
                       <FaDollarSign className="text-sm h-12" />{" "}
-                      {bookDetails?.book?.rental_price}
+                      {bookDetails?.book?.member_price}
                     </span>
                   </p>
 

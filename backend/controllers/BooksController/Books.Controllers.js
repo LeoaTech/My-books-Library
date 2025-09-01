@@ -1,8 +1,5 @@
 const asyncHanlder = require("express-async-handler");
-require("dotenv").config();
-const { Client } = require("pg");
-const connectionUrl = process.env.CONNECTION_URL;
-const client = new Client(connectionUrl);
+const db = require("../../config/dbConfig");
 const cloudinary = require("cloudinary").v2;
 
 // Cloudinary Configuration
@@ -13,15 +10,7 @@ cloudinary.config({
   secure: true,
 });
 
-client.connect((err, res) => {
-  if (err) {
-    console.log(err);
-  } else {
-    console.log("Book Controller API connected");
-  }
-});
-
-// Options for image upload
+// Options for image upload on cloudinary
 const options = {
   folder: "books",
   use_filename: true,
@@ -32,12 +21,17 @@ const options = {
 // Get All Books
 
 const GetAllBooks = asyncHanlder(async (req, res) => {
-  try {
-    const getBooksList = await client.query(`SELECT
+  const user = req.user;
+
+  const entityId = user?.entityId || user?.entity_id;
+
+  console.log(req.user, "User Object", entityId, "Entity ID");
+
+  /* const fetchBooksFromSingleBranch=`SELECT
     books.id,
     books.title,
     books.summary,
-    books.rental_price,
+    books.member_price,
     books.purchase_price,
     books.discount_percentage,
     books.publish_year,
@@ -59,21 +53,80 @@ FROM
     public.books
 JOIN public.authors ON books.author = authors.id
 JOIN public.covers ON books.cover = covers.id
-JOIN public.vendors ON books.vendor_id = vendors.id
+LEFT JOIN public.vendors ON books.vendor_id = vendors.id   
 JOIN public.conditions ON books.condition = conditions.id
 JOIN public.branches ON books.branch_id = branches.id
 JOIN public.publishers ON books.publisher = publishers.id
-JOIN public.categories ON books.category = categories.id;`);
+JOIN public.categories ON books.category = categories.id 
+WHERE
+    branch_id = $1
+;` */
 
-    // console.log(getBooksList?.rows);
-    if (getBooksList?.rowCount > 0) {
-      res.status(200).json({
-        books: getBooksList?.rows,
-        message: "Book Retrieved successfully",
-      });
+  if (!entityId) {
+    res.status(400).json({ message: "No Library Exists " });
+  }
+  const fetchBooksFromMultipleBranches = `SELECT
+    books.id,
+    books.title,
+    books.summary,
+    books.member_price,
+    books.purchase_price,
+    books.discount_percentage,
+    books.publish_year,
+    branches.name AS branch_name,
+    vendors.id AS vendor_id,
+    authors.name AS author_name,
+    covers.name AS cover_name,
+    categories.name AS category_name,
+    conditions.name AS condition_name,
+    publishers.name AS publisher_name,
+    books.is_available AS Available,
+    books.comments,
+    books.added_by,
+    books.cover_img_url,
+    books.isbn,
+    books.credit,
+    books.created_at
+FROM
+    public.books
+JOIN public.authors ON books.author = authors.id
+JOIN public.covers ON books.cover = covers.id
+LEFT JOIN public.vendors ON books.vendor_id = vendors.id   
+JOIN public.conditions ON books.condition = conditions.id
+JOIN public.branches ON books.branch_id = branches.id
+JOIN public.publishers ON books.publisher = publishers.id
+JOIN public.categories ON books.category = categories.id
+WHERE
+    books.branch_id = ANY ($1); `;
+
+  // Get All the branches related to an Entity Id (for a specific library)
+
+  const getEntityBranches = `Select id from branches where entity_id = $1`;
+  try {
+    const getBranchIds = await db.query(getEntityBranches, [entityId]);
+    console.log(getBranchIds.rows, "Branches");
+
+    if (getBranchIds.rowCount == 0) {
+      res
+        .status(400)
+        .json({ message: "No Books Exists for this Library", books: [] });
     }
+
+    let branchIds = getBranchIds.rows.map((branch) => branch.id);
+    const getBooksList = await db.query(fetchBooksFromMultipleBranches, [
+      branchIds,
+    ]);
+
+    console.log(getBooksList?.rowCount, "Books available");
+    // if (getBooksList?.rowCount > 0) {
+    res.status(200).json({
+      books: getBooksList?.rows || [],
+      message: "Book Retrieved successfully",
+    });
+    // }
   } catch (error) {
     console.log(err, "Error getting books");
+    return res.status(500).json({ message: "No books found" });
   }
 });
 
@@ -81,51 +134,46 @@ JOIN public.categories ON books.category = categories.id;`);
 
 const GetBookById = asyncHanlder(async (req, res) => {
   const { bookId } = req.query;
-
+  const bookQuery = `SELECT
+      books.id,
+      books.title,
+      books.summary,
+      books.member_price,
+      books.purchase_price,
+      books.discount_percentage,
+      books.publish_year,
+      books.branch_id,
+      branches.name AS branch_name,
+      vendors.id AS vendor_id,
+      vendors.name As vendor,
+      authors.name AS author_name,
+      books.author,
+      covers.name AS cover_name,
+      books.cover,
+      categories.name AS category_name,
+      books.category,
+      conditions.name AS condition_name,
+      books.condition,
+      publishers.name AS publisher_name,
+      books.publisher,
+      books.is_available AS Available,
+      books.comments,
+      books.added_by,
+      books.cover_img_url,
+      books.isbn,
+      books.credit,
+      books.created_at
+  FROM public.books
+  JOIN public.authors ON books.author = authors.id
+  JOIN public.covers ON books.cover = covers.id
+  LEFT JOIN public.vendors ON books.vendor_id = vendors.id
+  JOIN public.conditions ON books.condition = conditions.id
+  JOIN public.branches ON books.branch_id = branches.id
+  JOIN public.publishers ON books.publisher = publishers.id
+  JOIN public.categories ON books.category = categories.id
+  WHERE books.id = $1`;
   try {
-    const getBookDetail = await client.query(
-      `SELECT
-    books.id,
-    books.title,
-    books.summary,
-    books.rental_price,
-    books.purchase_price,
-    books.discount_percentage,
-    books.publish_year,
-    branches.name AS branch_name,
-    branches.id AS branch_id,
-    vendors.name AS vendor,
-    vendors.id AS vendor_id,
-    authors.id AS author_id,
-    authors.name AS author_name,
-    covers.name AS cover_name,
-    covers.id AS cover_id,
-    categories.name AS category_name,
-    categories.id AS category_id,
-    conditions.name AS condition_name,
-    conditions.id AS condition_id,
-    publishers.name AS publisher_name,
-    publishers.id AS publisher_id,
-    books.is_available AS Available,
-    books.comments,
-    books.added_by,
-    books.cover_img_url,
-    books.isbn,
-    books.credit,
-    books.created_at
-FROM
-    public.books
-JOIN public.authors ON books.author = authors.id
-JOIN public.covers ON books.cover = covers.id
-JOIN public.vendors ON books.vendor_id = vendors.id
-JOIN public.conditions ON books.condition = conditions.id
-JOIN public.branches ON books.branch_id = branches.id
-JOIN public.publishers ON books.publisher = publishers.id
-JOIN public.categories ON books.category = categories.id
-WHERE books.id=$1
-`,
-      [bookId]
-    );
+    const getBookDetail = await db.query(bookQuery, [bookId]);
 
     console.log(getBookDetail?.rows[0]);
     if (getBookDetail?.rowCount > 0) {
@@ -133,9 +181,16 @@ WHERE books.id=$1
         book: getBookDetail?.rows[0],
         message: "Book Retrieved successfully",
       });
+    } else {
+      res.status(400).json({
+        message: "Book details failed to retrieved",
+      });
     }
   } catch (error) {
     console.log(error.message, "Error getting book Details");
+    res.status(500).json({
+      message: error.message || "Book details failed to retrieved",
+    });
   }
 });
 
@@ -145,7 +200,7 @@ const CreateNewBook = asyncHanlder(async (req, res) => {
 
   const {
     title,
-    rental_price,
+    member_price,
     purchase_price,
     author,
     condition,
@@ -170,12 +225,12 @@ const CreateNewBook = asyncHanlder(async (req, res) => {
 
   try {
     for (let i = 0; i < images.length; i++) {
-      const uploadImg = await cloudinary.uploader.upload(images[i], options);
+      const uploadImg = await cloudinary.uploader.upload(
+        images[i].base64,
+        options
+      );
       console.log(uploadImg);
-      imagesUrls.push({
-        public_id: uploadImg.public_id,
-        secureURL: uploadImg.secure_url,
-      });
+      imagesUrls.push({ ...uploadImg });
       // return uploadImg?.public_id;
     }
   } catch (error) {
@@ -184,14 +239,13 @@ const CreateNewBook = asyncHanlder(async (req, res) => {
 
   const imagesUrlsJson = JSON.stringify(imagesUrls);
 
-  //   Save Book in database
+  //   Save Book in database with or without images
 
-  if (imagesUrls.length > 0) {
-    try {
-      const saveBook = await client.query(
-        `INSERT INTO books (
+  try {
+    const saveBook = await db.query(
+      `INSERT INTO books (
           title,
-          rental_price,
+          member_price,
           purchase_price,
           author,
           condition,
@@ -210,41 +264,44 @@ const CreateNewBook = asyncHanlder(async (req, res) => {
           added_by
           ) 
           values ($1,$2,$3,$4,$5,$6,$7,$8,$9 ,$10,$11,$12,$13,$14,$15,$16,$17,$18) Returning *`,
-        [
-          title,
-          rental_price,
-          purchase_price,
-          author,
-          condition,
-          cover,
-          isAvailable,
-          category,
-          isbn,
-          imagesUrlsJson,
-          publisher,
-          publish_year,
-          vendor_id,
-          branch_id,
-          discount_percentage,
-          credit,
-          summary,
-          role_id,
-        ]
-      );
-      console.log(saveBook?.rowCount, "Book Saved");
-      if (saveBook?.rowCount > 0) {
-        res.status(200).json({
-          books: saveBook?.rows[0],
-          message: "Book created successfully",
-        });
-      } else {
-        res.status(400).json({ message: "Error Creating Book" });
-      }
-    } catch (error) {
-      console.log(error, "Error saving book: ");
+      [
+        title,
+        member_price,
+        purchase_price,
+        author,
+        condition,
+        cover,
+        isAvailable,
+        category,
+        isbn,
+        imagesUrlsJson,
+        publisher,
+        publish_year,
+        vendor_id,
+        branch_id,
+        discount_percentage,
+        credit,
+        summary,
+        role_id,
+      ]
+    );
+    console.log(saveBook?.rowCount, "Book Saved");
+    if (saveBook?.rowCount > 0) {
+      return res.status(200).json({
+        books: saveBook?.rows[0],
+        message:
+          imagesUrls.length > 0
+            ? "Book Details saved successfully"
+            : "Book Details Saved without cover_images",
+      });
+    } else {
+      return res.status(400).json({ message: "Error Creating Book" });
     }
-  } else {
-    return res.status(400).json({ message: "Error Uploading Images Files" });
+  } catch (error) {
+    console.log(error, "Error saving book: ");
+    res
+      .status(400)
+      .json({ error, message: error.message || "Error Creating Book" });
   }
 });
 
@@ -263,7 +320,7 @@ const DeleteBook = asyncHanlder(async (req, res) => {
       .then((result) => console.log(result, "Book deleted successfully"));
 
     // Delete book from DB
-    const deleteQuery = await client.query(`DELETE FROM books WHERE id=$1`, [
+    const deleteQuery = await db.query(`DELETE FROM books WHERE id=$1`, [
       book_id,
     ]);
 
@@ -284,7 +341,7 @@ const UpdateBook = asyncHanlder(async (req, res) => {
   const { book } = req.body;
   const {
     title,
-    rental_price,
+    member_price,
     purchase_price,
     author,
     condition,
@@ -311,13 +368,17 @@ const UpdateBook = asyncHanlder(async (req, res) => {
 
     try {
       for (let i = 0; i < images.length; i++) {
-        const uploadImg = await cloudinary.uploader.upload(images[i], options);
-        console.log(uploadImg);
-        imagesUrls.push({
-          public_id: uploadImg.public_id,
-          secureURL: uploadImg.secure_url,
-        });
-        // return uploadImg?.public_id;
+        if (!images[i].public_id || !images[i].secure_url) {
+          const uploadImg = await cloudinary.uploader.upload(
+            images[i].base64,
+            options
+          );
+          console.log(uploadImg);
+          imagesUrls.push({ ...uploadImg });
+          // return uploadImg?.public_id;
+        } else {
+          imagesUrls.push(images[i]);
+        }
       }
     } catch (error) {
       console.log(error);
@@ -330,10 +391,10 @@ const UpdateBook = asyncHanlder(async (req, res) => {
 
   //   Save Book in database
   try {
-    const updateBook = await client.query(
+    const updateBook = await db.query(
       `UPDATE books SET 
       title =$1,
-      rental_price=$2,
+      member_price=$2,
       purchase_price=$3,
       condition=$4,
       cover=$5,
@@ -354,7 +415,7 @@ const UpdateBook = asyncHanlder(async (req, res) => {
        Returning *`,
       [
         title,
-        rental_price,
+        member_price,
         purchase_price,
         condition,
         cover,
@@ -376,11 +437,12 @@ const UpdateBook = asyncHanlder(async (req, res) => {
 
     // console.log(updateBook?.rows[0]);
     if (updateBook?.rowCount > 0) {
-      res.status(200).json({ message: "Book Updated successfully" });
+      return res.status(200).json({ message: "Book Updated successfully" });
     }
     res.status(400).json({ message: "Error Updating Book" });
   } catch (error) {
     console.log(error, "Error Updating book: ");
+    return res.status(500).json({ message: "Error Updating Book" });
   }
 
   // res.status(200).json({ message: "Book updated Successfully" });

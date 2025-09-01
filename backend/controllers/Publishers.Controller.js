@@ -1,23 +1,16 @@
 const asyncHanlder = require("express-async-handler");
-const { Client } = require("pg");
-require("dotenv").config();
+const db = require("../config/dbConfig");
 
-const connectionUrl = process.env.CONNECTION_URL;
-
-const client = new Client(connectionUrl);
-
-client.connect((err, res) => {
-  if (err) {
-    console.log(err);
-  } else {
-    console.log("Publishers API connected");
-  }
-});
 /* Get ALL Publishers */
 const FetchPublishers = asyncHanlder(async (req, res) => {
+  const entityId = req?.user?.entityId || req?.user?.entity_id;
+
+  if (!entityId) {
+    return res.status(403).json("Invalid Request, No Library ID provided");
+  }
   try {
-    const PublishersQuery = `SELECT * FROM publishers`;
-    const getAllPublishers = await client.query(PublishersQuery);
+    const PublishersQuery = `SELECT * FROM publishers WHERE entity_id =$1`;
+    const getAllPublishers = await db.query(PublishersQuery, [entityId]);
 
     res.status(200).json({
       publishers: getAllPublishers?.rows,
@@ -32,13 +25,25 @@ const FetchPublishers = asyncHanlder(async (req, res) => {
 
 const AddNewPublisher = asyncHanlder(async (req, res) => {
   console.log(req.body);
+
+  const entityId = req?.user?.entityId || req?.user?.entity_id;
+
+  if (!entityId) {
+    return res.status(403).json("Invalid Request, No Library ID provided");
+  }
   try {
-    const createPublisherQuery = await client.query(
-      `INSERT INTO publishers (name) VALUES ($1)`,
-      [req.body.name]
+    if (!req.body.publishersForm) {
+      return res.status(400).json("Invalid Publisher Details");
+    }
+
+    const { name, links, description } = req.body.publishersForm;
+
+    const createPublisherQuery = await db.query(
+      `INSERT INTO publishers (name, links,description, entity_id) VALUES ($1, $2,$3, $4)`,
+      [name, links, description, entityId]
     );
 
-    console.log(createPublisherQuery?.rows[0], "Publishers /founded");
+    console.log(createPublisherQuery?.rows[0], "Publishers Added ");
 
     res.status(200).json({
       publishers: createPublisherQuery?.rows[0],
@@ -46,11 +51,51 @@ const AddNewPublisher = asyncHanlder(async (req, res) => {
     });
   } catch (error) {
     console.log(error, "Error creating new Publisher");
+    res.status(500).json({
+      error,
+      message: error.message || "Error Creating Publishers",
+    });
   }
 });
 
-/* Fetch Publishers By ID */
+/* Update Publisher Details */
 
-/* Fetch All Publishers by Book ID */
+const UpdatePublisher = asyncHanlder(async (req, res) => {
+  // console.log(req.body);
+  try {
+    if (!req.body.publishersForm) {
+      return res.status(400).json("Invalid Publishers Details");
+    }
 
-module.exports = { FetchPublishers,AddNewPublisher };
+    if (!req.params.publisher_id) {
+      return res.status(400).json({
+        message: "Invalid Publisher ID",
+      });
+    }
+
+    const { name, links, description } = req.body.publishersForm;
+    const { publisher_id } = req.params;
+    const createPublisherQuery = await db.query(
+      `UPDATE publishers SET name=$1, links=$2, description=$3 Where id=$4`,
+      [name, links, description, publisher_id]
+    );
+
+    console.log(createPublisherQuery?.rows[0], "Publisher Updated");
+
+    res.status(200).json({
+      publishers: createPublisherQuery?.rows[0],
+      message: "Publisher Updated Successfully ",
+    });
+  } catch (error) {
+    console.log(error, "Error Updating publisher");
+    res.status(500).json({
+      error,
+      message: error.message || "Error Updating Publisher",
+    });
+  }
+});
+
+
+
+
+module.exports = { FetchPublishers, AddNewPublisher, UpdatePublisher };

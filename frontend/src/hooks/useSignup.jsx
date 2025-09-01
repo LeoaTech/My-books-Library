@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useAuthContext } from "./useAuthContext";
 import { BASE_URL } from "../utiliz/baseAPIURL";
 
 // Sign up Form Hook
@@ -8,19 +7,19 @@ export const useSignup = () => {
   const [message, setMessage] = useState(false);
   const [isLoading, setIsLoading] = useState(null);
 
-  const { dispatch } = useAuthContext();
-
-  const signup = async (email, password, name) => {
+  const signup = async (email, password, name,subdomain) => {
     setIsLoading(true);
     setError(null);
 
     const response = await fetch(`${BASE_URL}/auth/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password, name }),
+      body: JSON.stringify({ email, password, name,subdomain }),
     });
     const result = await response.json();
 
+    // console.log("Response: " ,response, "Result", result);
+    
     if (!response.ok) {
       setIsLoading(false);
       setError(result.message || result.error);
@@ -33,5 +32,31 @@ export const useSignup = () => {
     }
   };
 
-  return { signup, isLoading, error, message };
+  const registerUser = async (data) => {
+    setIsLoading(true);
+    setError(null);
+
+    const response = await fetch(`${BASE_URL}/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user: data }),
+    });
+    const result = await response.json();
+
+    // console.log(result, "Registered user as an Admin");
+    
+    if (!response.ok) {
+      setIsLoading(false);
+      setError(result.message || result.error);
+      setMessage(true);
+    }
+
+    if (response.ok) {
+      setIsLoading(false);
+      setMessage(true);
+    }
+  };
+
+
+  return { signup, isLoading, error, message, registerUser };
 };

@@ -1,23 +1,15 @@
-require("dotenv").config();
-const { Client } = require("pg");
-const connectionUrl = process.env.CONNECTION_URL;
+// require("dotenv").config();
 
-const client = new Client(connectionUrl);
+const db = require("../config/dbConfig");
 
-client.connect((err, res) => {
-  if (err) {
-    console.log(err);
-  } else {
-    console.log("Role Services connected");
-  }
-});
-
-const getRoles = async () => {
+const getRoles = async (entityId) => {
   try {
-    const permissionsQuery = `SELECT * FROM roles`;
-    const getAllPermissions = await client.query(permissionsQuery);
+    const permissionsQuery = `SELECT role_id FROM roles where entity_id =$1 `;
+    const getAllPermissions = await db.query(permissionsQuery, [entityId]);
 
     const roles = getAllPermissions?.rows;
+    console.log(roles, "Roles");
+    
     return roles.map((role) => role?.role_id); // Returning all role Ids
   } catch (error) {
     console.error("Error fetching roles:", error);
@@ -43,7 +35,7 @@ GROUP BY
     rp.role_id, r.name
 `;
 
-    const getAllPermissions = await client.query(permissionQuery, [roleId]);
+    const getAllPermissions = await db.query(permissionQuery, [roleId]);
 
     const role = getAllPermissions?.rows[0];
     return role ? role.permissions : []; //Returns all permissions for the role id

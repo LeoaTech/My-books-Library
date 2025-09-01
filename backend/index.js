@@ -6,6 +6,8 @@ const { notfound, errorHanlder } = require("./middleware/errorMiddleware.js");
 const session = require("express-session");
 const passport = require("passport");
 const cookieParser = require("cookie-parser");
+
+// * Import routes
 const authRouter = require("./routes/authenticationRoutes/AuthRouter.js");
 const booksRouter = require("./routes/booksRoutes/BooksRoutes.js");
 const googleOAuthRouter = require("./routes/authenticationRoutes/GoogleAuthRoute.js");
@@ -21,27 +23,27 @@ const publisherRoutes = require("./routes/PublishersRoutes.js");
 const vendorsRoutes = require("./routes/VendorsRoutes.js");
 const branchRoutes = require("./routes/BranchRoutes.js");
 const ordersRoutes = require("./routes/OrdersRoutes/OrdersRoutes.js");
-
-
+const bookingRoutes = require("./routes/BookingsRoutes/index.js");
 const port = process.env.PORT || 8100;
 
 const app = express();
-
-app.use(passport.initialize());
-
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: false || process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      // maxAge: 3600000,
+      maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day max
+    },
   })
 );
-
-app.use(passport.session());
-
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:8000"],
+    origin: ["http://localhost:5173", "http://localhost:8000","https://my-books-library-blush.vercel.app/"],
     methods: "GET,POST,PUT,DELETE",
     credentials: true,
   })
@@ -51,30 +53,39 @@ app.use(bodyParser.json({ limit: "100mb" }));
 app.use(bodyParser.urlencoded({ limit: "100mb", extended: true }));
 app.use(express.json());
 app.use(cookieParser()); //cookies middleware
+app.use(passport.initialize());
 
+app.use(passport.session());
+app.get("/", (req, res) => {
+  res.send("Home Page");
+});
+// * Routes
 app.use("/", googleOAuthRouter);
-app.use("/auth", authRouter);
-app.use("/books", booksRouter);
-app.use("/users", userRouter);
-app.use("/roles", rolesRouter);
-app.use("/permissions", permissionsRouter);
-app.use("/roles-permissions", rolePermissionsRouter);
+app.use("/api/auth", authRouter);
+app.use("/api/books", booksRouter);
+app.use("/api/users", userRouter);
+app.use("/api/roles", rolesRouter);
+app.use("/api/permissions", permissionsRouter);
+app.use("/api/roles-permissions", rolePermissionsRouter);
 
-app.use("/authors", authorsRouter);
-app.use("/conditions", conditionsRoutes);
-app.use("/categories", categoryRoutes);
-app.use("/covers", coversRoutes);
-app.use("/publishers", publisherRoutes);
-app.use("/vendors", vendorsRoutes);
-app.use("/branches", branchRoutes);
-app.use("/orders", ordersRoutes);
+app.use("/api/authors", authorsRouter);
+app.use("/api/conditions", conditionsRoutes);
+app.use("/api/categories", categoryRoutes);
+app.use("/api/covers", coversRoutes);
+app.use("/api/publishers", publisherRoutes);
+app.use("/api/vendors", vendorsRoutes);
+app.use("/api/branches", branchRoutes);
+app.use("/api/orders", ordersRoutes);
+
+// Bookings Routes
+app.use(bookingRoutes);
 
 app.use(notfound);
 app.use(errorHanlder);
 
-app.get("/", (req, res) => {
-  res.send("Home Page");
-});
+
+
+
 app.listen(port, () => {
   console.log("Server is listening on port", port);
 });

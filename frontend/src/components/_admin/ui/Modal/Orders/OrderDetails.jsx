@@ -66,13 +66,13 @@ const OrderDetails = ({ getOrderDetails, onClose }) => {
         {/* my-5 rounded-md flex justify-center items-center z-70  overflow-hidden xs:h-[400px] overflow-y-auto */}
         <div className=" md:mx-20">
           <div className=" p-10 relative rounded-md border border-[#E2E8F0] bg-white shadow-lg dark:border-[#2E3A47] dark:bg-[#24303F] md:px-8 md:py-8 ">
-            <div className=" flex justify-between items-center rounded-sm p-3 bg-slate-100 border-b border-[#E2E8F0] py-4 px-6.5 dark:border-[#2E3A47]">
+            <div className=" flex justify-between items-center rounded-sm p-3 bg-slate-100 border-b border-[#E2E8F0] py-4 px-6.5 dark:border-[#2E3A47] dark:bg-[#2E3A47]">
               <h3 className="font-bold text-[#313D4A] dark:text-white">
                 Order Details
               </h3>
-              <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-400">
+              <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-400 dark:text-neutral-50">
                 Order Id:{" "}
-                <span className="text-slate-700 font-medium text-md">
+                <span className="text-slate-700 dark:text-neutral-50 font-medium text-md">
                   {getOrderDetails?.id}
                 </span>
               </h5>
@@ -83,29 +83,29 @@ const OrderDetails = ({ getOrderDetails, onClose }) => {
             <div className="max-h-[600px] px-12 w-full overflow-hidden overflow-y-auto text-slate-800">
               {/* Order details */}
               <div className="flex flex-col md:gap-5 my-5 md:flex-row">
-                <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 mb-3 md:justify-center ">
+                <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 dark:text-gray-400 mb-3 md:justify-center ">
                   <MdEmail />
                   Email Address
                 </h5>
-                <span className="ml-10 font-medium text-slate-500">
+                <span className="ml-10 font-medium text-slate-500 dark:text-neutral-100">
                   {getOrderDetails?.email}
                 </span>
               </div>
 
               {/* Order Created Details  */}
-              <p className="mt-7 text-lg font-semibold text-slate-600 border-b border-blue-100 mb-4">
+              <p className="mt-7 text-lg font-semibold text-slate-600 dark:text-gray-400 border-b border-blue-100 mb-4">
                 Ordered Items List
               </p>
               <div className="flex flex-col justify-start items-start">
                 <div className="flex flex-col mb-5">
-                  <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 mb-3 ">
+                  <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 dark:text-gray-400 mb-3 ">
                     <MdOutlineBook />
                     Items
                   </h5>
-                  <ul className="ml-10 font-medium text-md text-slate-400 grid grid-cols-1 gap-x-8 md:grid-cols-2 md:gap-12">
+                  <ul className="ml-10 font-medium text-md text-slate-400 dark:text-neutral-50 grid grid-cols-1 gap-x-8 md:grid-cols-2 md:gap-12">
                     {getOrderDetails?.items?.map((book, index) => (
-                      <li className="" key={book.book_id}>
-                        <span className="font-semibold flex items-center gap-2 text-emerald-900">
+                      <li className="" key={book?.book_id}>
+                        <span className="font-semibold flex items-center gap-2 text-blue-500">
                           <MdShoppingBag />
                           Order Item {index + 1}{" "}
                         </span>
@@ -119,25 +119,25 @@ const OrderDetails = ({ getOrderDetails, onClose }) => {
                 </div>
               </div>
               {/* Order Created Details  */}
-              <p className="mt-7 text-lg font-semibold text-slate-600 border-b border-blue-100 mb-4">
+              <p className="mt-7 text-lg font-semibold text-slate-600 dark:text-gray-400 border-b border-blue-100 mb-4">
                 Order Placement
               </p>
               <div className="flex flex-col justify-start items-start">
                 <div className="flex flex-col mb-5">
-                  <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 mb-3 ">
+                  <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 dark:text-gray-400 mb-3 ">
                     <MdOutlinePerson />
                     Order Placed by
                   </h5>
-                  <p className="ml-10 font-medium text-md text-slate-400">
+                  <p className="ml-10 font-medium text-md text-slate-400 dark:text-neutral-50 ">
                     {getOrderDetails?.order_by}
                   </p>
                 </div>
                 <div className="flex flex-col mb-5">
-                  <h5 className="flex justify-start items-start gap-2 text-md font-semibold text-slate-600 mb-3 ">
+                  <h5 className="flex justify-start items-start gap-2 text-md font-semibold text-slate-600 dark:text-gray-400 mb-3 ">
                     <MdOutlineCalendarMonth />
                     Created On
                   </h5>
-                  <p className="ml-10 font-medium text-md text-slate-400">
+                  <p className="ml-10 font-medium text-md text-slate-400 dark:text-neutral-50 ">
                     {new Date(getOrderDetails?.order_on)?.toDateString()} -{" "}
                     {new Date(getOrderDetails?.order_on)?.toLocaleTimeString()}
                   </p>
@@ -145,53 +145,53 @@ const OrderDetails = ({ getOrderDetails, onClose }) => {
               </div>
 
               {/* Paymemt Details */}
-              <p className="mt-7 text-lg font-semibold text-slate-600 border-b border-blue-100 mb-4">
+              <p className="mt-7 text-lg font-semibold text-slate-600 dark:text-gray-400 border-b border-blue-100 mb-4">
                 Payment Details
               </p>
 
               <div className="flex flex-col gap-5 md:flex-row md:gap-22 md:justify-between md:items-center lg:gap-32">
                 <div className="flex flex-col md:mb-5">
-                  <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 mb-3 md:justify-center ">
+                  <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 dark:text-gray-400 mb-3 md:justify-center ">
                     <MdCurrencyExchange /> Payment ID
                   </h5>
-                  <p className="ml-10 font-medium text-md text-slate-400">
+                  <p className="ml-10 font-medium text-md text-slate-400 dark:text-neutral-50">
                     {getOrderDetails?.payment_id}
                   </p>
                 </div>
 
                 <div className="flex-flex-col mb-5">
-                  <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 mb-3  md:justify-center">
+                  <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 dark:text-gray-400 mb-3  md:justify-center">
                     <BsCreditCard2BackFill /> Payment Mode
                   </h5>
 
-                  <p className="ml-10 font-medium text-md text-slate-400">
+                  <p className="ml-10 font-medium text-md text-slate-400 dark:text-neutral-50">
                     {getOrderDetails?.mode_of_payment}
                   </p>
                 </div>
               </div>
 
               {/* Discounts details */}
-              <p className="text-lg font-semibold text-slate-600 border-b border-blue-100 mb-4">
+              <p className="text-lg font-semibold text-slate-600 dark:text-gray-400 border-b border-blue-100 mb-4">
                 Discount Details
               </p>
               <div className="flex flex-col justify-between gap-5 md:flex-row md:gap-22 lg:gap-32">
                 <div className="flex flex-col mb-5">
-                  <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 mb-3 md:justify-center ">
+                  <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 dark:text-gray-400 mb-3 md:justify-center ">
                     <BiSolidDiscount />
                     Discount Code
                   </h5>
-                  <p className="ml-10 font-medium text-md text-slate-400">
+                  <p className="ml-10 font-medium text-md text-slate-400 dark:text-neutral-50">
                     {getOrderDetails?.discount_code}
                   </p>
                 </div>
 
                 <div className="flex-flex-col mb-5">
-                  <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 mb-3 md:justify-center ">
+                  <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 dark:text-gray-400 mb-3 md:justify-center ">
                     <LiaMoneyCheckAltSolid />
                     Discount Value
                   </h5>
 
-                  <p className="ml-10 font-medium text-md text-slate-400">
+                  <p className="ml-10 font-medium text-md text-slate-400 dark:text-neutral-50">
                     {getOrderDetails?.discount_value}
                   </p>
                 </div>
@@ -206,40 +206,40 @@ const OrderDetails = ({ getOrderDetails, onClose }) => {
                   <RiUserLocationFill />
                   Customer Info
                 </p>
-                {/* <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 mb-3 ">
+                {/* <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 dark:text-gray-400 mb-3 ">
                   {" "}
                   <BsPerson />
                   Name
                 </h5>
-                <p className="ml-10 text-md font-medium text-slate-400">
+                <p className="ml-10 text-md font-medium text-slate-400 dark:text-neutral-50">
                   {getOrderDetails?.name}
                 </p> */}
-                <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 mb-3 ">
+                <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 dark:text-gray-400 mb-3 ">
                   <IoLocation /> Address
                 </h5>
-                <p className="ml-10 text-md font-medium text-slate-400">
+                <p className="ml-10 text-md font-medium text-slate-400 dark:text-neutral-50">
                   {getOrderDetails?.address}
                 </p>
-                <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 mb-3 ">
+                <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 dark:text-gray-400 mb-3 ">
                   {" "}
                   <MdLocationCity />
                   City
                 </h5>{" "}
-                <p className="ml-10 text-md font-medium text-slate-400">
+                <p className="ml-10 text-md font-medium text-slate-400 dark:text-neutral-50">
                   {getOrderDetails?.city}
                 </p>
-                <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 mb-3 ">
+                <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 dark:text-gray-400 mb-3 ">
                   <RiFlag2Fill />
                   Country
                 </h5>{" "}
-                <p className="ml-10 text-md font-medium text-slate-400">
+                <p className="ml-10 text-md font-medium text-slate-400 dark:text-neutral-50">
                   {getOrderDetails?.country}
                 </p>
-                <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 mb-3">
+                <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 dark:text-gray-400 mb-3">
                   <MdLocalPhone />
                   Phone Number
                 </h5>{" "}
-                <p className="ml-10 text-md font-medium text-slate-400">
+                <p className="ml-10 text-md font-medium text-slate-400 dark:text-neutral-50">
                   {getOrderDetails?.phone}
                 </p>
               </div>
@@ -251,41 +251,41 @@ const OrderDetails = ({ getOrderDetails, onClose }) => {
                   <MdLocalAirport />
                   Shipping Details
                 </p>
-                {/* <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 mb-3 ">
+                {/* <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 dark:text-gray-400 mb-3 ">
                   {" "}
                   <BsPersonFill />
                   Name
                 </h5>
-                <p className="ml-10 text-md font-medium text-slate-400">
+                <p className="ml-10 text-md font-medium text-slate-400 dark:text-neutral-50">
                   {getOrderDetails?.name}
                 </p> */}
-                <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 mb-3 ">
+                <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 dark:text-gray-400 mb-3 ">
                   <GrMapLocation />
                   Address
                 </h5>
-                <p className="ml-10 text-md font-medium text-slate-400">
+                <p className="ml-10 text-md font-medium text-slate-400 dark:text-neutral-50">
                   {getOrderDetails?.shipping_address}
                 </p>
-                <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 mb-3 ">
+                <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 dark:text-gray-400 mb-3 ">
                   {" "}
                   <FaArrowRightToCity />
                   City
                 </h5>{" "}
-                <p className="ml-10 text-md font-medium text-slate-400">
+                <p className="ml-10 text-md font-medium text-slate-400 dark:text-neutral-50">
                   {getOrderDetails?.shipping_city}
                 </p>
-                <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 mb-3 ">
+                <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 dark:text-gray-400 mb-3 ">
                   <FaFlag />
                   Country
                 </h5>{" "}
-                <p className="ml-10 text-md font-medium text-slate-400">
+                <p className="ml-10 text-md font-medium text-slate-400 dark:text-neutral-50">
                   {getOrderDetails?.shipping_country}
                 </p>
-                <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 mb-3">
+                <h5 className="flex justify-start items-center gap-2 text-md font-semibold text-slate-600 dark:text-gray-400 mb-3">
                   <MdOutlineLocalPhone />
                   Phone Number
                 </h5>{" "}
-                <p className="ml-10 text-md font-medium text-slate-400">
+                <p className="ml-10 text-md font-medium text-slate-400 dark:text-neutral-50">
                   {getOrderDetails?.shipping_phone}
                 </p>
               </div>

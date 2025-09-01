@@ -1,19 +1,25 @@
-const { Client } =  require("pg");
-const connectionUrl = process.env.CONNECTION_URL
+const pg = require("pg");
+const { Pool } = pg;
 
-const client = new Client(connectionUrl);
+require("dotenv").config();
 
-const connectDb = async () => {
-  try {
-    await client.connect();
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
 
-    console.log("Connected");
-  } catch (error) {
-    console.log(error);
-    await client.end();
-  }finally{
-    await client.end()
+// pool.on('connect', () => {
+//   console.log('DB Connected successfully!');
+// });
+pool.connect((err, client, release) => {
+  if (err) {
+    return console.error("Error acquiring client", err.stack);
   }
-};
-
-module.exports= connectDb;
+  client.query("SELECT NOW()", (err, result) => {
+    release();
+    if (err) {
+      return console.error("Error executing query", err.stack);
+    }
+    console.log("Connected to Database !");
+  });
+});
+module.exports = { pool, query: (text, params) => pool.query(text, params) };

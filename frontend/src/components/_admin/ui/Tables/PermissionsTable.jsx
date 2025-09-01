@@ -2,12 +2,19 @@ import React, { useState } from "react";
 import { useFetchPermissions } from "../../../../hooks/permissions/useFetchPermissions";
 import { MdEdit } from "react-icons/md";
 import { AddPermission, PermissionModal } from "../Modal";
+import { HiChevronDoubleLeft, HiChevronDoubleRight } from "react-icons/hi";
 
 const PermissionsTable = ({ openModal, setOpenModal }) => {
   const { isPending, data } = useFetchPermissions();
   const [isEdit, setIsEdit] = useState(false);
   const [isDelete, setIsDelete] = useState(false);
   const [permissionData, setPermissionData] = useState();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage] = useState(8);
+
+  // Calculate indexes for pagination
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
 
   const UpdateRole = (permissionId) => {
     const roleValues = data?.permissions?.find(
@@ -31,24 +38,28 @@ const PermissionsTable = ({ openModal, setOpenModal }) => {
     setIsDelete(false);
   };
 
-
   if (isPending) {
     return <h1>Loading...</h1>;
   }
+
+  const currentRows = data?.permissions?.slice(indexOfFirstRow, indexOfLastRow);
+
+  // Change page
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
   return (
     <div className="rounded-sm border border-stroke bg-white shadow-default p-8 border-b border-[#eee]  dark:border-[#2E3A47] dark:bg-[#24303F]">
       <div className="max-w-full overflow-x-auto">
         <table className="w-full table-auto">
           <thead>
             <tr className="bg-[#F7F9FC] text-left dark:bg-[#313D4A]">
-              <th className="min-w-[220px] py-4 px-4 font-medium text-gray-600 dark:text-white xl:pl-11">
+              <th className="min-w-[150px] py-4 px-4 font-medium text-gray-600 dark:text-white xl:pl-11">
                 Permission ID
               </th>
-              <th className="min-w-[220px] py-4 px-4 font-medium text-gray-600 dark:text-white xl:pl-11">
+              <th className="min-w-[250px] py-4 px-4 font-medium text-gray-600 dark:text-white xl:pl-11">
                 Permission Name
               </th>
-              <th className="min-w-[220px] py-4 px-4 font-medium text-gray-600 dark:text-white xl:pl-11">
-                Create Date
+              <th className="min-w-[230px] py-4 px-4 font-medium text-gray-600 dark:text-white xl:pl-11">
+                Created At
               </th>
               <th className="min-w-[220px] py-4 px-4 font-medium text-gray-600 dark:text-white xl:pl-11">
                 Actions
@@ -56,7 +67,7 @@ const PermissionsTable = ({ openModal, setOpenModal }) => {
             </tr>
           </thead>
           <tbody>
-            {data?.permissions?.map((permission) => (
+            {currentRows?.map((permission) => (
               <tr key={permission?.permission_id}>
                 <td className="border-b border-[#eee] py-5 px-4 pl-5 dark:border-[#2E3A47] xl:pl-11">
                   {permission?.permission_id}
@@ -67,7 +78,8 @@ const PermissionsTable = ({ openModal, setOpenModal }) => {
                   </p>
                 </td>
                 <td className="border-b border-[#eee] py-5 px-4 pl-5 dark:border-[#2E3A47] xl:pl-11">
-                  {new Date(permission?.created_at).toLocaleString()}
+                  {new Date(permission?.created_at).toDateString()} {" "} - {" "}
+                  {new Date(permission?.created_at).toLocaleTimeString()} 
                 </td>
                 <td className="border-b border-[#eee] py-5 px-8 dark:border-[#2E3A47]">
                   <div className="flex items-center space-x-3.5">
@@ -117,6 +129,30 @@ const PermissionsTable = ({ openModal, setOpenModal }) => {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Pagination controls */}
+      <div className="flex justify-end gap-4 mt-5 mb-2">
+        <button
+          onClick={() => paginate(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="disabled:text-slate-300 dark:disabled:text-gray-500 text-blue-500"
+        >
+          <HiChevronDoubleLeft style={{ height: 18, width: 27 }} />
+        </button>
+
+        <span className="text-orange-600 bg-gray-100 border text-sm rounded-full h-[40px] w-[45px] flex justify-center items-center">
+          {currentPage}
+        </span>
+        {data?.permissions?.length > rowsPerPage && (
+          <button
+            onClick={() => paginate(currentPage + 1)}
+            disabled={indexOfLastRow >= data?.permissions?.length}
+            className="disabled:text-slate-300 dark:disabled:text-gray-500 text-blue-500"
+          >
+            <HiChevronDoubleRight style={{ height: 18, width: 27 }} />
+          </button>
+        )}
       </div>
 
       {/* Save New Role Modal */}

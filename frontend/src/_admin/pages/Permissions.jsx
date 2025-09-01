@@ -1,12 +1,12 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { Link } from "react-router-dom";
-import { HiPencilSquare } from "react-icons/hi2";
 import { HiPlus, HiMinusCircle } from "react-icons/hi";
-import {
-  PermissionsTable,
-  Roles,
-  RolesPermissions,
-} from "../../components/_admin";
+import SkeletonTable from "../../components/Loader/SkeletonTable";
+
+// Lazy Load Components
+const PermissionsTable = lazy(() => import("../../components/_admin/ui/Tables/PermissionsTable"));
+const RolesTable = lazy(() => import("../../components/_admin/ui/Tables//RolesTable"));
+const RolesPermissionsTable = lazy(() => import("../../components/_admin/ui/Tables/RolesPermissionsTable"));
 
 const types = ["Roles", "Permissions", "Roles Permissions"];
 
@@ -20,9 +20,8 @@ function TabGroup() {
         {types.map((type) => (
           <li className="mr-2 border-b mx-2 border-[#80CAEE] mb-2" key={type}>
             <Link
-              className={`inline-block p-2 mx-3 bg-transparent rounded-t-lg ${
-                active === type ? "text-[#3C50E0] " : "text-[#8A99AF]"
-              }`}
+              className={`inline-block p-2 mx-3 bg-transparent rounded-t-lg ${active === type ? "text-[#3C50E0] " : "text-[#8A99AF]"
+                }`}
               key={type}
               active={active === type}
               onClick={() => setActive(type)}
@@ -58,7 +57,12 @@ const RenderTable = ({ active }) => {
             </span>
           </button>
         </div>
-        <Roles open={openRoleModal} setOpenRoleModal={setOpenRoleModal} />
+
+
+        <Suspense fallback={<SkeletonTable rows={7} columns={4} />}>
+          <RolesTable open={openRoleModal} setOpenRoleModal={setOpenRoleModal} />
+
+        </Suspense>
       </>
     );
   } else if (active === "Permissions") {
@@ -71,13 +75,14 @@ const RenderTable = ({ active }) => {
           >
             <span className="flex justify-center items-center gap-2">
               <HiPlus />
-              Permissions
+              New Permission
             </span>
           </button>
         </div>
+        <Suspense fallback={<SkeletonTable rows={7} columns={4} />}>
 
-        <PermissionsTable openModal={openModal} setOpenModal={setOpenModal} />
-      </>
+          <PermissionsTable openModal={openModal} setOpenModal={setOpenModal} />
+        </Suspense> </>
     );
   } else if (active === "Roles Permissions") {
     return (
@@ -103,12 +108,15 @@ const RenderTable = ({ active }) => {
             </span>
           </button>
         </div>
-        <RolesPermissions
-          openModal={openModal}
-          setOpenModal={setOpenModal}
-          ShowDetails={ShowDetails}
-          setShowDetails={setShowDetails}
-        />
+        <Suspense fallback={<SkeletonTable rows={7} columns={5} />}>
+
+          <RolesPermissionsTable
+            openModal={openModal}
+            setOpenModal={setOpenModal}
+            ShowDetails={ShowDetails}
+            setShowDetails={setShowDetails}
+          />
+        </Suspense>
       </>
     );
   }

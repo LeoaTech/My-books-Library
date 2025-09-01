@@ -1,22 +1,17 @@
 const asyncHanlder = require("express-async-handler");
-const { Client } = require("pg");
-require("dotenv").config();
+const db = require("../config/dbConfig");
 
-const connectionUrl = process.env.CONNECTION_URL;
-const client = new Client(connectionUrl);
-
-client.connect((err, res) => {
-  if (err) {
-    console.log(err);
-  } else {
-    console.log("Categories API connected");
-  }
-});
 /* Get ALL Categories */
 const GetCategories = asyncHanlder(async (req, res) => {
+  const entityId = req?.user?.entityId || req?.user?.entity_id;
+
+  if (!entityId) {
+    return res.status(403).json("Invalid Request, No Library ID provided");
+  }
+
   try {
-    const categoriesQuery = `SELECT * FROM categories`;
-    const getAllCategories = await client.query(categoriesQuery);
+    const categoriesQuery = `SELECT * FROM categories WHERE entity_id =$1`;
+    const getAllCategories = await db.query(categoriesQuery, [entityId]);
 
     res.status(200).json({
       categories: getAllCategories?.rows,
@@ -27,5 +22,77 @@ const GetCategories = asyncHanlder(async (req, res) => {
   }
 });
 
+/* Create New Category */
 
-module.exports = { GetCategories };
+const AddNewCategory = asyncHanlder(async (req, res) => {
+  console.log(req.body, "Category Payload");
+
+  const entityId = req?.user?.entityId || req?.user?.entity_id;
+
+  if (!entityId) {
+    return res.status(403).json("Invalid Request, No Library ID provided");
+  }
+  try {
+    if (!req.body?.name) {
+      return res.status(400).json("Invalid Category");
+    }
+    const updateCategory = await db.query(
+      `INSERT INTO categories (name, entity_id) VALUES ($1, $2) Returning id, name`,
+      [req.body.name, entityId]
+    );
+
+    console.log(updateCategory?.rows[0], "Category Saved");
+
+    res.status(200).json({
+      categories: updateCategory?.rows[0],
+      message: "Category Saved Successfully ",
+    });
+  } catch (error) {
+    console.log(error, "Error creating new category");
+    res.status(500).json({
+      error,
+      message: error.message || "Error Creating Category",
+    });
+  }
+});
+
+/* Update Category Details */
+
+const UpdateCategory = asyncHanlder(async (req, res) => {
+  // console.log(req.body);
+  try {
+    if (!req.body.name) {
+      return res.status(400).json("Invalid Category Details");
+    }
+
+    if (!req.params.category_id) {
+      return res.status(400).json({
+        message: "Invalid Category's ID",
+      });
+    }
+
+    const { name } = req.body;
+    const { category_id } = req.params;
+    const updateCategory = await db.query(
+      `UPDATE categories SET name=$1 Where id=$2 Returning *`,
+      [name, category_id]
+    );
+
+    console.log(updateCategory?.rows[0], "Category Updated");
+
+    res.status(200).json({
+      categories: updateCategory?.rows[0],
+      message: "Category Updated Successfully ",
+    });
+  } catch (error) {
+    console.log(error, "Error Updating category");
+    res.status(500).json({
+      error,
+      message: error.message || "Error Updating Category",
+    });
+  }
+});
+
+
+
+module.exports = { GetCategories, AddNewCategory, UpdateCategory};

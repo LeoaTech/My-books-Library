@@ -10,6 +10,9 @@ export const useSaveBook = () => {
     setIsLoading(true);
     setError(null);
 
+    console.log(booksForm);
+    
+
     const response = await fetch(`${BASE_URL}/books/create`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -18,12 +21,29 @@ export const useSaveBook = () => {
     });
 
     const result = await response.json();
+
+    console.log(result, "save new book result");
+
+    if(response.ok){
+      setIsLoading(false);
+      setError(null);
+      setMessage(result.message)
+      return result;
+    }
+    else{
+      setIsLoading(false);
+      setError(result?.error);
+      setMessage(result.message)
+    }
+    
   };
 
   const updateBook = async (book) => {
     setIsLoading(true);
     setError(null);
 
+    // console.log(book, "Update Book");
+    
     const response = await fetch(`${BASE_URL}/books/update/${book?.bookId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -32,7 +52,20 @@ export const useSaveBook = () => {
     });
 
     const result = await response.json(); //response?.data;
-    // console.log(result, "Update Result");
+    console.log(result, "Update Book details Result");
+
+
+    if(response.ok){
+      setIsLoading(false);
+      setError(null);
+      setMessage(result.message)
+      return result;
+    }
+    else{
+      setIsLoading(false);
+      setError(result?.error);
+      setMessage(result.message)
+    }
   };
 
   const deleteBook = async (bookId) => {

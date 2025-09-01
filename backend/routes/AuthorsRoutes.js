@@ -2,20 +2,25 @@ const express = require("express");
 const {
   FetchAllAuthors,
   AddNewAuthor,
+  UpdateAuthor,
 } = require("../controllers/Authors.Controller");
+const { checkAuth } = require("../middleware/authMiddleware");
 
 const router = express.Router();
+// Verify User Authentication (Logged-in users can see this route)
+router.use(checkAuth);
 
+//Get: fetch Authors List
 router.get("/", FetchAllAuthors);
 
-// Add New Author
+// Post: Add New Author
 router.post("/new", AddNewAuthor);
 
-// Update Author
+// PUT:Update Author details
 
-router.put("/update/:author_id");
+router.put("/update/:author_id", UpdateAuthor);
 
-// Delete Author
+// DeleteL remove Author
 
 router.delete("/remove/:author_id");
 

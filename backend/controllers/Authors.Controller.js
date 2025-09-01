@@ -1,23 +1,16 @@
 const asyncHanlder = require("express-async-handler");
-const { Client } = require("pg");
-require("dotenv").config();
+const db = require("../config/dbConfig");
 
-const connectionUrl = process.env.CONNECTION_URL;
-
-const client = new Client(connectionUrl);
-
-client.connect((err, res) => {
-  if (err) {
-    console.log(err);
-  } else {
-    console.log("Authors API connected");
-  }
-});
 /* Get ALL Authors */
 const FetchAllAuthors = asyncHanlder(async (req, res) => {
+  const entityId = req?.user?.entityId || req?.user?.entity_id;
+
+  if (!entityId) {
+    return res.status(403).json("Invalid Request, No Library ID provided");
+  }
   try {
-    const AuthorsQuery = `SELECT * FROM authors`;
-    const getAllAuthors = await client.query(AuthorsQuery);
+    const AuthorsQuery = `SELECT * FROM authors WHERE entity_id =$1`;
+    const getAllAuthors = await db.query(AuthorsQuery, [entityId]);
 
     res.status(200).json({
       authors: getAllAuthors?.rows,
@@ -32,25 +25,77 @@ const FetchAllAuthors = asyncHanlder(async (req, res) => {
 
 const AddNewAuthor = asyncHanlder(async (req, res) => {
   console.log(req.body);
+
+  const entityId = req?.user?.entityId || req?.user?.entity_id;
+
+  if (!entityId) {
+    return res.status(403).json("Invalid Request, No Library ID provided");
+  }
   try {
-    const createAuthorQuery = await client.query(
-      `INSERT INTO authors (name) VALUES ($1)`,
-      [req.body.name]
+    if (!req.body.authorsForm) {
+      return res.status(400).json("Invalid Authors Details");
+    }
+
+    const { name, links, description } = req.body.authorsForm;
+
+    const createAuthorQuery = await db.query(
+      `INSERT INTO authors (name, links, description, entity_id) VALUES ($1,$2,$3, $4)`,
+      [name, links, description, entityId]
     );
 
-    console.log(createAuthorQuery?.rows[0], "Authors /founded");
+    console.log(createAuthorQuery?.rows[0], "Authors Saved");
 
     res.status(200).json({
       authors: createAuthorQuery?.rows[0],
-      message: "Authors Found ",
+      message: "Authors Saved Successfully ",
     });
   } catch (error) {
     console.log(error, "Error creating new author");
+    res.status(500).json({
+      error,
+      message: error.message || "Error Creating Authors",
+    });
   }
 });
 
-/* Fetch Authors By ID */
+/* Update Author Details */
 
-/* Fetch All Authors by Book ID */
+const UpdateAuthor = asyncHanlder(async (req, res) => {
+  // console.log(req.body, req.params);
+  try {
+    if (!req.body.authorsForm) {
+      return res.status(400).json("Invalid Authors Details");
+    }
 
-module.exports = { FetchAllAuthors, AddNewAuthor };
+    if (!req.params.author_id) {
+      return res.status(400).json({
+        message: "Invalid Author's ID",
+      });
+    }
+
+    const { name, links, description } = req.body.authorsForm;
+    const { author_id } = req.params;
+    const updateAuthorQuery = await db.query(
+      `UPDATE authors SET name=$1, links=$2, description=$3 Where id=$4 RETURNING *`,
+      [name, links, description, author_id]
+    );
+
+    console.log(updateAuthorQuery?.rows[0], "Authors Updated");
+
+    res.status(200).json({
+      authors: updateAuthorQuery?.rows[0],
+      message: "Authors Updated Successfully ",
+    });
+  } catch (error) {
+    console.log(error, "Error Updating author");
+    res.status(500).json({
+      error,
+      message: error.message || "Error Updating Authors",
+    });
+  }
+});
+
+
+
+
+module.exports = { FetchAllAuthors, AddNewAuthor,  UpdateAuthor };
