@@ -9,8 +9,6 @@ const shorthands = undefined;
  * @returns {Promise<void> | void}
  */
 const up = (pgm) => {
-
- 
   //   Bookings
   pgm.createTable("bookings", {
     id: {
@@ -176,12 +174,14 @@ const down = (pgm) => {
   pgm.sql(`
         DROP TABLE IF EXISTS public.role_permissions;
         DROP TABLE IF EXISTS public.bookings;
-         DROP TABLE IF EXISTS public.ratings;
+        DROP TABLE IF EXISTS public.ratings;
+        
         DROP TABLE IF EXISTS public.logistics;
         DROP TABLE IF EXISTS public.return_item;
         DROP TABLE IF EXISTS public.orders;
        
         `);
+  pgm.dropTable("vendors");
 };
 
 module.exports = { up, down, shorthands };

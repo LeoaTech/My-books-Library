@@ -87,7 +87,9 @@ const down = (pgm) => {
     operations.map((op) => `'${op} ${resource}'`)
   );
 
+
   pgm.sql(`
+    DROP TABLE IF EXISTS public.role_permissions;
     DELETE FROM permissions
     WHERE name IN (${names.join(", ")})
     AND is_default = true;

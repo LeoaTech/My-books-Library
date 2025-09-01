@@ -109,7 +109,6 @@ const up = (pgm) => {
  * @returns {Promise<void> | void}
  */
 const down = (pgm) => {
-  pgm.dropTable("vendors");
   pgm.dropConstraint("books", "books_vendor_id_fkey");
   pgm.dropConstraint("books", "books_publisher_fkey");
   pgm.dropConstraint("books", "books_cover_fkey");
