@@ -36,7 +36,7 @@ import MyProfile from "../_root/pages/UserProfile/index";
 import AccountSettings from "../_root/pages/UserProfile/AccountSettings";
 import MyOrdersHistory from "../_root/pages/UserProfile/MyOrdersHistory";
 import Membership from "../_root/pages/UserProfile/Membership";
-import Billing from "../_root/pages/UserProfile/Billing";
+// import Billing from "../_root/pages/UserProfile/Billing";
 
 const renderRoutes = (routes) => {
   return routes?.map((route, i) => {
@@ -77,7 +77,7 @@ const router = createBrowserRouter(
       <Route path="account" element={<AccountSettings />}></Route>
       <Route path="orders" element={<MyOrdersHistory />}></Route>
       <Route path="membership" element={<Membership />}></Route>
-      <Route path="billing" element={<Billing />}></Route>
+      {/* <Route path="billing" element={<Billing />}></Route> */}
       {/* Authentication Routes */}
 
       <Route element={<AuthLayout />}>
