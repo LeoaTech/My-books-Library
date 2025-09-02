@@ -84,6 +84,10 @@ app.use(errorHanlder);
 app.get("/", (req, res) => {
   res.json({ status: "Backend is running", clientUrl: process.env.CLIENT_URL });
 });
-app.listen(port, () => {
-  console.log("Server is listening on port", port);
-});
+
+if (process.env.NODE_ENV == "development") {
+  app.listen(port, () => {
+    console.log("Server is listening on port", port);
+  });
+}
+module.exports = app;
