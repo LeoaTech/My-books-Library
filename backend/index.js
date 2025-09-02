@@ -25,7 +25,6 @@ const branchRoutes = require("./routes/BranchRoutes.js");
 const ordersRoutes = require("./routes/OrdersRoutes/OrdersRoutes.js");
 const bookingRoutes = require("./routes/BookingsRoutes/index.js");
 const port = process.env.PORT || 8100;
-const path = require("path")
 const app = express();
 app.use(
   session({
@@ -37,13 +36,13 @@ app.use(
       secure: false || process.env.NODE_ENV === "production",
       sameSite: "lax",
       // maxAge: 3600000,
-      maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day max
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 day max
     },
   })
 );
 app.use(
   cors({
-   origin:process.env.CLIENT_URL,
+    origin: process.env.CLIENT_URL,
     methods: "GET,POST,PUT,DELETE",
     credentials: true,
   })
@@ -57,10 +56,9 @@ app.use(passport.initialize());
 
 app.use(passport.session());
 
-
-// app.get("/", (req, res) => {
-//   res.send("Home Page");
-// });
+app.get("/", (req, res) => {
+  res.send("Home Page");
+});
 // * Routes
 app.use("/", googleOAuthRouter);
 app.use("/api/auth", authRouter);
@@ -81,20 +79,9 @@ app.use("/api/orders", ordersRoutes);
 
 // Bookings Routes
 app.use(bookingRoutes);
-if(process.env.NODE_ENV ==="production"){
-  // Serve the static files from the React app
-app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
-// Handle requests by serving index.html for all routes
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
-});
-}
 app.use(notfound);
 app.use(errorHanlder);
-
-
-
 
 app.listen(port, () => {
   console.log("Server is listening on port", port);
