@@ -25,7 +25,7 @@ const branchRoutes = require("./routes/BranchRoutes.js");
 const ordersRoutes = require("./routes/OrdersRoutes/OrdersRoutes.js");
 const bookingRoutes = require("./routes/BookingsRoutes/index.js");
 const port = process.env.PORT || 8100;
-
+const path = require("path")
 const app = express();
 app.use(
   session({
@@ -56,6 +56,8 @@ app.use(cookieParser()); //cookies middleware
 app.use(passport.initialize());
 
 app.use(passport.session());
+
+
 app.get("/", (req, res) => {
   res.send("Home Page");
 });
@@ -84,7 +86,15 @@ app.use(notfound);
 app.use(errorHanlder);
 
 
+// if(process.env.NODE_ENV ==="production"){
+  // Serve the static files from the React app
+app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
+// Handle requests by serving index.html for all routes
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
+});
+// }
 
 app.listen(port, () => {
   console.log("Server is listening on port", port);
