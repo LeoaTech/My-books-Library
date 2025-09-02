@@ -58,9 +58,9 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 
-app.get("/", (req, res) => {
-  res.send("Home Page");
-});
+// app.get("/", (req, res) => {
+//   res.send("Home Page");
+// });
 // * Routes
 app.use("/", googleOAuthRouter);
 app.use("/api/auth", authRouter);
