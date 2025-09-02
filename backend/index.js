@@ -48,11 +48,7 @@ app.use(
   })
 );
 
-app.options("*", cors()); // Explicitly handle OPTIONS for preflights
-// ... bodyParser, passport, routes ...
-app.get("/", (req, res) => {
-  res.json({ status: "Backend is running", clientUrl: process.env.CLIENT_URL });
-});
+app.options("*", cors());
 // app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json({ limit: "100mb" }));
 app.use(bodyParser.urlencoded({ limit: "100mb", extended: true }));
@@ -61,7 +57,6 @@ app.use(cookieParser()); //cookies middleware
 app.use(passport.initialize());
 
 app.use(passport.session());
-
 
 // * Routes
 app.use("/", googleOAuthRouter);
@@ -86,7 +81,9 @@ app.use(bookingRoutes);
 
 app.use(notfound);
 app.use(errorHanlder);
-
+app.get("/", (req, res) => {
+  res.json({ status: "Backend is running", clientUrl: process.env.CLIENT_URL });
+});
 app.listen(port, () => {
   console.log("Server is listening on port", port);
 });
