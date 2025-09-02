@@ -1,21 +1,23 @@
 import { useState, useEffect } from "react";
 import { useLogout } from "../../../hooks/useLogout";
 import { HiMenu, HiOutlineX, HiOutlineShoppingCart } from "react-icons/hi";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuthContext } from "../../../hooks/useAuthContext";
 
 const Navbar = () => {
   const { logout, signout } = useLogout();
   const { auth } = useAuthContext();
+  const { subdomain } = useParams();
+
   const [isMenuOpen, setMenuOpen] = useState(false);
   const [isSticky, setStickyNav] = useState(false);
+  const navigate = useNavigate();
 
   const onToggle = () => {
     setMenuOpen(!isMenuOpen);
   };
 
 
-  // console.log(auth);
 
 
   useEffect(() => {
@@ -36,6 +38,23 @@ const Navbar = () => {
     { title: "Shop", path: "/shop" },
   ];
 
+
+  const handleSignout = () => {
+    if (auth?.subdomain || subdomain) {
+      signout();
+      navigate(`/${auth?.subdomain || subdomain}`)
+    }
+  }
+  const handleLogout = () => {
+    if (auth?.subdomain || subdomain) {
+      logout();
+      navigate(`/${auth?.subdomain || subdomain}`)
+    }
+  }
+
+  let sub_domain = auth?.subdomain || subdomain
+  console.log(sub_domain);
+
   return (
     <header className="w-full fixed top-0 left-0 right-0 z-50">
       <nav
@@ -46,13 +65,21 @@ const Navbar = () => {
           {/* Logo */}
           <Link
             onClick={() => isMenuOpen && onToggle()}
-            to="/"
+            to={(subdomain) ? `/${sub_domain}` : "/"}
             className="text-2xl font-bold text-white"
           >
-            LeoaTech{" "}
-            <span className="bg-gradient-to-tr from-[#50142d] to-[#584ff7] bg-clip-text text-transparent">
-              Library
-            </span>
+            {auth?.entityName || sub_domain ? (
+              <>
+                {(auth?.entityName || sub_domain)?.toUpperCase()}{" "}
+
+              </>
+            ) : (
+              <>LeoaTech{" "}
+                <span className="bg-gradient-to-tr from-[#50142d] to-[#584ff7] bg-clip-text text-transparent">
+                  Library
+                </span>
+              </>
+            )}
           </Link>
 
           {/* Desktop Links */}
@@ -77,11 +104,11 @@ const Navbar = () => {
 
             {!auth?.roleId && (
               <>
-                <Link to="/signin" className="hover:text-purple-300">
+                <Link to={sub_domain ? `/${sub_domain}/signin` : "/signin"} className="hover:text-purple-300">
                   Sign in
                 </Link>
                 <Link
-                  to="/register"
+                  to={sub_domain ? `/${sub_domain}/signup` : "/register"}
                   className="bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-400"
                 >
                   Sign up
@@ -91,18 +118,18 @@ const Navbar = () => {
 
             {/* Redirect to subdomain */}
             {['owner']?.includes(auth?.role_name) && (
-              <Link to={`/${auth?.subdomain}`} className="hover:text-purple-300">
-                {auth?.entityName?.toUpperCase()}
+              <Link to={!subdomain ? `/${sub_domain}` : "/dashboard"} className="hover:text-purple-300">
+                {subdomain ? "Dashboard" : auth?.entityName?.toUpperCase()}
               </Link>
             )}
 
-            {auth?.roleId && !auth?.auth && (
-              <button onClick={logout} className="hover:text-purple-300">
+            {auth?.roleId && auth?.authSource == "email" && (
+              <button onClick={handleLogout} className="hover:text-purple-300">
                 Logout
               </button>
             )}
-            {auth?.roleId && auth?.auth && (
-              <button onClick={signout} className="hover:text-purple-300">
+            {auth?.roleId && auth?.authSource === "google" && (
+              <button onClick={handleSignout} className="hover:text-purple-300">
                 Sign Out
               </button>
             )}
@@ -145,7 +172,7 @@ const Navbar = () => {
 
             {['owner'].includes(auth?.role_name) && (
               <Link
-                to={`/${auth?.subdomain}` || "/"}
+                to={(subdomain) ? `/${sub_domain}` : "/"}
                 onClick={onToggle}
                 className="block uppercase hover:text-purple-300"
               >
@@ -196,7 +223,7 @@ const Navbar = () => {
           </div>
         )}
       </nav>
-    </header >
+    </header>
   );
 };
 
