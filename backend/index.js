@@ -81,12 +81,7 @@ app.use("/api/orders", ordersRoutes);
 
 // Bookings Routes
 app.use(bookingRoutes);
-
-app.use(notfound);
-app.use(errorHanlder);
-
-
-// if(process.env.NODE_ENV ==="production"){
+if(process.env.NODE_ENV ==="production"){
   // Serve the static files from the React app
 app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
@@ -94,7 +89,12 @@ app.use(express.static(path.join(__dirname, '../frontend/dist')));
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
 });
-// }
+}
+app.use(notfound);
+app.use(errorHanlder);
+
+
+
 
 app.listen(port, () => {
   console.log("Server is listening on port", port);
