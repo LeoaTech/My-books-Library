@@ -6,6 +6,8 @@ import NewArrivalBooks from "../../components/_user/NewArrival/NewArrivalBooks";
 import Genres from "../../components/_user/Categories/Genres";
 import Stats from "../../components/_user/Stats/Stats";
 import Footer from "../../components/_user/Footer/Footer";
+import { useAuthContext } from "../../hooks/useAuthContext";
+import { useEffect } from "react";
 
 const Home = () => {
   const genres = [
@@ -27,6 +29,24 @@ const Home = () => {
     "Gardening",
     "Health",
   ];
+
+
+  const { auth, googleAuth, getUser } = useAuthContext();
+
+
+  useEffect(() => {
+    const handleAuth = async () => {
+      const redirectUrl = await getUser();
+      console.log(redirectUrl, "URL")
+    };
+
+    if (googleAuth != "email" && !auth) {
+      handleAuth();
+    } else {
+      console.log("No need to fetch google auth result");
+
+    }
+  }, [getUser, googleAuth]);
 
   return (
     <>
