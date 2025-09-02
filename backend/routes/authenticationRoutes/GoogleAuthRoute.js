@@ -50,7 +50,7 @@ router.get("/auth/google", (req, res, next) => {
 router.get(
   "/auth/google/callback",
   passport.authenticate("google", {
-    successRedirect: `http://localhost:5173/`, //Redirect to Client Home Page
+    successRedirect: process.env.CLIENT_URL, //Redirect to Client Home Page
     failureRedirect: "/auth/google/failure",
     failureMessage: true,
   })
@@ -84,7 +84,7 @@ router.get("/auth/google/failure", (req, res) => {
 
   // Redirect to the client-side failure page with an error message
   res.redirect(
-    `http://localhost:5173/auth/failure?error=${encodeURIComponent(
+    `${process.env.CLIENT_URL}/auth/failure?error=${encodeURIComponent(
       errorMessage
     )}`
   );
@@ -118,7 +118,7 @@ router.get("/auth/login/success", async (req, res) => {
       ]
     );
 
-    // console.log(result.rows[0], "DB User data");
+    console.log(result.rows[0], "DB User data");
     if (result.rows.length === 0) {
       return res.status(401).json({ error: "Invalid User Credentials" });
     }
@@ -126,7 +126,7 @@ router.get("/auth/login/success", async (req, res) => {
     const user = result.rows[0];
 
     const user_info = {
-      userId: user.user_id,
+      userId: user.user_id || user?.userId,
       roleId: user.role_id,
       branchId: user.branch_id,
       entityId: user.entity_id,
@@ -138,7 +138,7 @@ router.get("/auth/login/success", async (req, res) => {
         UserInfo: user_info,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "1m" } //Update Expired time in Production
+      { expiresIn: "1h" } //Update Expired time in Production
     );
 
     const refresh_token = refreshToken(user_info);
@@ -148,7 +148,7 @@ router.get("/auth/login/success", async (req, res) => {
       httpOnly: true,
       sameSite: "lax",
       secure: false, //true for production
-      maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day max
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 day max
     });
 
     res.status(200).json({

@@ -1,4 +1,3 @@
-// export const BASE_URL = "http://localhost:8000/api";
+const SERVER_URL = import.meta.env.VITE_SERVER_ENDPOINT;
 
-
-export const BASE_URL = "https://my-books-library-blush.vercel.app/api"
+export const BASE_URL = `${SERVER_URL}/api`;
