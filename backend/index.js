@@ -67,7 +67,8 @@ app.use(
   })
 );
 
-app.options("*", cors());
+
+// app.options("*", cors());
 // app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json({ limit: "100mb" }));
 app.use(bodyParser.urlencoded({ limit: "100mb", extended: true }));
@@ -77,6 +78,13 @@ app.use(passport.initialize());
 
 app.use(passport.session());
 
+app.get("/", (req, res) => {
+  
+  req.session.views = (req.session.views || 0) + 1;
+  console.log(`Views: ${req.session.views}`);
+
+  res.json({ status: "Backend is running", clientUrl: process.env.CLIENT_URL });
+});
 // * Routes
 app.use("/", googleOAuthRouter);
 app.use("/api/auth", authRouter);
@@ -94,18 +102,12 @@ app.use("/api/publishers", publisherRoutes);
 app.use("/api/vendors", vendorsRoutes);
 app.use("/api/branches", branchRoutes);
 app.use("/api/orders", ordersRoutes);
-
 // Bookings Routes
 app.use(bookingRoutes);
 
 app.use(notfound);
 app.use(errorHanlder);
-app.get("/", (req, res) => {
-  req.session.views = (req.session.views || 0) + 1;
-  console.log(`Views: ${req.session.views}`);
 
-  res.json({ status: "Backend is running", clientUrl: process.env.CLIENT_URL });
-});
 
 if (process.env.NODE_ENV !== "production") {
   app.listen(port, () => {
