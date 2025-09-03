@@ -6,6 +6,7 @@ const { notfound, errorHanlder } = require("./middleware/errorMiddleware.js");
 const session = require("express-session");
 const passport = require("passport");
 const cookieParser = require("cookie-parser");
+const pgSession = require('connect-pg-simple')(session);
 
 // * Import routes
 const authRouter = require("./routes/authenticationRoutes/AuthRouter.js");
@@ -24,22 +25,40 @@ const vendorsRoutes = require("./routes/VendorsRoutes.js");
 const branchRoutes = require("./routes/BranchRoutes.js");
 const ordersRoutes = require("./routes/OrdersRoutes/OrdersRoutes.js");
 const bookingRoutes = require("./routes/BookingsRoutes/index.js");
+const { pool } = require("./config/dbConfig.js");
 const port = process.env.PORT || 8100;
+
+
 const app = express();
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      httpOnly: true,
-      secure: false || process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      // maxAge: 3600000,
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 day max
-    },
-  })
-);
+// app.use(
+//   session({
+//     secret: process.env.SESSION_SECRET,
+//     resave: false,
+//     saveUninitialized: false,
+//     cookie: {
+//       httpOnly: true,
+//       secure: false || process.env.NODE_ENV === "production",
+//       sameSite: "lax",
+//       // maxAge: 3600000,
+//       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 day max
+//     },
+//   })
+// );
+
+
+app.use(session({
+  store: new pgSession({
+    pool: pool, // Use the same pool as your app
+    tableName: 'session' // Optional: custom table name
+  }),
+  secret: process.env.SESSION_SECRET || 'test', // Use env var in production
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production', // true in production
+    maxAge: 24 * 60 * 60 * 1000 // 1 day
+  }
+}));
 app.use(
   cors({
     origin: process.env.CLIENT_URL,
@@ -82,10 +101,13 @@ app.use(bookingRoutes);
 app.use(notfound);
 app.use(errorHanlder);
 app.get("/", (req, res) => {
+  req.session.views = (req.session.views || 0) + 1;
+  console.log(`Views: ${req.session.views}`);
+
   res.json({ status: "Backend is running", clientUrl: process.env.CLIENT_URL });
 });
 
-if (process.env.NODE_ENV == "development") {
+if (process.env.NODE_ENV !== "production") {
   app.listen(port, () => {
     console.log("Server is listening on port", port);
   });
