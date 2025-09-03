@@ -19,7 +19,7 @@ router.get("/auth/google", (req, res, next) => {
   const subdomain = req.query.subdomain;
 
   // console.log(action, subdomain);
-  
+
   let stateObj = { action };
 
   if (action === "join_lib") {
@@ -146,9 +146,10 @@ router.get("/auth/login/success", async (req, res) => {
     // Set JWT in an HTTP-only cookie
     res.cookie("refreshToken", refresh_token, {
       httpOnly: true,
-      sameSite: "lax",
-      secure: false, //true for production
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 day max
+      sameSite: "none", // Use "none" with secure: true for cross-origin
+      secure: process.env.NODE_ENV === "production", // true on Vercel, false locally
+      maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
+      domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : 'localhost' 
     });
 
     res.status(200).json({

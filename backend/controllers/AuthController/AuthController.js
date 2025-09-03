@@ -176,15 +176,14 @@ const RegisterUser = asyncHanlder(async (req, res) => {
     const roleAdded = await addPermissions(client, ownerRole.role_id);
     console.log(roleAdded, "Roles Added");
 
-     // Create a Dummy vendor
+    // Create a Dummy vendor
     let vendorRole = roles.find((role) => role.name == "vendor");
-    
+
     // Create dummy vendor_id for the Library
 
     let vendorId = await createDummyVendor(client, entity, vendorRole.role_id);
 
     console.log(vendorId, "Dummy Vendor Created");
-    
 
     // Step 4: Create new user associated branch_id, role_id, entity_id for user_id
 
@@ -284,11 +283,9 @@ const LoginUser = asyncHanlder(async (req, res) => {
 
     // If the user credentials
     if (!ownerAssociation) {
-      return res
-        .status(401)
-        .json({
-          error: "Invalid Credentials. Please Login from your domain Library",
-        });
+      return res.status(401).json({
+        error: "Invalid Credentials. Please Login from your domain Library",
+      });
     }
     if (!ownerAssociation.password) {
       return res.status(401).json({
@@ -328,9 +325,11 @@ const LoginUser = asyncHanlder(async (req, res) => {
       // Set the cookie with refresh token
       res.cookie("refreshToken", refresh_token, {
         httpOnly: true,
-        sameSite: "lax",
-        secure: false, //true for production
-        maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day max
+        sameSite: "none",
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
+        domain:
+          process.env.NODE_ENV === "production" ? ".vercel.app" : "localhost",
       });
       res.json({
         accessToken: AccessToken,
@@ -455,10 +454,11 @@ const SelectAccount = asyncHanlder(async (req, res) => {
     // Set the cookie with refresh token
     res.cookie("refreshToken", refresh_token, {
       httpOnly: true,
-      sameSite: "lax",
-      secure: false, //true for production
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 day max
-      domain: ".localhost",
+      sameSite: "none", // Use "none" with secure: true for cross-origin
+      secure: process.env.NODE_ENV === "production", // true on Vercel, false locally
+      maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
+      domain:
+        process.env.NODE_ENV === "production" ? ".vercel.app" : "localhost",
     });
     res.json({
       accessToken: AccessToken,
@@ -666,9 +666,10 @@ const SigninUser = asyncHanlder(async (req, res) => {
         // Set the cookie with refresh token
         res.cookie("refreshToken", refresh_token, {
           httpOnly: true,
-          sameSite: "lax",
-          secure: false, //true for production
-          maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day max
+          sameSite: "none", // Use "none" with secure: true for cross-origin
+          secure: process.env.NODE_ENV === "production", // true on Vercel, false locally
+          maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
+          domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : 'localhost' 
         });
         res.json({
           accessToken: AccessToken,
