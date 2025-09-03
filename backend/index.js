@@ -6,7 +6,7 @@ const { notfound, errorHanlder } = require("./middleware/errorMiddleware.js");
 const session = require("express-session");
 const passport = require("passport");
 const cookieParser = require("cookie-parser");
-const pgSession = require('connect-pg-simple')(session);
+const pgSession = require("connect-pg-simple")(session);
 
 // * Import routes
 const authRouter = require("./routes/authenticationRoutes/AuthRouter.js");
@@ -28,8 +28,8 @@ const bookingRoutes = require("./routes/BookingsRoutes/index.js");
 const { pool } = require("./config/dbConfig.js");
 const port = process.env.PORT || 8100;
 
-
 const app = express();
+app.set('trust proxy', 1); 
 // app.use(
 //   session({
 //     secret: process.env.SESSION_SECRET,
@@ -45,20 +45,25 @@ const app = express();
 //   })
 // );
 
-
-app.use(session({
-  store: new pgSession({
-    pool: pool, // Use the same pool as your app
-    tableName: 'session' // Optional: custom table name
-  }),
-  secret: process.env.SESSION_SECRET || 'test', // Use env var in production
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: process.env.NODE_ENV === 'production', // true in production
-    maxAge: 24 * 60 * 60 * 1000 // 1 day
-  }
-}));
+app.use(
+  session({
+    store: new pgSession({
+      pool: pool, 
+      tableName: "session", 
+      createTable: false,
+    errorLog: (err) => console.error('Session store error:', err) // Log DB errors
+    }),
+    secret: process.env.SESSION_SECRET || "test", // Use env var in production
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true, 
+      secure: process.env.NODE_ENV === "production", 
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+    },
+  })
+);
 app.use(
   cors({
     origin: process.env.CLIENT_URL,
@@ -67,8 +72,7 @@ app.use(
   })
 );
 
-
-// app.options("*", cors());
+app.options("*", cors());
 // app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json({ limit: "100mb" }));
 app.use(bodyParser.urlencoded({ limit: "100mb", extended: true }));
@@ -79,7 +83,6 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.get("/", (req, res) => {
-  
   req.session.views = (req.session.views || 0) + 1;
   console.log(`Views: ${req.session.views}`);
 
@@ -107,7 +110,6 @@ app.use(bookingRoutes);
 
 app.use(notfound);
 app.use(errorHanlder);
-
 
 if (process.env.NODE_ENV !== "production") {
   app.listen(port, () => {

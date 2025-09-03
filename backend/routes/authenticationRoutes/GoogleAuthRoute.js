@@ -146,10 +146,9 @@ router.get("/auth/login/success", async (req, res) => {
     // Set JWT in an HTTP-only cookie
     res.cookie("refreshToken", refresh_token, {
       httpOnly: true,
-      sameSite: "none", // Use "none" with secure: true for cross-origin
-      secure: process.env.NODE_ENV === "production", // true on Vercel, false locally
-      maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
-      domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : 'localhost' 
+      sameSite: "none", 
+      secure: process.env.NODE_ENV === "production", 
+      maxAge: 1 * 24 * 60 * 60 * 1000, 
     });
 
     res.status(200).json({

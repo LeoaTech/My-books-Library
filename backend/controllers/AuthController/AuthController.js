@@ -328,8 +328,8 @@ const LoginUser = asyncHanlder(async (req, res) => {
         sameSite: "none",
         secure: process.env.NODE_ENV === "production",
         maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
-        domain:
-          process.env.NODE_ENV === "production" ? ".vercel.app" : "localhost",
+        // domain:
+        //   process.env.NODE_ENV === "production" ? ".vercel.app" : "localhost",
       });
       res.json({
         accessToken: AccessToken,
@@ -348,7 +348,7 @@ const LoginUser = asyncHanlder(async (req, res) => {
           subdomain: ownerAssociation?.subdomain,
         },
         message: "Login Successfully",
-        redirect: `http://localhost:5173'/${ownerAssociation?.subdomain}`,
+        redirect: `${process.env.CLIENT_URL}/${ownerAssociation?.subdomain}`,
       });
       // res.status(200).json({
       //   message: "Login successful, select a Library",
@@ -457,8 +457,8 @@ const SelectAccount = asyncHanlder(async (req, res) => {
       sameSite: "none", // Use "none" with secure: true for cross-origin
       secure: process.env.NODE_ENV === "production", // true on Vercel, false locally
       maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
-      domain:
-        process.env.NODE_ENV === "production" ? ".vercel.app" : "localhost",
+      // domain:
+      //   process.env.NODE_ENV === "production" ? ".vercel.app" : "localhost",
     });
     res.json({
       accessToken: AccessToken,
@@ -477,7 +477,7 @@ const SelectAccount = asyncHanlder(async (req, res) => {
         subdomain: association?.subdomain,
       },
       message: "Login Successfully",
-      redirect: `http://localhost:5173'/${association?.subdomain}`,
+      redirect: `${process.env.CLIENT_URL}/${association?.subdomain}`,
     });
   } catch (error) {
     console.error("Error selecting library:", error);
@@ -669,7 +669,7 @@ const SigninUser = asyncHanlder(async (req, res) => {
           sameSite: "none", // Use "none" with secure: true for cross-origin
           secure: process.env.NODE_ENV === "production", // true on Vercel, false locally
           maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
-          domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : 'localhost' 
+          // domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : 'localhost' 
         });
         res.json({
           accessToken: AccessToken,
@@ -688,7 +688,7 @@ const SigninUser = asyncHanlder(async (req, res) => {
             subdomain: user?.subdomain,
           },
           message: "Login Successfully",
-          redirect: `http://localhost:5173/${user.subdomain}`,
+          redirect: `${process.env.CLIENT_URL}/${user.subdomain}`,
         });
       }
     } else {
