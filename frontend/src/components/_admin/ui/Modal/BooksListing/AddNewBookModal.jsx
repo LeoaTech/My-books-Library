@@ -21,7 +21,7 @@ import { useFetchBranches } from "../../../../../hooks/books/useFetchBranches";
 import { useAuthContext } from "../../../../../hooks/useAuthContext";
 import { bookSchema } from "../../../../../schemas/books";
 import { RxCross1 } from "react-icons/rx";
-import { newStyles } from "../../../shared/CreatableSelectCustomStyles";
+import { getCustomSelectStyles } from "../../../shared/CreatableSelectCustomStyles";
 import CategoryCreatableSelect from "../../../Books/CategoryCreatableSelect";
 import { useCategoryActions } from "../../../../../hooks/books/useCategoriesActions";
 import CoversCreatableSelect from "../../../Books/CoversCreatableSelect";
@@ -33,6 +33,8 @@ const AddNewBookModal = ({ setShowModal }) => {
   const { auth } = useAuthContext();
   const queryClient = useQueryClient();
 
+  const theme = localStorage.getItem("color-theme")?.replace(/"/g, '') || "light";
+  const selectStyles = useMemo(() => getCustomSelectStyles(theme), [theme]);
   const {
     register,
     control,
@@ -243,8 +245,8 @@ const AddNewBookModal = ({ setShowModal }) => {
     onSettled: () => {
       queryClient.invalidateQueries(["books"]); // invalidate books query to refetch
     },
-    onError:()=>{
-      toast.error(message||"Failed to add book")
+    onError: () => {
+      toast.error(message || "Failed to add book")
     }
   });
 
@@ -399,7 +401,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                             isClearable
                             isDisabled={isPendingAuthors}
                             isLoading={isPendingAuthors}
-                            styles={newStyles}
+                            styles={selectStyles}
                             onChange={async (newValue, actionMeta) => {
                               if (actionMeta.action === "create-option") {
                                 await handleCreateAuthor(newValue.label);
@@ -469,6 +471,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                       isPendingConditions={isPendingConditions}
                       conditionsData={conditionsData}
                       handleCreateConditions={handleCreateConditions}
+                      newStyles={selectStyles}
                     />
 
                     <CoversCreatableSelect
@@ -477,6 +480,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                       isPendingCovers={isPendingCovers}
                       coversData={coversData}
                       handleCreateCovers={handleCreateCovers}
+                      newStyles={selectStyles}
                     />
                   </div>
 
@@ -488,6 +492,8 @@ const AddNewBookModal = ({ setShowModal }) => {
                       isPendingCategories={isPendingCategories}
                       categoriesData={categoriesData}
                       handleCreateCategory={handleCreateCategory}
+                      newStyles={selectStyles}
+
                     />
                     <div className="mb-4.5 w-full xl:w-1/2">
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
@@ -526,7 +532,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                             isClearable
                             isDisabled={isPendingPublishers}
                             isLoading={isPendingPublishers}
-                            styles={newStyles}
+                            styles={selectStyles}
                             onChange={async (newValue, actionMeta) => {
                               if (actionMeta.action === "create-option") {
                                 await onPublisherCreate(newValue.label);
