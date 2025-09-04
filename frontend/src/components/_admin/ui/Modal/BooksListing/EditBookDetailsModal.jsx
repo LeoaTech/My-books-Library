@@ -17,7 +17,7 @@ import { useFetchBranches } from "../../../../../hooks/books/useFetchBranches";
 import { FetchBookById } from "../../../../../api/books";
 import { RxCross1 } from "react-icons/rx";
 import { bookSchema } from "../../../../../schemas/books";
-import { newStyles } from "../../../shared/CreatableSelectCustomStyles";
+import { getCustomSelectStyles } from "../../../shared/CreatableSelectCustomStyles";
 import FileUpload from "../../../shared/FileUpload";
 import { useCategoryActions } from "../../../../../hooks/books/useCategoriesActions";
 import ConditionsCreatableSelect from "../../../Books/ConditionsCreatableSelect";
@@ -28,6 +28,8 @@ import { useAuthContext } from "../../../../../hooks/useAuthContext";
 const EditBookDetailsModal = ({ close, bookValue }) => {
   const { auth } = useAuthContext();
   const queryClient = useQueryClient();
+  const theme = localStorage.getItem("color-theme")?.replace(/"/g, '') || "light";
+  const selectStyles = useMemo(() => getCustomSelectStyles(theme), [theme]);
 
   const { error, message, updateBook } = useSaveBook();
   const [imagesList, setImagesList] = useState([]);
@@ -435,7 +437,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                             isClearable
                             isDisabled={isPendingAuthors}
                             isLoading={isPendingAuthors}
-                            styles={newStyles}
+                            styles={selectStyles}
                             onChange={async (newValue, actionMeta) => {
                               if (actionMeta.action === "create-option") {
                                 await handleCreate(newValue.label);
@@ -507,6 +509,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                       isPendingConditions={isPendingConditions}
                       conditionsData={conditionsData}
                       handleCreateConditions={handleCreateConditions}
+                      newStyles={selectStyles}
                     />
 
                     <CoversCreatableSelect
@@ -515,6 +518,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                       isPendingCovers={isPendingCovers}
                       coversData={coversData}
                       handleCreateCovers={handleCreateCovers}
+                      newStyles={selectStyles}
                     />
                   </div>
 
@@ -527,6 +531,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                       isPendingCategories={isPendingCategories}
                       categoriesData={categoriesData}
                       handleCreateCategory={handleCreateCategory}
+                      newStyles={selectStyles}
                     />
                     <div className="mb-4.5 w-full xl:w-1/2">
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
@@ -565,7 +570,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                             isClearable
                             isDisabled={isPendingPublishers}
                             isLoading={isPendingPublishers}
-                            styles={newStyles}
+                            styles={selectStyles}
                             onChange={async (newValue, actionMeta) => {
                               // Use actionMeta.action to check if the change is a creation
                               if (actionMeta.action === "create-option") {
@@ -793,7 +798,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                             {...register("available")}
                             className="rounded bg-gray-200 border-transparent h-4 w-4 p-5 ml-2 focus:border-transparent focus:bg-gray-200 dark:text-white text-gray-700 focus:ring-1 focus:ring-offset-2 focus:ring-gray-500"
                           />
-                          <span className="ml-2">Available </span>
+                          <span className="ml-2 text-[#2c3745] dark:text-white">Available </span>
                         </label>
                       </div>
                     </div>
