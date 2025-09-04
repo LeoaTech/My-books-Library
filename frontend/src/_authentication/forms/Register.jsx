@@ -9,18 +9,20 @@ import { useNavigate } from "react-router-dom";
 import GoogleAuthLink from "./GoogleAuthLink";
 
 const schema = z.object({
-    fullName: z.string(),
+    fullName: z.string().min(3, { message: "Name is required" }),
     email: z.string().email(),
     password: z
         .string()
         .min(6, { message: "Password length must be at least 6 characters" }),
-    businessName: z.string(),
-    city: z.string(),
-    country: z.string(),
-    address: z.string(),
-    phone: z.string(),
+    businessName: z.string().min(3, { message: "Business Name is required" }),
+    city: z.string().min(3, { message: "City is required" }),
+    country: z.string().min(3, { message: "Country is required" }),
+    address: z.string().min(3, { message: "Address is required" }),
+    phone: z.string()
+        .min(8, { message: 'Phone number is required' })
+        .regex(/^\d{11}$/, { message: 'Invalid phone number format (e.g., 11 digits)' }),
     description: z.string()?.optional(),
-    typeOfBooks: z.string(),
+    typeOfBooks: z.string().min(1, { message: "Select type of books" }),
     hasMultipleBranches: z.boolean(),
     deliverIntercity: z.boolean(),
 
@@ -44,6 +46,7 @@ const Register = () => {
         await registerUser(data);
 
     };
+
 
     /* Reset the Form Fields */
     useEffect(() => {
@@ -211,6 +214,11 @@ const Register = () => {
                                             placeholder="Country"
                                             className="custom-input"
                                         />
+                                        {errors?.country?.message && (
+                                            <p className="format-message error">
+                                                {errors.country.message}
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
 
@@ -229,6 +237,11 @@ const Register = () => {
                                         <option value="Softcover">Soft Cover</option>
                                         <option value="Both">Both</option>
                                     </select>
+                                    {errors?.typeOfBooks?.message && (
+                                        <p className="format-message error">
+                                            {errors.typeOfBooks.message}
+                                        </p>
+                                    )}
                                 </div>
 
                                 {/* Checkboxes in Row */}
