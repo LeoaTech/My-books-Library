@@ -5,16 +5,22 @@ export const fetchBooks = async ({ signal }) =>
   await axios
     .get(`${BASE_URL}/books`, { signal, withCredentials: true })
     .then((res) => {
-      // console.log(res, "Books fetched");
+      console.log(res, "Books fetched");
 
-    //   console.log(res.data);
+      console.log(res.data);
       if (!res.status == 200) {
         throw new Error("Couldn't fetch books");
       } else {
-        return res?.data;
+        return res?.data || [];
       }
     })
-    .catch((err) => console.log(err));
+   .catch((err) => {
+      if (err.name === "AbortError") {
+        return null;
+      }
+      console.error("Fetch Books error:", err);
+      throw err;
+    });
 
 // Fetch Book Details by ID
 
@@ -30,6 +36,6 @@ export const FetchBookById = async (bookId) => {
     return bookData;
   } catch (error) {
     console.error("Error fetching books", error);
-    throw error; // Rethrow the error to let React Query handle it
+    throw error; 
   }
 };
