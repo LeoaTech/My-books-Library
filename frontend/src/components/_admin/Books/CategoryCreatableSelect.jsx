@@ -1,14 +1,15 @@
 import { useEffect, useMemo } from 'react';
 import { Controller } from 'react-hook-form';
 import CreatableSelect from 'react-select/creatable';
-import { newStyles } from '../shared/CreatableSelectCustomStyles';
 
 const CategoryCreatableSelect = ({
     control,
     errors,
     isPendingCategories,
     categoriesData,
-    handleCreateCategory }) => {
+    handleCreateCategory,
+    newStyles
+ }) => {
 
     console.log(categoriesData, "Inside the component");
 

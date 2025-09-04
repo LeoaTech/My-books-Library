@@ -1,7 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { Controller } from 'react-hook-form';
 import CreatableSelect from 'react-select/creatable';
-import { newStyles } from '../shared/CreatableSelectCustomStyles';
 
 const CoversCreatableSelect = ({
   control,
@@ -9,6 +8,7 @@ const CoversCreatableSelect = ({
   isPendingCovers,
   coversData,
   handleCreateCovers,
+  newStyles
 }) => {
 
   console.log(coversData, "cover component");

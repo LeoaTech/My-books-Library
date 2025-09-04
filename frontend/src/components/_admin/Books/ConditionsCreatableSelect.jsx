@@ -1,7 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { Controller } from 'react-hook-form';
 import CreatableSelect from 'react-select/creatable';
-import { newStyles } from '../shared/CreatableSelectCustomStyles';
 
 const ConditionsCreatableSelect = ({
     control,
@@ -9,7 +8,9 @@ const ConditionsCreatableSelect = ({
     isPendingConditions,
     conditionsData,
     handleCreateConditions,
+    newStyles
 }) => {
+
 
     console.log(conditionsData, "Inside the component");
 
