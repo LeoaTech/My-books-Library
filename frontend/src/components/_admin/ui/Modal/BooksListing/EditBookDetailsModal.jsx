@@ -39,6 +39,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
   const { data: bookDetail, isPending: isBookLoading, error: isBookError } = useQuery({
     queryFn: () => FetchBookById(bookValue),
     queryKey: ["books", { bookValue }],
+    enabled: !bookValue?.title
   });
 
 
@@ -193,7 +194,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
   });
 
   // console.log(bookDetail, "Edit book details");
-
+  const bookDetails = bookValue?.title ? bookValue : bookDetail?.book
 
   const {
     register,
@@ -205,34 +206,34 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
   } = useForm({
     defaultValues: useMemo(
       () => ({
-        title: bookDetail?.book?.title || '',
-        author: bookDetail?.book
-          ? { value: bookDetail.book.author, label: bookDetail.book.author_name }
+        title: bookDetails?.title || '',
+        author: bookDetails
+          ? { value: bookDetails?.author, label: bookDetails?.author_name }
           : null,
-        publisher: bookDetail?.book
-          ? { value: bookDetail.book.publisher, label: bookDetail.book.publisher_name }
+        publisher: bookDetails
+          ? { value: bookDetails?.publisher, label: bookDetails?.publisher_name }
           : null,
-        category: bookDetail?.book
-          ? { value: bookDetail.book.category, label: bookDetail.book.category_name }
+        category: bookDetails
+          ? { value: bookDetails?.category, label: bookDetails?.category_name }
           : null,
-        cover: bookDetail?.book
-          ? { value: bookDetail.book.cover, label: bookDetail.book.cover_name }
+        cover: bookDetails
+          ? { value: bookDetails?.cover, label: bookDetails?.cover_name }
           : null,
-        condition: bookDetail?.book
-          ? { value: bookDetail.book.condition, label: bookDetail.book.condition_name }
+        condition: bookDetails
+          ? { value: bookDetails?.condition, label: bookDetails?.condition_name }
           : null,
-        // branch_id: bookDetail?.book ? { value: bookDetail.book.branch_id, label: bookDetail.book.branch_name } : null,
-        isbn: bookDetail?.book?.isbn || '',
-        isAvailable: bookDetail?.book?.isAvailable || false,
-        member_price: bookDetail?.book?.member_price || "",
-        purchase_price: bookDetail?.book?.purchase_price || "",
-        vendor_id: bookDetail?.book?.vendor_id || null,
-        branch_id: bookDetail?.book?.branch_id || null,
-        cover_img_url: bookDetail?.book?.cover_img_url || [],
-        discount_percentage: bookDetail?.book?.discount_percentage || '',
-        summary: bookDetail?.book?.summary || '',
-        publish_year: bookDetail?.book?.publish_year || '',
-        credit: bookDetail?.book?.credit || '',
+        // branch_id: bookDetails ? { value: bookDetails?.branch_id, label: bookDetails?.branch_name } : null,
+        isbn: bookDetails?.isbn || '',
+        isAvailable: bookDetails?.isAvailable || false,
+        member_price: bookDetails?.member_price || "",
+        purchase_price: bookDetails?.purchase_price || "",
+        vendor_id: bookDetails?.vendor_id || null,
+        branch_id: bookDetails?.branch_id || null,
+        cover_img_url: bookDetails?.cover_img_url || [],
+        discount_percentage: bookDetails?.discount_percentage || '',
+        summary: bookDetails?.summary || '',
+        publish_year: bookDetails?.publish_year || '',
+        credit: bookDetails?.credit || '',
       }),
       [bookDetail]
     ),
@@ -244,39 +245,39 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
     // console.log("Render component");
 
     reset({
-      ...bookDetail?.book,
+      ...bookDetails,
       author: {
-        label: bookDetail?.book?.author_name,
-        value: bookDetail?.book?.author,
+        label: bookDetails?.author_name,
+        value: bookDetails?.author,
       },
       publisher: {
-        label: bookDetail?.book?.publisher_name,
-        value: bookDetail?.book?.publisher,
+        label: bookDetails?.publisher_name,
+        value: bookDetails?.publisher,
       },
       cover: {
-        label: bookDetail?.book?.cover_name,
-        value: bookDetail?.book?.cover,
+        label: bookDetails?.cover_name,
+        value: bookDetails?.cover,
       },
       condition: {
-        label: bookDetail?.book?.condition_name,
-        value: bookDetail?.book?.condition,
+        label: bookDetails?.condition_name,
+        value: bookDetails?.condition,
       },
       category: {
-        label: bookDetail?.book?.category_name,
-        value: bookDetail?.book?.category,
+        label: bookDetails?.category_name,
+        value: bookDetails?.category,
       },
     });
-  }, [reset, bookDetail?.book]);
+  }, [reset, bookDetails]);
 
   // update the existing cover_images url in the imagesList
   useEffect(() => {
-    if (bookDetail?.book?.cover_img_url?.length > 0) {
-      // console.log(typeof bookDetail.book.cover_img_url, "Cover images", bookDetail?.book?.cover_img_url);
-      setImagesList(bookDetail.book.cover_img_url);
+    if (bookDetails?.cover_img_url?.length > 0) {
+      // console.log(typeof bookDetails?.cover_img_url, "Cover images", bookDetails?.cover_img_url);
+      setImagesList(bookDetails?.cover_img_url);
     } else {
       setImagesList([])
     }
-  }, [bookDetail?.book?.cover_img_url]);
+  }, [bookDetails?.cover_img_url]);
 
   // const selectedAuthor = watch("author");
   // const selectedCondition = watch("condition");
@@ -312,7 +313,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
         cover_img_url:
           imagesList?.length > 0
             ? [...imagesList]
-            : bookDetail?.book?.cover_img_url,
+            : bookDetails?.cover_img_url,
         imageUpdated: imagesList?.length > 0 ? true : false,
       };
 
@@ -357,7 +358,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
     !coversData &&
     !publishersData &&
     !vendorsData &&
-    !branchesData || !bookDetail?.book
+    !branchesData || !bookDetails
   ) {
     return (
       <div className="flex justify-center items-center fixed inset-0 bg-[#64748B] bg-opacity-75 transition-opacity">
@@ -651,7 +652,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                   </div>
                   {/* Seventh Row */}
                   <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap:9">
-                    {/* <div className="w-full xl:w-1/2" autoFocus>
+                    <div className="w-full xl:w-1/2" autoFocus>
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
                         Vendor
                       </label>
@@ -662,7 +663,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                           name="vendor_id"
                           {...register("vendor_id")}
                           defaultValue={vendorsData?.vendors?.find((ven) => {
-                            if (ven.id == bookDetail?.book?.vendor_id)
+                            if (ven.id == bookDetails?.vendor_id)
                               return ven.id;
                           })}
                         >
@@ -698,7 +699,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                           {errors.vendor_id.message}
                         </p>
                       )}
-                    </div> */}
+                    </div>
 
                     <div className="w-full xl:w-1/2">
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
@@ -711,7 +712,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                           {...register("branch_id")}
                         // defaultValue={branchesData?.branches?.find(
                         //   (branch) => {
-                        //     if (branch.name == bookDetail?.book?.branch_name)
+                        //     if (branch.name == bookDetails?.branch_name)
                         //       return branch.id;
                         //   }
                         // )}
