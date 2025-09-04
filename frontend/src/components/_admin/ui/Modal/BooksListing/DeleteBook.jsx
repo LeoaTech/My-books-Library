@@ -29,7 +29,7 @@ const DeleteBook = ({ book, close }) => {
               height: 18,
               width: 23,
               cursor: "pointer",
-              color: "#FFF",
+              color: "#FFF",  
               strokeWidth: 2,
             }}
             onClick={close}
@@ -43,16 +43,16 @@ const DeleteBook = ({ book, close }) => {
               </h3>
             </div>
 
-            <p className="mt-10 text-xl text-blue-500">
-              {`Are u sure you want to delete the Book `}<span className="font-bold text-orange-400">{`${book?.title}?`}</span>
+            <p className="mt-10 text-xl sm:w-[500px]  text-blue-500 md:break-all">
+              {`Are u sure you want to delete the Book `}<span className="font-bold text-[17px] text-orange-400">{`${book?.title}`}</span> {` from the library?`}
             </p>
-
             <div className="mt-10 flex justify-evenly gap-2">
               <button
                 onClick={() => deleteBookMutation(book?.id)}
                 className="border p-2 px-10 text-medium text-md bg-slate-600 text-white rounded-md text-[17px] hover:bg-slate-400"
               >
-                {isLoading ? "Removing" : "Yes"}
+                {isLoading ? "Deleting..."
+                  : "Deleting"}
               </button>
               <button
                 onClick={close}
