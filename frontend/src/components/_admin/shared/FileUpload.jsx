@@ -107,7 +107,7 @@ export default function FileUpload({ imagesList, setImagesList }) {
 
             {imagesList?.length > 0 && (
                 <div className="space-y-3">
-                    <h3 className="font-semibold">Selected Media:</h3>
+                    <h3 className="font-semibold text-[#2c3745] dark:text-white">Selected Media:</h3>
                     {imagesList?.map((file, idx) => {
                         console.log(file, "File");
 
