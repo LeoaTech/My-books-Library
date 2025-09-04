@@ -116,13 +116,13 @@ const Tables = ({ hasPermission, searchQuery }) => {
           return (
             <div className=" max-w-[120px] flex gap-3">
               {/* {hasPermission("EDIT") ? ( */}
-                <button
-                  onClick={() => editBookDetails(bookId)}
-                  className="text-green-600"
-                >
-                  <MdEdit />
-                </button>
-           {/*    ) : (
+              <button
+                onClick={() => editBookDetails(bookId)}
+                className="text-green-600"
+              >
+                <MdEdit />
+              </button>
+              {/*    ) : (
                 <div className="group relative m-2 flex justify-center">
                   <span className="absolute -top-10 scale-0 transition-all px-3 py-1 rounded bg-gray-800 p-2 text-xs text-red-500 group-hover:scale-100">
                     Access Denied!
@@ -140,12 +140,12 @@ const Tables = ({ hasPermission, searchQuery }) => {
                 <MdOutlineRemoveRedEye />
               </button>
               {/* {hasPermission("DELETE") ? ( */}
-                <button
-                  onClick={() => deleteBookDetails(bookId, bookTitle)}
-                  className="text-red-500"
-                >
-                  <MdOutlineDeleteOutline />
-                </button>
+              <button
+                onClick={() => deleteBookDetails(bookId, bookTitle)}
+                className="text-red-500"
+              >
+                <MdOutlineDeleteOutline />
+              </button>
               {/* ) : (
                 <div className="group relative m-2 flex justify-center">
                   <span className="absolute -top-10 scale-0 transition-all rounded bg-gray-800 p-2 text-xs text-red-500 group-hover:scale-100">
@@ -185,7 +185,13 @@ const Tables = ({ hasPermission, searchQuery }) => {
   const [deleteBookModal, setDeleteBookModal] = useState(false);
 
   const viewBookDetails = (id) => {
-    setValues(id);
+    const bookDetails = booksData?.books?.find((book) => book.id === id);
+    if (bookDetails) {
+      setValues(bookDetails)
+    } else {
+      setValues(id);
+    }
+
     setBookDetailModal(true);
   };
 
@@ -195,7 +201,12 @@ const Tables = ({ hasPermission, searchQuery }) => {
   };
 
   const editBookDetails = (id) => {
-    setValues(id);
+    const bookDetails = booksData?.books?.find((book) => book.id === id);
+    if (bookDetails) {
+      setValues(bookDetails)
+    } else {
+      setValues(id)
+    }
 
     setEditDetailModal(true);
   };

@@ -25,7 +25,7 @@ import { IoDiamondOutline } from "react-icons/io5";
 const settings = {
   dots: true,
   lazyLoad: true,
-  infinite: true,
+  infinite: false,
   speed: 500,
   slidesToShow: 1,
   slidesToScroll: 1,
@@ -34,50 +34,53 @@ const BookDetailsModal = ({ data, close }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showText, setShowText] = useState(false);
   const queryClient = useQueryClient();
-  const { deleteBook } = useSaveBook();
-
-  const { mutateAsync: deleteBookMutation } = useMutation({
-    mutationFn: deleteBook,
-    onSuccess: () => {
-      setIsLoading(false);
-      queryClient.invalidateQueries(["books"]);
-      close();
-    },
-  });
-
-  // Delete Book By ID
-  // async function deleteBookID(bookId) {
-  //   setIsLoading(true);
-
-  //   const imagesIds = bookDetails?.book?.cover_img_url?.map(
-  //     (img) => img.public_id
-  //   );
-
-  //   const deletedData = { book_id: bookId, cover_img_url: imagesIds };
-  //   await deleteBookMutation(deletedData);
-  // }
 
   /* Fetch Book Details */
-  const { isPending: isPendingBook, data: bookDetails } = useQuery({
+  const { isPending: isPendingBook, data: bookDetails, isError: errorLoadingBookDetails } = useQuery({
     queryFn: () => FetchBookById(data),
     queryKey: ["books", { data }],
+    enabled: !data?.title
   });
 
-  if (isPendingBook) {
-    <div className="flex justify-center items-center fixed inset-0 bg-[#64748B] bg-opacity-75 transition-opacity">
-      <div className="relative p-5 rounded-sm">
-        <div className="flex items-center justify-center p-5 z-10 w-screen overfow-hidden xs:w-[350px] xs:h-[300px] overflow-y-auto ">
-          <div className="flex flex-col">
-            <div className="px-10 relative rounded-sm border border-[#E2E8F0] bg-white shadow-default dark:border-[#2E3A47] dark:bg-[#24303F] md:px-8 md:py-8 ">
-              <div className="max-h-[600px] px-4 w-full overflow-hidden overflow-y-auto">
-                <h1>Loading... Please wait</h1>
+
+  if (!data?.title && isPendingBook) {
+    return (
+      <div className="flex justify-center items-center fixed inset-0 bg-[#64748B] bg-opacity-75 transition-opacity">
+        <div className="relative p-5 rounded-sm">
+          <div className="flex items-center justify-center p-5 z-10 w-screen overfow-hidden xs:w-[350px] xs:h-[300px] overflow-y-auto ">
+            <div className="flex flex-col">
+              <div className="px-10 relative rounded-sm border border-[#E2E8F0] bg-white shadow-default dark:border-[#2E3A47] dark:bg-[#24303F] md:px-8 md:py-8 ">
+                <div className="max-h-[600px] px-4 w-full overflow-hidden overflow-y-auto">
+                  <h1>Loading... Please wait</h1>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>;
+    )
   }
+
+  if (!data?.title && errorLoadingBookDetails) {
+    return (
+      <div className="flex justify-center items-center fixed inset-0 bg-[#64748B] bg-opacity-75 transition-opacity">
+        <div className="relative p-5 rounded-sm">
+          <div className="flex items-center justify-center p-5 z-10 w-screen overfow-hidden xs:w-[350px] xs:h-[300px] overflow-y-auto ">
+            <div className="flex flex-col">
+              <div className="px-10 relative rounded-sm border border-[#E2E8F0] bg-white shadow-default dark:border-[#2E3A47] dark:bg-[#24303F] md:px-8 md:py-8 ">
+                <div className="max-h-[600px] px-4 w-full overflow-hidden overflow-y-auto">
+                  <h1>Please Try again Later</h1>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+  const bookDetail = data?.title ? data : bookDetails.book;
+  // console.log(bookDetail, "View Book Details")
+
   return (
     <div className="fixed left-0 top-0  inset-0 bg-[#64748B] bg-opacity-75 transition-opacity dark:bg-slate-300 dark:bg-opacity-75 lg:left-[18rem]">
       <div className="relative p-5 rounded-md">
@@ -99,7 +102,7 @@ const BookDetailsModal = ({ data, close }) => {
             <div className="text-center bg-slate-100 shadow-md mb-5 rounded-sm p-3 border-b border-blue-200  py-4 px-6.5 dark:border-[#2E3A47] dark:bg-[#2E3A47]">
               <h3 className="text-center font-bold text-[#313D4A] dark:text-white">
                 <span className="text-3xl">
-                  {bookDetails?.book?.title?.toUpperCase()}
+                  {bookDetail?.title?.toUpperCase()}
                 </span>
               </h3>
             </div>
@@ -108,33 +111,58 @@ const BookDetailsModal = ({ data, close }) => {
 
             <div className="max-h-[500px] px-5 w-full overflow-hidden overflow-y-auto text-slate-800">
               <div className="flex flex-col lg:flex-row lg:justify-between lg:gap-12 overflow-hidden">
-                <div className="flex-shrink-0 mb-10 w-full h-[400px] lg:w-[400px] ">
+                {/* <div className="flex-shrink-0 mb-10 w-full h-[400px] lg:w-[400px] ">
                   <Slider
                     {...settings}
                     className="w-full h-[400px] lg:w-[400px] lg:h-[410px]"
                   >
-                    {bookDetails?.book?.cover_img_url?.length >0 ? bookDetails?.book?.cover_img_url?.map((image) => (
+                    {bookDetail?.cover_img_url?.length > 0 ? bookDetail?.cover_img_url?.map((image) => (
                       <div key={image?.public_id}>
                         <img
                           src={image?.secure_url || NoImage}
                           alt="book_cover"
-                          className="w-full h-[380px] object-contain overflow-hidden "
+                          className="bg-no-repeat w-full h-[380px] object-contain overflow-hidden "
                         />
                       </div>
-                    )):<img
-                          src={NoImage}
-                          alt="No Image Found"
-                          className="w-full h-[380px] object-contain overflow-hidden "
-                        />}
+                    )) : <img
+                      src={NoImage}
+                      alt="No Image Found"
+                      className="w-full h-[380px] object-contain overflow-hidden "
+                    />}
                   </Slider>
+                </div> */}
+                <div className="flex-shrink-0 mb-10 w-full h-[400px] lg:w-[400px] ">
+                  {bookDetail?.cover_img_url?.length > 0 ? (
+                    <Slider
+                      {...settings}
+                      className="w-full h-[400px] lg:w-[400px] lg:h-[410px]"
+                    >
+                      {bookDetail?.cover_img_url?.map((image) => (
+                        <div key={image?.public_id}>
+                          <img
+                            src={image?.secure_url || NoImage}
+                            alt="book_cover"
+                            className="bg-no-repeat w-full h-[380px] object-contain overflow-hidden"
+                          />
+                        </div>
+                      ))}
+                    </Slider>
+                  ) : (
+                    <img
+                      src={NoImage}
+                      alt="No Image Found"
+                      className="w-full h-[380px] object-contain overflow-hidden"
+                    />
+                  )}
                 </div>
+
                 <div className="mt-20 py-10 flex flex-col flex-grow gap-2 md:mt-0 ">
                   <span className="flex items-center gap-2 text-[#799db8] text-medium font-medium">
                     <PiUserFocusFill />
                     AUTHOR
                   </span>
                   <h3 className="ml-10 text-md text-[#282b2c] capitalize dark:text-white font-semibold">
-                    {bookDetails?.book?.author_name}
+                    {bookDetail?.author_name}
                   </h3>
 
                   <span className="flex items-center gap-2 text-[#799db8] text-medium font-medium">
@@ -143,8 +171,8 @@ const BookDetailsModal = ({ data, close }) => {
                   </span>
 
                   <p className="ml-10 text-md text-[#282b2c] dark:text-white font-medium">
-                    {/* {bookDetails?.book?.summary} */}
-                    {`Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquid, accusamus. Atque dolorem dolor cum obcaecati repudiandae vel ad corporis, omnis praesentium tenetur aperiam reprehenderit iure magni saepe consequatur, ab magnam nisi vero aut eligendi illum quia! ${
+                    {bookDetail?.summary}
+                    {/* {`Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquid, accusamus. Atque dolorem dolor cum obcaecati repudiandae vel ad corporis, omnis praesentium tenetur aperiam reprehenderit iure magni saepe consequatur, ab magnam nisi vero aut eligendi illum quia! ${
                       showText
                         ? "Rem nesciunt saepe, quas laboriosam ad maiores, cum tempore eum molestiae necessitatibus, qui odio ducimus harum voluptatum tempora expedita omnis sapiente voluptatibus? Voluptatum nihil suscipit mollitia, natus ad, quasi voluptatem quibusdam possimus harum rerum, maxime velit alias earum pariatur unde illum doloribus cupiditate repellat laboriosam et officia dignissimos cum itaque? Totam architecto natus, quia eum minus reiciendis corporis inventore excepturi error ipsa magni delectus soluta adipisci amet quaerat nesciunt quae quasi. Obcaecati ut illo provident! Facilis minima, iste enim eveniet voluptatibus magnam nostrum expedita dignissimos sit! Nihil ad, neque consequatur, laborum blanditiis fuga numquam reiciendis quos deleniti aperiam molestias eos voluptas. Harum totam nisi dolor odio, amet ratione quas tempore accusamus tempora aliquam sed."
                         : ""
@@ -155,7 +183,7 @@ const BookDetailsModal = ({ data, close }) => {
                       onClick={() => setShowText(!showText)}
                     >
                       {showText ? "Show Less" : "Show More"}
-                    </span>
+                    </span> */}
                   </p>
 
                   <p className="mb-3 text-md text-[#282b2c] dark:text-white font-medium ">
@@ -164,7 +192,7 @@ const BookDetailsModal = ({ data, close }) => {
                     </span>
                     <span className="flex items-center gap-2 mx-10 py-0.5 text-lg rounded-xl text-[#4b5668]  dark:text-white">
                       <GiTwoCoins className="h-22 text-lg" />{" "}
-                      {bookDetails?.book?.credit}
+                      {bookDetail?.credit}
                     </span>
                   </p>
                 </div>
@@ -183,7 +211,7 @@ const BookDetailsModal = ({ data, close }) => {
                     </span>
                     <span className=" flex items-center gap-2 mx-5 py-0.5 px-3 rounded-xl text-[#434d5d] text-2xl dark:text-white">
                       <FaDollarSign className="text-sm h-12" />{" "}
-                      {bookDetails?.book?.member_price}
+                      {bookDetail?.member_price}
                     </span>
                   </p>
 
@@ -193,7 +221,7 @@ const BookDetailsModal = ({ data, close }) => {
                     </span>
                     <span className=" flex items-center gap-2 mx-5 py-0.5 px-3 rounded-xl text-[#434d5d] text-2xl dark:text-white">
                       <FaDollarSign className="text-sm h-12" />
-                      {bookDetails?.book?.purchase_price}
+                      {bookDetail?.purchase_price}
                     </span>
                   </p>
 
@@ -208,7 +236,7 @@ const BookDetailsModal = ({ data, close }) => {
                         <GiBookAura /> PUBLISHER
                       </span>
                       <h4 className="ml-10 text-md text-[#282b2c] dark:text-white font-semibold">
-                        {bookDetails?.book?.publisher_name}
+                        {bookDetail?.publisher_name}
                       </h4>
                     </div>
 
@@ -218,7 +246,7 @@ const BookDetailsModal = ({ data, close }) => {
                         PUBLISH YEAR
                       </span>
                       <h5 className="ml-10 text-md text-[#282b2c] dark:text-white font-semibold">
-                        {bookDetails?.book?.publish_year}
+                        {bookDetail?.publish_year}
                       </h5>
                     </div>
                   </div>
@@ -237,7 +265,7 @@ const BookDetailsModal = ({ data, close }) => {
                       ISBN{" "}
                     </span>
                     <span className="mt-1 text-md ml-10 ">
-                      {bookDetails?.book?.isbn}
+                      {bookDetail?.isbn}
                     </span>
                   </h5>
 
@@ -247,7 +275,7 @@ const BookDetailsModal = ({ data, close }) => {
                       CATEGORY
                     </span>
                     <span className="mt-1 text-md ml-10  ">
-                      {bookDetails?.book?.category_name}
+                      {bookDetail?.category_name}
                     </span>
                   </p>
 
@@ -257,7 +285,7 @@ const BookDetailsModal = ({ data, close }) => {
                       Availble for Sale:{" "}
                     </span>{" "}
                     <span className="mt-1 text-md ml-10 ">
-                      {bookDetails?.book?.available
+                      {bookDetail?.available
                         ? "IN STOCK"
                         : "OUT OF STOCK"}
                     </span>
@@ -274,13 +302,11 @@ const BookDetailsModal = ({ data, close }) => {
                     </span>
 
                     <span className="ml-10 text-sm text-gray-700] dark:text-white font-semibold">
-                      {bookDetails?.book?.branch_name}
+                      {bookDetail?.branch_name}
                     </span>
                   </p>
 
-                  <p className="mr-10 flex flex-col gap-3">
-                    <span className="flex items-center gap-2 text-[#8b9ead] text-medium font-medium">
-                      {/* <span>
+                  {/* <span>
                         <img
                           src={marketStore}
                           alt="vendor"
@@ -288,12 +314,18 @@ const BookDetailsModal = ({ data, close }) => {
                           width={14}
                         />
                       </span> */}
-                      <BsPersonWorkspace />
-                      VENDOR
-                    </span>
-                    <span className="ml-10 text-sm text-gray-700 dark:text-white font-semibold">
-                      {bookDetails?.book?.vendor}
-                    </span>
+                  <p className="mr-10 flex flex-col gap-3">
+                    {bookDetail?.vendor &&
+                      <>
+                        <span className="flex items-center gap-2 text-[#8b9ead] text-medium font-medium">
+
+                          <BsPersonWorkspace />
+                          VENDOR
+                        </span>
+                        <span className="ml-10 text-sm text-gray-700 dark:text-white font-semibold">
+                          {bookDetail?.vendor}
+                        </span>
+                      </>}
                   </p>
                 </div>
 
@@ -307,7 +339,7 @@ const BookDetailsModal = ({ data, close }) => {
                       CONDITION
                     </span>
                     <span className="ml-10 text-md text-gray-700 dark:text-white font-semibold">
-                      {bookDetails?.book?.condition_name}
+                      {bookDetail?.condition_name}
                     </span>
                   </p>
 
@@ -316,14 +348,14 @@ const BookDetailsModal = ({ data, close }) => {
                       <GiBookCover /> COVER
                     </span>
                     <span className="ml-10 text-md text-gray-700 dark:text-white font-semibold">
-                      {bookDetails?.book?.cover_name}
+                      {bookDetail?.cover_name}
                     </span>
                   </p>
                 </div>
                 <div className="border-b border-blue-200"></div>
 
                 {/* Comments Section */}
-                <div className="mt-5">
+                {/* <div className="mt-5">
                   <h1 className="text-xl font-medium flex justify-start items-center gap-2">
                     <MdOutlineReviews />
                     Comments
@@ -331,7 +363,7 @@ const BookDetailsModal = ({ data, close }) => {
                   <div className="flex justify-center item-center bg-neutral-100 rounded-md p-10 m-5 dark:bg-slate-700">
                     Coming Soon
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
 
