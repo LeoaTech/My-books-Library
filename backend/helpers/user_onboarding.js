@@ -31,7 +31,7 @@ async function checkSubdomain(client, subdomain) {
 
 async function addPermissions(client, roleId) {
   const getAllPermissions = await db.query(
-    `Select permission_id from permissions`
+    `Select permission_id from permissions WHERE is_default=$1`,[true]
   );
 
   console.log(getAllPermissions.rowCount, "Get all permissions");
@@ -124,11 +124,11 @@ async function createDefaultRoles(client, entityId) {
 
 async function createRole(client, entityId, role_type) {
   const query = `
-    INSERT INTO roles (entity_id, name)
-    VALUES ($1, $2)
+    INSERT INTO roles (entity_id, name,is_default)
+    VALUES ($1, $2,$3)
     RETURNING role_id,name;
   `;
-  const values = [entityId, role_type];
+  const values = [entityId, role_type,true];
   const result = await client.query(query, values);
   console.log(result.rows[0], "Roles table");
 
