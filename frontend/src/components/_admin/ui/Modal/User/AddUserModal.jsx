@@ -101,8 +101,8 @@ const AddUserModal = ({ setOpenModal }) => {
 
   if (isPending) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#64748B]/75 dark:bg-slate-300/75 lg:left-[18rem]">
-        <div className="relative bg-neutral-50 overflow-y-auto dark:border-[#2E3A47] dark:bg-[#24303F] p-10 rounded-md shadow-lg">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#64748B]/75 dark:bg-slate-300/65 lg:left-[18rem]">
+        <div className="relative bg-neutral-50 dark:border-[#2E3A47] dark:bg-[#24303F] p-10 rounded-md shadow-lg ">
           {/* Modal Close button */}
           <div className="absolute top-4 right-4">
             <RxCross1
@@ -117,10 +117,11 @@ const AddUserModal = ({ setOpenModal }) => {
             />
           </div>
 
-          <div className="flex flex-col justify-between items-center gap-5">
+          <div className="flex flex-col justify-between items-center gap-5  overflow-hidden">
             <h3 className="mb-5 font-bold text-[#313D4A] dark:text-white">
-              Create User
+              Add New User
             </h3>
+
             <div>
               <Loader />
             </div>
@@ -134,7 +135,7 @@ const AddUserModal = ({ setOpenModal }) => {
   if (error) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#64748B]/75 dark:bg-slate-300/65 lg:left-[18rem]">
-        <div className="relative bg-neutral-50 dark:border-[#2E3A47] dark:bg-[#24303F] p-10 rounded-md shadow-lg">
+        <div className="relative bg-neutral-50 dark:border-[#2E3A47] dark:bg-[#24303F] p-10 rounded-md shadow-lg ">
           {/* Modal Close button */}
           <div className="absolute top-4 right-4">
             <RxCross1
@@ -149,17 +150,14 @@ const AddUserModal = ({ setOpenModal }) => {
             />
           </div>
 
-          <div className="flex flex-col justify-between items-center gap-5">
+          <div className="flex flex-col justify-between items-center gap-5  overflow-hidden">
             <h3 className="mb-5 font-bold text-[#313D4A] dark:text-white">
-              Create User
+              Add New User
             </h3>
-            <div>
-              <Loader />
-            </div>
-
           </div>
 
-        </div></div>
+        </div>
+      </div>
     )
   }
 
@@ -192,7 +190,8 @@ const AddUserModal = ({ setOpenModal }) => {
 
                   <div className="w-full" autoFocus>
                     <label htmlFor="name" className="mb-2.5 block text-[#0284c7] dark:text-white">
-                      Full Name
+                      Full Name                        <span className="text-red-600">*</span>
+
                     </label>
                     <input
 
@@ -205,7 +204,8 @@ const AddUserModal = ({ setOpenModal }) => {
 
                   <div className="w-full">
                     <label htmlFor="email" className="mb-2.5 block text-[#0284c7] dark:text-white">
-                      Email
+                      Email                        <span className="text-red-600">*</span>
+
                     </label>
                     <input id="email" type="email" {...register('email')} className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                     />
@@ -217,7 +217,8 @@ const AddUserModal = ({ setOpenModal }) => {
 
                   <div className="w-full">
                     <label htmlFor="password" className="mb-2.5 block text-[#0284c7] dark:text-white">
-                      Password
+                      Password                        <span className="text-red-600">*</span>
+
                     </label>
                     <input id="password" type="password" {...register('password')} className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                     />
@@ -271,7 +272,8 @@ const AddUserModal = ({ setOpenModal }) => {
 
                 <div className="w-full mb-10">
                   <label className="mb-2.5 block text-[#259AE6] dark:text-white">
-                    Roles
+                    Roles                        <span className="text-red-600">*</span>
+
                   </label>
                   <div className="relative z-20 bg-transparent dark:bg-[#1d2a39]">
                     <select
@@ -320,7 +322,7 @@ const AddUserModal = ({ setOpenModal }) => {
                   {isSubmitting ? <LoadingSpinner /> : 'Create User'}
                 </button>
               </form>
-              </div>
+            </div>
           </div>
         </div>
       </div>
