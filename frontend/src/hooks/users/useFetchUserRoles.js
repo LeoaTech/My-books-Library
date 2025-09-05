@@ -12,7 +12,14 @@ const fetchUsers = async ({ signal }) =>
         return res.json();
       }
     })
-    .catch((err) => console.log(err));
+     .catch((err) => {
+      if (err.name === "AbortError") {
+        return null;
+      }
+      console.error("Fetch users error:", err);
+      throw err;
+    });
+
 
 export const useFetchUserRoles = () => {
   return useQuery({

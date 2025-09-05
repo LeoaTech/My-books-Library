@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { BASE_URL } from "../../utiliz/baseAPIURL";
-
+import { useAuthContext } from "../useAuthContext";
 // API CALL to FETCH  Roles
 
 const fetchPermissions = async ({ signal }) =>
@@ -12,11 +12,19 @@ const fetchPermissions = async ({ signal }) =>
         return res.json();
       }
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      if (err.name === "AbortError") {
+        return null;
+      }
+      console.error("Fetch Permissions error:", err);
+      throw err;
+    });
 
 export const useFetchPermissions = () => {
+  const { auth } = useAuthContext();
   return useQuery({
     queryKey: ["permissions"],
     queryFn: fetchPermissions,
+    enabled: auth?.auth || auth?.accessToken,
   });
 };

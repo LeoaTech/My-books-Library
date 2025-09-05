@@ -15,7 +15,14 @@ const fetchRolesPermissions = async ({ signal }) =>
         return res.json();
       }
     })
-    .catch((err) => console.log(err));
+     .catch((err) => {
+      if (err.name === "AbortError") {
+        return null;
+      }
+      console.error("Error for Fetching Roles-Permissions:", err);
+      throw err;
+    });
+
 
 export const useFetchRolesPermissions = () => {
   return useQuery({
