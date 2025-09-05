@@ -1,14 +1,24 @@
 const asyncHanlder = require("express-async-handler");
 const db = require("../../config/dbConfig");
 
-
 //    Fetched All Roles from DB
 const FetchPermissions = asyncHanlder(async (req, res) => {
+  const entityId = req?.user?.entityId || req?.user?.entity_id || NULL;
   try {
-    const permissionQuery = `SELECT * FROM permissions`;
-    const getAllPermissions = await db.query(permissionQuery);
+    const permissionQuery = `SELECT 
+        p.permission_id,
+        p.name,
+        p.is_default,
+        p.entity_id,
+        p.created_at
+      FROM permissions p
+      WHERE p.is_default = true
+         OR p.entity_id = $1
+      ORDER BY name;   
+`;
+    const getAllPermissions = await db.query(permissionQuery, [entityId]);
 
-    // console.log(getAllPermissions?.rows, "User Found");
+    console.log(getAllPermissions?.rowCount, "permissions ");
     res.status(200).json({
       permissions: getAllPermissions?.rows,
       message: "All Permissions Found ",
@@ -63,12 +73,10 @@ const UpdatePermission = asyncHanlder(async (req, res) => {
 
       console.log(updatePermission?.rows[0]);
 
-      res
-        .status(200)
-        .json({
-          message: "Update Permission",
-          result: updatePermission?.rows[0],
-        });
+      res.status(200).json({
+        message: "Update Permission",
+        result: updatePermission?.rows[0],
+      });
     }
   } catch (error) {
     console.log(error);
@@ -83,13 +91,11 @@ const DeletePermission = asyncHanlder(async (req, res) => {
 
     console.log(req.params);
 
-
     /* Check if Permission ID Exists on Not */
     const findPermissionId = await db.query(
       `SELECT * FROM permissions WHERE permission_id =$1`,
       [permission_id]
     );
-
 
     const finRolesPermission = await db.query(
       `SELECT * FROM role_permissions WHERE permission_id =$1`,
@@ -106,7 +112,9 @@ const DeletePermission = asyncHanlder(async (req, res) => {
       return;
     } else {
       if (findPermissionId?.rowCount > 0) {
-        await db.query(`DELETE from permissions WHERE permission_id =$1`, [permission_id]);
+        await db.query(`DELETE from permissions WHERE permission_id =$1`, [
+          permission_id,
+        ]);
 
         res.status(200).json({ message: "Delete Permission" });
       } else {
@@ -116,8 +124,7 @@ const DeletePermission = asyncHanlder(async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(400).json({
-      message:
-        "Error:Permissions cannot be Deleted",
+      message: "Error:Permissions cannot be Deleted",
     });
     return;
   }
