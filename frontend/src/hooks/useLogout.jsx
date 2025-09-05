@@ -59,6 +59,8 @@ export const useLogout = () => {
 
       localStorage.removeItem("auth-source");
       localStorage.removeItem('user');
+      localStorage.setItem("color-theme", "light")
+
       localStorage.setItem('persist', true)
       setAuth(null);
       navigate("/");
