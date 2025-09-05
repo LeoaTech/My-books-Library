@@ -5,9 +5,9 @@ const {
   DeletePermission,
   FetchPermissions,
 } = require("../controllers/RolesAndPermissions/PermissionsController");
-
+const {checkAuth} = require("../middleware/authMiddleware")
 const router = express.Router();
-
+router.use(checkAuth);
 router.get("/", FetchPermissions);
 
 // Add New Permission
