@@ -29,14 +29,15 @@ const FetchPermissions = asyncHanlder(async (req, res) => {
 });
 
 // Create New Permission
-
 const NewPermissions = asyncHanlder(async (req, res) => {
+  const entityId = req?.user?.entityId || req?.user?.entity_id || NULL;
+
   try {
     const permissionData = req.body;
 
     const { name } = permissionData;
-    const addPermissionQuery = `INSERT INTO permissions (name) values ($1) Returning *`;
-    const saveNewPermissions = await db.query(addPermissionQuery, [name]);
+    const addPermissionQuery = `INSERT INTO permissions (name,entity_id) values ($1,$2) Returning permission_id, name`;
+    const saveNewPermissions = await db.query(addPermissionQuery, [name,entityId]);
 
     console.log(saveNewPermissions?.rows[0]);
 
@@ -47,6 +48,7 @@ const NewPermissions = asyncHanlder(async (req, res) => {
     console.log(error);
   }
 });
+
 
 // Update Existing Permission
 const UpdatePermission = asyncHanlder(async (req, res) => {
