@@ -43,7 +43,7 @@ const RolesTable = ({ open, setOpenRoleModal }) => {
   // console.log(data?.roles);
 
   const currentRows = data?.roles?.slice(indexOfFirstRow, indexOfLastRow);
-
+  // console.log(data?.roles)
   // Change page
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
   if (isPending) {
@@ -55,11 +55,14 @@ const RolesTable = ({ open, setOpenRoleModal }) => {
         <table className="w-full table-auto">
           <thead>
             <tr className="bg-[#F7F9FC] text-left dark:bg-[#313D4A]">
-              <th className="min-w-[220px] py-4 px-4 font-medium text-gray-600 dark:text-white xl:pl-11">
+              <th className="min-w-[200px] py-4 px-4 font-medium text-gray-600 dark:text-white xl:pl-11">
                 Role ID
               </th>
               <th className="min-w-[220px] py-4 px-4 font-medium text-gray-600 dark:text-white xl:pl-11">
                 Role Name
+              </th>
+              <th className="min-w-[80px] py-4 px-4 font-medium text-gray-600 dark:text-white xl:pl-11">
+                Default
               </th>
               <th className="min-w-[220px] py-4 px-4 font-medium text-gray-600 dark:text-white xl:pl-11">
                 Created At
@@ -81,12 +84,18 @@ const RolesTable = ({ open, setOpenRoleModal }) => {
                   </p>
                 </td>
                 <td className="border-b border-[#eee] py-5 px-4 pl-5 dark:border-[#2E3A47] xl:pl-11">
+                  <p className={`inline-flex rounded-full bg-[#c5ee86] bg-opacity-10 py-1 px-3 text-sm font-medium ${role?.is_default ? "text-[#15d257]" : "text-[#de245f]"} `}>
+                    {role?.is_default == true ? "true" : "false"}
+                  </p>
+                </td>
+                <td className="border-b border-[#eee] py-5 px-4 pl-5 dark:border-[#2E3A47] xl:pl-11">
                   {new Date(role?.created_at).toDateString()} {" "} - {" "}
                   {new Date(role?.created_at).toLocaleTimeString()}                 </td>
                 <td className="border-b border-[#eee] py-5 px-8 dark:border-[#2E3A47]">
                   <div className="flex items-center space-x-3.5">
                     <button
-                      className="text-green-400 hover:text-green-600 "
+                    disabled={role?.is_default}
+                      className="text-green-400 hover:text-green-600 disabled:text-gray-500 disabled:hover:text-gray-500"
                       onClick={() => UpdateRole(role?.role_id)}
                     >
                       <span className="inline-flex rounded-full bg-[#d6d3ff] bg-opacity-30 py-2 px-2 text-sm font-medium">
@@ -94,10 +103,11 @@ const RolesTable = ({ open, setOpenRoleModal }) => {
                       </span>
                     </button>
                     <button
+                      disabled={role?.is_default}
                       onClick={() => {
                         roleDelete(role?.role_id);
                       }}
-                      className="text-red-400 hover:text-red-700"
+                      className="text-red-400 hover:text-red-700 disabled:text-gray-500 disabled:hover:text-gray-500"
                     >
                       <svg
                         className="fill-current"
