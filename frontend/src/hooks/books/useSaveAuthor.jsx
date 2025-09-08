@@ -23,9 +23,10 @@ export const useAuthor = () => {
 
       const result = await response.json(); //response?.data;
       console.log(result, "Author Save Result");
-      setError(null);
-      setMessage(result.message);
-      return result;
+      return {success:true, data:result?.authors, message:result.message}
+      // setError(null);
+      // setMessage(result.message);
+      // return result;
     } catch (error) {
       console.log(error);
       setError(error.message);
