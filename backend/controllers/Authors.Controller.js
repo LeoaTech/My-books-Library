@@ -39,7 +39,7 @@ const AddNewAuthor = asyncHanlder(async (req, res) => {
     const { name, links, description } = req.body.authorsForm;
 
     const createAuthorQuery = await db.query(
-      `INSERT INTO authors (name, links, description, entity_id) VALUES ($1,$2,$3, $4)`,
+      `INSERT INTO authors (name, links, description, entity_id) VALUES ($1,$2,$3, $4) RETURNING id,name`,
       [name, links, description, entityId]
     );
 
