@@ -5,6 +5,7 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { usePermissions } from "../../../../../hooks/permissions/usePermissions";
 import { RxCross1 } from "react-icons/rx";
+import { toast } from "react-toastify";
 
 const schema = z.object({
   name: z.string().min(2, { message: "Please Enter a Permission Name" }),
@@ -38,7 +39,25 @@ const NewPermission = ({ setOpenModal }) => {
   }, [])
 
   const onSubmit = async (data) => {
-    await NewPermissionMutation(data);
+    const toastId = toast.loading('Creating new permission...');
+
+    try {
+      await NewPermissionMutation(data);
+      toast.update(toastId, {
+        render: 'Permission added successfully!',
+        type: 'success',
+        isLoading: false,
+        autoClose: 2000,
+      });
+    } catch (error) {
+      console.error(error)
+      toast.update(toastId, {
+        render: `Error: ${error.message}`,
+        type: 'error',
+        isLoading: false,
+        autoClose: 1000,
+      });
+    }
   };
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#64748B]/75 dark:bg-slate-300/68 lg:left-[18rem]">
@@ -62,14 +81,19 @@ const NewPermission = ({ setOpenModal }) => {
           <form onSubmit={handleSubmit(onSubmit)}>
             <div>
               <label className="mb-2.5 block text-blue-500 dark:text-white">
-                Name
+                Name <span className="text-red-500">*</span>
               </label>
               <input autoFocus
                 type="text"
                 placeholder="Permission Title"
-                {...register("name")}
+
+                {...register("name", {
+                  required: "Resource Name is Required",
+                })}
                 className="w-full border-green-300 rounded-sm border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
               />
+              <p style={{ fontSize: '0.8em', color: 'gray' }}>Only Enter Resource Name such as branch, role, or author</p> {/* Helper text */}
+
               {errors?.name?.message && (
                 <p className="format-message error">{errors.name.message}</p>
               )}
