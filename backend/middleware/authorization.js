@@ -12,11 +12,9 @@ const checkRole = async (req, res, next) => {
   const entityId = req.user?.entityId || req?.user?.entity_id;
 
   if (!entityId) {
-    return res
-      .status(401)
-      .json({
-        message: "Role Id must be associated to an Entity",
-      });
+    return res.status(401).json({
+      message: "Role Id must be associated to an Entity",
+    });
   }
 
   try {
@@ -42,6 +40,9 @@ const checkRole = async (req, res, next) => {
 const checkPermissions = (requiredPermissions) => {
   return async (req, res, next) => {
     const userRoleId = req.user?.roleId;
+    if (!userRoleId) {
+      return res.status(403).json({ error: "Role not found",message:"Role ID not Found"  });
+    }
 
     try {
       // Get permissions for the current role id
@@ -49,19 +50,14 @@ const checkPermissions = (requiredPermissions) => {
       // console.log(userPermissions, "User permissions Available");
       // console.log(requiredPermissions, "Required permissions");
 
-      if (
-        !userPermissions ||
-        !requiredPermissions?.every((permission) =>
-          userPermissions?.includes(permission)
-        )
-      ) {
-        console.log("Not enough permissions");
+      if (!userPermissions || !userPermissions?.includes(requiredPermissions)) {
+        // console.log("Not enough permissions");
         return res
           .status(403)
           .json({ message: "Forbidden - Insufficient permissions" });
       }
 
-      console.log("verified permissions");
+      // console.log("verified permissions");
       next();
     } catch (error) {
       console.error("Error checking permissions:", error);
