@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import { useChangeUserRole } from "../../../../../hooks/users/roles/useUpdateRole";
-import { useMutation,  useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { RxCross1 } from "react-icons/rx";
 
 
@@ -57,8 +57,8 @@ const ViewUserDetails = ({ setDetails, userData }) => {
             <form onSubmit={handleSubmit(onSubmit)}>
               <div className="p-4.5 m-5.5 sm:overflow-auto">
                 {/* first Row fields */}
-                <div className="mb-4.5 flex flex-col gap-6 md:flex-row md:gap-9 mb-6">
-                  <div className="w-full xl:w-1/2" autoFocus>
+                <div className="mb-4.5 flex flex-col gap-6 mb-6">
+                  <div className="w-full " autoFocus>
                     <label className="mb-2.5 block text-[#259AE6] dark:text-white">
                       Email
                     </label>
@@ -70,7 +70,7 @@ const ViewUserDetails = ({ setDetails, userData }) => {
                     />
                   </div>
 
-                  <div className="w-full xl:w-1/2">
+                  <div className="w-full ">
                     <label className="mb-2.5 block text-[#259AE6] dark:text-white">
                       Role ID
                     </label>
@@ -86,7 +86,7 @@ const ViewUserDetails = ({ setDetails, userData }) => {
                 {/*Second Row fields  */}
 
                 <div className="mb-4.5 flex flex-col gap-6 md:flex-row md:gap-9 mb-6">
-                  <div className="w-full xl:w-1/2" autoFocus>
+                  <div className="w-full " autoFocus>
                     <label className="mb-2.5 block text-[#259AE6] dark:text-white">
                       Name
                     </label>
@@ -97,8 +97,8 @@ const ViewUserDetails = ({ setDetails, userData }) => {
                       className="w-full rounded-sm border-[1.5px] border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                     />
                   </div>
-
-                  <div className="w-full xl:w-1/2">
+                </div>
+                {/* <div className="w-full ">
                     <label className="mb-2.5 block text-[#259AE6] dark:text-white">
                       Phone
                     </label>
@@ -110,11 +110,11 @@ const ViewUserDetails = ({ setDetails, userData }) => {
                       className="w-full rounded-sm border-[1.5px] border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                     />
                   </div>
-                </div>
+               
 
                 {/* Third row fields */}
-                <div className="mb-4.5 flex flex-col gap-6 md:flex-row md:gap-9 mb-6">
-                  <div className="w-full xl:w-1/2" autoFocus>
+                {/* <div className="mb-4.5 flex flex-col gap-6 md:flex-row md:gap-9 mb-6">
+                  <div className="w-full " autoFocus>
                     <label className="mb-2.5 block text-[#259AE6] dark:text-white">
                       Address
                     </label>
@@ -126,8 +126,7 @@ const ViewUserDetails = ({ setDetails, userData }) => {
                       className="w-full rounded-sm border-[1.5px] border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                     />
                   </div>
-                </div>
-
+                </div>  */}
                 {/* Submit or Close button */}
                 <div className="mt-20 bg-gray-50 dark:border-[#2E3A47] dark:bg-[#24303F] px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
                   {/* <button
