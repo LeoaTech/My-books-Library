@@ -1,59 +1,42 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { HiPlus } from "react-icons/hi";
-import { useQuery } from "@tanstack/react-query";
-import { fetchPermissionsByRoleID } from "../../hooks/roles_permissions/useFetchRolesPermissions";
 import { useAuthContext } from "../../hooks/useAuthContext";
 import { MdWarning } from "react-icons/md";
 import Loader from "../../components/_admin/Loader/Loader";
 import SkeletonTable from "../../components/Loader/SkeletonTable";
+import useVerifyPermissions from "../../hooks/verifyPermissions";
 
 // * Lazy Load Components
 const UnAuthorizedRoles = lazy(() => import("../../components/_admin/UnAuthorized"));
 const ListingTable = lazy(() => import("../../components/_admin/ui/Tables/Tables"));
-const AddBookDetails = lazy(() => import("../../components/_admin/ui/Modal/BooksListing/AddNewBookModal"));
+const AddBookDetails = lazy(() => import("../../components/_admin/ui/Modal/BooksListing/CreateBookModal"));
 
 
 const Listing = () => {
   const [showModal, setShowModal] = useState(false);
-  const [accessAction, setAccessAction] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-
-
   const { auth } = useAuthContext();
 
   // Get the Role Permissions to Perform Action on the Page
 
   const selectedRole = auth?.role;
+  const { hasPermission, isPending, error, hasPageAccess } = useVerifyPermissions(selectedRole || auth?.role, "BOOK")
 
-  // const { data: permissionsList, isPending: PendingPermissions } = useQuery({
-  //   queryFn: () => fetchPermissionsByRoleID(selectedRole),
-  //   queryKey: ["role-permissions", { selectedRole }],
-  //   enabled: !!selectedRole,
-  // });
+  // console.log(permissions, "Access actions");
 
-  // // Find Permissions ID Related to Books Listings
-  // useEffect(() => {
-  //   if (permissionsList) {
-  //     const booksPermissions = permissionsList?.permissions.filter(
-  //       (permission) =>
-  //         permission?.permission_name.includes("BOOK" || "Book" || "book") //filter all permissions related to books listings
-  //     );
-  //     setAccessAction(booksPermissions);
-  //   }
-  // }, [permissionsList]);
+  if (isPending) {
+    return (
+      <Loader />
+    )
+  }
 
-  // // Function to check if a user has a specific permission
-  // const hasPermission = (permissionName) => {
-  //   return accessAction.some((permission) =>
-  //     permission.permission_name.includes(permissionName)
-  //   );
-  // };
-  // console.log(accessAction, "Access actions");
-
-  // if (PendingPermissions) {
-  //   return <h1>Loading...</h1>; //Update Loader Here with animation
-  // }
-
+  if (error || !hasPageAccess()) {
+    return (
+      <Suspense fallback={<Loader />}>
+        <UnAuthorizedRoles />
+      </Suspense>
+    );
+  }
   return (
     <>
       <div className="flex justify-between items-center mx-4 overflow-hidden">
@@ -64,7 +47,7 @@ const Listing = () => {
       </div>
 
       {/* Render Page Content based on Role Authority */}
-      {accessAction ? (
+      {hasPermission("READ") ? (
         <>
           {/* Search from Listing ----  and ----  Create New Book Button */}
           <div className=" m-3 flex justify-between items-center">
@@ -78,7 +61,7 @@ const Listing = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
             {/* Authhorized roles can access Create Book Form  */}
-            {/*  {hasPermission("CREATE") ? ( */}
+            {hasPermission("CREATE") ? (
               <button
                 className="bg-[#758aae] text-white active:bg-[#80CAEE] 
       font-medium rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 px-2 py-2 md:px-3 "
@@ -89,10 +72,10 @@ const Listing = () => {
                   <HiPlus /> New Book
                 </span>
               </button>
-            {/* ) : ( 
+            ) : (
               <>
                 <div className="group relative m-2 flex justify-center">
-                 
+
                   <span className="absolute -top-10 scale-0 transition-all rounded bg-gray-800 p-2 text-xs text-red-500 group-hover:scale-100">
                     <span className="flex gap-2 items-center">
                       {" "}
@@ -111,22 +94,21 @@ const Listing = () => {
                   </button>
                 </div>
               </>
-            )} */}
+            )}
           </div>
 
 
           {/* Show Table Only when Role has Read Authority */}
-          {/* {hasPermission("READ") ? ( */}
+          {hasPermission("READ") ? (
             <Suspense fallback={<SkeletonTable rows={7} columns={7} />}>
-              <ListingTable hasPermission={true} searchQuery={searchQuery} />
+              <ListingTable hasPermission={hasPermission} searchQuery={searchQuery} />
 
             </Suspense>
-          {/* ) : (
+          ) : (
             <Suspense fallback={<Loader />}>
               <UnAuthorizedRoles />
             </Suspense>
-          )} */}
-        </>
+          )}         </>
       ) : (
         <Suspense fallback={<Loader />}>
           <UnAuthorizedRoles />
