@@ -14,6 +14,9 @@ const UserTable = lazy(() => import("../../components/_admin/ui/Tables/UserTable
 const Users = () => {
 
   const [showModal, setShowModal] = useState(false)
+  const [searchTerm, setSearchTerm] = useState("");
+
+
   /* Fetch:/ Users in Library */
   const { isPending, error, data } = useFetchUserRoles();
 
@@ -37,15 +40,25 @@ const Users = () => {
       </div>
 
       {/* // TODO Add Permissions Check for Data Access or Actions */}
-      {data &&
+      {data && (
+        <>
+          <div className=" m-3 flex justify-between items-center">
+            {/* Search Input */}
 
-        /* Display Table for users and their roles */
-        <Suspense fallback={<SkeletonTable rows={2} columns={4} />}>
-          <UserTable users={data?.data} />
-        </Suspense>
+            <input
+              type="text"
+              placeholder="Search a user by name,email and role"
+              className="ml-4 w-1/2  focus:outline-none px-4 py-2 text-sm border-b border-gray-300 bg-neutral-100 rounded-md dark:border-gray-600 dark:bg-[#1d2a39] dark:text-white"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            /></div>
+          {/* Display Table for users and their roles */}
+          <Suspense fallback={<SkeletonTable rows={2} columns={4} />}>
+            <UserTable users={data?.data} searchTerm={searchTerm} />
+          </Suspense></>)
 
       }
-        {/* Add New User */}
+      {/* Add New User */}
       {showModal && <Suspense fallback={<Loader />}><AddUserModal setOpenModal={setShowModal} /></Suspense>}
     </div>
   );
