@@ -39,7 +39,7 @@ const AddNewPublisher = asyncHanlder(async (req, res) => {
     const { name, links, description } = req.body.publishersForm;
 
     const createPublisherQuery = await db.query(
-      `INSERT INTO publishers (name, links,description, entity_id) VALUES ($1, $2,$3, $4)`,
+      `INSERT INTO publishers (name, links,description, entity_id) VALUES ($1, $2,$3, $4) RETURNING id,name`,
       [name, links, description, entityId]
     );
 
