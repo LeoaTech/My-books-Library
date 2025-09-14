@@ -1,5 +1,6 @@
 const asyncHanlder = require("express-async-handler");
 const db = require("../../config/dbConfig");
+const defaultRoles = ["owner", "vendor", "customer"];
 
 //    Fetched Roles from DB that belongs to a specific entity
 const FetchRoles = asyncHanlder(async (req, res) => {
@@ -35,12 +36,16 @@ const NewRole = asyncHanlder(async (req, res) => {
   if (!entityId) {
     return res.status(400).json({ message: "Entity ID Missing" });
   }
+
+    if (defaultRoles?.includes(name.toLowerCase())) {
+    return res.status(400).json({ message: `Please Enter different Role Name, ${name} is the default role name` });
+  }
   let lowerCaseName = name.toLowerCase(); //always saved in lower case
   try {
-    const addRoleQuery = `INSERT INTO roles (name,entity_id) values ($1,$2) Returning *`;
-    const saveNewRole = await db.query(addRoleQuery, [lowerCaseName, entityId]);
+    const addRoleQuery = `INSERT INTO roles (name,entity_id,is_default) values ($1,$2,$3) Returning *`;
+    const saveNewRole = await db.query(addRoleQuery, [lowerCaseName, entityId, false]);
 
-    console.log(saveNewRole?.rows[0]);
+    // console.log(saveNewRole?.rows[0]);
 
     res
       .status(200)
@@ -65,6 +70,9 @@ const UpdateRole = asyncHanlder(async (req, res) => {
   const roleData = req.body;
   const { name, entityId } = roleData;
 
+  if (defaultRoles.includes(name.toLowerCase())) {
+    return res.status(400).json({ message: `Please Enter different Role Name, ${name} is the default role name` });
+  }
   if (!entityId) {
     return res.status(400).json({ message: "Entity ID Missing" });
   }
@@ -84,7 +92,7 @@ const UpdateRole = asyncHanlder(async (req, res) => {
         entityId,
       ]);
 
-      console.log(updateRole?.rows[0]);
+      // console.log(updateRole?.rows[0]);
 
       return res
         .status(200)
@@ -126,7 +134,7 @@ const DeleteRole = asyncHanlder(async (req, res) => {
     }
 
     const findUserRoleId = await db.query(
-      `SELECT id FROM users WHERE role_id =$1`,
+      `SELECT user_id FROM user_entity_roles WHERE role_id =$1`,
       [role_id]
     );
 
@@ -145,7 +153,7 @@ const DeleteRole = asyncHanlder(async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(400).json({
-      message: "Role cannot be Deleted, a user Already have this RoleId",
+      message: "Role cannot be Deleted, RoleId is assigned to a User",
     });
     return;
   }
