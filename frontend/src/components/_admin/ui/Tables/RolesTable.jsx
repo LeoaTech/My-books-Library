@@ -1,15 +1,27 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { NewRole, RoleModal } from "../Modal";
 import { useFetchRoles } from "../../../../hooks/users/roles/useFetchRole";
 import { MdEdit } from "react-icons/md";
 import { HiChevronDoubleLeft, HiChevronDoubleRight } from "react-icons/hi";
 import { useAuthContext } from "../../../../hooks/useAuthContext";
 
-const RolesTable = ({ open, setOpenRoleModal }) => {
+const RolesTable = ({ open, setOpenRoleModal, searchTerm }) => {
   const { isPending, data } = useFetchRoles();
 
   // Get the Entity ID linked to the current user
   const { auth } = useAuthContext()
+
+
+  const filteredData = useMemo(() => {
+    if (!data?.roles) return [];
+
+    return data?.roles?.filter((role) => {
+      const lower = searchTerm.toLowerCase();
+      return (
+        role?.name?.toLowerCase().includes(lower)
+      );
+    });
+  }, [data?.roles, searchTerm]);
 
   const EntityId = auth.entityId || null;
   const [editRole, setEditRole] = useState(false);
@@ -42,7 +54,7 @@ const RolesTable = ({ open, setOpenRoleModal }) => {
 
   // console.log(data?.roles);
 
-  const currentRows = data?.roles?.slice(indexOfFirstRow, indexOfLastRow);
+  const currentRows = filteredData?.slice(indexOfFirstRow, indexOfLastRow);
   // console.log(data?.roles)
   // Change page
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
@@ -94,7 +106,7 @@ const RolesTable = ({ open, setOpenRoleModal }) => {
                 <td className="border-b border-[#eee] py-5 px-8 dark:border-[#2E3A47]">
                   <div className="flex items-center space-x-3.5">
                     <button
-                    disabled={role?.is_default}
+                      disabled={role?.is_default}
                       className="text-green-400 hover:text-green-600 disabled:text-gray-500 disabled:hover:text-gray-500"
                       onClick={() => UpdateRole(role?.role_id)}
                     >
