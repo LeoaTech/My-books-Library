@@ -1,4 +1,4 @@
-import React, { useState, lazy, Suspense } from "react";
+import React, { useState, lazy, Suspense, useMemo } from "react";
 
 /* Icons */
 import { MdEdit, MdWarning } from "react-icons/md";
@@ -10,11 +10,23 @@ import Loader from "../../Loader/Loader";
 const UpdatRolesModal = lazy(() => import("../Modal/User/UpdatRolesModal"));
 const ViewUserDetails = lazy(() => import("../Modal/User/ViewUserDetails"));
 
-const UserTable = ({ users }) => {
+const UserTable = ({ users, searchTerm }) => {
   const [openModal, setOpenModal] = useState(false);
   const [details, setDetails] = useState(false);
   const [values, setValues] = useState(null);
 
+  const filteredData = useMemo(() => {
+    if (!users) return [];
+
+    return users?.filter((user) => {
+      const lower = searchTerm?.toLowerCase();
+      return (
+        user?.name?.toLowerCase()?.includes(lower)||
+        user?.email?.toLowerCase()?.includes(lower) ||
+        user?.role_name?.toLowerCase()?.includes(lower)
+      );
+    });
+  }, [users, searchTerm]);
   // Paginations
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage] = useState(7);
@@ -23,7 +35,7 @@ const UserTable = ({ users }) => {
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
 
-  const currentRows = users?.slice(indexOfFirstRow, indexOfLastRow);
+  const currentRows = filteredData?.slice(indexOfFirstRow, indexOfLastRow);
 
   // Change page
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
