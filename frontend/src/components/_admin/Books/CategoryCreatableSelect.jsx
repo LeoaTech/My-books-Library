@@ -42,8 +42,8 @@ const CategoryCreatableSelect = ({
                         onChange={async (newValue, actionMeta) => {
                             if (actionMeta.action === "create-option") {
                                 const newCategory = await handleCreateCategory(newValue.label);
-                                // const newOption = { value: newCategory?.id, label: newCategory?.name };
-                                // field.onChange(newOption);
+                                const newOption = { value: newCategory?.id, label: newCategory?.name };
+                                field.onChange(newOption);
                             } else {
                                 field.onChange(newValue);
                             }
