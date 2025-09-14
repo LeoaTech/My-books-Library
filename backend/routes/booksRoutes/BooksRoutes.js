@@ -10,9 +10,8 @@ const {
 require("../../controllers/AuthController/GoogleAuth.js");
 const {
   checkRole,
-  // checkPermissions,
+  checkPermissions,
 } = require("../../middleware/authorization.js");
-
 const router = express.Router();
 
 router.use(checkAuth);
@@ -20,14 +19,24 @@ router.use(checkAuth);
 // Get list of books
 // TODO: Add permission to verify the role permissions
 
-router.get("/", checkRole, GetAllBooks);
+router.get("/", checkRole, checkPermissions("READ BOOK"), GetAllBooks);
 router.get("/book", checkRole, GetBookById);
 
-router.delete("/delete/:book_id", checkRole, DeleteBook);
+router.delete(
+  "/delete/:book_id",
+  checkRole,
+  checkPermissions("DELETE BOOK"),
+  DeleteBook
+);
 
 // add book to the list
-router.post("/create", checkRole, CreateNewBook);
+router.post(
+  "/create",
+  checkRole,
+  checkPermissions("CREATE BOOK"),
+  CreateNewBook
+);
 
-router.put("/update/:id", checkRole, UpdateBook);
+router.put("/update/:id", checkRole, checkPermissions("EDIT BOOK"), UpdateBook);
 
 module.exports = router;
