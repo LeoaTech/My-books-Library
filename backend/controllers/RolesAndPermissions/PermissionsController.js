@@ -6,15 +6,15 @@ const FetchPermissions = asyncHanlder(async (req, res) => {
   const entityId = req?.user?.entityId || req?.user?.entity_id || NULL;
   try {
     const permissionQuery = `SELECT 
-        p.permission_id,
-        p.name,
-        p.is_default,
-        p.entity_id,
-        p.created_at
-      FROM permissions p
-      WHERE p.is_default = true
-         OR p.entity_id = $1
-      ORDER BY name;   
+    p.permission_id,
+    p.name,
+    p.is_default,
+    p.entity_id,
+    p.created_at
+FROM permissions p
+WHERE p.is_default = true
+   OR p.entity_id = $1
+ORDER BY p.permission_id, p.entity_id;   
 `;
     const getAllPermissions = await db.query(permissionQuery, [entityId]);
 
@@ -32,14 +32,46 @@ const FetchPermissions = asyncHanlder(async (req, res) => {
 const NewPermissions = asyncHanlder(async (req, res) => {
   const entityId = req?.user?.entityId || req?.user?.entity_id || NULL;
 
+  const permissionData = req.body;
+
+  const { name } = permissionData;
+  if (!name) {
+    return res.status(400).json({ message: "Invalid Permission Name" });
+  }
+  if (!entityId) {
+    return res.status(400).json({ message: "Entity ID Missing" });
+  }
   try {
-    const permissionData = req.body;
+    // 1. Check if name already exists in default permissions
+    const checkDefault = await db.query(
+      `SELECT 1 FROM permissions WHERE is_default = true AND LOWER(name) = LOWER($1)`,
+      [name]
+    );
+    if (checkDefault.rowCount > 0) {
+      return res.status(400).json({
+        message: "Permission name already exists as a default permission",
+      });
+    }
 
-    const { name } = permissionData;
-    const addPermissionQuery = `INSERT INTO permissions (name,entity_id) values ($1,$2) Returning permission_id, name`;
-    const saveNewPermissions = await db.query(addPermissionQuery, [name,entityId]);
 
-    console.log(saveNewPermissions?.rows[0]);
+      // 2. Check if name already exists for this entity
+    const checkEntity = await db.query(
+      `SELECT 1 FROM permissions WHERE entity_id = $1 AND LOWER(name) = LOWER($2)`,
+      [entityId, name]
+    );
+    if (checkEntity.rowCount > 0) {
+      return res.status(400).json({
+        message: "Permission name already exists for this Library",
+      });
+    }
+    const addPermissionQuery = `INSERT INTO permissions (name,entity_id,is_default) values ($1,$2,$3) Returning permission_id, name`;
+    const saveNewPermissions = await db.query(addPermissionQuery, [
+      name,
+      entityId,
+      false,
+    ]);
+
+    // console.log(saveNewPermissions?.rows[0]);
 
     res
       .status(200)
@@ -48,7 +80,6 @@ const NewPermissions = asyncHanlder(async (req, res) => {
     console.log(error);
   }
 });
-
 
 // Update Existing Permission
 const UpdatePermission = asyncHanlder(async (req, res) => {
