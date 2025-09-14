@@ -10,10 +10,11 @@ import {
 } from "@tanstack/react-query";
 
 const queryClient = new QueryClient({
-  defaultOptions:{
-    queries:{
-      refetchOnWindowFocus:false,
-      refetchOnMount:true,
+  defaultOptions: {
+    queries: {
+      retry: false, 
+      refetchOnWindowFocus: false, 
+      refetchOnMount: false,
     }
   }
 });
