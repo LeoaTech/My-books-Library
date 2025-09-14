@@ -5,6 +5,7 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRoles } from "../../../../../hooks/users/roles/useRolesApi";
 import { RxCross1 } from "react-icons/rx";
+import { toast } from "react-toastify";
 
 const schema = z.object({
   name: z.string().min(2, { message: "Please Enter a Role Name" }),
@@ -49,15 +50,49 @@ const RoleModal = ({ entityId, isEdit, values, close }) => {
   });
 
   const onSubmit = async (data) => {
-    const updateRole = { ...data, role_id: values?.role_id, entityId };
-    await updateRoleMutation(updateRole);
+    const toastId = toast.loading('Updating role...');
+
+    try {
+      const updateRole = { ...data, role_id: values?.role_id, entityId };
+      await updateRoleMutation(updateRole);
+      toast.update(toastId, {
+        render: 'Role updated successfully!',
+        type: 'success',
+        isLoading: false,
+        autoClose: 2000,
+      });
+    } catch (error) {
+      toast.update(toastId, {
+        render: `Error: ${error.message}`,
+        type: 'error',
+        isLoading: false,
+        autoClose: 1000,
+      });
+    }
   };
 
 
 
   const handleDelete = () => {
-    const deleteRoleData = { role_id: values?.role_id, entityId }
-    deleteRoleMutation(deleteRoleData)
+    const toastId = toast.loading('Deleting role...');
+
+    try {
+      const deleteRoleData = { role_id: values?.role_id, entityId }
+      deleteRoleMutation(deleteRoleData);
+      toast.update(toastId, {
+        render: 'Role deleted successfully!',
+        type: 'success',
+        isLoading: false,
+        autoClose: 2000,
+      });
+    } catch (error) {
+      toast.update(toastId, {
+        render: `Error: ${error.message}`,
+        type: 'error',
+        isLoading: false,
+        autoClose: 1000,
+      });
+    }
   }
 
 
@@ -104,13 +139,13 @@ const RoleModal = ({ entityId, isEdit, values, close }) => {
               </div>
               <div>
                 <label className=" mt-3 mb-2.5 block text-blue-500 dark:text-white">
-                  Name
+                  Name <span className="text-red-500">*</span>
                 </label>
                 <input
                   autoFocus
                   type="text"
                   placeholder="Role Name"
-                  {...register("name")}
+                  {...register("name", { required: true })}
                   className="w-full border-green-300 rounded-sm border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
                 />
                 {errors?.name?.message && (
