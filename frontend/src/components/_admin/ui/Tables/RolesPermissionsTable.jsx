@@ -1,4 +1,4 @@
-import  { useEffect, useState } from "react";
+import  { useEffect, useMemo, useState } from "react";
 import { AddRolePermission, RolePermissionAction } from "../Modal";
 import { useFetchRolesPermissions } from "../../../../hooks/roles_permissions/useFetchRolesPermissions";
 import { AiOutlineClose, AiOutlineCheck } from "react-icons/ai";
@@ -10,6 +10,7 @@ const RolesPermissionsTable = ({
   setOpenModal,
   ShowDetails,
   setShowDetails,
+  searchTerm
 }) => {
   const { isPending, data } = useFetchRolesPermissions();
   const { data: allRoles } = useFetchRoles();
@@ -21,8 +22,17 @@ const RolesPermissionsTable = ({
   // Calculate indexes for pagination
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+const filteredData = useMemo(() => {
+    if (!data?.permissions) return [];
 
-  const currentRows = data?.permissions?.slice(indexOfFirstRow, indexOfLastRow);
+    return data?.permissions?.filter((permission) => {
+      const lower = searchTerm?.toLowerCase();
+      return (
+        permission?.permission_name?.toLowerCase().includes(lower)
+      );
+    });
+  }, [data?.permissions, searchTerm]);
+  const currentRows = filteredData?.slice(indexOfFirstRow, indexOfLastRow);
 
   // Change page
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
