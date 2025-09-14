@@ -13,6 +13,7 @@ const types = ["Roles", "Permissions", "Roles Permissions"];
 /* Tabs  */
 function TabGroup() {
   const [active, setActive] = useState(types[0]);
+  const [searchTerm, setSearchTerm] = useState("");
 
   return (
     <>
@@ -24,24 +25,30 @@ function TabGroup() {
                 }`}
               key={type}
               active={active === type}
-              onClick={() => setActive(type)}
+              onClick={() => {
+                setActive(type);
+                setSearchTerm("")
+              }}
             >
               {type}
             </Link>
           </li>
         ))}
       </ul>
-      <RenderTable active={active} />
+      <RenderTable active={active} searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
     </>
   );
 }
 
 /* Renders Tables Based on Active Tabs */
 
-const RenderTable = ({ active }) => {
+const RenderTable = ({ active, searchTerm, setSearchTerm }) => {
   const [openRoleModal, setOpenRoleModal] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [ShowDetails, setShowDetails] = useState(false);
+
+
+
 
   if (active === "Roles") {
     return (
@@ -61,9 +68,18 @@ const RenderTable = ({ active }) => {
           </button>
         </div>
 
-
+        <div className=" m-3 flex justify-between items-center">
+          <input
+            type="text"
+            placeholder="Search by role name"
+            className="ml-4 w-1/2  focus:outline-none px-4 py-2 text-sm border-b border-gray-300 bg-neutral-100 rounded-md dark:border-gray-600 dark:bg-[#1d2a39] dark:text-white"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          /></div>
         <Suspense fallback={<SkeletonTable rows={7} columns={4} />}>
-          <RolesTable open={openRoleModal} setOpenRoleModal={setOpenRoleModal} />
+          <RolesTable
+            searchTerm={searchTerm}
+            open={openRoleModal} setOpenRoleModal={setOpenRoleModal} />
 
         </Suspense>
       </>
@@ -85,8 +101,18 @@ const RenderTable = ({ active }) => {
             </span>
           </button>
         </div>
+        <div className=" m-3 flex justify-between items-center">
+          {/* Search Input */}
+
+          <input
+            type="text"
+            placeholder="Search by permission name"
+            className="ml-4 w-1/2  focus:outline-none px-4 py-2 text-sm border-b border-gray-300 bg-neutral-100 rounded-md dark:border-gray-600 dark:bg-[#1d2a39] dark:text-white"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          /></div>
         <Suspense fallback={<SkeletonTable rows={7} columns={4} />}>
-          <PermissionsTable openModal={openModal} setOpenModal={setOpenModal} />
+          <PermissionsTable openModal={openModal} setOpenModal={setOpenModal} searchTerm={searchTerm} />
         </Suspense> </>
     );
   } else if (active === "Roles Permissions") {
@@ -118,12 +144,23 @@ const RenderTable = ({ active }) => {
             </button>
           </div>
         </div>
+        <div className=" m-3 flex justify-between items-center">
+          {/* Search Input */}
+
+          <input
+            type="text"
+            placeholder="Search by permission name"
+            className="ml-4 w-1/2  focus:outline-none px-4 py-2 text-sm border-b border-gray-300 bg-neutral-100 rounded-md dark:border-gray-600 dark:bg-[#1d2a39] dark:text-white"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          /></div>
         <Suspense fallback={<SkeletonTable rows={7} columns={5} />}>
           <RolesPermissionsTable
             openModal={openModal}
             setOpenModal={setOpenModal}
             ShowDetails={ShowDetails}
             setShowDetails={setShowDetails}
+            searchTerm={searchTerm}
           />
         </Suspense>
       </>
