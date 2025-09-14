@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import React, { useState } from 'react'
 import { useForm } from 'react-hook-form';
-import { RxCross1 } from 'react-icons/rx';
+import { toast } from 'react-toastify';
 import { z } from 'zod';
 
 const AuthorsForm = ({
@@ -34,14 +34,42 @@ const AuthorsForm = ({
     });
 
     const onSubmit = async (data) => {
-        console.log(data, "Author");
-        // Form Payload
-        const payload = {
-            name: data.name,
-            links: data.links,
-            description: data.description,
-        };
-        await saveAuthor(payload);
+        const loadingText = initialData ? "Updating author" : "Creating new author";
+        const toastId = toast.loading(loadingText)
+        try {
+            console.log(data, "Author");
+            // Form Payload
+            const payload = {
+                name: data.name,
+                links: data.links,
+                description: data.description,
+            };
+            const result = await saveAuthor(payload);
+            console.log(result);
+
+            if (initialData) {
+                toast.update(toastId, {
+                    render: 'Author updated successfully!',
+                    type: 'success',
+                    isLoading: false,
+                    autoClose: 2000,
+                });
+            } else {
+                toast.update(toastId, {
+                    render: 'Author created successfully!',
+                    type: 'success',
+                    isLoading: false,
+                    autoClose: 2000,
+                });
+            }
+        } catch (error) {
+            toast.update(toastId, {
+                render: `Error: ${error?.message || "Failed to save author"}`,
+                type: 'error',
+                isLoading: false,
+                autoClose: 1000,
+            });
+        }
     };
     return (
         <div className=" md:mx-20">
@@ -54,9 +82,9 @@ const AuthorsForm = ({
 
             {/* Form Fields */}
             <form onSubmit={handleSubmit(onSubmit)}>
-                <div className="mb-4">
+                <div className="mb-2">
                     <label htmlFor="links" className="mb-2.5 block text-[#0284c7] dark:text-white">
-                        Author Name</label>
+                        Author Name <span className='text-red-500'>*</span></label>
                     <input
                         id="name"
                         {...register('name', { required: true })}
@@ -66,7 +94,7 @@ const AuthorsForm = ({
 
                 </div>
 
-                <div className="w-full" autoFocus>
+                <div className="mb-2" autoFocus>
                     <label htmlFor="links" className="mb-2.5 block text-[#0284c7] dark:text-white">
                         Add Links
                     </label>
@@ -79,7 +107,7 @@ const AuthorsForm = ({
                     {errors.links && <p className="text-red-500 text-xs mt-1">{errors.links.message}</p>}
                 </div>
 
-                <div className="w-full" autoFocus>
+                <div className="w-full mb-2" autoFocus>
                     <label htmlFor="description" className="mb-2.5 block text-[#0284c7] dark:text-white">
                         Description
                     </label>
@@ -96,7 +124,7 @@ const AuthorsForm = ({
                         {isSubmitting ? "Saving" : "Save"}
                     </button>
                     <button type="button" onClick={onCancel} className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600">
-                        Cancel
+                        Close
                     </button>
                 </div>
             </form>
