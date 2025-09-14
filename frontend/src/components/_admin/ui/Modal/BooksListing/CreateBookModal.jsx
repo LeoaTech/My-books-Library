@@ -192,7 +192,7 @@ const CreateBookModal = ({ setShowModal }) => {
           description: "",
         };
         const newAuthor = await addAuthorMutation(authorForm);
-        console.log(newAuthor, "New Author");
+        // console.log(newAuthor, "New Author");
 
         toast.update(toastId, {
           render: 'Author created successfully!',
@@ -219,12 +219,12 @@ const CreateBookModal = ({ setShowModal }) => {
   /* Create New Category   */
   const handleCreateCategory = useCallback(
     async (inputValue) => {
-      console.log(inputValue, "Value");
+      // console.log(inputValue, "Value");
       const toastId = toast.loading('Creating new category...');
 
       try {
         const newCategory = await addCategory(inputValue);
-        console.log(newCategory, "API response");
+        // console.log(newCategory, "API response");
         toast.update(toastId, {
           render: 'Category created successfully!',
           type: 'success',
@@ -250,11 +250,11 @@ const CreateBookModal = ({ setShowModal }) => {
 
   const handleCreateCovers = useCallback(
     async (inputValue) => {
-      console.log(inputValue, "cover value");
+      // console.log(inputValue, "cover value");
       const toastId = toast.loading('Creating new covers...');
       try {
         const newCovers = await addCover(inputValue);
-        console.log(newCovers, "API response");
+        // console.log(newCovers, "API response");
         toast.update(toastId, {
           render: 'Cover type created successfully!',
           type: 'success',
@@ -279,12 +279,12 @@ const CreateBookModal = ({ setShowModal }) => {
   /* Create New Condition type for book   */
   const handleCreateConditions = useCallback(
     async (inputValue) => {
-      console.log(inputValue, "condition value");
+      // console.log(inputValue, "condition value");
       const toastId = toast.loading('Creating new condition...');
 
       try {
         const newCondition = await addConditionType(inputValue);
-        console.log(newCondition, "API response");
+        // console.log(newCondition, "API response");
         toast.update(toastId, {
           render: 'Condition type created successfully!',
           type: 'success',
@@ -365,34 +365,34 @@ const CreateBookModal = ({ setShowModal }) => {
 
   const findOrCreateAndSet = useCallback(
     async ({ fieldName, apiName, options, mutationFn }) => {
-      console.log("Step 1", apiName);
+      // console.log("Step 1", apiName);
 
       if (!apiName) return;
 
-      console.log("Step 1/2", options);
+      // console.log("Step 1/2", options);
       let optionName = apiName?.name || apiName
       const existingOption = options?.find(
         (option) => option?.label?.toLowerCase() == optionName?.toLowerCase()
       );
-      console.log("Step 2 option found", existingOption);
+      // console.log("Step 2 option found", existingOption);
 
       if (existingOption) {
-        console.log("Step 3, Option Already exists");
+        // console.log("Step 3, Option Already exists");
 
         setValue(fieldName, existingOption);
         return existingOption;
       } else {
         try {
-          console.log("Step 3: Creating new options");
+          // console.log("Step 3: Creating new options");
 
           const newObject = await mutationFn(apiName);
-          console.log(newObject, "New option");
+          // console.log(newObject, "New option");
           const newOption = {
             value: newObject?.data ? newObject?.data?.id : newObject?.id,
             label: newObject?.data ? newObject?.data?.name : newObject?.name,
           };
 
-          console.log("Step 4", newOption);
+          // console.log("Step 4", newOption);
 
           setValue(fieldName, newOption); // Set the form value
           return newOption; // Return the newly created object
@@ -416,28 +416,25 @@ const CreateBookModal = ({ setShowModal }) => {
 
   console.log(searchIsbnData, "ISBN Book Search Data");
 
-  // Create a function to handle the search button click
   const handleSearch = () => {
     setBookSearchResults([]);
     setSelectedBook(null);
-    refetch(); // Manually trigger the search query
+    refetch(); 
   };
 
   const handleIsbnSearch = () => {
-
     setBookSearchResults([]);
     setSelectedBook(null);
     refetchIsbn();
   };
 
-  // Use a separate effect to handle the search results when they arrive
   useEffect(() => {
     if (searchData?.items) {
       setBookSearchResults(searchData.items);
     }
   }, [searchData]);
 
-  console.log(bookSearchResults, "Search Results", selectedBook);
+  // console.log(bookSearchResults, "Search by Title Results", selectedBook);
   // Use a separate effect to handle the ISBN search results when they arrive
   useEffect(() => {
     if (searchIsbnData?.items?.length > 0) {
@@ -454,7 +451,7 @@ const CreateBookModal = ({ setShowModal }) => {
 
       const authorName = selectedBook?.authors?.[0];
       const publisherName = selectedBook?.publisher;
-      const categoryName = selectedBook?.categories && selectedBook?.categories.length > 0 ? selectedBook?.categories[0] : null;
+      const categoryName = selectedBook?.categories && selectedBook?.categories?.length > 0 ? selectedBook?.categories[0] : null;
       // console.log(selectedBook, "API Book Data")
 
       const imageUrl = [
@@ -495,7 +492,6 @@ const CreateBookModal = ({ setShowModal }) => {
             link: "",
             description: "",
           };
-          console.log("Inside the author creation ");
 
           const result = await findOrCreateAndSet({
             fieldName: 'author',
@@ -503,10 +499,8 @@ const CreateBookModal = ({ setShowModal }) => {
             options: authorOptions,
             mutationFn: addAuthorMutation,
           });
-          console.log("Step 6", result);
 
           if (result) {
-            console.log(result, "after creating author");
 
             setValue('author', result)
           }
@@ -525,9 +519,8 @@ const CreateBookModal = ({ setShowModal }) => {
           });
 
           if (publisher) {
-            console.log(publisher, "after creating publisher");
 
-            setValue('publisher', publisher)
+            setValue('publisher', publisher || null)
           }
         }
         if (categoryName) {
@@ -539,9 +532,8 @@ const CreateBookModal = ({ setShowModal }) => {
           });
 
           if (category) {
-            console.log(category, "after creating category");
 
-            setValue('category', category)
+            setValue('category', category || null)
           }
         }
       }
@@ -649,17 +641,17 @@ const CreateBookModal = ({ setShowModal }) => {
                   <div>
                     {bookSearchResults?.length > 0 && (
                       <div className="mt-4 mb-4.5 p-4 border border-gray-300 rounded-md max-h-48 overflow-y-auto">
-                        <h4 className="text-sm font-bold mb-2">Suggested Results</h4>
+                        <h4 className="text-sm font-bold mb-2 dark:text-white">Suggested Results</h4>
                         <ul>
                           {bookSearchResults?.map((book) => (
                             <li key={book?.id} className="flex justify-between items-center py-1 border-b last:border-0">
-                              <span className="text-sm text-slate-800">
+                              <span className="text-sm text-slate-800 dark:text-white">
                                 {book?.volumeInfo?.title} by {book?.volumeInfo?.authors?.join(', ') || 'Unknown Author'}
                               </span>
                               <button
                                 type="button"
                                 onClick={() => setSelectedBook(book.volumeInfo)}
-                                className="text-xs bg-slate-200 px-2 py-1 rounded-sm text-slate-700 hover:bg-slate-300"
+                                className="text-xs bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded-sm text-slate-700 dark:text-white hover:bg-slate-300 dark:hover:text-slate-400"
                               >
                                 Select
                               </button>
@@ -669,7 +661,7 @@ const CreateBookModal = ({ setShowModal }) => {
                         <button
                           type="button"
                           onClick={() => setBookSearchResults([])}
-                          className="w-full text-md bg-slate-200 px-2 py-1 rounded-sm text-slate-700 hover:bg-slate-300"
+                          className="w-full text-md bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded-sm text-slate-700 dark:text-white hover:bg-slate-300 dark:hover:text-slate-400"
                         >
                           Close
                         </button>
@@ -680,6 +672,7 @@ const CreateBookModal = ({ setShowModal }) => {
                   {/* first Row fields */}
                   <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
 
+                    {/* Search by Title */}
                     <div className="w-full xl:w-1/2">
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
                         Title
@@ -727,116 +720,8 @@ const CreateBookModal = ({ setShowModal }) => {
                       </div>
 
                     </div>
-                    <div className="w-full xl:w-1/2">
-                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
-                        Author <span className="text-red-600">*</span>
-                      </label>
 
-                      <Controller
-                        control={control}
-                        name="author"
-                        render={({ field }) => (
-                          <CreatableSelect
-                            {...field}
-                            options={authorOptions}
-                            isClearable
-                            isDisabled={isPendingAuthors}
-                            isLoading={isPendingAuthors}
-                            styles={selectStyles}
-                            onChange={async (newValue, actionMeta) => {
-                              if (actionMeta.action === "create-option") {
-                                const result = await handleCreateAuthor(newValue.label);
-                                if (result) { field.onChange(result); }
-                              } else {
-                                field.onChange(newValue);
-                              }
-                            }}
-                            value={field.value}
-                            placeholder="Select or type an Author..."
-                            id="author"
-                          />
-                        )}
-                      />
-
-                      {errors?.author?.message && (
-                        <p className="format-message error">
-                          {errors.author.message}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Second Row Fields */}
-                  <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
-                    <div className="w-full xl:w-1/2" autoFocus>
-                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
-                        Member Price
-                      </label>
-                      <input
-                        type="text"
-                        name="member_price"
-                        placeholder="Add Member Price"
-                        {...register("member_price")}
-                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
-                      />
-                      {errors?.member_price?.message && (
-                        <p className="format-message error">
-                          {errors?.member_price?.message}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="w-full xl:w-1/2">
-                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
-                        Purchase Price
-                      </label>
-                      <input
-                        type="text"
-                        name="purchase_price"
-                        placeholder="Add Purchase Price"
-                        {...register("purchase_price")}
-                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
-                      />
-
-                      {errors?.purchase_price?.message && (
-                        <p className="format-message error">
-                          {errors.purchase_price.message}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  {/* Third Row fields */}
-                  <div className="mt-2 mb-4.5 flex flex-col gap-2 md:flex-row md:gap-9">
-                    <ConditionsCreatableSelect
-                      control={control}
-                      errors={errors}
-                      isPendingConditions={isPendingConditions}
-                      conditionsData={conditionsData}
-                      handleCreateConditions={handleCreateConditions}
-                      newStyles={selectStyles}
-                    />
-
-                    <CoversCreatableSelect
-                      control={control}
-                      errors={errors}
-                      isPendingCovers={isPendingCovers}
-                      coversData={coversData}
-                      handleCreateCovers={handleCreateCovers}
-                      newStyles={selectStyles}
-                    />
-                  </div>
-
-                  {/* Fourth Row Fields */}
-                  <div className="mt-2 mb-4.5 flex flex-col gap-2 md:flex-row md:gap-9">
-                    <CategoryCreatableSelect
-                      control={control}
-                      errors={errors}
-                      isPendingCategories={isPendingCategories}
-                      categoriesData={categoriesData}
-                      handleCreateCategory={handleCreateCategory}
-                      newStyles={selectStyles}
-
-                    />
+                    {/* Search By ISBN */}
                     <div className="mb-4.5 w-full xl:w-1/2">
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
                         ISBN
@@ -890,7 +775,7 @@ const CreateBookModal = ({ setShowModal }) => {
                     </div>
                   </div>
 
-                  {/* Fifth Row */}
+                  {/* Second Row Fields */}
                   <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
                     <div className="w-full xl:w-1/2">
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
@@ -950,6 +835,119 @@ const CreateBookModal = ({ setShowModal }) => {
                       )}
                     </div>
                   </div>
+                  {/* Third Row fields */}
+                  <div className="mt-2 mb-4.5 flex flex-col gap-2 md:flex-row md:gap-9">
+                    <CategoryCreatableSelect
+                      control={control}
+                      errors={errors}
+                      isPendingCategories={isPendingCategories}
+                      categoriesData={categoriesData}
+                      handleCreateCategory={handleCreateCategory}
+                      newStyles={selectStyles}
+
+                    />
+                    <div className="w-full xl:w-1/2">
+                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
+                        Author <span className="text-red-600">*</span>
+                      </label>
+
+                      <Controller
+                        control={control}
+                        name="author"
+                        render={({ field }) => (
+                          <CreatableSelect
+                            {...field}
+                            options={authorOptions}
+                            isClearable
+                            isDisabled={isPendingAuthors}
+                            isLoading={isPendingAuthors}
+                            styles={selectStyles}
+                            onChange={async (newValue, actionMeta) => {
+                              if (actionMeta.action === "create-option") {
+                                const result = await handleCreateAuthor(newValue.label);
+                                if (result) { field.onChange(result); }
+                              } else {
+                                field.onChange(newValue);
+                              }
+                            }}
+                            value={field.value}
+                            placeholder="Select or type an Author..."
+                            id="author"
+                          />
+                        )}
+                      />
+
+                      {errors?.author?.message && (
+                        <p className="format-message error">
+                          {errors.author.message}
+                        </p>
+                      )}
+                    </div>
+
+                  </div>
+
+
+                  {/* Fourth Row Fields */}
+                  <div className="mt-2 mb-4.5 flex flex-col gap-2 md:flex-row md:gap-9">
+                    <ConditionsCreatableSelect
+                      control={control}
+                      errors={errors}
+                      isPendingConditions={isPendingConditions}
+                      conditionsData={conditionsData}
+                      handleCreateConditions={handleCreateConditions}
+                      newStyles={selectStyles}
+                    />
+
+                    <CoversCreatableSelect
+                      control={control}
+                      errors={errors}
+                      isPendingCovers={isPendingCovers}
+                      coversData={coversData}
+                      handleCreateCovers={handleCreateCovers}
+                      newStyles={selectStyles}
+                    />
+                  </div>
+
+                  {/* Fifth Row */}
+                  <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
+                    <div className="w-full xl:w-1/2" autoFocus>
+                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
+                        Member Price
+                      </label>
+                      <input
+                        type="text"
+                        name="member_price"
+                        placeholder="Add Member Price"
+                        {...register("member_price")}
+                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                      />
+                      {errors?.member_price?.message && (
+                        <p className="format-message error">
+                          {errors?.member_price?.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="w-full xl:w-1/2">
+                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
+                        Purchase Price
+                      </label>
+                      <input
+                        type="text"
+                        name="purchase_price"
+                        placeholder="Add Purchase Price"
+                        {...register("purchase_price")}
+                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                      />
+
+                      {errors?.purchase_price?.message && (
+                        <p className="format-message error">
+                          {errors.purchase_price.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
 
                   {/* Sixth Row */}
                   <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
