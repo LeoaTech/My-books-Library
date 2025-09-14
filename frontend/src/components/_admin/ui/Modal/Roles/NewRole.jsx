@@ -5,15 +5,16 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRoles } from "../../../../../hooks/users/roles/useRolesApi";
 import { RxCross1 } from "react-icons/rx";
+import { toast } from "react-toastify";
 
 const schema = z.object({
   name: z.string().min(2, { message: "Please Enter a Role Name" }),
 });
 
-const NewRole = ({ entityId,setOpenRoleModal }) => {
+const NewRole = ({ entityId, setOpenRoleModal }) => {
   const queryClient = useQueryClient();
- 
-  
+
+
   const { newRole } = useRoles();
   const {
     register,
@@ -34,8 +35,25 @@ const NewRole = ({ entityId,setOpenRoleModal }) => {
   });
 
   const onSubmit = async (data) => {
-    let newRole = {name:data?.name, entityId}
-    await newRoleMutation(newRole);
+    const toastId = toast.loading('Creating new role...');
+
+    try {
+      let newRole = { name: data?.name, entityId }
+      await newRoleMutation(newRole);
+      toast.update(toastId, {
+        render: 'Role created successfully!',
+        type: 'success',
+        isLoading: false,
+        autoClose: 2000,
+      });
+    } catch (error) {
+      toast.update(toastId, {
+        render: `Error: ${error.message}`,
+        type: 'error',
+        isLoading: false,
+        autoClose: 1000,
+      });
+    }
   };
 
 
@@ -61,13 +79,13 @@ const NewRole = ({ entityId,setOpenRoleModal }) => {
 
           <form onSubmit={handleSubmit(onSubmit)} className="w-full">
             <label className="mb-2.5 block text-blue-500 dark:text-white">
-              Name
+              Name <span className="text-red-500">*</span>
             </label>
             <input
               autoFocus
               type="text"
               placeholder="Role Name"
-              {...register("name")}
+              {...register("name", {required:true})}
               className="w-full border-green-300 rounded-sm border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
             />
             {errors?.name?.message && (
