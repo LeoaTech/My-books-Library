@@ -325,7 +325,7 @@ const LoginUser = asyncHanlder(async (req, res) => {
       // Set the cookie with refresh token
       res.cookie("refreshToken", refresh_token, {
         httpOnly: true,
-        sameSite: "none",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
         secure: process.env.NODE_ENV === "production",
         maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
         // domain:
@@ -454,7 +454,7 @@ const SelectAccount = asyncHanlder(async (req, res) => {
     // Set the cookie with refresh token
     res.cookie("refreshToken", refresh_token, {
       httpOnly: true,
-      sameSite: "none", // Use "none" with secure: true for cross-origin
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // Use "none" with secure: true for cross-origin
       secure: process.env.NODE_ENV === "production", // true on Vercel, false locally
       maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
       // domain:
@@ -522,8 +522,27 @@ const SignupUser = asyncHanlder(async (req, res) => {
 
     // console.log("Step 2: ", branchId, "Branch Founded");
 
-    const role = await createRole(client, entityId, "customer");
+    // const role = await createRole(client, entityId, "customer");
 
+    // Check if "customer" role already exists for this entity
+    const roleResult = await client.query(
+      "SELECT role_id FROM roles WHERE entity_id = $1 and name=$2 ",
+      [entityId, "customer"]
+    );
+
+    // console.log(roleResult.rows, "Roles Exists");
+
+    let role;
+    if (roleResult.rows.length > 0) {
+      role = roleResult.rows[0];
+      // console.log(
+      //   "Roles",
+      //   roleResult.rows,
+      //   "Step 3: Existing customer role from Library found",
+      //   role.role_id
+      // );
+    }
+   
     // console.log("Step 3: ", role.role_id, " role ID created");
 
     // check if user with email exists in DB
@@ -642,7 +661,7 @@ const SigninUser = asyncHanlder(async (req, res) => {
         // throw new Error("Invalid Password");
       }
       // Email and password match
-      console.log(user, "Login");
+      // console.log(user, "Login");
 
       if (user && matchPassword) {
         const user_info = {
@@ -666,10 +685,10 @@ const SigninUser = asyncHanlder(async (req, res) => {
         // Set the cookie with refresh token
         res.cookie("refreshToken", refresh_token, {
           httpOnly: true,
-          sameSite: "none", // Use "none" with secure: true for cross-origin
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // Use "none"
           secure: process.env.NODE_ENV === "production", // true on Vercel, false locally
           maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
-          // domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : 'localhost' 
+          // domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : 'localhost'
         });
         res.json({
           accessToken: AccessToken,
@@ -713,7 +732,7 @@ const Logout = asyncHanlder(async (req, res) => {
 
       res.clearCookie("refreshToken", {
         httpOnly: true,
-        sameSite: "lax", // "strict",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // "strict",
         secure: false, //true,
         maxAge: 24 * 60 * 60 * 1000, //1 day
       });
