@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
+import { toast } from 'react-toastify';
 import { z } from 'zod';
 
 const BranchForm = ({
@@ -32,17 +33,43 @@ const BranchForm = ({
     });
 
     const onSubmit = async (data) => {
-        // console.log(data, "Branch");
-        // Form Payload
-        const payload = {
-            name: data.name,
-            address: data.address,
-            city: data.city,
-            country:data.country,
-            phone:data.phone
+        const loadingText = initialData ? "Updating branch data.." : "Creating branch";
+        const toastId = toast.loading(loadingText)
+        try {// console.log(data, "Branch");
+            // Form Payload
+            const payload = {
+                name: data.name,
+                address: data.address,
+                city: data.city,
+                country: data.country,
+                phone: data.phone
 
-        };
-        await saveBranch(payload);
+            };
+            await saveBranch(payload);
+            if (initialData) {
+                toast.update(toastId, {
+                    render: 'Branch updated successfully!',
+                    type: 'success',
+                    isLoading: false,
+                    autoClose: 2000,
+                });
+            } else {
+                toast.update(toastId, {
+                    render: 'Branch created successfully!',
+                    type: 'success',
+                    isLoading: false,
+                    autoClose: 2000,
+                });
+            }
+        } catch (error) {
+            toast.update(toastId, {
+                render: `Error: ${error.message}`,
+                type: 'error',
+                isLoading: false,
+                autoClose: 1000,
+            });
+        }
+
     };
     return (
         <div className=" md:mx-20">
