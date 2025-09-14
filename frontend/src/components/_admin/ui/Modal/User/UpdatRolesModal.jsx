@@ -5,9 +5,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { RxCross1 } from "react-icons/rx";
 import LoadingSpinner from "../../../Loader/LoadingSpinner.jsx";
 import Loader from "../../../Loader/Loader";
+import { toast } from "react-toastify";
 
 const UpdatRolesModal = ({ setOpenModal, userData }) => {
-
   const { isPending, data } = useFetchRoles();
   const queryClient = useQueryClient();
 
@@ -36,11 +36,26 @@ const UpdatRolesModal = ({ setOpenModal, userData }) => {
 
   // * Update Role for User
   const onSubmit = async (formdata) => {
-
-    const roleName = data?.roles?.find(
-      (role) => role?.role_id == formdata?.role_id
-    )?.name;
-    await changeRoleMutation({ ...formdata, roleName });
+    const toastId = toast.loading('Updating user role...');
+    try {
+      const roleName = data?.roles?.find(
+        (role) => role?.role_id == formdata?.role_id
+      )?.name;
+      await changeRoleMutation({ ...formdata, roleName });
+      toast.update(toastId, {
+        render: 'User role updated successfully!',
+        type: 'success',
+        isLoading: false,
+        autoClose: 2000,
+      });
+    } catch (error) {
+      toast.update(toastId, {
+        render: `Error: ${error.message}`,
+        type: 'error',
+        isLoading: false,
+        autoClose: 1000,
+      });
+    }
   };
 
 
@@ -124,7 +139,8 @@ const UpdatRolesModal = ({ setOpenModal, userData }) => {
                       >
                         {data &&
                           data?.roles?.map((role) => (
-                            <option value={role?.role_id} key={role?.role_id}>
+                            <option value={role?.role_id} key={role?.role_id}
+                              disabled={role?.name === 'owner'}>
                               {role?.name}
                             </option>
                           ))}
