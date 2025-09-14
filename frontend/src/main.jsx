@@ -8,12 +8,13 @@ import {
   QueryClient,
   QueryClientProvider,
 } from "@tanstack/react-query";
+import { ToastContainer } from "react-toastify";
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: false, 
-      refetchOnWindowFocus: false, 
+      retry: false,
+      refetchOnWindowFocus: false,
       refetchOnMount: false,
     }
   }
@@ -27,5 +28,16 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         </AuthContextProvider>
       </QueryClientProvider>
     </Suspense>
+    <ToastContainer
+      position="top-center"
+      autoClose={2000}
+      hideProgressBar={false}
+      newestOnTop
+      closeOnClick={false}
+      rtl={false}
+      pauseOnFocusLoss
+      draggable
+      theme="dark"
+    />
   </React.StrictMode>
 );
