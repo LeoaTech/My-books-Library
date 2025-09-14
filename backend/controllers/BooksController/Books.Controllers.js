@@ -1,4 +1,4 @@
-const asyncHanlder = require("express-async-handler");
+const asyncHandler = require("express-async-handler");
 const db = require("../../config/dbConfig");
 const cloudinary = require("cloudinary").v2;
 
@@ -20,7 +20,7 @@ const options = {
 
 // Get All Books
 
-const GetAllBooks = asyncHanlder(async (req, res) => {
+const GetAllBooks = asyncHandler(async (req, res) => {
   const user = req.user;
 
   const entityId = user?.entityId || user?.entity_id;
@@ -132,7 +132,7 @@ WHERE
 
 // Get a Book by ID
 
-const GetBookById = asyncHanlder(async (req, res) => {
+const GetBookById = asyncHandler(async (req, res) => {
   const { bookId } = req.query;
   const bookQuery = `SELECT
       books.id,
@@ -195,7 +195,7 @@ const GetBookById = asyncHanlder(async (req, res) => {
 });
 
 // Create New Book Data
-const CreateNewBook = asyncHanlder(async (req, res) => {
+const CreateNewBook = asyncHandler(async (req, res) => {
   const { books } = req.body;
 
   const {
@@ -307,7 +307,7 @@ const CreateNewBook = asyncHanlder(async (req, res) => {
 
 // Delete a Book Data   (admin route only)
 
-const DeleteBook = asyncHanlder(async (req, res) => {
+const DeleteBook = asyncHandler(async (req, res) => {
   const { book_id } = req.params;
 
   // Delete images from cloudinary server
@@ -337,7 +337,7 @@ const DeleteBook = asyncHanlder(async (req, res) => {
 });
 
 // Update A Book Details
-const UpdateBook = asyncHanlder(async (req, res) => {
+const UpdateBook = asyncHandler(async (req, res) => {
   const { book } = req.body;
   const {
     title,
