@@ -1,16 +1,28 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useFetchPermissions } from "../../../../hooks/permissions/useFetchPermissions";
 import { MdEdit } from "react-icons/md";
 import { AddPermission, PermissionModal } from "../Modal";
 import { HiChevronDoubleLeft, HiChevronDoubleRight } from "react-icons/hi";
 
-const PermissionsTable = ({ openModal, setOpenModal }) => {
+const PermissionsTable = ({ openModal, setOpenModal,searchTerm }) => {
   const { isPending, data } = useFetchPermissions();
   const [isEdit, setIsEdit] = useState(false);
   const [isDelete, setIsDelete] = useState(false);
   const [permissionData, setPermissionData] = useState();
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage] = useState(8);
+
+
+  const filteredData = useMemo(() => {
+    if (!data?.permissions) return [];
+
+    return data?.permissions?.filter((permission) => {
+      const lower = searchTerm?.toLowerCase();
+      return (
+        permission?.name?.toLowerCase().includes(lower)
+      );
+    });
+  }, [data?.permissions, searchTerm]);
 
   // Calculate indexes for pagination
   const indexOfLastRow = currentPage * rowsPerPage;
@@ -42,7 +54,7 @@ const PermissionsTable = ({ openModal, setOpenModal }) => {
     return <h1>Loading...</h1>;
   }
 
-  const currentRows = data?.permissions?.slice(indexOfFirstRow, indexOfLastRow);
+  const currentRows = filteredData?.slice(indexOfFirstRow, indexOfLastRow);
 
   // console.log(data?.permissions, "List of permissions");
 
@@ -60,7 +72,7 @@ const PermissionsTable = ({ openModal, setOpenModal }) => {
               <th className="min-w-[250px] py-4 px-4 font-medium text-gray-600 dark:text-white xl:pl-11">
                 Permission Name
               </th>
-               <th className="min-w-[80px] py-4 px-4 font-medium text-gray-600 dark:text-white xl:pl-11">
+              <th className="min-w-[80px] py-4 px-4 font-medium text-gray-600 dark:text-white xl:pl-11">
                 Default
               </th>
               <th className="min-w-[230px] py-4 px-4 font-medium text-gray-600 dark:text-white xl:pl-11">
@@ -82,8 +94,8 @@ const PermissionsTable = ({ openModal, setOpenModal }) => {
                     {permission?.name}
                   </p>
                 </td>
-                  <td className="border-b border-[#eee] py-5 px-4 pl-5 dark:border-[#2E3A47] xl:pl-11">
-                  <p className={`inline-flex rounded-full bg-[#8fd32a] bg-opacity-10 py-1 px-3 text-sm font-medium ${permission?.is_default? "text-[#d5e82e]":"text-[#db1f41]"}`}>
+                <td className="border-b border-[#eee] py-5 px-4 pl-5 dark:border-[#2E3A47] xl:pl-11">
+                  <p className={`inline-flex rounded-full bg-[#8fd32a] bg-opacity-10 py-1 px-3 text-sm font-medium ${permission?.is_default ? "text-[#05e105]" : "text-[#db1f41]"}`}>
                     {permission?.is_default == true ? "true" : "false"}
                   </p>
                 </td>
