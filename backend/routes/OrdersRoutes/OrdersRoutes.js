@@ -19,14 +19,14 @@ router.use(checkAuth);
 
 // Fetch All Orders 
 
-router.get("/",checkRole, checkPermissions(["READ ORDER"]), FetchAllOrders);
+router.get("/",checkRole, checkPermissions("READ ORDER"), FetchAllOrders);
 
 
 // Fetch Order by Order Id
 router.get(
   "/order",
   checkRole,
-  checkPermissions(["READ ORDER"]),
+  checkPermissions("READ ORDER"),
   FetchOrderById
 );
 
@@ -34,7 +34,7 @@ router.get(
 router.post(
   "/create",
    checkRole,
-  checkPermissions(["CREATE ORDER"]),
+  checkPermissions("CREATE ORDER"),
   CreateNewOrder
 );
 
@@ -43,7 +43,7 @@ router.post(
 router.put(
   "/update/:order_id",
   checkRole,
-  checkPermissions(["EDIT ORDER"]),
+  checkPermissions("EDIT ORDER"),
   UpdateOrder
 );
 
@@ -52,7 +52,7 @@ router.put(
 router.delete(
   "/delete/:order_id",
   checkRole,
-  checkPermissions(["DELETE ORDER"]),
+  checkPermissions("DELETE ORDER"),
   DeleteOrder
 );
 
