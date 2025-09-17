@@ -27,7 +27,7 @@ import { getCustomSelectStyles } from "../../../shared/CreatableSelectCustomStyl
 
 // Booking Form Schema
 const bookingSchema = z.object({
-  bookingDuration: z.coerce.number().min(1, "Duration must be at least 1 day.").optional(),
+  // bookingDuration: z.coerce.number(),//.min(1, "Duration must be at least 1 day.").optional(),
   borrow_date: z.date({
     required_error: "Borrow date is required.",
     invalid_type_error: "That's not a valid date!",
@@ -132,20 +132,20 @@ const BookIssue = ({ onClose }) => {
   );
 
   // handle the calculation for date range selection
-  useEffect(() => {
-    // verify if both (start and end) dates are selected and are valid Date objects
-    if (borrowDate instanceof Date && returnDue instanceof Date) {
-      // get the duration in days from both dates
-      const duration = differenceInDays(returnDue, borrowDate);
-      // Set the calculated  value of duration 
-      setValue("bookingDuration", duration, { shouldValidate: true });
+  // useEffect(() => {
+  //   // verify if both (start and end) dates are selected and are valid Date objects
+  //   if (borrowDate instanceof Date && returnDue instanceof Date) {
+  //     // get the duration in days from both dates
+  //     const duration = differenceInDays(returnDue, borrowDate);
+  //     // Set the calculated  value of duration 
+  //     setValue("bookingDuration", duration, { shouldValidate: true });
 
-    } else {
-      // Clear the duration when dates are not valid
-      setValue("bookingDuration", null, { shouldValidate: true });
+  //   } else {
+  //     // Clear the duration when dates are not valid
+  //     setValue("bookingDuration", null, { shouldValidate: true });
 
-    }
-  }, [borrowDate, returnDue, setValue]);
+  //   }
+  // }, [borrowDate, returnDue, setValue]);
 
 
   // Mutation to create new order 
@@ -345,6 +345,7 @@ const BookIssue = ({ onClose }) => {
                         <Controller
                           name="borrow_date"
                           control={control}
+
                           render={({ field }) => (
                             <DatePicker
                               selected={field.value}
@@ -359,6 +360,7 @@ const BookIssue = ({ onClose }) => {
                               dateFormat="yyyy-MM-dd"
                               minDate={new Date()}
                               isClearable
+
                             />
                           )}
                         />
@@ -393,20 +395,21 @@ const BookIssue = ({ onClose }) => {
                         )}
                       </div>
                     </div>
-                    <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
+                    {/* <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
 
-                      <div className="w-full xl:w-1/2">
+                      <div className="w-full ">
                         <label className="mb-2.5 block text-[#0284c7] dark:text-white">
-                          Select Duration
-                          <span className="text-red-600">*</span>
-                          <span className="text-gray-600">(max 15 days)</span>
+                          Duration
+                          <span className="text-blue-500"> (Read-Only)</span>
                         </label>
                         <input
                           {...register("bookingDuration")}
-                          placeholder="Duration"
+                          placeholder="Select the borrow date to calculate duration"
                           readOnly
                           className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                         />
+                        <p style={{ fontSize: '0.8em', color: 'gray' }}>Maximum 15 days allowed</p> 
+
                         {errors.bookingDuration && (
                           <p className="text-red-600 text-sm mt-1">{errors.bookingDuration.message}</p>
                         )}
@@ -426,7 +429,7 @@ const BookIssue = ({ onClose }) => {
                               className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                               dateFormat="yyyy-MM-dd"
                               minDate={borrowDate || new Date()}
-                            // maxDate={borrowDate ? addDays(borrowDate, 15) : null}
+                            maxDate={borrowDate ? addDays(borrowDate, 15) : null}
 
                             />
                           )}
@@ -435,11 +438,11 @@ const BookIssue = ({ onClose }) => {
                           <p className="text-red-600 text-sm mt-1">{errors.return_date.message}</p>
                         )}
                       </div>
-                    </div>
+                    </div> */}
                   </fieldset>
 
                   {/* Booking Status */}
-                  <fieldset className="border mt-4 border-gray-300 dark:border-gray-600 rounded p-4">
+                  <fieldset className="border mt-8 border-gray-300 dark:border-gray-600 rounded p-4">
                     <legend className="font-semibold text-md text-[#259AE6] dark:text-gray-300">Booking Status</legend>
                     <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
 
@@ -580,7 +583,7 @@ const BookIssue = ({ onClose }) => {
                   </fieldset>
 
                   {/* Select Vendor and Credits Info */}
-                  <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
+                  <div className="mt-8 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
                     <div className="w-full xl:w-1/2">
 
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
@@ -593,7 +596,7 @@ const BookIssue = ({ onClose }) => {
                           className="relative z-20 w-full appearance-none dark:text-white rounded-sm border border-[#E2E8F0] bg-transparent dark:text-white py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                           {...register("vendor_id", { required: true })}
                         >
-                          <option disabled value="">Select Vendor</option>
+                          <option  value="">Select Vendor</option>
                           {vendorsData?.vendors &&
                             vendorsData?.vendors?.map((vendor) => (
                               <option key={vendor?.id} value={vendor?.id}>
@@ -650,7 +653,7 @@ const BookIssue = ({ onClose }) => {
                       Cancel
                     </button>
                     <button
-                      disabled={!isValid || isSubmitting || isLoading}
+                      disabled={!isDirty || isSubmitting || isLoading}
                       type="submit"
                       className="bg-orange-400 text-white font-medium text-md cursor-pointer disabled:cursor-not-allowed p-2 px-5 rounded-md "
                     >

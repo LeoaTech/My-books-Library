@@ -23,7 +23,11 @@ body {
   border-radius: 0.125rem;
 }
 
+.react-datepicker__month-container,
 
+.react-datepicker-popper{
+  z-index: 9999!important;
+}
 /* Add this to your global styles or component styles */
 .modal-overlay {
   position: fixed;
