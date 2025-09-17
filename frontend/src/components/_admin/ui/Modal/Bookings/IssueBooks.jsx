@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   MdLocalAirport,
   MdLocalPhone,
@@ -9,10 +9,6 @@ import {
   MdShoppingBag,
 } from "react-icons/md";
 import { RxCross1 } from "react-icons/rx";
-import { IoLocation } from "react-icons/io5";
-import { GrMapLocation } from "react-icons/gr";
-import { FaArrowRightToCity, FaFlag } from "react-icons/fa6";
-import { RiFlag2Fill, RiUserLocationFill } from "react-icons/ri";
 import { Controller, useController, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -25,8 +21,9 @@ import "react-datepicker/dist/react-datepicker.css";
 import * as z from "zod";
 import { addDays, differenceInDays } from "date-fns";
 import { useFetchVendors } from "../../../../../hooks/books/useFetchVendors";
-import { bookItemsSchema } from "../../../../../schemas/books";
-
+import { bookItemsSchema, selectOptionSchema } from "../../../../../schemas/books";
+import Select from "react-select"
+import { getCustomSelectStyles } from "../../../shared/CreatableSelectCustomStyles";
 // Booking Form Schema
 const bookingSchema = z.object({
   bookingDuration: z.coerce.number().min(1, "Duration must be at least 1 day.").optional(),
@@ -34,7 +31,11 @@ const bookingSchema = z.object({
     required_error: "Borrow date is required.",
     invalid_type_error: "That's not a valid date!",
   }),
-  user_id: z.coerce.number().min(1, { message: "Please Select a User ID" }) || z.string().min(1, { message: "User must be selected" }) || z.unknown(),
+  user_id: z.coerce.number({
+    required_error: "Please select a user.",
+    invalid_type_error: "User ID must be a number."
+  }).min(1, { message: "Please select a user ID." }),
+  // user_id:  z.coerce.number().min(1, { message: "Please Select a User ID" }) || z.string().min(1, { message: "User must be selected" }) || z.unknown(),
   status: z.enum(["issued", "returned", "overdue"]).default("issued"),
   shipping_address: z.string(),//.min(1, { message: "Shipping Address must be required" }),
   shipping_city: z.string(),//.min(1, { message: "Shipping City must be required" }),
@@ -70,6 +71,9 @@ const bookingSchema = z.object({
 
 const BookIssue = ({ onClose }) => {
   const queryClient = useQueryClient();
+  const theme = localStorage.getItem("color-theme")?.replace(/"/g, '') || "light";
+  const selectStyles = useMemo(() => getCustomSelectStyles(theme), [theme]);
+
   const { createBooking, error, isLoading } = useBookingApi();
 
   const { data: students, isLoading: isLoadingStudents } = useFetchUserRoles();
@@ -86,7 +90,7 @@ const BookIssue = ({ onClose }) => {
   } = useForm({
     defaultValues: {
       items: [],
-      status:"issued",
+      status: "issued",
       bookingDuration: null,
       borrow_date: null,
       return_due: null,
@@ -98,7 +102,7 @@ const BookIssue = ({ onClose }) => {
       shipping_country: "",
       shipping_address: "",
       shipping_phone: "",
-      user_id: "",
+      user_id: null,
     },
     resolver: zodResolver(bookingSchema),
     mode: "onChange",
@@ -106,6 +110,16 @@ const BookIssue = ({ onClose }) => {
   const bookingStatus = ["issued", "returned", "overdue"];
   const borrowDate = watch("borrow_date");
   const returnDue = watch("return_due");
+
+  const usersOptions = useMemo(
+    () =>
+      students?.data?.map((user) => ({
+        value: user.user_id,
+        label: user.name,
+      })) ?? [],
+    [students?.data]
+  );
+  
 
   // handle the calculation for date range selection
   useEffect(() => {
@@ -165,7 +179,7 @@ const BookIssue = ({ onClose }) => {
 
 
   // console.log(isValid, "Form valid");
-  console.log(errors, "Form errors");
+  // console.log(errors, "Form errors");
   const onSubmit = async (updateData) => {
     // console.log(updateData, "Form");
     const bookingData = {
@@ -179,9 +193,9 @@ const BookIssue = ({ onClose }) => {
   };
 
 
-  console.log(selectedBooks, "Order Items");
+  // console.log(selectedBooks, "Order Items");
 
-  console.log(watch("items"), "Items");
+  // console.log(watch("user_id"), "user");
 
   return (
     <div className="fixed left-0 top-0  inset-0 bg-[#64748B] bg-opacity-75 transition-opacity dark:bg-slate-300 dark:bg-opacity-75 lg:left-[18rem]">
@@ -222,36 +236,27 @@ const BookIssue = ({ onClose }) => {
                         <span className="text-red-600">*</span>
                       </label>
                       <div className="relative z-20 bg-transparent dark:bg-[#1d2a39]">
-                        <select
-                          className="relative z-20 w-full appearance-none dark:text-white rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
-                          {...register("user_id")}
-                        >
-                          <option disabled>Select User</option>
-                          {students?.data?.map((student) => (
-                            <option key={student.id} value={student.user_id}>
-                              {student.name} ({student.user_id})
-                            </option>
-                          ))}
-                        </select>
-                        <span className="absolute top-1/2 right-4 z-30 -translate-y-1/2">
-                          <svg
-                            className="fill-[#64748B] hover:fill-[#3C50E0] dark:fill-[#AEB7C0] dark:hover:fill-[#3C50E0]"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <g opacity="0.8">
-                              <path
-                                fillRule="evenodd"
-                                clipRule="evenodd"
-                                d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
-                                fill=""
-                              ></path>
-                            </g>
-                          </svg>
-                        </span>
+                        <Controller
+                          name="user_id"
+                          control={control}
+                          render={({ field }) => (
+                            <Select
+                              {...field}
+                              options={usersOptions}
+                              isClearable
+                              isDisabled={isLoadingStudents}
+                              isLoading={isLoadingStudents}
+                              styles={selectStyles}
+                              placeholder="Search for a user..."
+                              value={usersOptions?.find(option => option.value == field.value) || null}
+                              onChange={(option) => {
+                                field.onChange(option ? option.value : null);
+                              }}
+                              className="text-sm"
+                              classNamePrefix="react-select"
+                            />
+                          )}
+                        />
 
                       </div>
                       {errors?.user_id && <p className="text-red-500 text-xs mt-1">{errors?.user_id?.message}</p>}
@@ -477,7 +482,7 @@ const BookIssue = ({ onClose }) => {
                               <option
                                 key={status}
                                 value={status}
-                                disabled={status !="issued"}
+                                disabled={status != "issued"}
                                 className="truncate"
                                 style={{
                                   maxWidth: "100%",
@@ -595,7 +600,7 @@ const BookIssue = ({ onClose }) => {
                     </div>
                   </fieldset>
 
-                          {/* Select Vendor and Credits Info */}
+                  {/* Select Vendor and Credits Info */}
                   <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
                     <div className="w-full xl:w-1/2">
 
