@@ -36,11 +36,11 @@ const bookingSchema = z.object({
   }),
   user_id: z.coerce.number().min(1, { message: "Please Select a User ID" }) || z.string().min(1, { message: "User must be selected" }) || z.unknown(),
   status: z.enum(["issued", "returned", "overdue"]).default("issued"),
-  shipping_address: z.string().min(1, { message: "Shipping Address must be required" }),
-  shipping_city: z.string().min(1, { message: "Shipping City must be required" }),
-  shipping_country: z.string().min(1, { message: "Shipping Country must be required" }),
-  shipping_phone: z.string().min(1, { message: "Phone Number must be required" }),
-  credits_used: z.coerce.number() || z.unknown(),
+  shipping_address: z.string(),//.min(1, { message: "Shipping Address must be required" }),
+  shipping_city: z.string(),//.min(1, { message: "Shipping City must be required" }),
+  shipping_country: z.string(),//.min(1, { message: "Shipping Country must be required" }),
+  shipping_phone: z.string(),//.min(1, { message: "Phone Number must be required" }),
+  credits_used: z.coerce.number().default(0) || z.unknown(),
   renewed: z.boolean().optional().default(false),
   items: z.array(bookItemsSchema)
     .min(1, { message: "1 Book must be selected" }),
@@ -86,6 +86,7 @@ const BookIssue = ({ onClose }) => {
   } = useForm({
     defaultValues: {
       items: [],
+      status:"issued",
       bookingDuration: null,
       borrow_date: null,
       return_due: null,
@@ -222,7 +223,7 @@ const BookIssue = ({ onClose }) => {
                       </label>
                       <div className="relative z-20 bg-transparent dark:bg-[#1d2a39]">
                         <select
-                          className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                          className="relative z-20 w-full appearance-none dark:text-white rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                           {...register("user_id")}
                         >
                           <option disabled>Select User</option>
@@ -264,7 +265,7 @@ const BookIssue = ({ onClose }) => {
                       </label>
                       <div className="relative z-20 bg-transparent dark:bg-[#1d2a39]">
                         <select
-                          className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 pl-5 pr-10 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0] text-sm"
+                          className="relative z-20 w-full appearance-none dark:text-white rounded-sm border border-[#E2E8F0] bg-transparent py-3 pl-5 pr-10 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0] text-sm"
                           disabled={selectedBooks?.length > 4}
                           onChange={(e) => handleAddBook(e.target.value)}
                           style={{
@@ -465,17 +466,18 @@ const BookIssue = ({ onClose }) => {
                         </label>
                         <div className="relative z-20 bg-transparent dark:bg-[#1d2a39]">
                           <select
-                            className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 pl-5 pr-10 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0] text-md"
+                            className="relative z-20 w-full appearance-none dark:text-white rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                             {...register("status")}
                             style={{
                               maxWidth: "100%",
                             }}
                           >
-                            <option value="">Select status</option>
+                            <option disabled value="">Select status</option>
                             {bookingStatus?.map((status) => (
                               <option
                                 key={status}
                                 value={status}
+                                disabled={status !="issued"}
                                 className="truncate"
                                 style={{
                                   maxWidth: "100%",
@@ -525,7 +527,7 @@ const BookIssue = ({ onClose }) => {
                       <div className="w-full xl:w-1/2">
                         <label className="mb-2.5 block text-[#0284c7] dark:text-white">
                           Shipping Address
-                          <span className="text-red-600">*</span>
+                          {/* <span className="text-red-600">*</span> */}
                         </label>
 
                         <input
@@ -542,7 +544,7 @@ const BookIssue = ({ onClose }) => {
 
                         <label className="mb-2.5 block text-[#0284c7] dark:text-white">
                           Shipping City
-                          <span className="text-red-600">*</span>
+                          {/* <span className="text-red-600">*</span> */}
                         </label>
 
 
@@ -562,7 +564,7 @@ const BookIssue = ({ onClose }) => {
                       <div className="w-full xl:w-1/2">
                         <label className="mb-2.5 block text-[#0284c7] dark:text-white">
                           Shipping Country
-                          <span className="text-red-600">*</span>
+                          {/* <span className="text-red-600">*</span> */}
                         </label>
 
 
@@ -578,7 +580,7 @@ const BookIssue = ({ onClose }) => {
                       <div className="w-full xl:w-1/2">
                         <label className="mb-2.5 block text-[#0284c7] dark:text-white">
                           Phone Number
-                          <span className="text-red-600">*</span>
+                          {/* <span className="text-red-600">*</span> */}
                         </label>
 
                         <input
@@ -593,21 +595,21 @@ const BookIssue = ({ onClose }) => {
                     </div>
                   </fieldset>
 
-
+                          {/* Select Vendor and Credits Info */}
                   <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
                     <div className="w-full xl:w-1/2">
 
-                      <label className="mb-2.5 block text-[#259AE6] dark:text-white">
+                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
                         Select Vendor
                         <span className="text-red-600">*</span>
 
                       </label>
-                      <div className="relative z-20 bg-transparent dark:bg-[#1d2a39]">
+                      <div className="relative z-20 bg-transparent dark:bg-form-input">
                         <select
-                          className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                          className="relative z-20 w-full appearance-none dark:text-white rounded-sm border border-[#E2E8F0] bg-transparent dark:text-white py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                           {...register("vendor_id", { required: true })}
                         >
-                          <option disabled>Select Vendor</option>
+                          <option disabled value="">Select Vendor</option>
                           {vendorsData?.vendors &&
                             vendorsData?.vendors?.map((vendor) => (
                               <option key={vendor?.id} value={vendor?.id}>
@@ -617,7 +619,7 @@ const BookIssue = ({ onClose }) => {
                         </select>
                         <span className="absolute top-1/2 right-4 z-30 -translate-y-1/2">
                           <svg
-                            className="fill-[#64748B] hover:fill-[#3C50E0] dark:fill-[#AEB7C0] dark:hover:fill-[#3C50E0]"
+                            className=" dark:text-white fill-current"
                             width="24"
                             height="24"
                             viewBox="0 0 24 24"
