@@ -22,8 +22,9 @@ import * as z from "zod";
 import { addDays, differenceInDays } from "date-fns";
 import { useFetchVendors } from "../../../../../hooks/books/useFetchVendors";
 import { bookItemsSchema, selectOptionSchema } from "../../../../../schemas/books";
-import Select from "react-select"
+import Select, { components } from "react-select"
 import { getCustomSelectStyles } from "../../../shared/CreatableSelectCustomStyles";
+
 // Booking Form Schema
 const bookingSchema = z.object({
   bookingDuration: z.coerce.number().min(1, "Duration must be at least 1 day.").optional(),
@@ -35,7 +36,6 @@ const bookingSchema = z.object({
     required_error: "Please select a user.",
     invalid_type_error: "User ID must be a number."
   }).min(1, { message: "Please select a user ID." }),
-  // user_id:  z.coerce.number().min(1, { message: "Please Select a User ID" }) || z.string().min(1, { message: "User must be selected" }) || z.unknown(),
   status: z.enum(["issued", "returned", "overdue"]).default("issued"),
   shipping_address: z.string(),//.min(1, { message: "Shipping Address must be required" }),
   shipping_city: z.string(),//.min(1, { message: "Shipping City must be required" }),
@@ -77,7 +77,7 @@ const BookIssue = ({ onClose }) => {
   const { createBooking, error, isLoading } = useBookingApi();
 
   const { data: students, isLoading: isLoadingStudents } = useFetchUserRoles();
-  const { isPending, error: isBookFetchingError, data: booksData } = useFetchBooks();
+  const { isLoading: isBooksLoading, error: isBookFetchingError, data: booksData } = useFetchBooks();
   const [selectedBooks, setSelectedBooks] = useState([]); //for book items in the order
   const { isPending: isPendingVendors, data: vendorsData } = useFetchVendors();
 
@@ -110,7 +110,7 @@ const BookIssue = ({ onClose }) => {
   const bookingStatus = ["issued", "returned", "overdue"];
   const borrowDate = watch("borrow_date");
   const returnDue = watch("return_due");
-
+  const bookItems = watch('items') || [];
   const usersOptions = useMemo(
     () =>
       students?.data?.map((user) => ({
@@ -119,7 +119,17 @@ const BookIssue = ({ onClose }) => {
       })) ?? [],
     [students?.data]
   );
-  
+
+
+  const booksOptions = useMemo(
+    () =>
+      booksData?.books?.map((book) => ({
+        value: book.id,
+        label: book.title,
+        ...book
+      })) ?? [],
+    [booksData?.books]
+  );
 
   // handle the calculation for date range selection
   useEffect(() => {
@@ -152,33 +162,6 @@ const BookIssue = ({ onClose }) => {
     },
   });
 
-
-  const handleAddBook = (bookId) => {
-    if (bookId) {
-      const currentBooks = watch('items');
-
-      const book = booksData?.books?.find((b) => b.id == bookId);
-      if (book && !selectedBooks.some((b) => b.id == bookId)) {
-        setValue("items", [...currentBooks, book], {
-          shouldValidate: true,
-        });
-        setSelectedBooks([...selectedBooks, book]);
-      }
-    }
-  }
-
-  const handleRemoveBook = (bookId) => {
-    const currentBooks = watch("items");
-    const filteredBooks = currentBooks.filter((book) => book.id != bookId);
-    setValue("items", filteredBooks, {
-      shouldValidate: true,
-    });
-    setSelectedBooks(selectedBooks.filter((book) => book.id != bookId));
-
-  };
-
-
-  // console.log(isValid, "Form valid");
   // console.log(errors, "Form errors");
   const onSubmit = async (updateData) => {
     // console.log(updateData, "Form");
@@ -193,9 +176,20 @@ const BookIssue = ({ onClose }) => {
   };
 
 
-  // console.log(selectedBooks, "Order Items");
+  // To hide the selected book items displaying in the input field
+  const NoopMultiValue = (props) => {
+    return null;
+  };
 
-  // console.log(watch("user_id"), "user");
+  const CustomValueContainer = ({ children, ...props }) => {
+    const filteredChildren = React.Children.toArray(children).filter(child => {
+      return child.type !== components.MultiValue;
+    });
+    return <components.ValueContainer {...props}>{filteredChildren}</components.ValueContainer>;
+  };
+
+
+  // console.log(watch("items"), "items");
 
   return (
     <div className="fixed left-0 top-0  inset-0 bg-[#64748B] bg-opacity-75 transition-opacity dark:bg-slate-300 dark:bg-opacity-75 lg:left-[18rem]">
@@ -269,53 +263,33 @@ const BookIssue = ({ onClose }) => {
                         <span className="text-red-600">*</span>
                       </label>
                       <div className="relative z-20 bg-transparent dark:bg-[#1d2a39]">
-                        <select
-                          className="relative z-20 w-full appearance-none dark:text-white rounded-sm border border-[#E2E8F0] bg-transparent py-3 pl-5 pr-10 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0] text-sm"
-                          disabled={selectedBooks?.length > 4}
-                          onChange={(e) => handleAddBook(e.target.value)}
-                          style={{
 
-                            maxWidth: "100%", // Ensure select doesn't exceed parent width
-                          }}
-                          value=""
-                        >
-                          <option value="">Select a book</option>
-                          {booksData?.books?.map((book) => (
-                            <option
-                              key={book.id}
-                              value={book.id}
-                              className="truncate"
-                              style={{
-                                maxWidth: "100%",
-                                whiteSpace: "normal",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                wordBreak: "break-all"
+                        <Controller
+                          name="items"
+                          control={control}
+                          render={({ field }) => (
+                            <Select
+                              {...field}
+                              options={booksOptions}
+                              placeholder="Search for books..."
+                              isMulti
+                              components={{
+                                MultiValue: NoopMultiValue,
+                                ValueContainer: CustomValueContainer
                               }}
-                            >
-                              {book.title}
-                            </option>
-                          ))}
-                        </select>
-                        <span className="absolute top-1/2 right-4 z-30 -translate-y-1/2">
-                          <svg
-                            className="fill-[#64748B] hover:fill-[#3C50E0] dark:fill-[#AEB7C0] dark:hover:fill-[#3C50E0]"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <g opacity="0.8">
-                              <path
-                                fillRule="evenodd"
-                                clipRule="evenodd"
-                                d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
-                                fill=""
-                              ></path>
-                            </g>
-                          </svg>
-                        </span>
+                              value={field.value || []}
+                              onChange={(options) => {
+                                field.onChange(options || []);
+                              }}
+                              className="text-sm"
+                              classNamePrefix="react-select"
+                              isClearable
+                              isDisabled={isBooksLoading || field.value?.length >= 5}
+                              isLoading={isBooksLoading}
+                              styles={selectStyles}
+                            />
+                          )}
+                        />
                       </div>
                       {errors.items && (
                         <p className="text-red-600 text-sm mt-1">{errors?.items?.message}</p>
@@ -324,32 +298,37 @@ const BookIssue = ({ onClose }) => {
                   </div>
 
                   {/* Booked Items List */}
-                  {selectedBooks?.length > 0 && <div className="flex flex-col md:gap-5 my-5">
+                  {bookItems?.length > 0 && (
+                    <div className="flex flex-col md:gap-5 my-5">
+                      <fieldset className="border mt-4 border-gray-300 dark:border-gray-600 rounded p-4">
+                        <legend className="font-semibold text-md text-[#259AE6] dark:text-gray-300">Selected Items List</legend>
 
-                    <fieldset className="border mt-4 border-gray-300 dark:border-gray-600 rounded p-4">
-                      <legend className="font-semibold text-md text-[#259AE6] dark:text-gray-300">Selected Items List</legend>
-
-                      <ul className="ml-10 mt-3 font-medium text-md text-slate-400">
-                        {selectedBooks.map((book, index) => (
-                          <li key={book.id} className="mb-2 flex justify-between items-center">
-                            <div>
-                              <span className="font-semibold flex items-center gap-2 text-slate-500 dark:text-neutral-100">
-                                <MdShoppingBag />
-                                Book {index + 1}
-                              </span>
-                              <p className="text-blue-500 ml-8 mt-2 text-lg">{book.title}</p>
-                            </div>
-                            <button
-                              onClick={() => handleRemoveBook(book.id)}
-                              className="text-red-500"
-                            >
-                              <MdOutlineDeleteOutline size={25} />
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    </fieldset>
-                  </div>}
+                        <ul className="ml-10 mt-3 font-medium text-md text-slate-400">
+                          {bookItems.map((book, index) => (
+                            <li key={book.id} className="mb-2 flex justify-between items-center">
+                              <div>
+                                <span className="font-semibold flex items-center gap-2 text-slate-500 dark:text-neutral-100">
+                                  <MdShoppingBag />
+                                  Book {index + 1}
+                                </span>
+                                <p className="text-blue-500 ml-8 mt-2 text-lg">{book.title}</p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const filteredIds = bookItems.filter(b => b.id != book.id);
+                                  setValue("items", filteredIds, { shouldValidate: true });
+                                }}
+                                className="text-red-500"
+                              >
+                                <MdOutlineDeleteOutline size={25} />
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </fieldset>
+                    </div>
+                  )}
 
 
                   {/* Booking Duration and Date Selections  */}
@@ -678,7 +657,8 @@ const BookIssue = ({ onClose }) => {
                       {isLoading ? <LoadingSpinner /> : "Issue Book"}
                     </button>
                   </div>
-                </div>   </form>
+                </div>
+              </form>
             </div>
           </div>
         </div>
