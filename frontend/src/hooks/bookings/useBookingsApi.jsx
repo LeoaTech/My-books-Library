@@ -5,17 +5,17 @@ export const useBookingApi = () => {
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(null);
 
-const createBooking = async (booking) => {
+  const createBooking = async (booking) => {
     setIsLoading(true);
     setError(null);
 
     const updatedBooking = {
       ...booking,
-      shipping_address:booking.shipping_address,
-      shipping_city:booking.shipping_city,
-      shipping_country:booking.shipping_country,
-      shipping_phone:booking.shipping_phone,
-      items:booking.items, 
+      shipping_address: booking.shipping_address || "",
+      shipping_city: booking.shipping_city || "",
+      shipping_country: booking.shipping_country || "",
+      shipping_phone: booking.shipping_phone || "",
+      items: booking.items,
     }
 
     // console.log(booking, "BookingId");
@@ -42,5 +42,5 @@ const createBooking = async (booking) => {
     }
   }
 
-  return {createBooking, error, isLoading}
+  return { createBooking, error, isLoading }
 }
