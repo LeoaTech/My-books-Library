@@ -16,7 +16,7 @@ import { RiFlag2Fill, RiUserLocationFill } from "react-icons/ri";
 import { Controller, useController, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useOrdersApi } from "../../../../../hooks/orders/useOrdersApi";
+import { useBookingApi } from "../../../../../hooks/bookings/useBookingsApi";
 import LoadingSpinner from "../../../Loader/LoadingSpinner";
 import { useFetchUserRoles } from "../../../../../hooks/users/useFetchUserRoles";
 import { useFetchBooks } from "../../../../../hooks/books/useFetchBooks";
@@ -69,7 +69,7 @@ const bookingSchema = z.object({
 
 const BookIssue = ({ onClose }) => {
   const queryClient = useQueryClient();
-  const { createOrder, error, isLoading } = useOrdersApi();
+  const { createBooking, error, isLoading } = useBookingApi();
 
   const { data: students, isLoading: isLoadingStudents } = useFetchUserRoles();
   const { isPending, error: isBookFetchingError, data: booksData } = useFetchBooks();
@@ -123,8 +123,8 @@ const BookIssue = ({ onClose }) => {
 
 
   // Mutation to create new order 
-  const { mutateAsync: createOrderMutation } = useMutation({
-    mutationFn: createOrder,
+  const { mutateAsync: createBookingMutation } = useMutation({
+    mutationFn: createBooking,
     onSuccess: () => {
       reset();
       queryClient.invalidateQueries(["bookings"]);
@@ -166,14 +166,14 @@ const BookIssue = ({ onClose }) => {
   console.log(errors, "Form errors");
   const onSubmit = async (updateData) => {
     // console.log(updateData, "Form");
-    const orderData = {
+    const bookingData = {
       ...updateData,
       status: "issued",
       items: selectedBooks,
     };
-    console.log(orderData, "Issue Books Form");
+    console.log(bookingData, "Issue Books Form");
 
-    await createOrderMutation(orderData);
+    await createBookingMutation(bookingData);
   };
 
 

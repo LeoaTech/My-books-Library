@@ -5,34 +5,35 @@ export const useBookingApi = () => {
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(null);
 
-const createBooking = async (order) => {
+const createBooking = async (booking) => {
     setIsLoading(true);
     setError(null);
 
-    const updatedOrder = {
-      shipping_address:order.shipping_address,
-      shipping_city:order.shipping_city,
-      shipping_country:order.shipping_country,
-      shipping_phone:order.shipping_phone,
-      items:order.items, 
+    const updatedBooking = {
+      ...booking,
+      shipping_address:booking.shipping_address,
+      shipping_city:booking.shipping_city,
+      shipping_country:booking.shipping_country,
+      shipping_phone:booking.shipping_phone,
+      items:booking.items, 
     }
 
-    // console.log(order, "OrderId");
-    const response = await fetch(`${BASE_URL}/orders/create`, {
+    // console.log(booking, "BookingId");
+    const response = await fetch(`${BASE_URL}/bookings/create`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ orderForm: updatedOrder }),
+      body: JSON.stringify({ bookingForm: updatedBooking }),
     });
 
-    console.log(response, "Orders Form Response");
+    console.log(response, "Bookings Form Response");
 
     const result = await response.json(); //response?.data;
     console.log(result, "Result");
 
     if (!response.ok) {
       setIsLoading(false)
-      setError(response?.message || "Failed to Create New Order ");
+      setError(response?.message || "Failed to Create New Booking ");
     } else {
       if (response.status === 200) {
         setIsLoading(false);
