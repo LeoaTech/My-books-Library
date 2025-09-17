@@ -25,6 +25,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import * as z from "zod";
 import { addDays, differenceInDays } from "date-fns";
 import { useFetchVendors } from "../../../../../hooks/books/useFetchVendors";
+import { bookItemsSchema } from "../../../../../schemas/books";
 
 // Booking Form Schema
 const bookingSchema = z.object({
@@ -41,7 +42,7 @@ const bookingSchema = z.object({
   shipping_phone: z.string().min(1, { message: "Phone Number must be required" }),
   credits_used: z.coerce.number() || z.unknown(),
   renewed: z.boolean().optional().default(false),
-  items: z.array(z.string())
+  items: z.array(bookItemsSchema)
     .min(1, { message: "1 Book must be selected" }),
 
   vendor_id: z.coerce.number().min(1, { message: "Please Select a Vendor ID" }) || z.string().min(1, { message: "Vendor ID must be required" }),
@@ -142,7 +143,7 @@ const BookIssue = ({ onClose }) => {
       const currentBooks = watch('items');
 
       const book = booksData?.books?.find((b) => b.id == bookId);
-      if (!currentBooks.includes(bookId)) {
+      if (book && !selectedBooks.some((b) => b.id == bookId)) {
         setValue("items", [...currentBooks, book], {
           shouldValidate: true,
         });
@@ -157,7 +158,7 @@ const BookIssue = ({ onClose }) => {
     setValue("items", filteredBooks, {
       shouldValidate: true,
     });
-    setSelectedBooks(selectedBooks.filter((book) => book.id !== bookId));
+    setSelectedBooks(selectedBooks.filter((book) => book.id != bookId));
 
   };
 
@@ -179,7 +180,7 @@ const BookIssue = ({ onClose }) => {
 
   console.log(selectedBooks, "Order Items");
 
-  console.log(watch("user_id"), "User ID");
+  console.log(watch("items"), "Items");
 
   return (
     <div className="fixed left-0 top-0  inset-0 bg-[#64748B] bg-opacity-75 transition-opacity dark:bg-slate-300 dark:bg-opacity-75 lg:left-[18rem]">

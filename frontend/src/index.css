@@ -14,6 +14,16 @@ body {
   /* padding-top: 64px; */
 }
 
+/* Date Picker */
+.react-datepicker-wrapper {
+  width: 100%;
+}
+.react-datepicker__input-container input {
+  width: 100%;
+  border-radius: 0.125rem;
+}
+
+
 /* Add this to your global styles or component styles */
 .modal-overlay {
   position: fixed;
