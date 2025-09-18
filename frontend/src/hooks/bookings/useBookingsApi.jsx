@@ -42,5 +42,42 @@ export const useBookingApi = () => {
     }
   }
 
-  return { createBooking, error, isLoading }
+  const updateBooking = async (booking) => {
+    setIsLoading(true);
+    setError(null);
+
+    const updatedBooking = {
+      ...booking,
+      shipping_address: booking.shipping_address || "",
+      shipping_city: booking.shipping_city || "",
+      shipping_country: booking.shipping_country || "",
+      shipping_phone: booking.shipping_phone || "",
+      items: booking.items,
+    }
+
+    // console.log(booking, "BookingId");
+    const response = await fetch(`${BASE_URL}/bookings/update/${booking.booking_id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ bookingForm: updatedBooking }),
+    });
+
+    console.log(response, "Bookings Update Response");
+
+    const result = await response.json(); //response?.data;
+    console.log(result, "Update Booking details Result");
+
+    if (!response.ok) {
+      setIsLoading(false)
+      setError(response?.message || "Failed to Update Booking ");
+    } else {
+      if (response.status === 200) {
+        setIsLoading(false);
+        setError(null);
+      }
+    }
+  }
+
+  return { createBooking, error, isLoading, updateBooking }
 }
