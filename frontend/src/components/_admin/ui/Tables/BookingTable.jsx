@@ -7,25 +7,29 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { useFetchBooks } from "../../../../hooks/books/useFetchBooks";
 import {
   MdEdit,
   MdOutlineDeleteOutline,
+  MdOutlineKeyboardDoubleArrowLeft,
+  MdOutlineKeyboardDoubleArrowRight,
   MdOutlineRemoveRedEye,
 } from "react-icons/md";
 import Loader from "../../Loader/Loader";
 import SkeletonModal from "../../../Loader/SkeletonModal";
-const EditBookingDetails = lazy(() => import("../Modal/Bookings/EditBooking"));
+import { useFetchBooking } from "../../../../hooks/bookings/useBookings";
+import BookIssue from "../Modal/Bookings/IssueBooks";
 const DeleteBookingDetails = lazy(() => import("../Modal/Bookings/DeleteBooking"));
 
 const BookingTable = ({ hasPermission, searchQuery }) => {
 
-  const { isPending, error, data: booksData } = useFetchBooks();
+  const { isPending, error, data: bookingsData } = useFetchBooking();
 
   const [modalState, setModalState] = useState({
-    type: null, // null | 'view' | 'edit' | 'delete'
-    data: null, // book ID or { id, title } for delete
+    type: null, //update state for edit or delete data
+    data: null,
   });
+
+  console.log(bookingsData);
 
   //  pagination
   const [pagination, setPagination] = useState({
@@ -38,14 +42,15 @@ const BookingTable = ({ hasPermission, searchQuery }) => {
     setModalState({ type: "view", data: id });
   }, []);
 
-  const editBookDetails = useCallback((id) => {
+  const editBookDetails = useCallback((booking) => {
+    console.log(booking, "Edit");
     setModalState({
-      type: "edit", data: { id: id, "booking_id": "1234", "booking_by": "John doe", "booking_from": "vendor 1", "borrow_date": new Date().toDateString(), status: "pending", "return_due": "15 days" }
+      type: "edit", data: { booking }
     });
   }, []);
 
-  const deleteBookDetails = useCallback((id, title) => {
-    setModalState({ type: "delete", data: { id, title } });
+  const deleteBookDetails = useCallback((id) => {
+    setModalState({ type: "delete", data: { id } });
   }, []);
 
   const closeModal = useCallback(() => {
@@ -56,19 +61,14 @@ const BookingTable = ({ hasPermission, searchQuery }) => {
 
   // Optimized filtering
   const filteredData = useMemo(() => {
-    // if (!booksData?.books || !searchQuery) return booksData?.books || [];
-    // const lowerQuery = searchQuery?.toLowerCase();
-    // return booksData.books.filter(
-    //   (book) =>
-    //     (book.title?.toLowerCase() || "").includes(lowerQuery) ||
-    //     (book.author_name?.toLowerCase() || "").includes(lowerQuery) ||
-    //     (book.category_name?.toLowerCase() || "").includes(lowerQuery) ||
-    //     (book.isbn?.toString() || "").includes(lowerQuery)
-    // );
-    return [
-      { "booking_id": "1234", "booking_by": "John doe", "booking_from": "vendor 1", "borrow_date": new Date().toDateString(), status: "pending", "return_due": "15 days" }
-    ]
-  }, [booksData, searchQuery]);
+    if (!bookingsData?.bookings || !searchQuery) return bookingsData?.bookings || [];
+    const lowerQuery = searchQuery?.toLowerCase();
+    return bookingsData.bookings.filter(
+      (data) =>
+        (data?.user_name?.toLowerCase() || "").includes(lowerQuery) ||
+        (data?.booking_status?.toLowerCase() || "").includes(lowerQuery)
+    );
+  }, [bookingsData, searchQuery]);
 
   // Column definitions
   const columnHelper = createColumnHelper();
@@ -78,33 +78,49 @@ const BookingTable = ({ hasPermission, searchQuery }) => {
         header: "Booking_Id",
       }),
 
-      columnHelper.accessor("booking_by", {
-        header: "Booking By",
+      columnHelper.accessor("user_name", {
+        header: "User",
       }),
-      columnHelper.accessor("booking_from", {
-        header: "Booking From",
+      columnHelper.accessor("vendor_name", {
+        header: "Vendor",
       }),
       columnHelper.accessor("borrow_date", {
         header: "Borrow Date",
+        cell: (info) => {
+          const date = new Date(info.getValue());
+          return isNaN(date) ? "N/A" : date?.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          });
+        },
       }),
-      columnHelper.accessor("status", {
+      columnHelper.accessor("booking_status", {
         header: "Status",
       }),
       columnHelper.accessor("return_due", {
         header: "Return Due",
-
+        cell: (info) => {
+          const date = new Date(info.getValue());
+          return isNaN(date) ? "N/A" : date.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          });
+        },
       }),
       columnHelper.accessor("actions", {
         header: "Actions",
         cell: ({ row }) => {
-          const { id, title } = row.original;
+          const booking = row.original;
+
           return (
             <div className="flex gap-3 max-w-[120px]">
               {hasPermission("EDIT") ? (
                 <button
-                  onClick={() => editBookDetails(id)}
+                  onClick={() => editBookDetails(booking)}
                   className="text-green-600 hover:text-green-800 transition-colors"
-                  aria-label={`Edit ${title}`}
+                  aria-label={`Edit booking${booking?.boking_id}`}
                 >
                   <MdEdit size={20} />
                 </button>
@@ -113,7 +129,7 @@ const BookingTable = ({ hasPermission, searchQuery }) => {
                   <button
                     disabled
                     className="text-green-600/50 cursor-not-allowed"
-                    aria-label={`Edit ${title} (disabled)`}
+                    aria-label={`Edit booking${booking?.boking_id} (disabled)`}
                   >
                     <MdEdit size={20} />
                   </button>
@@ -128,17 +144,17 @@ const BookingTable = ({ hasPermission, searchQuery }) => {
                 </div>
               )}
               <button
-                onClick={() => viewBookDetails(id)}
+                onClick={() => viewBookDetails(booking?.booking_id)}
                 className="text-green-600 hover:text-green-800 transition-colors"
-                aria-label={`View ${title}`}
+              // aria-label={`View ${title}`}
               >
                 <MdOutlineRemoveRedEye size={20} />
               </button>
               {hasPermission("DELETE") ? (
                 <button
-                  onClick={() => deleteBookDetails(id, title)}
+                  onClick={() => deleteBookDetails(booking?.booking_id)}
                   className="text-red-500 hover:text-red-700 transition-colors"
-                  aria-label={`Delete ${title}`}
+                // aria-label={`Delete ${title}`}
                 >
                   <MdOutlineDeleteOutline size={20} />
                 </button>
@@ -147,7 +163,7 @@ const BookingTable = ({ hasPermission, searchQuery }) => {
                   <button
                     disabled
                     className="text-red-500/50 cursor-not-allowed"
-                    aria-label={`Delete ${title} (disabled)`}
+                    aria-label={`Delete (disabled)`}
                   >
                     <MdOutlineDeleteOutline size={20} />
                   </button>
@@ -206,7 +222,7 @@ const BookingTable = ({ hasPermission, searchQuery }) => {
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr
                   key={headerGroup.id}
-                  className="border-b bg-[#f7fcfc] text-center text-sm uppercase text-slate-700 dark:bg-[#313D4A] dark:text-white"
+                  className="border-b bg-[#f7fcfc] text-center text-sm uppercase text-slate-700 dark:bg-[#222f3e] dark:text-white"
                 >
                   {headerGroup.headers.map((header) => (
                     <th
@@ -225,7 +241,7 @@ const BookingTable = ({ hasPermission, searchQuery }) => {
             </thead>
             <tbody>
               {table.getRowModel().rows.map((row) => (
-                <tr key={row.id} className="border-b hover:bg-gray-50 dark:hover:bg-[#2b3a4a]">
+                <tr key={row.id} className="border-b hover:bg-gray-50 dark:bg-[#23374d] dark:hover:bg-[#2b3a4a]">
                   {row.getVisibleCells().map((cell) => (
                     <td
                       key={cell.id}
@@ -241,7 +257,7 @@ const BookingTable = ({ hasPermission, searchQuery }) => {
           </table>
         ) : (
           <div className="flex justify-center items-center h-[400px] text-xl text-slate-600 dark:text-white">
-            No books found. {hasPermission("CREATE") ? "Start by adding new books." : "Contact an administrator."}
+            No bookings found. {hasPermission("CREATE") ? "Start by adding new bookings." : "Contact an administrator."}
           </div>
         )}
       </div>
@@ -261,7 +277,7 @@ const BookingTable = ({ hasPermission, searchQuery }) => {
                   : "text-gray-400 bg-gray-100 border-gray-200 dark:bg-[#1d2a39] dark:text-gray-500 cursor-not-allowed"}`}
               aria-label="Previous page"
             >
-              Previous
+              <MdOutlineKeyboardDoubleArrowLeft />
             </button>
             <span className="text-sm text-slate-600 dark:text-white">
               Page <strong>{table.getState().pagination.pageIndex + 1}</strong> of{" "}
@@ -276,7 +292,7 @@ const BookingTable = ({ hasPermission, searchQuery }) => {
                   : "text-gray-400 bg-gray-100 border-gray-200 dark:bg-[#1d2a39] dark:text-gray-500 cursor-not-allowed"}`}
               aria-label="Next page"
             >
-              Next
+              <MdOutlineKeyboardDoubleArrowRight />
             </button>
           </div>
           <div className="flex items-center gap-2">
@@ -306,7 +322,7 @@ const BookingTable = ({ hasPermission, searchQuery }) => {
       {modalState.type === "edit" && (
         <Suspense fallback={<SkeletonModal title="Edit Booking" close={closeModal} actionButton="Update" />
         }>
-          <EditBookingDetails bookingValue={modalState.data} close={closeModal} />
+          <BookIssue booking={modalState.data.booking} onClose={closeModal} mode="edit" />
         </Suspense>)}
       {/* {modalState.type === "view" && (
         <BookDetailsModal data={modalState.data} close={closeModal} />
