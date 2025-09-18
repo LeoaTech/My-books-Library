@@ -48,6 +48,10 @@ const Bookings = () => {
     [debouncedSearch]
   );
 
+  const onClose = useCallback(() => {
+    setShowModal(false)
+  }, [])
+
   if (isPending) {
     return (
       <Loader />
@@ -111,8 +115,7 @@ const Bookings = () => {
 
       {hasPermission("READ") ? (
         <Suspense fallback={<SkeletonTable rows={7} columns={7} />}>
-          <h1>Booking Details</h1>
-          <BookingTable hasPermission={hasPermission} searchQuery={searchQuery} />
+          <BookingTable hasPermission={hasPermission} searchQuery={searchQuery} onClose={onClose} />
         </Suspense>
       ) : (
         <Suspense fallback={<Loader />}>
@@ -123,7 +126,7 @@ const Bookings = () => {
 
       {showModal &&
         <Suspense fallback={<SkeletonModal title={"Issue Book"} close={close} actionButton={"Issue Books"} />}>
-          <BookIssue onClose={() => setShowModal(false)} />
+          <BookIssue mode="create" onClose={onClose} />
         </Suspense>}
 
     </div>
