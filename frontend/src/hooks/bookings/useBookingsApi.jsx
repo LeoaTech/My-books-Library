@@ -46,21 +46,14 @@ export const useBookingApi = () => {
     setIsLoading(true);
     setError(null);
 
-    const updatedBooking = {
-      ...booking,
-      shipping_address: booking.shipping_address || "",
-      shipping_city: booking.shipping_city || "",
-      shipping_country: booking.shipping_country || "",
-      shipping_phone: booking.shipping_phone || "",
-      items: booking.items,
-    }
+   
 
     // console.log(booking, "BookingId");
     const response = await fetch(`${BASE_URL}/bookings/update/${booking.booking_id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ bookingForm: updatedBooking }),
+      body: JSON.stringify({ bookingForm: booking }),
     });
 
     console.log(response, "Bookings Update Response");
