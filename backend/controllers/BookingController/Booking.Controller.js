@@ -1,4 +1,4 @@
-const asyncHanlder = require("express-async-handler");
+const asyncHandler = require("express-async-handler");
 const db = require("../../config/dbConfig.js");
 
 const queryBooking = `SELECT 
@@ -32,7 +32,7 @@ LEFT JOIN vendors v ON b.vendor_id = v.id
 WHERE entity_id =$1`;
 
 /* Get ALL Bookings Details */
-const getBookings = asyncHanlder(async (req, res) => {
+const getBookings = asyncHandler(async (req, res) => {
   const entityId = req?.user?.entityId || req.user?.entity_id;
 
   if (!entityId) {
@@ -56,7 +56,7 @@ const getBookings = asyncHanlder(async (req, res) => {
 
 /* Create New Bookngs */
 
-const CreateBooking = asyncHanlder(async (req, res) => {
+const CreateBooking = asyncHandler(async (req, res) => {
   console.log(req.body);
   const entityId = req?.user?.entityId || req.user?.entity_id;
   if (!entityId) {
@@ -120,6 +120,81 @@ const CreateBooking = asyncHanlder(async (req, res) => {
   }
 });
 
-/* Fetch Booking Details By ID */
+/* Update Booking Details */
 
-module.exports = { getBookings, CreateBooking };
+const UpdateBooking = asyncHandler(async (req, res) => {
+  // console.log(req.body);
+  const entityId = req?.user?.entityId || req.user?.entity_id;
+  if (!entityId) {
+    res.send(400).json({ message: "Invalid Request, No Library ID provided" });
+  }
+
+  // console.log(req.params);
+
+  try {
+    const { bookingForm } = req.body;
+
+    const {
+      user_id,
+      vendor_id,
+      items,
+      borrow_date,
+      return_due,
+      return_date,
+      status,
+      shipping_address,
+      shipping_city,
+      shipping_country,
+      shipping_phone,
+      credits_used,
+      renewed,
+      renew_return_date,
+      booking_id,
+    } = bookingForm;
+
+    const itemsJson = JSON.stringify(items);
+
+    const updateBookingQuery = await db.query(
+      `UPDATE bookings SET 
+      user_id=$1, vendor_id =$2, items=$3, 
+      borrow_date=$4, return_due=$5,return_date=$6,booking_status=$7,
+       shipping_address=$8,shipping_city=$9, shipping_country=$10,
+       shipping_phone=$11,credits_used=$12,renewed=$13,
+      renew_return_date =$14 
+       WHERE entity_id=$15 AND id =$16 `,
+      [
+        user_id,
+        vendor_id,
+        itemsJson,
+        borrow_date,
+        return_due,
+        return_date,
+        status,
+        shipping_address,
+        shipping_city,
+        shipping_country,
+        shipping_phone,
+        credits_used,
+        renewed,
+        renew_return_date,
+        entityId,
+        booking_id,
+      ]
+    );
+
+    // console.log(updateBookingQuery?.rows[0], "Booking details updated");
+
+    res.status(200).json({
+      booking: updateBookingQuery?.rows[0],
+      message: "Booking details updated ",
+    });
+  } catch (error) {
+    console.log(error, "Error updating Booking details");
+    res.status(500).json({
+      error: error,
+      message: "Failed to update booking details ",
+    });
+  }
+});
+
+module.exports = { getBookings, CreateBooking, UpdateBooking };
