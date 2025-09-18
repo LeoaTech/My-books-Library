@@ -131,35 +131,36 @@ const BookIssue = ({ mode, onClose, booking }) => {
     ...book,
   }));
 
+
   useEffect(() => {
+    // when the renewed checkbox is selected
     if (renewed) {
-      // if renewed is checked, disable return_date, no date selected
       setValue("return_date", undefined, { shouldValidate: true });
-    } else if (mode === "edit") {
-      // If renewed value is unchecked, then enable return_date
-      if (booking?.return_date) {
-        setValue("return_date", new Date(booking.return_date), { shouldValidate: true });
-        setValue("status", "returned", { shouldValidate: true });
-      } else {
+      setValue("status", "renewed", { shouldValidate: true });
+
+      if (booking?.renew_return_date) {
+        setValue("return_due", new Date(booking.renew_return_date), { shouldValidate: true });
+      }
+    } else {
+      // clear the date selections 
+      setValue("renew_return_date", undefined, { shouldValidate: true });
+      setValue("return_date", undefined, { shouldValidate: true });
+
+      if (mode === "edit" && booking) {
+        // reset original values
+        setValue("return_due", new Date(booking.return_due), { shouldValidate: true });
+        setValue("status", booking.booking_status, { shouldValidate: true });
         setValue("return_date", undefined, { shouldValidate: true });
       }
-      // clear the renew_return_date when renewed is unchecked
-      setValue("renew_return_date", undefined, { shouldValidate: true });
-      // reset the return_due value to original value 
-      setValue("return_due", new Date(booking.return_due), { shouldValidate: true });
     }
+  }, [renewed, setValue, mode, booking])
 
-  }, [renewed, setValue, mode, booking]);
 
-  // Handle the update of return_due when renew_return_date is selected
   useEffect(() => {
-    if (renewed && watch("renew_return_date") instanceof Date) {
-      setValue("return_due", watch("renew_return_date"), { shouldValidate: true });
-      setValue("status", "renewed", { shouldValidate: true }); //update the status also
-
+    if (returnDate instanceof Date) {
+      setValue("status", "returned", { shouldValidate: true });
     }
-  }, [renewed, watch("renew_return_date"), setValue]);
-
+  }, [returnDate, setValue]);
 
   const usersOptions = useMemo(
     () =>
@@ -170,8 +171,6 @@ const BookIssue = ({ mode, onClose, booking }) => {
     [students?.data]
   );
 
-
-
   const booksOptions = useMemo(
     () =>
       booksData?.books?.map((book) => ({
@@ -181,9 +180,6 @@ const BookIssue = ({ mode, onClose, booking }) => {
       })) ?? [],
     [booksData?.books]
   );
-
-
-
 
   // Mutation to create new booking 
   const { mutateAsync: createBookingMutation } = useMutation({
@@ -214,15 +210,21 @@ const BookIssue = ({ mode, onClose, booking }) => {
 
   console.log(errors, "Form errors");
   const onSubmit = async (updateData) => {
-    console.log(updateData, "Form");
+    // console.log(updateData, "Form");
     if (mode == "edit") {
-      // await updateBookingMutation(updateData)
+      const bookingData = {
+        ...updateData,
+        booking_id: booking?.booking_id
+      };
+          // console.log(bookingData, "Form with id");
+
+      await updateBookingMutation(bookingData)
     } else {
       const bookingData = {
         ...updateData,
         status: "issued",
       };
-      console.log(bookingData, "Issue Books Form");
+      // console.log(bookingData, "Issue Books Form");
 
       await createBookingMutation(bookingData);
     }
@@ -488,7 +490,13 @@ const BookIssue = ({ mode, onClose, booking }) => {
                             <DatePicker
                               disabled={!renewed}
                               selected={field.value}
-                              onChange={(date) => field.onChange(date)}
+                              onChange={(date) => {
+                                field.onChange(date);
+
+                                if (date) {
+                                  setValue("return_due", date, { shouldValidate: true });
+                                }
+                              }}
                               placeholderText="New Return Date"
                               className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                               dateFormat="yyyy-MM-dd"
@@ -515,7 +523,12 @@ const BookIssue = ({ mode, onClose, booking }) => {
                             <DatePicker
                               disabled={renewed}
                               selected={field.value}
-                              onChange={(date) => field.onChange(date)}
+                              onChange={(date) => {
+                                field.onChange(date);
+                                if (date) {
+                                  setValue("status", "returned", { shouldValidate: true });
+                                }
+                              }}
                               placeholderText="Return Date"
                               className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                               dateFormat="yyyy-MM-dd"
