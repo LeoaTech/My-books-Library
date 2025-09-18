@@ -1,15 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
-  MdLocalAirport,
-  MdLocalPhone,
-  MdLocationCity,
-  MdOutlineCalendarMonth,
   MdOutlineDeleteOutline,
-  MdOutlineLocalPhone,
   MdShoppingBag,
 } from "react-icons/md";
 import { RxCross1 } from "react-icons/rx";
-import { Controller, useController, useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useBookingApi } from "../../../../../hooks/bookings/useBookingsApi";
@@ -21,13 +16,12 @@ import "react-datepicker/dist/react-datepicker.css";
 import * as z from "zod";
 import { addDays, differenceInDays } from "date-fns";
 import { useFetchVendors } from "../../../../../hooks/books/useFetchVendors";
-import { bookItemsSchema, selectOptionSchema } from "../../../../../schemas/books";
+import { bookItemsSchema } from "../../../../../schemas/books";
 import Select, { components } from "react-select"
 import { getCustomSelectStyles } from "../../../shared/CreatableSelectCustomStyles";
 
 // Booking Form Schema
 const bookingSchema = z.object({
-  // bookingDuration: z.coerce.number(),//.min(1, "Duration must be at least 1 day.").optional(),
   borrow_date: z.date({
     required_error: "Borrow date is required.",
     invalid_type_error: "That's not a valid date!",
@@ -36,7 +30,7 @@ const bookingSchema = z.object({
     required_error: "Please select a user.",
     invalid_type_error: "User ID must be a number."
   }).min(1, { message: "Please select a user ID." }),
-  status: z.enum(["issued", "returned", "overdue"]).default("issued"),
+  status: z.enum(["issued", "returned", "overdue", "renewed"]).default("issued"),
   shipping_address: z.string(),//.min(1, { message: "Shipping Address must be required" }),
   shipping_city: z.string(),//.min(1, { message: "Shipping City must be required" }),
   shipping_country: z.string(),//.min(1, { message: "Shipping Country must be required" }),
@@ -59,7 +53,7 @@ const bookingSchema = z.object({
     path: ["return_due"],
   })
   .refine((data) => {
-    if (data.borrow_date && data.return_due) {
+    if (data.borrow_date && data.return_due && !data?.renewed) {
       const duration = differenceInDays(data.return_due, data.borrow_date);
       return duration <= 15;
     }
@@ -68,17 +62,18 @@ const bookingSchema = z.object({
     message: "Duration cannot exceed 15 days.",
     path: ["return_due"],
   });
+const bookingStatus = ["issued", "returned", "overdue", "renewed"];
 
-const BookIssue = ({ onClose }) => {
+const BookIssue = ({ mode, onClose, booking }) => {
   const queryClient = useQueryClient();
+
   const theme = localStorage.getItem("color-theme")?.replace(/"/g, '') || "light";
   const selectStyles = useMemo(() => getCustomSelectStyles(theme), [theme]);
 
-  const { createBooking, error, isLoading } = useBookingApi();
+  const { createBooking, updateBooking, error, isLoading } = useBookingApi();
 
   const { data: students, isLoading: isLoadingStudents } = useFetchUserRoles();
   const { isLoading: isBooksLoading, error: isBookFetchingError, data: booksData } = useFetchBooks();
-  const [selectedBooks, setSelectedBooks] = useState([]); //for book items in the order
   const { isPending: isPendingVendors, data: vendorsData } = useFetchVendors();
 
   const {
@@ -88,7 +83,23 @@ const BookIssue = ({ onClose }) => {
     watch, control, setValue,
     formState: { errors, isSubmitting, isValid, isDirty },
   } = useForm({
-    defaultValues: {
+    defaultValues: booking && mode == "edit" ? {
+      ...booking,
+      borrow_date: booking.borrow_date ? new Date(booking.borrow_date) : null,
+      return_due: booking.return_due ? new Date(booking.return_due) : null,
+      return_date: booking?.return_date ? new Date(booking.return_date) : undefined,
+      renew_return_date: booking?.renew_return_date ? new Date(booking?.renew_return_date) : undefined,
+      items: booking.items || [],
+      user_id: booking.user_id || null,
+      vendor_id: booking.vendor_id || null,
+      credits_used: booking.credits_used || 0,
+      renewed: booking.renewed || false,
+      shipping_address: booking.shipping_address || "",
+      shipping_city: booking.shipping_city || "",
+      shipping_country: booking.shipping_country || "",
+      shipping_phone: booking.shipping_phone || "",
+      status: booking.booking_status || "issued",
+    } : {
       items: [],
       status: "issued",
       bookingDuration: null,
@@ -107,10 +118,49 @@ const BookIssue = ({ onClose }) => {
     resolver: zodResolver(bookingSchema),
     mode: "onChange",
   });
-  const bookingStatus = ["issued", "returned", "overdue"];
+
   const borrowDate = watch("borrow_date");
   const returnDue = watch("return_due");
+  const renewed = watch("renewed");
   const bookItems = watch('items') || [];
+  const returnDate = watch("return_date");
+
+  const selectedValues = mode == "edit" && bookItems?.map(book => ({
+    value: book.id,
+    label: book.title,
+    ...book,
+  }));
+
+  useEffect(() => {
+    if (renewed) {
+      // if renewed is checked, disable return_date, no date selected
+      setValue("return_date", undefined, { shouldValidate: true });
+    } else if (mode === "edit") {
+      // If renewed value is unchecked, then enable return_date
+      if (booking?.return_date) {
+        setValue("return_date", new Date(booking.return_date), { shouldValidate: true });
+        setValue("status", "returned", { shouldValidate: true });
+      } else {
+        setValue("return_date", undefined, { shouldValidate: true });
+      }
+      // clear the renew_return_date when renewed is unchecked
+      setValue("renew_return_date", undefined, { shouldValidate: true });
+      // reset the return_due value to original value 
+      setValue("return_due", new Date(booking.return_due), { shouldValidate: true });
+    }
+
+  }, [renewed, setValue, mode, booking]);
+
+  // Handle the update of return_due when renew_return_date is selected
+  useEffect(() => {
+    if (renewed && watch("renew_return_date") instanceof Date) {
+      setValue("return_due", watch("renew_return_date"), { shouldValidate: true });
+      setValue("status", "renewed", { shouldValidate: true }); //update the status also
+
+    }
+  }, [renewed, watch("renew_return_date"), setValue]);
+
+
   const usersOptions = useMemo(
     () =>
       students?.data?.map((user) => ({
@@ -119,6 +169,7 @@ const BookIssue = ({ onClose }) => {
       })) ?? [],
     [students?.data]
   );
+
 
 
   const booksOptions = useMemo(
@@ -131,24 +182,10 @@ const BookIssue = ({ onClose }) => {
     [booksData?.books]
   );
 
-  // handle the calculation for date range selection
-  // useEffect(() => {
-  //   // verify if both (start and end) dates are selected and are valid Date objects
-  //   if (borrowDate instanceof Date && returnDue instanceof Date) {
-  //     // get the duration in days from both dates
-  //     const duration = differenceInDays(returnDue, borrowDate);
-  //     // Set the calculated  value of duration 
-  //     setValue("bookingDuration", duration, { shouldValidate: true });
-
-  //   } else {
-  //     // Clear the duration when dates are not valid
-  //     setValue("bookingDuration", null, { shouldValidate: true });
-
-  //   }
-  // }, [borrowDate, returnDue, setValue]);
 
 
-  // Mutation to create new order 
+
+  // Mutation to create new booking 
   const { mutateAsync: createBookingMutation } = useMutation({
     mutationFn: createBooking,
     onSuccess: () => {
@@ -162,17 +199,33 @@ const BookIssue = ({ onClose }) => {
     },
   });
 
-  // console.log(errors, "Form errors");
-  const onSubmit = async (updateData) => {
-    // console.log(updateData, "Form");
-    const bookingData = {
-      ...updateData,
-      status: "issued",
-      items: selectedBooks,
-    };
-    console.log(bookingData, "Issue Books Form");
+  const { mutateAsync: updateBookingMutation } = useMutation({
+    mutationFn: updateBooking,
+    onSuccess: () => {
+      reset();
+      queryClient.invalidateQueries(["bookings"]);
+      onClose();
+    },
+    onError: (err) => {
+      console.error("Error updating booking:", err);
+      onClose();
+    },
+  });
 
-    await createBookingMutation(bookingData);
+  console.log(errors, "Form errors");
+  const onSubmit = async (updateData) => {
+    console.log(updateData, "Form");
+    if (mode == "edit") {
+      // await updateBookingMutation(updateData)
+    } else {
+      const bookingData = {
+        ...updateData,
+        status: "issued",
+      };
+      console.log(bookingData, "Issue Books Form");
+
+      await createBookingMutation(bookingData);
+    }
   };
 
 
@@ -183,13 +236,16 @@ const BookIssue = ({ onClose }) => {
 
   const CustomValueContainer = ({ children, ...props }) => {
     const filteredChildren = React.Children.toArray(children).filter(child => {
-      return child.type !== components.MultiValue;
+      return child.type != components.MultiValue;
     });
     return <components.ValueContainer {...props}>{filteredChildren}</components.ValueContainer>;
   };
 
+  console.log(booking);
 
   // console.log(watch("items"), "items");
+
+
 
   return (
     <div className="fixed left-0 top-0  inset-0 bg-[#64748B] bg-opacity-75 transition-opacity dark:bg-slate-300 dark:bg-opacity-75 lg:left-[18rem]">
@@ -211,7 +267,7 @@ const BookIssue = ({ onClose }) => {
           <div className=" p-10 relative rounded-md border border-[#E2E8F0] bg-white shadow-lg dark:border-[#2E3A47] dark:bg-[#24303F] md:px-8 md:py-8 ">
             <div className=" flex justify-between items-center rounded-sm p-3 bg-slate-100 border border-[#E2E8F0] py-4 px-6.5 dark:border-[#2E3A47] dark:bg-[#2E3A47]">
               <h3 className="font-bold text-[#313D4A] dark:text-white">
-                Issue Books
+                {mode == "edit" ? "Edit Booking" : "Issue Books"}
               </h3>
 
             </div>
@@ -277,7 +333,7 @@ const BookIssue = ({ onClose }) => {
                                 MultiValue: NoopMultiValue,
                                 ValueContainer: CustomValueContainer
                               }}
-                              value={field.value || []}
+                              value={mode == "edit" ? selectedValues : field.value || []}
                               onChange={(options) => {
                                 field.onChange(options || []);
                               }}
@@ -304,8 +360,8 @@ const BookIssue = ({ onClose }) => {
                         <legend className="font-semibold text-md text-[#259AE6] dark:text-gray-300">Selected Items List</legend>
 
                         <ul className="ml-10 mt-3 font-medium text-md text-slate-400">
-                          {bookItems.map((book, index) => (
-                            <li key={book.id} className="mb-2 flex justify-between items-center">
+                          {bookItems?.map((book, index) => (
+                            <li key={book?.id || index + 1} className="mb-2 flex justify-between items-center">
                               <div>
                                 <span className="font-semibold flex items-center gap-2 text-slate-500 dark:text-neutral-100">
                                   <MdShoppingBag />
@@ -348,6 +404,7 @@ const BookIssue = ({ onClose }) => {
 
                           render={({ field }) => (
                             <DatePicker
+                              disabled={mode === "edit"}
                               selected={field.value}
                               onChange={(date) => {
                                 field.onChange(date);
@@ -378,6 +435,7 @@ const BookIssue = ({ onClose }) => {
                           control={control}
                           render={({ field }) => (
                             <DatePicker
+                              disabled={mode === "edit"}
                               selected={field.value}
                               onChange={(date) => field.onChange(date)}
                               placeholderText="Due Date"
@@ -395,50 +453,88 @@ const BookIssue = ({ onClose }) => {
                         )}
                       </div>
                     </div>
-                    {/* <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
+                    {mode === "edit" && <div className="mt-8 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
+                      {/* Select if user want to renew the returning or not */}
+                      <div className="w-full">
 
-                      <div className="w-full ">
-                        <label className="mb-2.5 block text-[#0284c7] dark:text-white">
-                          Duration
-                          <span className="text-blue-500"> (Read-Only)</span>
+                        <label className="inline-flex items-center">
+                          <input
+                            type="checkbox"
+                            name="renewed"
+                            {...register("renewed")}
+                            className="rounded bg-gray-200 border-transparent h-4 w-4 p-5 ml-2 focus:border-transparent focus:bg-gray-200 text-gray-700 focus:ring-1 focus:ring-offset-2 focus:ring-gray-500"
+                          />
+                          <span className="ml-2  text-[#0284c7] dark:text-white">
+                            Do you want to extend the return date?
+                          </span>
                         </label>
-                        <input
-                          {...register("bookingDuration")}
-                          placeholder="Select the borrow date to calculate duration"
-                          readOnly
-                          className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
-                        />
-                        <p style={{ fontSize: '0.8em', color: 'gray' }}>Maximum 15 days allowed</p> 
-
-                        {errors.bookingDuration && (
-                          <p className="text-red-600 text-sm mt-1">{errors.bookingDuration.message}</p>
-                        )}
                       </div>
-                      <div className="w-full xl:w-1/2">
+
+                    </div>
+
+
+                    }
+                    {mode === "edit" && <div className="mt-6 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
+
+                      {/* If renewed is selected, select the new return date */}
+                      {renewed ? <div className="w-full ">
                         <label className="mb-2.5 block text-[#0284c7] dark:text-white">
-                          Select Return Date (Optional)
+                          Select Renew Return Date
+                        </label>
+                        <Controller
+                          name="renew_return_date"
+                          control={control}
+                          render={({ field }) => (
+                            <DatePicker
+                              disabled={!renewed}
+                              selected={field.value}
+                              onChange={(date) => field.onChange(date)}
+                              placeholderText="New Return Date"
+                              className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                              dateFormat="yyyy-MM-dd"
+                              minDate={returnDue || new Date()}
+                              maxDate={returnDue ? addDays(returnDue, 15) : null} //extend return date for 15 days
+
+                            />
+                          )}
+                        />
+                        <p style={{ fontSize: '0.8em', marginTop: "10px", color: 'orange' }}>
+                          Extends the due date by up to 15 days from the original due date.
+                        </p>
+                        {errors.renew_return_date && (
+                          <p className="text-red-600 text-sm mt-1">{errors.renew_return_date.message}</p>
+                        )}
+                      </div> : <div className="w-full ">
+                        <label className="mb-2.5 block text-[#0284c7] dark:text-white">
+                          Select Return Date
                         </label>
                         <Controller
                           name="return_date"
                           control={control}
                           render={({ field }) => (
                             <DatePicker
+                              disabled={renewed}
                               selected={field.value}
                               onChange={(date) => field.onChange(date)}
                               placeholderText="Return Date"
                               className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                               dateFormat="yyyy-MM-dd"
                               minDate={borrowDate || new Date()}
-                            maxDate={borrowDate ? addDays(borrowDate, 15) : null}
+                              maxDate={addDays(returnDue, 30) || returnDue}
 
                             />
                           )}
                         />
+                        <p style={{ fontSize: '0.8em', marginTop: "10px", color: 'green' }}>
+                          Use this field to record when the book items were returned.
+                        </p>
                         {errors.return_date && (
                           <p className="text-red-600 text-sm mt-1">{errors.return_date.message}</p>
                         )}
-                      </div>
-                    </div> */}
+                      </div>}
+                    </div>}
+
+
                   </fieldset>
 
                   {/* Booking Status */}
@@ -464,7 +560,7 @@ const BookIssue = ({ onClose }) => {
                               <option
                                 key={status}
                                 value={status}
-                                disabled={status != "issued"}
+                                disabled={mode === "create" && status != "issued"}
                                 className="truncate"
                                 style={{
                                   maxWidth: "100%",
@@ -596,7 +692,7 @@ const BookIssue = ({ onClose }) => {
                           className="relative z-20 w-full appearance-none dark:text-white rounded-sm border border-[#E2E8F0] bg-transparent dark:text-white py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                           {...register("vendor_id", { required: true })}
                         >
-                          <option  value="">Select Vendor</option>
+                          <option value="">Select Vendor</option>
                           {vendorsData?.vendors &&
                             vendorsData?.vendors?.map((vendor) => (
                               <option key={vendor?.id} value={vendor?.id}>
@@ -647,6 +743,7 @@ const BookIssue = ({ onClose }) => {
                   {/* Footer with Action buttons */}
                   <div className="flex justify-end gap-10 mt-10 mb-10">
                     <button
+                      type="button"
                       className="bg-slate-600 text-white font-medium text-md cursor-pointer p-2 px-5 rounded-md "
                       onClick={onClose}
                     >
@@ -657,7 +754,7 @@ const BookIssue = ({ onClose }) => {
                       type="submit"
                       className="bg-orange-400 text-white font-medium text-md cursor-pointer disabled:cursor-not-allowed p-2 px-5 rounded-md "
                     >
-                      {isLoading ? <LoadingSpinner /> : "Issue Book"}
+                      {isLoading ? <LoadingSpinner /> : mode === "edit" ? "Update Booking" : "Issue Book"}
                     </button>
                   </div>
                 </div>
@@ -665,8 +762,8 @@ const BookIssue = ({ onClose }) => {
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 };
 
