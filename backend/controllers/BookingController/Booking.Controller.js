@@ -1,6 +1,36 @@
 const asyncHanlder = require("express-async-handler");
 const db = require("../../config/dbConfig.js");
 
+const queryBooking = `SELECT 
+    b.id AS booking_id,
+    b.user_id,
+    b.vendor_id,
+    b.items,
+    b.borrow_date,
+    b.return_due,
+    b.return_date,
+    b.renew_return_date,
+    b.renewed,
+    b.booking_status,
+    b.shipping_address,
+    b.shipping_city,
+    b.shipping_country,
+    b.shipping_phone,
+    b.credits_used,
+    b.entity_id,
+    b.created_at AS booking_created_at,
+    b.updated_at AS booking_updated_at,
+    u.id AS user_id,
+    u.name AS user_name,
+    u.email AS email,
+    v.id AS vendor_id,
+    v.name AS vendor_name
+    -- Add other vendor fields as needed
+FROM bookings b
+LEFT JOIN users u ON b.user_id = u.id
+LEFT JOIN vendors v ON b.vendor_id = v.id
+WHERE entity_id =$1`;
+
 /* Get ALL Bookings Details */
 const getBookings = asyncHanlder(async (req, res) => {
   const entityId = req?.user?.entityId || req.user?.entity_id;
@@ -9,8 +39,7 @@ const getBookings = asyncHanlder(async (req, res) => {
     res.send(400).json({ message: "Invalid Request, No Library ID provided" });
   }
   try {
-    const BookingsQuery = `SELECT * FROM bookings where entity_id =$1`;
-    const bookingsQueryResponse = await db.query(BookingsQuery, [entityId]);
+    const bookingsQueryResponse = await db.query(queryBooking, [entityId]);
 
     res.status(200).json({
       bookings: bookingsQueryResponse?.rows || [],
