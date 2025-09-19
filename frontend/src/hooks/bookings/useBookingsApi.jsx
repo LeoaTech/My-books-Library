@@ -46,7 +46,7 @@ export const useBookingApi = () => {
     setIsLoading(true);
     setError(null);
 
-   
+
 
     // console.log(booking, "BookingId");
     const response = await fetch(`${BASE_URL}/bookings/update/${booking.booking_id}`, {
@@ -72,5 +72,22 @@ export const useBookingApi = () => {
     }
   }
 
-  return { createBooking, error, isLoading, updateBooking }
+  const deleteBooking = async (bookingId) => {
+    setIsLoading(true);
+    setError(null);
+
+    // console.log(bookingId, "Booking Delete");
+    const response = await fetch(`${BASE_URL}/bookings/delete/${bookingId}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+    });
+
+    // console.log(response, "Booking Delete Response");
+    const result = await response.json(); //response?.data;
+    setIsLoading(false)
+    // console.log(result, "delete Result");
+  };
+
+  return { createBooking, error, isLoading, updateBooking, deleteBooking }
 }
