@@ -50,6 +50,7 @@ const BookingTable = ({ hasPermission, searchQuery }) => {
   }, []);
 
   const deleteBookDetails = useCallback((id) => {
+    console.log(id)
     setModalState({ type: "delete", data: { id } });
   }, []);
 
@@ -330,7 +331,7 @@ const BookingTable = ({ hasPermission, searchQuery }) => {
       {modalState.type === "delete" && (
         <Suspense fallback={<SkeletonModal title="Delete Booking" close={closeModal} actionButton="Delete" />
         }>
-          <DeleteBookingDetails booking={modalState.data} close={closeModal} />
+          <DeleteBookingDetails booking={modalState.data.id} close={closeModal} />
         </Suspense>)}
     </div>
   );

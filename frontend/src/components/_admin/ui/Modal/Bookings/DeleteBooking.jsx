@@ -1,8 +1,31 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { RxCross1 } from "react-icons/rx";
+import { useBookingApi } from "../../../../../hooks/bookings/useBookingsApi";
 
 const DeleteBooking = ({ booking, close }) => {
-  
 
+  console.log(booking);
+  
+  const queryClient = useQueryClient();
+  const { deleteBooking, error, isLoading } = useBookingApi();
+
+  const { mutateAsync: deleteBookingMutation } = useMutation({
+    mutationFn: deleteBooking,
+    onSuccess: () => {
+      queryClient.invalidateQueries(["bookings"]);
+      close();
+    },
+    onError: (err) => {
+      console.error("Error creating new booking:", err);
+      close();
+    },
+  });
+
+
+  const handleDelete = async () => {
+    await deleteBookingMutation(booking)
+
+  }
   return (
     <div className="fixed left-0 top-0  inset-0 bg-[#64748B] bg-opacity-75 transition-opacity dark:bg-slate-300 dark:bg-opacity-75 lg:left-[18rem]">
       <div className="relative p-5 rounded-md">
@@ -28,16 +51,16 @@ const DeleteBooking = ({ booking, close }) => {
             </div>
 
             <p className="mt-10 text-xl text-blue-500">
-              {`Are u sure you want to delete the Booking `}<span className="font-bold text-orange-400">{`${1234}?`}</span>
+              {`Are u sure you want to delete the Booking `}<span className="font-bold text-orange-400">{`${booking}?`}</span>
             </p>
 
             <div className="mt-10 flex justify-evenly gap-2">
               <button
-                onClick={() => console.log("Delete Book")}
+                onClick={handleDelete}
                 className="border p-2 px-10 text-medium text-md bg-slate-600 text-white rounded-md text-[17px] hover:bg-slate-400"
               >
-                {/* {isLoading ? "Removing" : "Yes"} */}
-                Yes
+                {isLoading ? "Removing" : "Yes"}
+
               </button>
               <button
                 onClick={close}
