@@ -18,6 +18,7 @@ import Loader from "../../Loader/Loader";
 import SkeletonModal from "../../../Loader/SkeletonModal";
 import { useFetchBooking } from "../../../../hooks/bookings/useBookings";
 import BookIssue from "../Modal/Bookings/IssueBooks";
+import ViewBookingDetails from "../Modal/Bookings/ViewBookingDetails"
 const DeleteBookingDetails = lazy(() => import("../Modal/Bookings/DeleteBooking"));
 
 const BookingTable = ({ hasPermission, searchQuery }) => {
@@ -25,21 +26,19 @@ const BookingTable = ({ hasPermission, searchQuery }) => {
   const { isPending, error, data: bookingsData } = useFetchBooking();
 
   const [modalState, setModalState] = useState({
-    type: null, //update state for edit or delete data
+    type: null, //update state for edit,view or delete data
     data: null,
   });
-
-  console.log(bookingsData);
-
   //  pagination
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 10,
   });
 
-  // Memoized action handlers
-  const viewBookDetails = useCallback((id) => {
-    setModalState({ type: "view", data: id });
+  const viewBookDetails = useCallback((booking) => {
+    console.log(booking);
+
+    setModalState({ type: "view", data: booking });
   }, []);
 
   const editBookDetails = useCallback((booking) => {
@@ -145,9 +144,9 @@ const BookingTable = ({ hasPermission, searchQuery }) => {
                 </div>
               )}
               <button
-                onClick={() => viewBookDetails(booking?.booking_id)}
+                onClick={() => viewBookDetails(booking)}
                 className="text-green-600 hover:text-green-800 transition-colors"
-              // aria-label={`View ${title}`}
+                aria-label={`View ${booking}`}
               >
                 <MdOutlineRemoveRedEye size={20} />
               </button>
@@ -324,15 +323,20 @@ const BookingTable = ({ hasPermission, searchQuery }) => {
       {modalState.type === "edit" && (
         <Suspense fallback={<SkeletonModal title="Edit Booking" close={closeModal} actionButton="Update" />
         }>
-          <BookIssue booking={modalState.data.booking} onClose={closeModal} mode="edit" />
+          <BookIssue booking={modalState?.data?.booking} onClose={closeModal} mode="edit" />
         </Suspense>)}
-      {/* {modalState.type === "view" && (
-        <BookDetailsModal data={modalState.data} close={closeModal} />
-      )} */}
+
+
+      {modalState.type === "view" && (
+        <Suspense fallback={<SkeletonModal title="View Booking" close={closeModal} actionButton="Close" />
+        }>
+          <ViewBookingDetails bookingData={modalState?.data} close={closeModal} />
+        </Suspense>
+      )}
       {modalState.type === "delete" && (
         <Suspense fallback={<SkeletonModal title="Delete Booking" close={closeModal} actionButton="Delete" />
         }>
-          <DeleteBookingDetails booking={modalState.data.id} close={closeModal} />
+          <DeleteBookingDetails booking={modalState?.data?.id} close={closeModal} />
         </Suspense>)}
     </div>
   );
