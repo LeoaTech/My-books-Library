@@ -77,7 +77,7 @@ const Bookings = () => {
         {hasPermission("READ") && (
           <input
             type="text"
-            placeholder="Search bookings..."
+            placeholder="Search bookings by status and user name ..."
             className="w-full sm:w-1/2 px-4 py-2 text-sm border-b border-gray-300 bg-neutral-100 rounded-md 
               focus:outline-none focus:ring-2 focus:ring-[#758aae] dark:border-gray-600 dark:bg-[#1d2a39] dark:text-white"
             onChange={handleSearch}
@@ -85,7 +85,7 @@ const Bookings = () => {
           />
         )}
 
-        {/* {hasPermission("CREATE") ? ( */}
+        {hasPermission("CREATE") ? (
         <button
           className="flex items-center gap-2 bg-[#758aae] text-white px-4 py-2 rounded-md 
               hover:bg-[#80CAEE] focus:outline-none focus:ring-2 focus:ring-[#758aae] 
@@ -95,7 +95,7 @@ const Bookings = () => {
         >
           <HiPlus />Issue Books
         </button>
-        {/* ) : (
+        ) : (
           <div className="relative group">
             <button
               className="flex items-center gap-2 bg-[#758aae]/50 text-white px-4 py-2 rounded-md 
@@ -103,14 +103,14 @@ const Bookings = () => {
               disabled
               aria-label="Add new booking (disabled)"
             >
-              <HiPlus /> New Booking
+              <HiPlus /> Issue Books
             </button>
             <span className="absolute -top-10 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 
               transition-all rounded bg-gray-800 p-2 text-xs text-red-500 flex items-center gap-2">
               <MdWarning /> Access Denied
             </span>
           </div>
-        )} */}
+        )}
       </div>
 
       {hasPermission("READ") ? (

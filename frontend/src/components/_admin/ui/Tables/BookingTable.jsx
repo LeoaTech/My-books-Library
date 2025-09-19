@@ -153,9 +153,10 @@ const BookingTable = ({ hasPermission, searchQuery }) => {
               </button>
               {hasPermission("DELETE") ? (
                 <button
+                  disabled={booking.booking_status !== "returned"}
                   onClick={() => deleteBookDetails(booking?.booking_id)}
-                  className="text-red-500 hover:text-red-700 transition-colors"
-                // aria-label={`Delete ${title}`}
+                  className="text-red-500 hover:text-red-700 transition-colors disabled:text-gray-600 disabled:hover:text-gray-600"
+                  aria-label={`Delete ${booking.booking_id}`}
                 >
                   <MdOutlineDeleteOutline size={20} />
                 </button>
