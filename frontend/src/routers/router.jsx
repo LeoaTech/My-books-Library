@@ -105,7 +105,7 @@ const router = createBrowserRouter(
 
 
         {/* Protected Dashboard Routes */}
-        <Route element={<RequiredAuth allowedRoles={["owner"]} />}>
+        <Route element={<RequiredAuth allowedRoles={["owner","vendor","admin"]} />}>
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<DashboardPage />} />
             {renderRoutes(routes)}

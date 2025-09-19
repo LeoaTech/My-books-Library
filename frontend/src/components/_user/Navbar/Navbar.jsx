@@ -117,7 +117,7 @@ const Navbar = () => {
             )}
 
             {/* Redirect to subdomain */}
-            {['owner']?.includes(auth?.role_name) && (
+            {['owner',"vendor"]?.includes(auth?.role_name) && (
               <Link to={!subdomain ? `/${sub_domain}` : "/dashboard"} className="hover:text-purple-300">
                 {subdomain ? "Dashboard" : auth?.entityName?.toUpperCase()}
               </Link>
@@ -170,7 +170,7 @@ const Navbar = () => {
               <HiOutlineShoppingCart className="h-5 w-5" /> Cart
             </Link>
 
-            {['owner'].includes(auth?.role_name) && (
+            {['owner',"vendor","admin"].includes(auth?.role_name) && (
               <Link
                 to={(subdomain) ? `/${sub_domain}` : "/"}
                 onClick={onToggle}
