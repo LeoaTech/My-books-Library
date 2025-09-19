@@ -197,4 +197,31 @@ const UpdateBooking = asyncHandler(async (req, res) => {
   }
 });
 
-module.exports = { getBookings, CreateBooking, UpdateBooking };
+/* Delete Booking */
+
+const DeleteBooking = asyncHandler(async (req, res) => {
+  const { booking_id } = req.params;
+  const entityId = req?.user?.entityId || req.user?.entity_id;
+  if (!entityId) {
+    res.send(400).json({ message: "Invalid Request, No Library ID provided" });
+  }
+  try {
+    // Delete booking from DB
+    const deleteQuery = await db.query(
+      `DELETE FROM bookings WHERE id=$1 AND entity_id=$2 returning id`,
+      [booking_id, entityId]
+    );
+
+    // console.log(deleteQuery?.rowCount, "Deleted");
+
+    if (deleteQuery?.rowCount > 0) {
+      res.status(200).json({ message: "Booking deleted Suuccessfully" });
+    } else {
+      res.status(204).json({ message: "Failed To Delete Booking" });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+module.exports = { getBookings, CreateBooking, UpdateBooking ,DeleteBooking};
