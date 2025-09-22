@@ -1,7 +1,7 @@
 import axios from "axios";
 import { createContext, useEffect, useReducer, useState } from "react";
 import { Navigate } from "react-router-dom"
-import { BASE_URL } from "../../utiliz/baseAPIURL";
+import { BASE_URL } from "../../utils/baseAPIURL";
 
 const serverUrl = import.meta.env.VITE_SERVER_ENDPOINT;
 

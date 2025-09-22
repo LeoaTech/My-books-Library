@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BASE_URL } from "../../utiliz/baseAPIURL";
+import { BASE_URL } from "../../utils/baseAPIURL";
 
 export const useCategoryActions = () => {
   const [error, setError] = useState(null);

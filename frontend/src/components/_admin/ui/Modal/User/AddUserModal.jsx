@@ -7,7 +7,7 @@ import Loader from "../../../Loader/Loader.jsx";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAuthContext } from "../../../../../hooks/useAuthContext.js";
-import { BASE_URL } from "../../../../../utiliz/baseAPIURL.js";
+import { BASE_URL } from "../../../../../utils/baseAPIURL.js";
 import { toast } from "react-toastify";
 
 

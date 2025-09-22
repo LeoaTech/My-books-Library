@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { BASE_URL } from "../utiliz/baseAPIURL";
+import { BASE_URL } from "../utils/baseAPIURL";
 import axios from "axios";
 import { useState } from "react";
 

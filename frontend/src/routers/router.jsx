@@ -4,7 +4,7 @@ import {
   Route,
 } from "react-router-dom";
 import App from "../App";
-import routes, { accountRoutes, roleRoutes } from "../utiliz";
+import routes, { accountRoutes, roleRoutes } from "../utils";
 import { Suspense } from "react";
 import AdminLoader from "../components/_admin/Loader/Loader";
 import DashboardLayout from "../_admin/Layout";
@@ -17,8 +17,8 @@ import {
   SignUp,
 } from "../_authentication/forms";
 
-import PersistLogin from "../utiliz/PersistLogin";
-import RequiredAuth from "../utiliz/RequiredAuth";
+import PersistLogin from "../utils/PersistLogin";
+import RequiredAuth from "../utils/RequiredAuth";
 import InvalidToken from "../_authentication/forms/InvalidToken";
 import Register from "../_authentication/forms/Register";
 import Home from "../_root/pages/Home";

@@ -1,4 +1,4 @@
-import { BASE_URL } from "../utiliz/baseAPIURL";
+import { BASE_URL } from "../utils/baseAPIURL";
 import axios from "axios";
 import { useAuthContext } from "./useAuthContext";
 

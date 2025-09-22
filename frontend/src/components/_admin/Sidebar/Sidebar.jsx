@@ -6,7 +6,7 @@ import Shipping from "../../../assets/shipment.svg";
 import { AiOutlineLogout } from "react-icons/ai";
 import { useLogout } from "../../../hooks/useLogout";
 import { useAuthContext } from "../../../hooks/useAuthContext";
-import routes, { accountRoutes, roleRoutes } from "../../../utiliz";
+import routes, { accountRoutes, roleRoutes } from "../../../utils";
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const { auth } = useAuthContext();

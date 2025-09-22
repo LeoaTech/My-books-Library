@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuthContext } from "./useAuthContext";
-import { BASE_URL } from "../utiliz/baseAPIURL";
+import { BASE_URL } from "../utils/baseAPIURL";
 import axios from "axios";
 import { toast } from "react-toastify";
 const LogoutFailed = () => toast.error("Failed to Logout Try again", {

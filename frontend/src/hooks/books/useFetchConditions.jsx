@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { BASE_URL } from "../../utiliz/baseAPIURL";
+import { BASE_URL } from "../../utils/baseAPIURL";
 
 export const useConditionActions = () => {
   const [error, setError] = useState(null);

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { BASE_URL } from "../utiliz/baseAPIURL";
+import { BASE_URL } from "../utils/baseAPIURL";
 
 export default axios.create({
   baseURL: BASE_URL,

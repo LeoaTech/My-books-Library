@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuthContext } from "./useAuthContext";
-import { BASE_URL } from "../utiliz/baseAPIURL";
+import { BASE_URL } from "../utils/baseAPIURL";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 

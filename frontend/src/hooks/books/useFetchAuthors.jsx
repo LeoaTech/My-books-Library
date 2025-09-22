@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { BASE_URL } from "../../utiliz/baseAPIURL";
+import { BASE_URL } from "../../utils/baseAPIURL";
 
 // API CALL to FETCH ALL AUTHORS
 
