@@ -1,11 +1,11 @@
-const asyncHanlder = require("express-async-handler");
+const asyncHandler = require("express-async-handler");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 const bcrypt = require("bcryptjs");
 const validator = require("validator");
 
-const send_email = require("../../utiliz/sendEmail.js");
+const send_email = require("../../utils/sendEmail.js");
 
 const db = require("../../config/dbConfig.js");
 const { pool } = require("../../config/dbConfig.js");
@@ -38,7 +38,7 @@ const refreshToken = (data) => {
 
 /* Create New User as a Library Owner */
 
-const RegisterUser = asyncHanlder(async (req, res) => {
+const RegisterUser = asyncHandler(async (req, res) => {
   const client = await pool.connect();
   // console.log(req.body);
   try {
@@ -224,7 +224,7 @@ const RegisterUser = asyncHanlder(async (req, res) => {
 
 /* Login as an Owner  - other role_id users can't get into this */
 
-const LoginUser = asyncHanlder(async (req, res) => {
+const LoginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -373,7 +373,7 @@ const LoginUser = asyncHanlder(async (req, res) => {
 
 // Select an account to sign in
 
-const SelectAccount = asyncHanlder(async (req, res) => {
+const SelectAccount = asyncHandler(async (req, res) => {
   console.log(req.body, "Select an Account");
 
   const { userId, entityId, branchId, roleId, password } = req.body;
@@ -488,7 +488,7 @@ const SelectAccount = asyncHanlder(async (req, res) => {
 // Sign up to Join a Library from library domain (usign email and password)
 
 // Create New User Account
-const SignupUser = asyncHanlder(async (req, res) => {
+const SignupUser = asyncHandler(async (req, res) => {
   const client = await pool.connect();
 
   const { name, email, password, subdomain } = req.body;
@@ -601,7 +601,7 @@ const SignupUser = asyncHanlder(async (req, res) => {
 
 // Sign in from a Library Domain
 //!Warning  => Don't touch this
-const SigninUser = asyncHanlder(async (req, res) => {
+const SigninUser = asyncHandler(async (req, res) => {
   const { email, password, subdomain } = req.body;
   if (!email || !password) {
     res.status(400);
@@ -721,7 +721,7 @@ const SigninUser = asyncHanlder(async (req, res) => {
 });
 // User Logout
 
-const Logout = asyncHanlder(async (req, res) => {
+const Logout = asyncHandler(async (req, res) => {
   const cookies = req.cookies;
   if (!cookies["refreshToken"]) {
     return res.status(401).json({ message: "unauthorized Cookie not found" });
@@ -765,7 +765,7 @@ const RefreshToken = async (req, res) => {
     jwt.verify(
       TokenRefresh,
       process.env.JWT_REFRESH_SECRET,
-      asyncHanlder(async (err, decoded) => {
+      asyncHandler(async (err, decoded) => {
         if (err) {
           return res.status(401).json({
             error: err,
@@ -846,7 +846,7 @@ const RefreshToken = async (req, res) => {
 // Forget And Reset Password
 
 // Forget Password
-const ForgetPassword = asyncHanlder(async (req, res) => {
+const ForgetPassword = asyncHandler(async (req, res) => {
   const { email } = req.body;
   if (!email) {
     return res.status(401).json({ message: "Enter Email Address" });
@@ -916,7 +916,7 @@ const ForgetPassword = asyncHanlder(async (req, res) => {
 
 // Verify user Before Resetting Password and validate token expiration
 
-const VerifyUserAuth = asyncHanlder(async (req, res) => {
+const VerifyUserAuth = asyncHandler(async (req, res) => {
   const { id, token } = req.params;
 
   try {
@@ -947,7 +947,7 @@ const VerifyUserAuth = asyncHanlder(async (req, res) => {
 });
 
 // Reset Password on Forget Passowrd
-const ResetPassword = asyncHanlder(async (req, res) => {
+const ResetPassword = asyncHandler(async (req, res) => {
   // Get Token and ID from Params to Validate Reset password request
   const { id, token } = req.params;
   const { password, confirm_password } = req.body; // Password inputs

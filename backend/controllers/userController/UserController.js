@@ -1,4 +1,4 @@
-const asyncHanlder = require("express-async-handler");
+const asyncHandler = require("express-async-handler");
 const db = require("../../config/dbConfig");
 const { pool } = require("../../config/dbConfig.js");
 const { createUser } = require("../../helpers/user_onboarding.js");
@@ -6,7 +6,7 @@ const bcrypt = require("bcryptjs")
 
 
 
-const getAllUsers = asyncHanlder(async (req, res) => {
+const getAllUsers = asyncHandler(async (req, res) => {
   // console.log(req.user, "Query user");
   const userQuery = `SELECT
     u.id AS user_id,
@@ -41,7 +41,7 @@ GROUP BY
 });
 
 // Get a Specific Entity or a Library users only
-const getLibraryUsers = asyncHanlder(async (req, res) => {
+const getLibraryUsers = asyncHandler(async (req, res) => {
   // console.log(req.user, "Query user credentials");
 
   const entityId = req?.user?.entityId || req.user?.entity_id;
@@ -75,7 +75,7 @@ GROUP BY
 
 // Get user Profile Info
 
-const getUserProfile = asyncHanlder(async (req, res) => {
+const getUserProfile = asyncHandler(async (req, res) => {
   const { userId } = req.query;
   const getUserProfile = `SELECT
   u.id AS user_id,
@@ -105,12 +105,12 @@ GROUP BY
 });
 // Update User Profile
 
-const updateUserPrfile = asyncHanlder(async (req, res) => {
+const updateUserPrfile = asyncHandler(async (req, res) => {
   res.status(200).json({ message: "Update user Successfully" });
 });
 
 // Update User Role for a Library
-const UpdateRoles = asyncHanlder(async (req, res) => {
+const UpdateRoles = asyncHandler(async (req, res) => {
   const entityId = req.user?.entityId || req.user?.entity_id;
   const userId = req.params.user_id;
   const newRoleID = req.body.newRoleId;
@@ -146,7 +146,7 @@ const UpdateRoles = asyncHanlder(async (req, res) => {
 });
 
 // Create a New User with a specific Role (From Admin Dashboard);
-const CreateUser = asyncHanlder(async (req, res) => {
+const CreateUser = asyncHandler(async (req, res) => {
   // console.log(req.body, "Payload");
   const client = await pool.connect();
 
@@ -212,7 +212,7 @@ const CreateUser = asyncHanlder(async (req, res) => {
 
 // Delete a User
 
-const DeleteUser = asyncHanlder(async (req, res) => {
+const DeleteUser = asyncHandler(async (req, res) => {
   const { user_id } = req.params;
   console.log(req.params);
 

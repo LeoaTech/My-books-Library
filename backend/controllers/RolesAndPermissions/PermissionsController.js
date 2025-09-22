@@ -1,8 +1,8 @@
-const asyncHanlder = require("express-async-handler");
+const asyncHandler = require("express-async-handler");
 const db = require("../../config/dbConfig");
 
 //    Fetched All Roles from DB
-const FetchPermissions = asyncHanlder(async (req, res) => {
+const FetchPermissions = asyncHandler(async (req, res) => {
   const entityId = req?.user?.entityId || req?.user?.entity_id || NULL;
   try {
     const permissionQuery = `SELECT 
@@ -29,7 +29,7 @@ ORDER BY p.permission_id, p.entity_id;
 });
 
 // Create New Permission
-const NewPermissions = asyncHanlder(async (req, res) => {
+const NewPermissions = asyncHandler(async (req, res) => {
   const entityId = req?.user?.entityId || req?.user?.entity_id || NULL;
 
   const permissionData = req.body;
@@ -82,7 +82,7 @@ const NewPermissions = asyncHanlder(async (req, res) => {
 });
 
 // Update Existing Permission
-const UpdatePermission = asyncHanlder(async (req, res) => {
+const UpdatePermission = asyncHandler(async (req, res) => {
   try {
     console.log(req.params, req.body);
 
@@ -118,7 +118,7 @@ const UpdatePermission = asyncHanlder(async (req, res) => {
 
 // Remove Existing Role
 
-const DeletePermission = asyncHanlder(async (req, res) => {
+const DeletePermission = asyncHandler(async (req, res) => {
   try {
     const { permission_id } = req.params;
 

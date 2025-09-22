@@ -1,9 +1,9 @@
-const asyncHanlder = require("express-async-handler");
+const asyncHandler = require("express-async-handler");
 const db = require("../../config/dbConfig");
 
 /* Fetch All Orders Details */
 
-const FetchAllOrders = asyncHanlder(async (req, res) => {
+const FetchAllOrders = asyncHandler(async (req, res) => {
   try {
     const ordersQuery = `SELECT o.*, u.name, u.email,u.phone, u.address, u.city, u.country FROM Orders o JOIN Users u ON o.user_id = u.id`;
     const getAllOrders = await db.query(ordersQuery);
@@ -20,7 +20,7 @@ const FetchAllOrders = asyncHanlder(async (req, res) => {
 
 /* Fetch Order By Order ID */
 
-const FetchOrderById = asyncHanlder(async (req, res) => {
+const FetchOrderById = asyncHandler(async (req, res) => {
   try {
     res.status(200).json({
       message: "Order by ID retrieved",
@@ -33,7 +33,7 @@ const FetchOrderById = asyncHanlder(async (req, res) => {
 /* Create an Order */
 
 // ?TODO: Validate the Duplicate Entries of Order details
-const CreateNewOrder = asyncHanlder(async (req, res) => {
+const CreateNewOrder = asyncHandler(async (req, res) => {
   // console.log(req.body);
   try {
     const { orderForm } = req.body;
@@ -103,7 +103,7 @@ const CreateNewOrder = asyncHanlder(async (req, res) => {
 
 /* Delete Order */
 
-const DeleteOrder = asyncHanlder(async (req, res) => {
+const DeleteOrder = asyncHandler(async (req, res) => {
   const { order_id } = req.params;
   try {
     const deleteOrderQuery = `DELETE FROM orders WHERE id =$1`;
@@ -124,7 +124,7 @@ const DeleteOrder = asyncHanlder(async (req, res) => {
 
 /* Update Order */
 
-const UpdateOrder = asyncHanlder(async (req, res) => {
+const UpdateOrder = asyncHandler(async (req, res) => {
   try {
     const { orderForm } = req.body;
     // console.log(orderForm);

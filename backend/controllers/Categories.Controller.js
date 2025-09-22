@@ -1,8 +1,8 @@
-const asyncHanlder = require("express-async-handler");
+const asyncHandler = require("express-async-handler");
 const db = require("../config/dbConfig");
 
 /* Get ALL Categories */
-const GetCategories = asyncHanlder(async (req, res) => {
+const GetCategories = asyncHandler(async (req, res) => {
   const entityId = req?.user?.entityId || req?.user?.entity_id;
 
   if (!entityId) {
@@ -24,7 +24,7 @@ const GetCategories = asyncHanlder(async (req, res) => {
 
 /* Create New Category */
 
-const AddNewCategory = asyncHanlder(async (req, res) => {
+const AddNewCategory = asyncHandler(async (req, res) => {
   console.log(req.body, "Category Payload");
 
   const entityId = req?.user?.entityId || req?.user?.entity_id;
@@ -58,7 +58,7 @@ const AddNewCategory = asyncHanlder(async (req, res) => {
 
 /* Update Category Details */
 
-const UpdateCategory = asyncHanlder(async (req, res) => {
+const UpdateCategory = asyncHandler(async (req, res) => {
   // console.log(req.body);
   try {
     if (!req.body.name) {

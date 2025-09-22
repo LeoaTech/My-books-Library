@@ -1,8 +1,8 @@
-const asyncHanlder = require("express-async-handler");
+const asyncHandler = require("express-async-handler");
 const db = require("../config/dbConfig");
 
 /* Get ALL Authors */
-const FetchAllAuthors = asyncHanlder(async (req, res) => {
+const FetchAllAuthors = asyncHandler(async (req, res) => {
   const entityId = req?.user?.entityId || req?.user?.entity_id;
 
   if (!entityId) {
@@ -23,7 +23,7 @@ const FetchAllAuthors = asyncHanlder(async (req, res) => {
 
 /* Create New Author */
 
-const AddNewAuthor = asyncHanlder(async (req, res) => {
+const AddNewAuthor = asyncHandler(async (req, res) => {
   console.log(req.body);
 
   const entityId = req?.user?.entityId || req?.user?.entity_id;
@@ -60,7 +60,7 @@ const AddNewAuthor = asyncHanlder(async (req, res) => {
 
 /* Update Author Details */
 
-const UpdateAuthor = asyncHanlder(async (req, res) => {
+const UpdateAuthor = asyncHandler(async (req, res) => {
   // console.log(req.body, req.params);
   try {
     if (!req.body.authorsForm) {

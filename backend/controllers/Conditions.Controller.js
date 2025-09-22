@@ -1,9 +1,9 @@
-const asyncHanlder = require("express-async-handler");
+const asyncHandler = require("express-async-handler");
 const db = require("../config/dbConfig");
 
 /* Get ALL Conditions */
 
-const GetBookCondition = asyncHanlder(async (req, res) => {
+const GetBookCondition = asyncHandler(async (req, res) => {
   const entityId = req?.user?.entityId || req?.user?.entity_id;
 
   if (!entityId) {
@@ -24,7 +24,7 @@ const GetBookCondition = asyncHanlder(async (req, res) => {
 
 /* Create New Condition */
 
-const CreateCondition = asyncHanlder(async (req, res) => {
+const CreateCondition = asyncHandler(async (req, res) => {
   console.log(req.body);
 
   const entityId = req?.user?.entityId || req?.user?.entity_id;
@@ -58,7 +58,7 @@ const CreateCondition = asyncHanlder(async (req, res) => {
 
 /* Update condition Details */
 
-const UpdateCondition = asyncHanlder(async (req, res) => {
+const UpdateCondition = asyncHandler(async (req, res) => {
   // console.log(req.body);
   try {
     if (!req.body.name) {

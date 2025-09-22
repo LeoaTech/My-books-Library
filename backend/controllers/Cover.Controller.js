@@ -1,9 +1,9 @@
-const asyncHanlder = require("express-async-handler");
+const asyncHandler = require("express-async-handler");
 const db = require("../config/dbConfig");
 
 /* Get ALL Cover types */
 
-const getBookCovers = asyncHanlder(async (req, res) => {
+const getBookCovers = asyncHandler(async (req, res) => {
   const entityId = req?.user?.entityId || req?.user?.entity_id;
 
   if (!entityId) {
@@ -24,7 +24,7 @@ const getBookCovers = asyncHanlder(async (req, res) => {
 
 /* Add New Cover Type for  */
 
-const AddCoverType = asyncHanlder(async (req, res) => {
+const AddCoverType = asyncHandler(async (req, res) => {
   console.log(req.body);
   const entityId = req?.user?.entityId || req?.user?.entity_id;
 
@@ -57,7 +57,7 @@ const AddCoverType = asyncHanlder(async (req, res) => {
 
 /* Update cover Type (name) */
 
-const UpdateCover = asyncHanlder(async (req, res) => {
+const UpdateCover = asyncHandler(async (req, res) => {
   // console.log(req.body);
   try {
     if (!req.body.name) {

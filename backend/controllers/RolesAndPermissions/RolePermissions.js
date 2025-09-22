@@ -1,9 +1,9 @@
-const asyncHanlder = require("express-async-handler");
+const asyncHandler = require("express-async-handler");
 const db = require("../../config/dbConfig");
 
 
 //    Fetched All Roles from DB
-const FetchRolePermissions = asyncHanlder(async (req, res) => {
+const FetchRolePermissions = asyncHandler(async (req, res) => {
   try {
     const permissionsQuery = `SELECT
   p.permission_id,
@@ -30,7 +30,7 @@ GROUP BY
 
 
 /* Fetch UnAssigned Permissions for Role */
-const FetchPermissionsByRole = asyncHanlder(async (req, res) => {
+const FetchPermissionsByRole = asyncHandler(async (req, res) => {
   try {
     const { roleId } = req.query;
 
@@ -62,7 +62,7 @@ const FetchPermissionsByRole = asyncHanlder(async (req, res) => {
 });
 
 // Get Permission associated to a Role ID
-const FetchPermissionsByRoleId = asyncHanlder(async (req, res) => {
+const FetchPermissionsByRoleId = asyncHandler(async (req, res) => {
   try {
     const { roleId } = req.query;
 
@@ -92,7 +92,7 @@ const FetchPermissionsByRoleId = asyncHanlder(async (req, res) => {
 
 // Assign New Permissions for Role ID
 
-const NewRolePermissions = asyncHanlder(async (req, res) => {
+const NewRolePermissions = asyncHandler(async (req, res) => {
   try {
     const permissionData = req.body;
     console.log(permissionData);
@@ -123,7 +123,7 @@ const NewRolePermissions = asyncHanlder(async (req, res) => {
 
 // Remove Existing Role Permissions
 
-const DeleteRolePermission = asyncHanlder(async (req, res) => {
+const DeleteRolePermission = asyncHandler(async (req, res) => {
   try {
     const { permission_id } = req.body;
     const { role_id } = req.params;

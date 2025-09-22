@@ -1,8 +1,8 @@
-const asyncHanlder = require("express-async-handler");
+const asyncHandler = require("express-async-handler");
 const db = require("../config/dbConfig");
 
 /* Get ALL Publishers */
-const FetchPublishers = asyncHanlder(async (req, res) => {
+const FetchPublishers = asyncHandler(async (req, res) => {
   const entityId = req?.user?.entityId || req?.user?.entity_id;
 
   if (!entityId) {
@@ -23,7 +23,7 @@ const FetchPublishers = asyncHanlder(async (req, res) => {
 
 /* Create New Publisher */
 
-const AddNewPublisher = asyncHanlder(async (req, res) => {
+const AddNewPublisher = asyncHandler(async (req, res) => {
   console.log(req.body);
 
   const entityId = req?.user?.entityId || req?.user?.entity_id;
@@ -60,7 +60,7 @@ const AddNewPublisher = asyncHanlder(async (req, res) => {
 
 /* Update Publisher Details */
 
-const UpdatePublisher = asyncHanlder(async (req, res) => {
+const UpdatePublisher = asyncHandler(async (req, res) => {
   // console.log(req.body);
   try {
     if (!req.body.publishersForm) {

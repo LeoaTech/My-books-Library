@@ -1,8 +1,8 @@
-const asyncHanlder = require("express-async-handler");
+const asyncHandler = require("express-async-handler");
 const db = require("../config/dbConfig");
 
 /* Get ALL vendors */
-const GetVendors = asyncHanlder(async (req, res) => {
+const GetVendors = asyncHandler(async (req, res) => {
   try {
     const vendorsQuery = `SELECT * FROM vendors`;
     const getAllVendors = await db.query(vendorsQuery);
@@ -19,7 +19,7 @@ const GetVendors = asyncHanlder(async (req, res) => {
 
 // Create New Vendor Details
 
-const NewVendor = asyncHanlder(async (req, res) => {
+const NewVendor = asyncHandler(async (req, res) => {
   try {
     const VendorData = req.body;
 
@@ -72,7 +72,7 @@ const NewVendor = asyncHanlder(async (req, res) => {
 
 /* Delete Vendor  */
 
-const DeleteVendor = asyncHanlder(async (req, res) => {
+const DeleteVendor = asyncHandler(async (req, res) => {
   try {
     const VendorData = req.body;
     const { role_id } = req.params;

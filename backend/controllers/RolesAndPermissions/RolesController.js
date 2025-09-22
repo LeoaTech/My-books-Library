@@ -1,9 +1,9 @@
-const asyncHanlder = require("express-async-handler");
+const asyncHandler = require("express-async-handler");
 const db = require("../../config/dbConfig");
 const defaultRoles = ["owner", "vendor", "customer"];
 
 //    Fetched Roles from DB that belongs to a specific entity
-const FetchRoles = asyncHanlder(async (req, res) => {
+const FetchRoles = asyncHandler(async (req, res) => {
   // console.log(req.user, "User  Roles details");
 
   const entityId = req?.user?.entityId || req.user?.entity_id;
@@ -23,7 +23,7 @@ const FetchRoles = asyncHanlder(async (req, res) => {
 
 // Create New Role
 
-const NewRole = asyncHanlder(async (req, res) => {
+const NewRole = asyncHandler(async (req, res) => {
   // console.log(req.body);
 
   const roleData = req.body.roleForm;
@@ -59,7 +59,7 @@ const NewRole = asyncHanlder(async (req, res) => {
 });
 
 // Update Existing Role
-const UpdateRole = asyncHanlder(async (req, res) => {
+const UpdateRole = asyncHandler(async (req, res) => {
   // console.log(req.params, "params", req.body, "Body");
   const { role_id } = req.params;
 
@@ -108,7 +108,7 @@ const UpdateRole = asyncHanlder(async (req, res) => {
 
 // Remove Existing Role
 
-const DeleteRole = asyncHanlder(async (req, res) => {
+const DeleteRole = asyncHandler(async (req, res) => {
   try {
     const { role_id } = req.params;
 
