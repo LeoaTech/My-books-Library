@@ -25,11 +25,13 @@ const vendorsRoutes = require("./routes/VendorsRoutes.js");
 const branchRoutes = require("./routes/BranchRoutes.js");
 const ordersRoutes = require("./routes/OrdersRoutes/OrdersRoutes.js");
 const bookingRoutes = require("./routes/BookingsRoutes/index.js");
+const settingsRoutes = require("./routes/SettingsRoutes/SettingsRoutes.js");
+
 const { pool } = require("./config/dbConfig.js");
 const port = process.env.PORT || 8100;
 
 const app = express();
-app.set('trust proxy', 1); 
+app.set("trust proxy", 1);
 // app.use(
 //   session({
 //     secret: process.env.SESSION_SECRET,
@@ -48,17 +50,17 @@ app.set('trust proxy', 1);
 app.use(
   session({
     store: new pgSession({
-      pool: pool, 
-      tableName: "session", 
+      pool: pool,
+      tableName: "session",
       createTable: false,
-    errorLog: (err) => console.error('Session store error:', err) // Log DB errors
+      errorLog: (err) => console.error("Session store error:", err), // Log DB errors
     }),
     secret: process.env.SESSION_SECRET || "test", // Use env var in production
     resave: false,
     saveUninitialized: false,
     cookie: {
-      httpOnly: true, 
-      secure: process.env.NODE_ENV === "production", 
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 24 * 60 * 60 * 1000, // 1 day
     },
@@ -107,6 +109,8 @@ app.use("/api/branches", branchRoutes);
 app.use("/api/orders", ordersRoutes);
 // Bookings Routes
 app.use(bookingRoutes);
+// Pricing Plans and Settings
+app.use("/api/settings", settingsRoutes);
 
 app.use(notfound);
 app.use(errorHanlder);
