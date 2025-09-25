@@ -6,8 +6,8 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "migrate": "node-pg-migrate up", 
-    "vercel-build": "npm run build && npm run migrate" 
+    "migrate": "node-pg-migrate up --verbose",
+    "vercel-build": " npm run migrate"
   },
   "keywords": [],
   "author": "",
