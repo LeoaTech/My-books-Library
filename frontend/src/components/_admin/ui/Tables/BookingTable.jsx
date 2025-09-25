@@ -81,8 +81,12 @@ const BookingTable = ({ hasPermission, searchQuery }) => {
       columnHelper.accessor("user_name", {
         header: "User",
       }),
-      columnHelper.accessor("vendor_name", {
-        header: "Vendor",
+      columnHelper.accessor("items", {
+        header: "Total Items",
+        cell: ({ row }) => {
+          const totalItems = row.original?.items?.length;
+          return totalItems
+        },
       }),
       columnHelper.accessor("borrow_date", {
         header: "Borrow Date",
