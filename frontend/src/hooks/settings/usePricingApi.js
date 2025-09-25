@@ -91,8 +91,42 @@ export const usePricingApi = () => {
     }
   };
 
- 
+  const deletePlan = async (planId) => {
+    const toastId = toast.loading("Deleting Plan details..");
+
+    setIsLoading(true);
+    setError(null);
+    // console.log(planId, "Plan Delete");
+    const response = await fetch(`${BASE_URL}/pricing/delete/${planId}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+    });
+
+    // console.log(response, "Plan Delete Response");
+    if (!response.ok) {
+      toast.update(toastId, {
+        render: `Error: ${
+          response?.message || "Failed to Delete Plan"
+        }`,
+        type: "error",
+        isLoading: false,
+        autoClose: 1000,
+      });
+      return;
+    } else {
+      toast.update(toastId, {
+        render: "Plan deleted successfully!",
+        type: "success",
+        isLoading: false,
+        autoClose: 2000,
+      });
+      const result = await response.json(); //response?.data;
+      setIsLoading(false);
+      // console.log(result, "delete Result");
+    }
+  };
 
 
-  return { createPlan, error, isLoading, updatePlan};
+  return { createPlan, error, isLoading, updatePlan, deletePlan};
 };
