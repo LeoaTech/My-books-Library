@@ -40,7 +40,7 @@ const bookingSchema = z.object({
   items: z.array(bookItemsSchema)
     .min(1, { message: "1 Book must be selected" }),
 
-  vendor_id: z.coerce.number().min(1, { message: "Please Select a Vendor ID" }) || z.string().min(1, { message: "Vendor ID must be required" }),
+  // vendor_id: z.coerce.number().min(1, { message: "Please Select a Vendor ID" }) || z.string().min(1, { message: "Vendor ID must be required" }),
   return_due: z.date({
     required_error: "Due date is required.",
     invalid_type_error: "That's not a valid date!",
@@ -62,6 +62,8 @@ const bookingSchema = z.object({
     message: "Duration cannot exceed 15 days.",
     path: ["return_due"],
   });
+
+
 const bookingStatus = ["issued", "returned", "overdue", "renewed"];
 
 const BookIssue = ({ mode, onClose, booking }) => {
@@ -74,7 +76,6 @@ const BookIssue = ({ mode, onClose, booking }) => {
 
   const { data: students, isLoading: isLoadingStudents } = useFetchUserRoles();
   const { isLoading: isBooksLoading, error: isBookFetchingError, data: booksData } = useFetchBooks();
-  const { isPending: isPendingVendors, data: vendorsData } = useFetchVendors();
 
   const {
     register,
@@ -91,7 +92,6 @@ const BookIssue = ({ mode, onClose, booking }) => {
       renew_return_date: booking?.renew_return_date ? new Date(booking?.renew_return_date) : undefined,
       items: booking.items || [],
       user_id: booking.user_id || null,
-      vendor_id: booking.vendor_id || null,
       credits_used: booking.credits_used || 0,
       renewed: booking.renewed || false,
       shipping_address: booking.shipping_address || "",
@@ -120,9 +120,11 @@ const BookIssue = ({ mode, onClose, booking }) => {
   });
 
   const borrowDate = watch("borrow_date");
+  const selectedUser = watch('user_id')
   const returnDue = watch("return_due");
   const renewed = watch("renewed");
-  const bookItems = watch('items') || [];
+  const bookItems = useMemo(() => watch('items') || [], [watch('items')]);
+
   const returnDate = watch("return_date");
 
   const selectedValues = mode == "edit" && bookItems?.map(book => ({
@@ -131,6 +133,18 @@ const BookIssue = ({ mode, onClose, booking }) => {
     ...book,
   }));
 
+  // console.log(selectedUser);
+
+  useEffect(() => {
+    if (selectedUser) {
+      const userShippingDetails = students?.data?.find((user) => user.user_id === selectedUser);
+      console.log(userShippingDetails);
+      setValue('shipping_address', userShippingDetails?.address);
+      setValue('shipping_country', userShippingDetails?.country);
+      setValue('shipping_city', userShippingDetails?.city);
+      setValue('shipping_phone', userShippingDetails?.phone);
+    }
+  }, [selectedUser, setValue, students?.data])
 
   useEffect(() => {
     // when the renewed checkbox is selected
@@ -161,6 +175,14 @@ const BookIssue = ({ mode, onClose, booking }) => {
       setValue("status", "returned", { shouldValidate: true });
     }
   }, [returnDate, setValue]);
+
+
+  // Calculate total credits whenever bookItems change
+  useEffect(() => {
+    const totalCredits = bookItems.reduce((sum, book) => sum + (book.credit || 0), 0);
+    setValue('credits_used', totalCredits, { shouldValidate: true });
+  }, [bookItems, setValue]);
+
 
   const usersOptions = useMemo(
     () =>
@@ -216,7 +238,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
         ...updateData,
         booking_id: booking?.booking_id
       };
-          // console.log(bookingData, "Form with id");
+      // console.log(bookingData, "Form with id");
 
       await updateBookingMutation(bookingData)
     } else {
@@ -243,9 +265,9 @@ const BookIssue = ({ mode, onClose, booking }) => {
     return <components.ValueContainer {...props}>{filteredChildren}</components.ValueContainer>;
   };
 
-  console.log(booking);
+  // console.log(booking);
 
-  // console.log(watch("items"), "items");
+  // console.log(watch("credits_used"), "credits used amount");
 
 
 
@@ -691,64 +713,19 @@ const BookIssue = ({ mode, onClose, booking }) => {
                     </div>
                   </fieldset>
 
-                  {/* Select Vendor and Credits Info */}
+                  {/* Select Credits Info */}
                   <div className="mt-8 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
-                    <div className="w-full xl:w-1/2">
 
-                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
-                        Select Vendor
-                        <span className="text-red-600">*</span>
-
-                      </label>
-                      <div className="relative z-20 bg-transparent dark:bg-form-input">
-                        <select
-                          className="relative z-20 w-full appearance-none dark:text-white rounded-sm border border-[#E2E8F0] bg-transparent dark:text-white py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
-                          {...register("vendor_id", { required: true })}
-                        >
-                          <option value="">Select Vendor</option>
-                          {vendorsData?.vendors &&
-                            vendorsData?.vendors?.map((vendor) => (
-                              <option key={vendor?.id} value={vendor?.id}>
-                                {vendor?.name}
-                              </option>
-                            ))}
-                        </select>
-                        <span className="absolute top-1/2 right-4 z-30 -translate-y-1/2">
-                          <svg
-                            className=" dark:text-white fill-current"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <g opacity="0.8">
-                              <path
-                                fillRule="evenodd"
-                                clipRule="evenodd"
-                                d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
-                                fill=""
-                              ></path>
-                            </g>
-                          </svg>
-                        </span>
-                      </div> {errors?.vendor_id?.message && (
-                        <p className="format-message error">
-                          {errors?.vendor_id?.message}
-                        </p>
-                      )}
-
-                    </div>
-                    <div className="w-full xl:w-1/2">
+                    <div className="w-full ">
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
                         Credits Used
-                        <span className="text-gray-600">(Optional)</span>
+                        <span className="text-orange-600 pl-2">(Read Only)</span>
                       </label>
                       <input
                         type="text"
                         name="credits_used"
-                        {...register("credits_used")}
-
+                        readOnly
+                        value={watch('credits_used') || 0}
                         className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                       />
                     </div>
