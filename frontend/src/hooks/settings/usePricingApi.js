@@ -47,8 +47,52 @@ export const usePricingApi = () => {
       }
     }
   };
+  const updatePlan = async (plan) => {
+    const toastId = toast.loading("Updating Plan details...");
+
+    setIsLoading(true);
+    setError(null);
+    // console.log(plan, "PlanId");
+    const response = await fetch(`${BASE_URL}/pricing/update/${plan.plan_id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(plan),
+    });
+
+    // console.log(response, "Plans Update Response");
+
+    const result = await response.json(); //response?.data;
+    // console.log(result, "Update Plan details Result");
+
+    if (!response.ok) {
+      setIsLoading(false);
+      setError(response?.message || "Failed to Update Plan ");
+      toast.update(toastId, {
+        render: `Error: ${
+          response?.message || "Failed to Update Plan details"
+        }`,
+        type: "error",
+        isLoading: false,
+        autoClose: 1000,
+      });
+      return;
+    } else {
+      toast.update(toastId, {
+        render: "Plan details updated successfully!",
+        type: "success",
+        isLoading: false,
+        autoClose: 2000,
+      });
+      if (response.status === 200) {
+        setIsLoading(false);
+        setError(null);
+      }
+    }
+  };
+
+ 
 
 
-
-  return { createPlan, error, isLoading};
+  return { createPlan, error, isLoading, updatePlan};
 };
