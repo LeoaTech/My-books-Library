@@ -30,6 +30,8 @@ const CustomerSettings = lazy(() =>
 const ManageSettings = lazy(() =>
   import("../components/_admin/Settings/ManageSettings")
 );
+const PricingSettings = lazy(() => import("../_admin/pages/PricingSettings"));
+
 /**
  * ⚠ These are internal routes!
  * They will be rendered inside the app, using the default `containers/Layout`.
@@ -99,12 +101,12 @@ const routes = [
         path: "/dashboard/customersettings",
         component: CustomerSettings,
       },
-      // {
-      //   title: "App Settings",
-      //   icon: IoSettingsSharp,
-      //   path: "/dashboard/appsettings",
-      //   component: CustomerSettings,
-      // },
+      {
+        title: "Pricing Plan Settings",
+        icon: IoSettingsSharp,
+        path: "/dashboard/pricingsettings",
+        component: PricingSettings,
+      },
       {
         title: "Manage Data",
         icon: MdOutlineCheckCircleOutline,
