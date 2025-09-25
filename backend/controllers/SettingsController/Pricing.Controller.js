@@ -24,7 +24,7 @@ const FetchPricingPlans = asyncHandler(async (req, res) => {
 /* Create New Pricing Plan*/
 
 const CreatePlan = asyncHandler(async (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
 
   const entityId = req?.user?.entityId || req?.user?.entity_id;
 
@@ -61,7 +61,7 @@ const CreatePlan = asyncHandler(async (req, res) => {
 });
 
 const UpdatePlan = asyncHandler(async (req, res) => {
-  console.log(req.body, req.params);
+  // console.log(req.body, req.params);
 
   const entityId = req?.user?.entityId || req?.user?.entity_id;
 
@@ -113,8 +113,42 @@ const UpdatePlan = asyncHandler(async (req, res) => {
   }
 });
 
+const DeletePlan = asyncHandler(async (req, res) => {
+  // console.log(req.params);
+
+  const entityId = req?.user?.entityId || req?.user?.entity_id;
+
+  if (!entityId) {
+    return res.status(403).json("Invalid Request, No Library ID provided");
+  }
+ if (!req?.params?.plan_id) {
+      return res.status(400).json("Missing Pricing plan ID");
+    }
+  try {
+    const { plan_id } = req.params;
+    const deletePricingQuery = await db.query(
+      `DELETE FROM membership_plan WHERE entity_id=$1 AND plan_id=$2 RETURNING plan_id`,
+      [
+        entityId,
+        plan_id
+      ]
+    );
+
+    // console.log(deletePricingQuery?.rows[0], "Pricing Plan Deleted");
+
+    res.status(200).json({
+      message: "Pricing Plan Deleted Successfully ",
+    });
+  } catch (error) {
+    console.log(error, "Error Deleting pricing plan");
+    res.status(500).json({
+      error,
+      message: error.message || "Error Deleting Pricing Plan",
+    });
+  }
+});
 
 
 
 
-module.exports = { FetchPricingPlans,CreatePlan , UpdatePlan};
+module.exports = { FetchPricingPlans,CreatePlan ,DeletePlan, UpdatePlan};
