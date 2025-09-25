@@ -49,6 +49,10 @@ const getLibraryUsers = asyncHandler(async (req, res) => {
   const userQuery = `SELECT
     u.id AS user_id,
     u.email,
+    u.address,
+    u.city,
+    u.country,
+    u.phone,
     uer.role_id,
     uer.entity_id,
     uer.branch_id,
