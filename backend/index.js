@@ -26,6 +26,7 @@ const branchRoutes = require("./routes/BranchRoutes.js");
 const ordersRoutes = require("./routes/OrdersRoutes/OrdersRoutes.js");
 const bookingRoutes = require("./routes/BookingsRoutes/index.js");
 const settingsRoutes = require("./routes/SettingsRoutes/SettingsRoutes.js");
+const pricingRoutes = require("./routes/SettingsRoutes/Pricing/PricingRoutes.js");
 
 const { pool } = require("./config/dbConfig.js");
 const port = process.env.PORT || 8100;
@@ -111,6 +112,7 @@ app.use("/api/orders", ordersRoutes);
 app.use(bookingRoutes);
 // Pricing Plans and Settings
 app.use("/api/settings", settingsRoutes);
+app.use("/api/pricing", pricingRoutes);
 
 app.use(notfound);
 app.use(errorHanlder);
