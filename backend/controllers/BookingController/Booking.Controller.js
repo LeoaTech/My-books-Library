@@ -66,7 +66,6 @@ const CreateBooking = asyncHandler(async (req, res) => {
     const { bookingForm } = req.body;
     const {
       user_id,
-      vendor_id,
       items,
       borrow_date,
       return_due,
@@ -77,7 +76,6 @@ const CreateBooking = asyncHandler(async (req, res) => {
       shipping_country,
       shipping_phone,
       credits_used,
-      renewed,
     } = bookingForm;
 
     const itemsJson = JSON.stringify(items);
@@ -90,7 +88,7 @@ const CreateBooking = asyncHandler(async (req, res) => {
       VALUES ($1,$2, $3, $4, $5, $6, $7, $8, $9,$10, $11, $12, $13)`,
       [
         user_id,
-        vendor_id,
+        null,
         itemsJson,
         borrow_date,
         return_due,
@@ -136,7 +134,6 @@ const UpdateBooking = asyncHandler(async (req, res) => {
 
     const {
       user_id,
-      vendor_id,
       items,
       borrow_date,
       return_due,
@@ -164,7 +161,7 @@ const UpdateBooking = asyncHandler(async (req, res) => {
        WHERE entity_id=$15 AND id =$16 `,
       [
         user_id,
-        vendor_id,
+        null,
         itemsJson,
         borrow_date,
         return_due,
