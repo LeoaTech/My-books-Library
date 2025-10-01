@@ -37,27 +37,5 @@ export const bookSchema = z.object({
   author: selectOptionSchema.transform((val) => val?.value) || z.unknown(),
 });
 
-export const bookItemsSchema = z.object({
-  title: z.string().min(3, { message: "Please Enter a title" }),
-  member_price: z.string().optional(),
-  purchase_price: z.string().optional(),
-  condition_name: z.string(),
-  cover_name: z.string(),
-  category_name: z.string(),
-  isbn: z.string().min(8, { message: "Please Enter book ISBN number" }),
-  isAvailable: z.boolean().default(false),
-  vendor_id: z.unknown().optional(),
-  branch_name: z.string(),
-  cover_img_url:
-    z.unknown() ||
-    z
-      .array(z.string())
-      .max(5, { message: "Maximum 5 images allowed" })
-      .optional(),
-  discount_percentage: z.string(),
-  summary: z.string().optional(),
-  publish_year: z.string().optional(),
-  publisher_name: z.string() || z.unknown(),
-  credit: z.coerce.number() || z.unknown(),
-  author_name: z.string() || z.unknown(),
-});
+
+ 
