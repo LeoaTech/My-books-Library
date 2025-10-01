@@ -39,7 +39,9 @@ const checkRole = async (req, res, next) => {
 /* Verifying Role Permissions */
 const checkPermissions = (requiredPermissions) => {
   return async (req, res, next) => {
-    const userRoleId = req.user?.roleId;
+    console.log(req.user, "Check User Role");
+    
+    const userRoleId = req.user?.roleId || req?.user?.role_id;
     if (!userRoleId) {
       return res.status(403).json({ error: "Role not found",message:"Role ID not Found"  });
     }
