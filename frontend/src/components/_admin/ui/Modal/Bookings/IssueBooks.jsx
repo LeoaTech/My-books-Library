@@ -344,37 +344,6 @@ const BookIssue = ({ mode, onClose, booking }) => {
       };
     });
 
-
-    // --- STEP 1: CALCULATE INCREMENTS BASED ON UI INTENT ---
-
-    // const itemsWithUpdatedRenewalCount = updateData.items.map(item => {
-    //   const originalItem = originalItemsMap.get(item.id);
-
-    //   let newRenewalCount = item.renewal_count || 0;
-    //   const previousCount = originalItem?.renewal_count || 0;
-
-    //   // This is the simplest check: Did the user check 'renewed' AND the count in the form hasn't been incremented yet?
-    //   // We trust the UI has enforced the limits.
-    //   const isUserRequestingRenewal = (
-    //     item.renewed &&
-    //     item.status !== 'returned' && // Must not be returned
-    //     newRenewalCount === previousCount
-    //   );
-
-    //   if (isUserRequestingRenewal) {
-    //     // We only increment if the individual limit is respected. 
-    //     // The global limit is *assumed* to be handled by the UI.
-    //     if (newRenewalCount < RENEWAL_LIMIT && initialAvailableRenewals != 0) {
-    //       newRenewalCount += 1;
-    //     }
-    //   }
-
-    //   return {
-    //     ...item,
-    //     renewal_count: newRenewalCount,
-    //   };
-    // });
-
     const { status: derivedStatus, return_due: derivedReturnDue } = deriveBookingStatusAndDueDate(itemsWithUpdatedRenewalCount);
 
     let globalReturnDate = null;
@@ -403,7 +372,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
       return_due: derivedReturnDue,
       return_date: globalReturnDate,
       renew_return_date: null,
-      available_renewals: (bookingSettings?.consecutive_renewals) - totalRenewalsUsed
+      available_renewals: (bookingSettings?.consecutive_renewals || 5) - totalRenewalsUsed
     };
     // console.log(finalUpdateData, "Final update Data");
 
