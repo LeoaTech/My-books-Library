@@ -157,7 +157,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
   const { isLoading: isBooksLoading, error: isBookFetchingError, data: booksData } = useFetchBooks();
   const { data: settings, isLoading: isLoadingSettings } = useFetchSettings();
   const bookingSettings = settings?.settings[0];
-  RENEWAL_LIMIT = bookingSettings?.consecutive_renewals || 5
+  RENEWAL_LIMIT = bookingSettings?.consecutive_renewals || 5;
   const {
     register,
     handleSubmit,
@@ -418,7 +418,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
       const bookingData = {
         ...finalUpdateData,
         status: "issued", // 'issued' for a new booking
-        available_renewals: bookingSettings?.consecutive_renewals || 0
+        available_renewals: bookingSettings?.consecutive_renewals || 5
       };
       await createBookingMutation(bookingData);
     }
