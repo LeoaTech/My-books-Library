@@ -17,7 +17,6 @@ const queryBooking = `SELECT
     b.shipping_country,
     b.shipping_phone,
     b.credits_used,
-    b.available_renewals ,
     b.entity_id,
     b.created_at AS booking_created_at,
     b.updated_at AS booking_updated_at,
@@ -77,7 +76,6 @@ const CreateBooking = asyncHandler(async (req, res) => {
       shipping_country,
       shipping_phone,
       credits_used,
-      available_renewals,
     } = bookingForm;
 
     const itemsJson = JSON.stringify(items);
@@ -86,8 +84,8 @@ const CreateBooking = asyncHandler(async (req, res) => {
       `INSERT INTO bookings (user_id, vendor_id, items, 
       borrow_date, return_due,return_date,booking_status,
        shipping_address,shipping_city, shipping_country,
-       shipping_phone,credits_used,entity_id,available_renewals )
-      VALUES ($1,$2, $3, $4, $5, $6, $7, $8, $9,$10, $11, $12, $13,$14)`,
+       shipping_phone,credits_used,entity_id )
+      VALUES ($1,$2, $3, $4, $5, $6, $7, $8, $9,$10, $11, $12, $13) RETURNING *`,
       [
         user_id,
         null,
@@ -102,7 +100,6 @@ const CreateBooking = asyncHandler(async (req, res) => {
         shipping_phone,
         credits_used,
         entityId,
-        available_renewals,
       ]
     );
 
@@ -149,8 +146,7 @@ const UpdateBooking = asyncHandler(async (req, res) => {
       credits_used,
       renewed,
       renew_return_date,
-      booking_id,
-      available_renewals,
+      booking_id
     } = bookingForm;
 
     const itemsJson = JSON.stringify(items);
@@ -161,8 +157,8 @@ const UpdateBooking = asyncHandler(async (req, res) => {
       borrow_date=$4, return_due=$5,return_date=$6,booking_status=$7,
        shipping_address=$8,shipping_city=$9, shipping_country=$10,
        shipping_phone=$11,credits_used=$12,renewed=$13,
-      renew_return_date =$14 ,available_renewals=$15
-       WHERE entity_id=$16 AND id =$17 `,
+      renew_return_date =$14 
+       WHERE entity_id=$15 AND id =$16 RETURNING * `,
       [
         user_id,
         null,
@@ -178,7 +174,6 @@ const UpdateBooking = asyncHandler(async (req, res) => {
         credits_used,
         renewed,
         renew_return_date,
-        available_renewals,
         entityId,
         booking_id,
       ]
