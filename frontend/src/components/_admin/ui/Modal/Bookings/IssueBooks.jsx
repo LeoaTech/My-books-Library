@@ -167,6 +167,8 @@ const BookIssue = ({ mode, onClose, booking }) => {
   } = useForm({
     defaultValues: booking && mode == "edit" ? {
       ...booking,
+      return_all: false,
+      global_return_date: null,
       borrow_date: booking.borrow_date ? new Date(booking.borrow_date) : null,
       return_due: booking.return_due ? new Date(booking.return_due) : null,
       items: booking.items?.map(item => ({
@@ -214,28 +216,14 @@ const BookIssue = ({ mode, onClose, booking }) => {
     ...book,
   }));
 
-  // Inside BookIssue component, near RENEWAL_LIMIT definition
-  const initialAvailableRenewals = booking?.available_renewals || 0;
+  const returnAllChecked = watch("return_all");
+  const globalReturnDate = watch("global_return_date");
 
-  // Count how many books are currently NOT returned AND not individually maxed out.
-  const currentlyRenewableBooks = bookItems.filter(item =>
-    item.status !== 'returned' && item.renewal_count < RENEWAL_LIMIT
-  );
-
-  const numRenewableBooks = currentlyRenewableBooks.length;
-
-  console.log(numRenewableBooks, "Renewd Books");
-
-  const totalRenewalsUsed = booking?.items?.reduce((sum, item) => {
-    return sum + (item.renewal_count || 0);
-  }, 0);
 
   // To Update the Status and Return Due 
   useEffect(() => {
     const { status, return_due } = deriveBookingStatusAndDueDate(bookItems);
     setValue("status", status, { shouldValidate: true });
-
-    // Add a valid return due
     if (return_due instanceof Date && return_due.getTime() !== watch('return_due')?.getTime()) {
       setValue("return_due", return_due, { shouldValidate: true });
     }
@@ -243,13 +231,15 @@ const BookIssue = ({ mode, onClose, booking }) => {
 
   // Calculate total credits_used whenever bookItems change
   useEffect(() => {
-    const totalCredits = bookItems.reduce((sum, book) => sum + (book.credit || 0), 0);
-    setValue('credits_used', totalCredits, { shouldValidate: true });
-  }, [bookItems, setValue]);
+    if (mode == "create") {
+      const totalCredits = bookItems.reduce((sum, book) => sum + (book.credit || 0), 0);
+      setValue('credits_used', totalCredits, { shouldValidate: true });
+    }
+  }, [bookItems, setValue,mode]);
 
   // Filled the shipping details on selecting a user
   useEffect(() => {
-    if (selectedUser) {
+    if (selectedUser && mode != "edit") {
       const userShippingDetails = students?.data?.find((user) => user.user_id === selectedUser);
       console.log(userShippingDetails);
       setValue('shipping_address', userShippingDetails?.address);
@@ -257,7 +247,44 @@ const BookIssue = ({ mode, onClose, booking }) => {
       setValue('shipping_city', userShippingDetails?.city);
       setValue('shipping_phone', userShippingDetails?.phone);
     }
-  }, [selectedUser, setValue, students?.data])
+  }, [selectedUser,mode, setValue, students?.data])
+
+  // console.log(bookItems, "Items");
+
+  //  handle global date selection and update it all non-returned items
+  const handleGlobalDateChange = (date, currentItems) => {
+    currentItems.forEach((book, index) => {
+      if (book.status !== 'returned' || !book.return_date) {
+        setValue(`items.${index}.return_date`, date, { shouldValidate: true });
+        setValue(`items.${index}.status`, date ? "returned" : "issued", { shouldValidate: true });
+        setValue(`items.${index}.renewed`, false, { shouldValidate: true });
+        setValue(`items.${index}.renew_return_date`, null, { shouldValidate: true });
+      }
+    });
+  };
+
+  // handle return All checkbox toggle
+  const handleReturnAllChange = (e, bookItems, originalBookingItems) => {
+    const isChecked = e.target.checked;
+    setValue("return_all", isChecked, { shouldValidate: true });
+
+    if (!isChecked) {
+      setValue("global_return_date", null, { shouldValidate: true });
+      bookItems.forEach((book, index) => {
+        const originalItem = originalBookingItems?.find(item => item.id === book.id);
+
+        if (originalItem) {
+          setValue(`items.${index}.renewal_count`, originalItem.renewal_count || 0, { shouldValidate: true });
+          setValue(`items.${index}.status`, originalItem.status, { shouldValidate: true });
+          setValue(`items.${index}.return_due`, originalItem.return_due ? new Date(originalItem.return_due) : null, { shouldValidate: true });
+          setValue(`items.${index}.renewed`, originalItem.renewed || false, { shouldValidate: true });
+          setValue(`items.${index}.renew_return_date`, originalItem.renew_return_date ? new Date(originalItem.renew_return_date) : null, { shouldValidate: true });
+          setValue(`items.${index}.return_date`, null, { shouldValidate: true });
+        }
+      });
+    }
+  };
+
 
   const usersOptions = useMemo(
     () =>
@@ -331,7 +358,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
       const isNewRenewalAction = isRenewedInForm && isDateExtended && isCountConsistent;
 
       if (isNewRenewalAction) {
-        if (newRenewalCount < RENEWAL_LIMIT && booking?.available_renewals != 0) {
+        if (newRenewalCount < RENEWAL_LIMIT) {
           newRenewalCount += 1;
         } else {
           console.warn(`Renewal skipped for item ${item.id}: Renewal limit reached.`);
@@ -345,25 +372,24 @@ const BookIssue = ({ mode, onClose, booking }) => {
     });
 
     const { status: derivedStatus, return_due: derivedReturnDue } = deriveBookingStatusAndDueDate(itemsWithUpdatedRenewalCount);
+    const isReturnAllActive = updateData.return_all;
+    const selectedGlobalReturnDate = updateData.global_return_date; //get the global Return Data
 
     let globalReturnDate = null;
-
-    if (derivedStatus === 'returned') {
+    if (isReturnAllActive && selectedGlobalReturnDate) {
+      globalReturnDate = new Date(selectedGlobalReturnDate).toISOString();
+    }
+    else if (derivedStatus === 'returned') {
       const allReturnDates = itemsWithUpdatedRenewalCount
         .filter(item => item.return_date)
         .map(item => new Date(item.return_date));
 
       if (allReturnDates.length > 0) {
-        globalReturnDate = allReturnDates.reduce((latest, current) => current > latest ? current : latest, allReturnDates[0]);
+        // globalReturnDate = allReturnDates.reduce((latest, current) => current > latest ? current : latest, allReturnDates[0]);
+        const latestDate = allReturnDates.reduce((latest, current) => current > latest ? current : latest, allReturnDates[0]);
+        globalReturnDate = latestDate.toISOString();
       }
     }
-    const totalRenewalsUsed = itemsWithUpdatedRenewalCount.reduce((sum, item) => {
-      return sum + (item.renewal_count || 0);
-    }, 0);
-
-
-    // console.log(totalRenewalsUsed, "Total Renewal Count");
-
 
     const finalUpdateData = {
       ...updateData,
@@ -372,7 +398,6 @@ const BookIssue = ({ mode, onClose, booking }) => {
       return_due: derivedReturnDue,
       return_date: globalReturnDate,
       renew_return_date: null,
-      available_renewals: (bookingSettings?.consecutive_renewals || 5) - totalRenewalsUsed
     };
     // console.log(finalUpdateData, "Final update Data");
 
@@ -387,15 +412,10 @@ const BookIssue = ({ mode, onClose, booking }) => {
       const bookingData = {
         ...finalUpdateData,
         status: "issued", // 'issued' for a new booking
-        available_renewals: bookingSettings?.consecutive_renewals || 5
       };
       await createBookingMutation(bookingData);
     }
   };
-
-  const currentlyCheckedRenewed = bookItems.filter(item => item.renewed).length;
-
-  // console.log(currentlyCheckedRenewed, "Renewed checked");
 
   // To hide the selected book items displaying in the input field
   const NoopMultiValue = (props) => {
@@ -408,12 +428,6 @@ const BookIssue = ({ mode, onClose, booking }) => {
     });
     return <components.ValueContainer {...props}>{filteredChildren}</components.ValueContainer>;
   };
-
-  // console.log(bookItems, "Items");
-
-  // console.log(watch("credits_used"), "credits used amount");
-
-
 
   return (
     <div className="fixed left-0 top-0  inset-0 bg-[#64748B] bg-opacity-75 transition-opacity dark:bg-slate-300 dark:bg-opacity-75 lg:left-[18rem]">
@@ -437,10 +451,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
               <h3 className="font-bold text-[#313D4A] dark:text-white">
                 {mode == "edit" ? "Edit Booking" : "Issue Books"}
               </h3>
-              {mode === "edit" && <p>Available Renewals:  {initialAvailableRenewals}/ {(bookingSettings?.consecutive_renewals || 5)} </p>}
             </div>
-
-
 
             <div className="max-h-[600px] px-12 w-full overflow-hidden overflow-y-auto text-slate-800">
               <form onSubmit={handleSubmit(onSubmit)}>
@@ -462,7 +473,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
                               {...field}
                               options={usersOptions}
                               isClearable
-                              isDisabled={isLoadingStudents}
+                              isDisabled={isLoadingStudents || mode == "edit"}
                               isLoading={isLoadingStudents}
                               styles={selectStyles}
                               placeholder="Search for a user..."
@@ -485,9 +496,13 @@ const BookIssue = ({ mode, onClose, booking }) => {
                       <label className="mb-2.5 block text-[#259AE6] dark:text-white">
                         Select Books
                         <span className="text-red-600">*</span>
+                        {mode == "edit" &&
+                          <span style={{ fontSize: '0.8em', marginTop: "10px", color: 'gray' }}>
+                            (Can&apos;t select more books)
+                          </span>
+                        }
                       </label>
                       <div className="relative z-20 bg-transparent dark:bg-[#1d2a39]">
-
                         <Controller
                           name="items"
                           control={control}
@@ -501,7 +516,6 @@ const BookIssue = ({ mode, onClose, booking }) => {
                                 MultiValue: NoopMultiValue,
                                 ValueContainer: CustomValueContainer
                               }}
-
                               value={mode == "edit" ? selectedValues : field.value || []}
                               onChange={(options) => {
                                 field.onChange(options || []);
@@ -515,13 +529,6 @@ const BookIssue = ({ mode, onClose, booking }) => {
                             />
                           )}
                         />
-                        {mode == "edit" &&
-                          <p style={{ fontSize: '0.8em', marginTop: "10px", color: 'gray' }}>
-
-                            (Can&apos;t select more books)
-                          </p>
-                        }
-
                       </div>
                       {errors.items && (
                         <p className="text-red-600 text-sm mt-1">{errors?.items?.message}</p>
@@ -530,13 +537,55 @@ const BookIssue = ({ mode, onClose, booking }) => {
                   </div>
 
                   {/* Booked Items List */}
-
-
                   {bookItems?.length > 0 && (
                     <div className="flex flex-col md:gap-5 my-5">
                       <fieldset className="border mt-4 border-gray-300 dark:border-gray-600 rounded p-4">
                         <legend className="font-semibold text-md text-[#259AE6] dark:text-gray-300">Selected Items List</legend>
+                        {mode === "edit" && bookItems?.length > 0 && (
+                          <>
+                            <div className="mb-6 p-4 border border-gray-300 dark:border-gray-600 rounded bg-slate-50 dark:bg-gray-800">
+                              <div className="flex items-center justify-between">
+                                <label className="inline-flex items-center">
+                                  <input
+                                    type="checkbox"
+                                    checked={returnAllChecked}
+                                    onChange={(e) => handleReturnAllChange(e, bookItems, booking.items)} // Define this handler below
+                                    className="rounded border-transparent h-5 w-5 text-blue-600 focus:ring-blue-500"
+                                  />
+                                  <span className="ml-3 text-lg font-semibold text-blue-600 dark:text-blue-400">
+                                    Return All Books
+                                  </span>
+                                </label>
+                              </div>
 
+                              {returnAllChecked && (
+                                <div className="mt-4 w-1/2">
+                                  <label className="mb-2.5 block text-blue-600 dark:text-white text-sm">Select Global Return Date</label>
+                                  <Controller
+                                    name="global_return_date"
+                                    control={control}
+                                    render={({ field }) => (
+                                      <DatePicker
+                                        selected={field.value}
+                                        onChange={(date) => {
+                                          const sanitizedDate = date instanceof Date ? date : null;
+                                          field.onChange(sanitizedDate);
+
+                                          handleGlobalDateChange(sanitizedDate, bookItems);
+                                        }}
+                                        placeholderText="Select Return Date"
+                                        className="w-full rounded-sm border-[1.5px] text-white dark:text-blue-100  border-gray-400 dark:border-gray-600 bg-transparent py-2 px-3 text-sm font-medium outline-none"
+                                        dateFormat="yyyy-MM-dd"
+                                        minDate={borrowDate || new Date()}
+                                      // maxDate={addDays(ReturnDueDate, bookingSettings?.default_booking_duration || 15)}
+                                      />
+                                    )}
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          </>
+                        )}
                         <ul className="ml-10 mt-3 font-medium text-md text-slate-400">
                           {bookItems?.map((book, index) => (
                             <li key={book?.id || index + 1} className="mb-6 border-b pb-4 border-gray-200 dark:border-gray-700">
@@ -573,10 +622,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
                                         type="checkbox"
                                         {...register(`items.${index}.renewed`)}
                                         disabled={book.status === 'returned' ||
-                                          book.renewal_count >= RENEWAL_LIMIT ||
-                                          totalRenewalsUsed == RENEWAL_LIMIT
-                                          // || (currentlyCheckedRenewed >= initialAvailableRenewals)
-                                        }
+                                          book.renewal_count >= RENEWAL_LIMIT || returnAllChecked}
                                         className="rounded bg-gray-200 border-transparent h-4 w-4 focus:ring-1 focus:ring-offset-2 focus:ring-gray-500"
                                         onChange={(e) => {
                                           const isChecked = e.target.checked;
@@ -588,12 +634,12 @@ const BookIssue = ({ mode, onClose, booking }) => {
                                             setValue(`items.${index}.status`, "renewed", { shouldValidate: true });
                                             setValue(`items.${index}.return_date`, null, { shouldValidate: true });
 
-                                            const currentDue = new Date(book.return_due);
-                                            const newDefaultDue = addDays(currentDue, 1); // Extend by 1 day
-                                            setValue(`items.${index}.renew_return_date`, newDefaultDue, { shouldValidate: true });
-                                            setValue(`items.${index}.return_due`, newDefaultDue, { shouldValidate: true });
+                                            // const currentDue = new Date(book.return_due);
+                                            // const newDefaultDue = addDays(currentDue, 1); // Extend by 1 day
+                                            // setValue(`items.${index}.renew_return_date`, newDefaultDue, { shouldValidate: true });
+                                            // setValue(`items.${index}.return_due`, newDefaultDue, { shouldValidate: true });
                                           } else {
-                                            // Reset dates and status if un-renewed
+                                            // Reset dates and status when unchecked renewed
 
                                             setValue(`items.${index}.renew_return_date`, null, { shouldValidate: true });
                                             const originalItem = booking?.items?.find(item => item.id === book.id);
@@ -611,11 +657,10 @@ const BookIssue = ({ mode, onClose, booking }) => {
                                         }}
                                       />
                                       <span className="ml-2 text-[#0284c7] dark:text-white">
-                                        Renew book Return Due (Count: {book.renewal_count})
-                                        {/* {book.renewal_count} */}
+                                        Renew this book (Count: {book.renewal_count} / {RENEWAL_LIMIT})
                                       </span>
                                     </label>
-                                    {(book.renewal_count >= RENEWAL_LIMIT || totalRenewalsUsed == RENEWAL_LIMIT && book.status != "returned") && (
+                                    {(book.renewal_count >= RENEWAL_LIMIT && book.status != "returned") && (
                                       <p className="text-red-500 text-xs ml-8 mt-1">Renewal limit reached for this book. Please select a Return Date</p>
                                     )}
                                   </div>
@@ -624,11 +669,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
                                   <div className="flex gap-4">
 
                                     {/* Renew Return Date */}
-                                    {book.renewed && (totalRenewalsUsed !== RENEWAL_LIMIT
-                                      //  && (
-                                      //   !(currentlyCheckedRenewed >= initialAvailableRenewals)
-                                      // )
-                                    ) && book.status !== 'returned' ? (
+                                    {book.renewed && (book.renewal_count !== RENEWAL_LIMIT) && book.status !== 'returned' ? (
                                       <div className="w-1/2">
                                         <label className="mb-2.5 block text-[#0284c7] dark:text-white text-sm">New Due Date</label>
                                         <Controller
@@ -637,24 +678,19 @@ const BookIssue = ({ mode, onClose, booking }) => {
                                           render={({ field }) => (
                                             <DatePicker
                                               selected={field.value}
-                                              disabled={totalRenewalsUsed == RENEWAL_LIMIT
-                                                || (currentlyCheckedRenewed > initialAvailableRenewals)
-                                              }
-
+                                              disabled={book.renewal_count == RENEWAL_LIMIT}
                                               onChange={(date) => {
                                                 const sanitizedDate = date instanceof Date ? date : null;
                                                 field.onChange(sanitizedDate);
-
                                                 if (sanitizedDate) {
                                                   setValue(`items.${index}.return_due`, sanitizedDate, { shouldValidate: true });
                                                   setValue(`items.${index}.status`, "renewed", { shouldValidate: true });
                                                 } else if (book.renewed) {
                                                   setValue(`items.${index}.status`, "issued", { shouldValidate: true });
                                                 }
-
                                               }}
                                               placeholderText="New Due Date"
-                                              className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-2 px-3 text-sm font-medium outline-none"
+                                              className="w-full rounded-sm border-[1.5px] dark:text-white border-gray-300 dark:border-gray-600  bg-transparent py-2 px-3 text-sm font-medium outline-none"
                                               dateFormat="yyyy-MM-dd"
                                               // minDate={new Date(book.return_due || new Date())}
                                               minDate={addDays(new Date(book.return_due), 1)}
@@ -669,14 +705,10 @@ const BookIssue = ({ mode, onClose, booking }) => {
                                     ) :
                                       // Regular Return Date
                                       (
-
                                         <div className="w-1/2">
                                           <label className="mb-2.5 block text-[#0284c7] dark:text-white text-sm">
                                             {/* Return Date */}
-                                            {(
-                                              currentlyCheckedRenewed >= initialAvailableRenewals
-                                            ) || totalRenewalsUsed === RENEWAL_LIMIT || book.renewal_count >= RENEWAL_LIMIT ? 'Final Return Date' : 'Return Date'}
-
+                                            {book.renewal_count >= RENEWAL_LIMIT ? 'Final Return Date' : 'Return Date'}
                                           </label>
                                           <Controller
                                             name={`items.${index}.return_date`}
@@ -684,7 +716,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
                                             render={({ field }) => (
                                               <DatePicker
                                                 selected={field.value}
-                                                disabled={book.status === 'returned'}
+                                                disabled={book.status === 'returned' || returnAllChecked}
                                                 onChange={(date) => {
                                                   const sanitizedDate = date instanceof Date ? date : null;
                                                   field.onChange(sanitizedDate);
@@ -698,7 +730,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
 
                                                 }}
                                                 placeholderText="Return Date"
-                                                className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-2 px-3 text-sm font-medium outline-none"
+                                                className="w-full rounded-sm border-[1.5px] dark:text-white border-gray-300 dark:border-gray-600 bg-transparent py-2 px-3 text-sm font-medium outline-none"
                                                 dateFormat="yyyy-MM-dd"
                                                 minDate={borrowDate || new Date()}
                                               />
@@ -721,7 +753,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
                                             selected={field.value}
                                             disabled
                                             placeholderText="Due Date"
-                                            className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-2 px-3 text-sm font-medium outline-none"
+                                            className="w-full rounded-sm border-[1.5px] dark:text-white border-gray-300 dark:border-gray-600 bg-transparent py-2 px-3 text-sm font-medium outline-none"
                                             dateFormat="yyyy-MM-dd"
                                           />
                                         )}
@@ -744,7 +776,6 @@ const BookIssue = ({ mode, onClose, booking }) => {
                   <fieldset className="border mt-4 border-gray-300 dark:border-gray-600 rounded p-4">
                     <legend className="font-semibold text-md text-[#259AE6] dark:text-gray-300">Booking Info</legend>
                     <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
-
                       <div className="w-full xl:w-1/2">
                         <label className="mb-2.5 block text-[#0284c7] dark:text-white">
                           Borrow Date
@@ -753,7 +784,6 @@ const BookIssue = ({ mode, onClose, booking }) => {
                         <Controller
                           name="borrow_date"
                           control={control}
-
                           render={({ field }) => (
                             <DatePicker
                               disabled={mode === "edit"}
@@ -763,7 +793,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
                                 if (mode !== "edit" && date) {
                                   const newItems = bookItems.map(item => ({
                                     ...item,
-                                    return_due: addDays(date, 7), // Default 7 days
+                                    return_due: addDays(date, (bookingSettings?.default_booking_duration || 15)), // Default duration from settings
                                   }));
                                   setValue("items", newItems, { shouldValidate: true });
                                 }
@@ -819,7 +849,6 @@ const BookIssue = ({ mode, onClose, booking }) => {
                   <fieldset className="border mt-8 border-gray-300 dark:border-gray-600 rounded p-4">
                     <legend className="font-semibold text-md text-[#259AE6] dark:text-gray-300">Booking Status</legend>
                     <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
-
                       <div className="w-full xl:w-1/2">
                         <label className="mb-2.5 block text-[#259AE6] dark:text-white">
                           Booking Status {mode == "edit" && "Global"}
@@ -882,19 +911,15 @@ const BookIssue = ({ mode, onClose, booking }) => {
                     </div>
                   </fieldset>
 
-
-
                   {/* Shipping Info */}
                   <fieldset className="border mt-4 border-gray-300 dark:border-gray-600 rounded p-4">
                     <legend className="font-semibold text-md text-[#259AE6] dark:text-gray-300">Shipping Details</legend>
                     <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
-
                       <div className="w-full xl:w-1/2">
                         <label className="mb-2.5 block text-[#0284c7] dark:text-white">
                           Shipping Address
                           {/* <span className="text-red-600">*</span> */}
                         </label>
-
                         <input
                           type="text"
                           name="shipping_address"
@@ -903,17 +928,12 @@ const BookIssue = ({ mode, onClose, booking }) => {
                         />
                         {errors?.shipping_address &&
                           <p className="text-red-500 text-xs mt-1">{errors?.shipping_address?.message}</p>}
-
                       </div>
                       <div className="w-full xl:w-1/2">
-
                         <label className="mb-2.5 block text-[#0284c7] dark:text-white">
                           Shipping City
                           {/* <span className="text-red-600">*</span> */}
                         </label>
-
-
-
                         <input
                           type="text"
                           name="shipping_city"
@@ -921,18 +941,14 @@ const BookIssue = ({ mode, onClose, booking }) => {
                           className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                         />
                         {errors?.shipping_city && <p className="text-red-500 text-xs mt-1">{errors?.shipping_city?.message}</p>}
-
                       </div>
                     </div>
                     <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
-
                       <div className="w-full xl:w-1/2">
                         <label className="mb-2.5 block text-[#0284c7] dark:text-white">
                           Shipping Country
                           {/* <span className="text-red-600">*</span> */}
                         </label>
-
-
                         <input
                           type="text"
                           name="shipping_country"
@@ -940,14 +956,12 @@ const BookIssue = ({ mode, onClose, booking }) => {
                           className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                         />
                         {errors?.shipping_country && <p className="text-red-500 text-xs mt-1">{errors?.shipping_country?.message}</p>}
-
                       </div>
                       <div className="w-full xl:w-1/2">
                         <label className="mb-2.5 block text-[#0284c7] dark:text-white">
                           Phone Number
                           {/* <span className="text-red-600">*</span> */}
                         </label>
-
                         <input
                           type="text"
                           name="shipping_phone"
@@ -955,7 +969,6 @@ const BookIssue = ({ mode, onClose, booking }) => {
                           className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                         />
                         {errors?.shipping_phone && <p className="text-red-500 text-xs mt-1">{errors?.shipping_phone?.message}</p>}
-
                       </div>
                     </div>
                   </fieldset>
