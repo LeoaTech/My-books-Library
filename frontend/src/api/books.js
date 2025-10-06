@@ -23,6 +23,32 @@ export const fetchBooks = async ({ signal }) =>
       return err?.response?.data?.message || err;
     });
 
+   
+
+/* Fetch All available Books */
+
+export const fetchAvailableBooks = async ({ signal }) =>
+  await axios
+    .get(`${BASE_URL}/books/available`, { signal, withCredentials: true })
+    .then((res) => {
+      console.log(res, "Available Books fetched");
+
+      console.log(res.data);
+      if (res.status !== 200) {
+        throw new Error("Couldn't fetch available books");
+      } else {
+        return res?.data || [];
+      }
+    })
+    .catch((err) => {
+      console.error("Fetching Available Books error:", err);
+
+      if (err.name === "AbortError") {
+        return null;
+      }
+      return err?.response?.data?.message || err;
+    });
+
 // Fetch Book Details by ID
 
 export const FetchBookById = async (bookId) => {
