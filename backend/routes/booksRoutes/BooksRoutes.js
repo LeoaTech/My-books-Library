@@ -6,6 +6,7 @@ const {
   DeleteBook,
   CreateNewBook,
   UpdateBook,
+  GetAvailableBooks,
 } = require("../../controllers/BooksController/Books.Controllers.js");
 require("../../controllers/AuthController/GoogleAuth.js");
 const {
@@ -21,7 +22,7 @@ router.use(checkAuth);
 
 router.get("/", checkRole, checkPermissions("READ BOOK"), GetAllBooks);
 router.get("/book", checkRole, GetBookById);
-
+router.get("/available", GetAvailableBooks)
 router.delete(
   "/delete/:book_id",
   checkRole,

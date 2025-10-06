@@ -130,6 +130,86 @@ WHERE
   }
 });
 
+const GetAvailableBooks = asyncHandler(async (req, res) => {
+  const user = req.user;
+
+  const entityId = user?.entityId || user?.entity_id;
+
+  // console.log(req.user, "User Object", entityId, "Entity ID");
+
+  if (!entityId) {
+    res.status(400).json({ message: "No Library Exists " });
+  }
+  const fetchAvailableBooks = `
+    SELECT
+        b.id,
+        b.title,
+        b.summary,
+        b.member_price,
+        b.purchase_price,
+        b.discount_percentage,
+        b.publish_year,
+        br.name AS branch_name,
+        v.id AS vendor_id,
+        a.name AS author_name,
+        c.name AS cover_name,
+        cat.name AS category_name,
+        cond.name AS condition_name,
+        p.name AS publisher_name,
+        b.is_available AS Available,
+        b.comments,
+        b.added_by,
+        b.cover_img_url,
+        b.isbn,
+        b.credit,
+        b.created_at
+    FROM
+        public.books b
+    JOIN public.authors a ON b.author = a.id
+    JOIN public.covers c ON b.cover = c.id
+    LEFT JOIN public.vendors v ON b.vendor_id = v.id   
+    JOIN public.conditions cond ON b.condition = cond.id
+    JOIN public.branches br ON b.branch_id = br.id
+    JOIN public.publishers p ON b.publisher = p.id
+    JOIN public.categories cat ON b.category = cat.id
+    WHERE
+        b.branch_id = ANY ($1)
+        AND b.id NOT IN (
+            SELECT DISTINCT (item->>'id')::int
+            FROM public.bookings,
+                 jsonb_array_elements(items) AS item
+            WHERE (item->>'status') IS DISTINCT FROM 'returned'
+        );
+  `;
+
+  // Get All the branches related to an Entity Id (for a specific library)
+
+  const getEntityBranches = `Select id from branches where entity_id = $1`;
+  try {
+    const getBranchIds = await db.query(getEntityBranches, [entityId]);
+    // console.log(getBranchIds.rows, "Branches");
+
+    if (getBranchIds.rowCount == 0) {
+      res
+        .status(400)
+        .json({ message: "No Books Exists for this Library", books: [] });
+    }
+
+    let branchIds = getBranchIds.rows.map((branch) => branch.id);
+    const getBooksList = await db.query(fetchAvailableBooks, [branchIds]);
+
+    console.log(getBooksList?.rowCount, "Books available");
+    // if (getBooksList?.rowCount > 0) {
+    res.status(200).json({
+      books: getBooksList?.rows || [],
+      message: "Book Retrieved successfully",
+    });
+    // }
+  } catch (error) {
+    console.log(err, "Error getting books");
+    return res.status(500).json({ message: "No books found" });
+  }
+});
 // Get a Book by ID
 
 const GetBookById = asyncHandler(async (req, res) => {
@@ -450,6 +530,7 @@ const UpdateBook = asyncHandler(async (req, res) => {
 
 module.exports = {
   GetAllBooks,
+  GetAvailableBooks,
   GetBookById,
   CreateNewBook,
   DeleteBook,
