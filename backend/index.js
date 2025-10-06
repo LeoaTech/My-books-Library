@@ -28,6 +28,9 @@ const bookingRoutes = require("./routes/BookingsRoutes/index.js");
 const settingsRoutes = require("./routes/SettingsRoutes/SettingsRoutes.js");
 const pricingRoutes = require("./routes/SettingsRoutes/Pricing/PricingRoutes.js");
 
+
+require("./services/scheduleTask.js")
+
 const { pool } = require("./config/dbConfig.js");
 const port = process.env.PORT || 8100;
 
