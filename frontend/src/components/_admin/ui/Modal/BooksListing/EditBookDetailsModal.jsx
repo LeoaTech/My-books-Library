@@ -34,7 +34,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
 
   const { error, message, updateBook } = useSaveBook();
   const [imagesList, setImagesList] = useState([]);
-  // console.log(bookValue, "ID");
+  console.log(bookValue, "ID");
 
 
   const { data: bookDetail, isPending: isBookLoading, error: isBookError } = useQuery({
@@ -257,6 +257,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
 
   // console.log(bookDetail, "Edit book details");
   const bookDetails = bookValue?.title ? bookValue : bookDetail?.book
+  // console.log(bookDetails, "Book Details");
 
   const {
     register,
@@ -286,7 +287,8 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
           : null,
         // branch_id: bookDetails ? { value: bookDetails?.branch_id, label: bookDetails?.branch_name } : null,
         isbn: bookDetails?.isbn || '',
-        isAvailable: bookDetails?.isAvailable || false,
+        isAvailable: bookDetails?.available || false,
+        available: bookDetails?.available || false,
         member_price: bookDetails?.member_price || "",
         purchase_price: bookDetails?.purchase_price || "",
         vendor_id: bookDetails?.vendor_id || null,
@@ -303,33 +305,33 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
     mode: "all",
   });
 
-  useEffect(() => {
-    // console.log("Render component");
+  // useEffect(() => {
+  //   // console.log("Render component");
 
-    reset({
-      ...bookDetails,
-      author: {
-        label: bookDetails?.author_name,
-        value: bookDetails?.author,
-      },
-      publisher: {
-        label: bookDetails?.publisher_name,
-        value: bookDetails?.publisher,
-      },
-      cover: {
-        label: bookDetails?.cover_name,
-        value: bookDetails?.cover,
-      },
-      condition: {
-        label: bookDetails?.condition_name,
-        value: bookDetails?.condition,
-      },
-      category: {
-        label: bookDetails?.category_name,
-        value: bookDetails?.category,
-      },
-    });
-  }, [reset, bookDetails]);
+  //   reset({
+  //     ...bookDetails,
+  //     author: {
+  //       label: bookDetails?.author_name,
+  //       value: bookDetails?.author,
+  //     },
+  //     publisher: {
+  //       label: bookDetails?.publisher_name,
+  //       value: bookDetails?.publisher,
+  //     },
+  //     cover: {
+  //       label: bookDetails?.cover_name,
+  //       value: bookDetails?.cover,
+  //     },
+  //     condition: {
+  //       label: bookDetails?.condition_name,
+  //       value: bookDetails?.condition,
+  //     },
+  //     category: {
+  //       label: bookDetails?.category_name,
+  //       value: bookDetails?.category,
+  //     },
+  //   });
+  // }, [reset, bookDetails]);
 
   // update the existing cover_images url in the imagesList
   useEffect(() => {
@@ -352,7 +354,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
     mutationFn: updateBook,
     onSuccess: () => {
       reset();
-      
+
       queryClient.invalidateQueries(["books"]); // invalidate books query to refetch
       close();
     },
@@ -373,6 +375,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
       const booksForm = {
         ...updateData,
         bookId: bookValue,
+        available: updateData?.isAvailable,
         cover_img_url:
           imagesList?.length > 0
             ? [...imagesList]
@@ -380,7 +383,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
         imageUpdated: imagesList?.length > 0 ? true : false,
       };
 
-      console.log(booksForm, "Form Edit");
+      // console.log(booksForm, "Form Edit");
       await updateBookMutation(booksForm);
     } catch (error) {
       console.log(error, "Error updating Form");
@@ -858,8 +861,8 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                         <label className="inline-flex items-center">
                           <input
                             type="checkbox"
-                            name="available"
-                            {...register("available")}
+                            name="isAvailable"
+                            {...register("isAvailable")}
                             className="rounded bg-gray-200 border-transparent h-4 w-4 p-5 ml-2 focus:border-transparent focus:bg-gray-200 dark:text-white text-gray-700 focus:ring-1 focus:ring-offset-2 focus:ring-gray-500"
                           />
                           <span className="ml-2 text-[#2c3745] dark:text-white">Available </span>
