@@ -4,13 +4,13 @@ import { useState } from "react";
 import { MdEdit, MdWarning } from "react-icons/md";
 import { HiChevronDoubleLeft, HiChevronDoubleRight } from "react-icons/hi";
 
-const PublisherTable = ({data,onView, onEdit, onDelete}) => {
+const PublisherTable = ({ data, onView, onEdit, onDelete }) => {
 
   // Paginations
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage] = useState(7);
 
-//   Calculate indexes for pagination
+  //   Calculate indexes for pagination
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
 
@@ -56,10 +56,12 @@ const PublisherTable = ({data,onView, onEdit, onDelete}) => {
                   </p>
                 </td>
                 <td className="border-b border-[#eee] py-5 px-4 dark:border-[#2E3A47]">
-                 
-
-                  <p 
-                  className="inline-flex  py-1 px-3 text-sm font-medium text-[#F0950C]"
+                  <p
+                    className="inline-flex py-1 px-3 text-sm font-medium text-[#F0950C] truncate max-w-[250px] overflow-hidden"
+                    style={{
+                      whiteSpace: "nowrap",
+                      textOverflow: "ellipsis",
+                    }}
                   >
                     {publisher?.description}
                   </p>
@@ -68,7 +70,7 @@ const PublisherTable = ({data,onView, onEdit, onDelete}) => {
                   <div className="flex items-center space-x-3.5">
                     <div className="group relative m-2 flex justify-center">
 
-                    
+
                       <button
                         className="text-green-500 hover:text-[#F0950C] disabled:text-gray-400"
                         onClick={() => onEdit(publisher?.id)}

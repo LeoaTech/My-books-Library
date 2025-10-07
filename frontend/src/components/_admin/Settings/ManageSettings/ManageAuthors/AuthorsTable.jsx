@@ -55,10 +55,12 @@ const AuthorsTable = ({ data, onView, onEdit, onDelete }) => {
                   </p>
                 </td>
                 <td className="border-b border-[#eee] py-5 px-4 dark:border-[#2E3A47]">
-
-
                   <p
-                    className="inline-flex  py-1 px-3 text-sm font-medium text-[#F0950C]"
+                    className="inline-flex py-1 px-3 text-sm font-medium text-[#F0950C] truncate max-w-[250px] overflow-hidden"
+                    style={{
+                      whiteSpace: "nowrap",
+                      textOverflow: "ellipsis",
+                    }}
                   >
                     {author?.description}
                   </p>
