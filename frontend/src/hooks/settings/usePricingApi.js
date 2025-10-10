@@ -104,15 +104,19 @@ export const usePricingApi = () => {
     });
 
     // console.log(response, "Plan Delete Response");
+
+    const result = await response.json();
+    // console.log(result, "Result");
+
     if (!response.ok) {
       toast.update(toastId, {
-        render: `Error: ${
-          response?.message || "Failed to Delete Plan"
-        }`,
+        render: `Error: ${result?.message || "Failed to Delete Plan"}`,
         type: "error",
         isLoading: false,
-        autoClose: 1000,
+        autoClose: 3000,
       });
+      setIsLoading(false);
+
       return;
     } else {
       toast.update(toastId, {
@@ -127,6 +131,5 @@ export const usePricingApi = () => {
     }
   };
 
-
-  return { createPlan, error, isLoading, updatePlan, deletePlan};
+  return { createPlan, error, isLoading, updatePlan, deletePlan };
 };
