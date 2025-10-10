@@ -17,10 +17,10 @@ const NotificationsPage = lazy(() => import("../_admin/pages/Notifications"));
 const Dashboard = lazy(() => import("../_admin/pages/Home"));
 const Bookings = lazy(() => import("../_admin/pages/Bookings"));
 const Listings = lazy(() => import("../_admin/pages/Listing"));
-const Orders = lazy(() => import("../_admin/pages/Orders"));
-const Shipping = lazy(() => import("../_admin/pages/Shipping"));
-const QC = lazy(() => import("../_admin/pages/QualtyControl"));
-const Returns = lazy(() => import("../_admin/pages/Returns"));
+// const Orders = lazy(() => import("../_admin/pages/Orders"));
+// const Shipping = lazy(() => import("../_admin/pages/Shipping"));
+// const QC = lazy(() => import("../_admin/pages/QualtyControl"));
+// const Returns = lazy(() => import("../_admin/pages/Returns"));
 const Users = lazy(() => import("../_admin/pages/Users"));
 const Permissions = lazy(() => import("../_admin/pages/Permissions"));
 const Profile = lazy(() => import("../_admin/pages/Profile"));
@@ -55,36 +55,36 @@ const routes = [
     path: "/dashboard/listings",
     component: Listings,
   },
-  {
-    title: "Orders",
-    image: OrderIcon,
-    path: "/dashboard/orders",
-    component: Orders,
-  },
-  {
-    title: "Shipping and Returns",
-    image: ShippedIcon,
-    subRoutes: [
-      {
-        title: "Shippings",
-        image: ShippingIcon,
-        path: "/dashboard/shipping",
-        component: Shipping,
-      },
-      {
-        title: "Returns",
-        image: ReturnsIcon,
-        path: "/dashboard/returns",
-        component: Returns,
-      },
-    ],
-  },
-  {
-    title: "QC",
-    image: QCIcon,
-    path: "/dashboard/qc",
-    component: QC,
-  },
+  // {
+  //   title: "Orders",
+  //   image: OrderIcon,
+  //   path: "/dashboard/orders",
+  //   component: Orders,
+  // },
+  // {
+  //   title: "Shipping and Returns",
+  //   image: ShippedIcon,
+  //   subRoutes: [
+  //     {
+  //       title: "Shippings",
+  //       image: ShippingIcon,
+  //       path: "/dashboard/shipping",
+  //       component: Shipping,
+  //     },
+  //     {
+  //       title: "Returns",
+  //       image: ReturnsIcon,
+  //       path: "/dashboard/returns",
+  //       component: Returns,
+  //     },
+  //   ],
+  // },
+  // {
+  //   title: "QC",
+  //   image: QCIcon,
+  //   path: "/dashboard/qc",
+  //   component: QC,
+  // },
   {
     title: "Bookings",
     path: "/dashboard/bookings",
@@ -145,11 +145,11 @@ export const accountRoutes = [
         path: "/dashboard/profile",
         component: Profile,
       },
-      {
-        title: "Notifications",
-        path: "/dashboard/notifications",
-        component: NotificationsPage,
-      },
+      // {
+      //   title: "Notifications",
+      //   path: "/dashboard/notifications",
+      //   component: NotificationsPage,
+      // },
     ],
   },
 ];
