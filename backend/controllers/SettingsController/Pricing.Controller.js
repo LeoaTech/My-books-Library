@@ -69,7 +69,6 @@ const createStripePriceAndPaymentLink = async (
   };
 };
 
-
 /* Get ALL Pricing */
 const FetchPricingPlans = asyncHandler(async (req, res) => {
   const entityId = req?.user?.entityId || req?.user?.entity_id;
@@ -78,7 +77,7 @@ const FetchPricingPlans = asyncHandler(async (req, res) => {
     return res.status(403).json("Invalid Request, No Library ID provided");
   }
   try {
-    const PricingQuery = `SELECT plan_id, plan_name, price, duration, credits_allocated, features FROM membership_plan WHERE entity_id =$1`;
+    const PricingQuery = `SELECT plan_id,stripe_product_id, plan_name,plan_details FROM membership_plan WHERE entity_id =$1`;
     const getAllPricing = await db.query(PricingQuery, [entityId]);
 
     res.status(200).json({
