@@ -1,4 +1,5 @@
 const express = require("express");
+
 const cors = require("cors");
 require("dotenv").config();
 const bodyParser = require("body-parser");
@@ -28,8 +29,10 @@ const bookingRoutes = require("./routes/BookingsRoutes/index.js");
 const settingsRoutes = require("./routes/SettingsRoutes/SettingsRoutes.js");
 const pricingRoutes = require("./routes/SettingsRoutes/Pricing/PricingRoutes.js");
 
+const dashboardRoute = require("./routes/dashboardRoutes/DashboardRoutes.js")
 
-require("./services/scheduleTask.js")
+// Cron Job
+require("./services/scheduleTask.js");
 
 const { pool } = require("./config/dbConfig.js");
 const port = process.env.PORT || 8100;
@@ -56,7 +59,7 @@ app.use(
     store: new pgSession({
       pool: pool,
       tableName: "session",
-      createTable: false,
+      createTable: true,
       errorLog: (err) => console.error("Session store error:", err), // Log DB errors
     }),
     secret: process.env.SESSION_SECRET || "test", // Use env var in production
@@ -116,6 +119,10 @@ app.use(bookingRoutes);
 // Pricing Plans and Settings
 app.use("/api/settings", settingsRoutes);
 app.use("/api/pricing", pricingRoutes);
+
+//Dashboard Routes
+
+app.use("/api/dashboard",dashboardRoute)
 
 app.use(notfound);
 app.use(errorHanlder);
