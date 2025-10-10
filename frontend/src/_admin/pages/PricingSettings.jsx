@@ -17,12 +17,12 @@ const PricingSettings = () => {
         setValues(activePlan);
         setEditPlan(!editPlan);
     };
+
     if (isLoading) {
         return (
             <Loader />
         )
     }
-
 
     return (
         <div>
