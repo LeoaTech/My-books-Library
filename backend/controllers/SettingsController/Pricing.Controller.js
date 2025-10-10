@@ -258,7 +258,7 @@ const CreateDualPlan = asyncHandler(async (req, res) => {
 
     const jsonPlanDetails = JSON.stringify(planDetails);
 
-    // Now add the Product ,Prices and Plan Name
+    // Now add the Product ,Prices and Plan Name in db
     const createPricinguery = await db.query(
       `INSERT INTO membership_plan (plan_name, plan_details, stripe_product_id,entity_id) VALUES ($1,$2,$3, $4) RETURNING plan_id,plan_name, stripe_product_id, plan_details`,
       [plan_name, jsonPlanDetails, stripeProductId, entityId]
@@ -345,6 +345,42 @@ const DeletePlan = asyncHandler(async (req, res) => {
   }
   try {
     const { plan_id } = req.params;
+
+    // Get the Stripe Product ID that needs to delete
+    const ProductId = await db.query(
+      `SELECT stripe_product_id from membership_plan WHERE plan_id =$1 AND entity_id=$2 `,
+      [plan_id, entityId]
+    );
+
+    const stripeProductId = ProductId.rows[0]?.stripe_product_id;
+    if (!stripeProductId) {
+      return res.status(400).json({ message: "Missing! Stripe Product ID not exists" });
+    } else {
+      try {
+        // Delete the Product from Stripe
+        await stripe.products.del(stripeProductId);
+        console.log(`Stripe Product Deleted: ${stripeProductId}`);
+      } catch (stripeError) {
+        // throw error if a product/price is linked to an active subscription or payment link.
+        if (
+          stripeError.type === "StripeInvalidRequestError" ||
+          stripeError.code === "resource_missing"
+        ) {
+          console.warn(
+            `Stripe prevented deletion of Product ${stripeProductId}. Plan is likely in use.`
+          );
+
+          return res.status(409).json({
+            message:
+              "Cannot delete plan. It has active subscriptions, payment links, or historical data on Stripe. Please contact support to archive the product instead.",
+            details: stripeError.message,
+          });
+        }
+        console.error(`Unhandled Stripe Error during deletion: ${stripeError}`);
+        throw stripeError;
+      }
+    }
+
 
     const deletePricingQuery = await db.query(
       `DELETE FROM membership_plan WHERE entity_id=$1 AND plan_id=$2 RETURNING plan_id`,
