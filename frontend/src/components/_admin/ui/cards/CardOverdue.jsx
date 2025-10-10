@@ -25,7 +25,7 @@ const CardOverdue = () => {
 
       <div className="mt-2 ml-4 flex items-center justify-between">
         <div>
-          <h4 className="text-xl font-bold text-black dark:text-white">2450</h4>
+          <h4 className="text-xl font-bold text-black dark:text-white">0</h4>
           <span className="text-sm font-medium opacity-40">Total Overdue Book</span>
         </div>
       </div>

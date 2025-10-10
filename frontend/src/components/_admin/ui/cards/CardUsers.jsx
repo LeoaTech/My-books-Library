@@ -30,9 +30,9 @@ const CardUsers = () => {
       <div className="mt-2 ml-4 flex items-center justify-between">
         <div>
           <h4 className="text-xl font-bold text-black dark:text-white">
-            300
+            0
           </h4>
-          <span className="text-sm font-medium opacity-40">Total Subscriptions</span>
+          <span className="text-sm font-medium opacity-40">Total Students</span>
         </div>
       </div>
     </div>
