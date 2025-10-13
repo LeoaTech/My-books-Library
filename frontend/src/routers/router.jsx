@@ -33,6 +33,10 @@ import MyProfile from "../_root/pages/UserProfile/index";
 import AccountSettings from "../_root/pages/UserProfile/AccountSettings";
 import MyOrdersHistory from "../_root/pages/UserProfile/MyOrdersHistory";
 import Membership from "../_root/pages/UserProfile/Membership";
+import { Pricing } from "../_root/pages/Pricing";
+import PaymentSuccess from "../_admin/pages/PaymentSuccess";
+
+
 // import Billing from "../_root/pages/UserProfile/Billing";
 const renderRoutes = (routes) => {
   return routes?.map((route, i) => {
@@ -70,13 +74,14 @@ const router = createBrowserRouter(
       <Route path="account" element={<AccountSettings />}></Route>
       <Route path="orders" element={<MyOrdersHistory />}></Route>
       <Route path="membership" element={<Membership />}></Route>
+      <Route path="pricing" element={<Pricing />}></Route>
+
       {/* <Route path="billing" element={<Billing />}></Route> */}
       {/* Authentication Routes */}
       <Route element={<AuthLayout />}>
 
         {/* App auth routes to register new library or sign in to their library */}
         <Route path="/register" element={<Register />} />
-
 
         {/* Library's routes to add new users, roles or customers */}
         <Route path="/signin" element={<SignIn />} />
@@ -94,6 +99,8 @@ const router = createBrowserRouter(
         <Route path="/:subdomain/signup" element={<SignUp />} />
         <Route path="/:subdomain/forgotpassword/:id/:token" element={<ResetPassword />} />
         <Route path="/:subdomain/forgot-password" element={<ForgetPassword />} />
+        <Route path="/:subdomain/success" element={<PaymentSuccess />} />
+
       </Route>
 
       {/* <Route path="/:subdomain" element={<Home />} /> */}
@@ -105,7 +112,7 @@ const router = createBrowserRouter(
 
 
         {/* Protected Dashboard Routes */}
-        <Route element={<RequiredAuth allowedRoles={["owner","vendor","admin"]} />}>
+        <Route element={<RequiredAuth allowedRoles={["owner", "vendor", "admin"]} />}>
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<DashboardPage />} />
             {renderRoutes(routes)}
