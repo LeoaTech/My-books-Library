@@ -29,8 +29,8 @@ const bookingRoutes = require("./routes/BookingsRoutes/index.js");
 const settingsRoutes = require("./routes/SettingsRoutes/SettingsRoutes.js");
 const pricingRoutes = require("./routes/SettingsRoutes/Pricing/PricingRoutes.js");
 
-const dashboardRoute = require("./routes/dashboardRoutes/DashboardRoutes.js")
-
+const dashboardRoute = require("./routes/dashboardRoutes/DashboardRoutes.js");
+const webhooks = require("./webhooks/stripe/index.js");
 // Cron Job
 require("./services/scheduleTask.js");
 
@@ -82,6 +82,8 @@ app.use(
 );
 
 app.options("*", cors());
+app.use(webhooks); //stripe webhook, 
+
 // app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json({ limit: "100mb" }));
 app.use(bodyParser.urlencoded({ limit: "100mb", extended: true }));
@@ -122,7 +124,7 @@ app.use("/api/pricing", pricingRoutes);
 
 //Dashboard Routes
 
-app.use("/api/dashboard",dashboardRoute)
+app.use("/api/dashboard", dashboardRoute);
 
 app.use(notfound);
 app.use(errorHanlder);
