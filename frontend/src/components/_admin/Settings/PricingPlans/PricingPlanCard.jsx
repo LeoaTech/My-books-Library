@@ -80,6 +80,11 @@ const PricingPlanCard = ({ plans, handleEditPlan }) => {
     </div>
   );
 
+  if(plans?.length ==0){
+    return (
+      <p className="flex justify-center items-center">Add New Plans</p>
+    )
+  }
 
   return (
     <div className="p-6">
