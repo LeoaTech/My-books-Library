@@ -1,5 +1,6 @@
 import React from "react";
 import DashboardSB from "../../../components/_user/Profile/DashboardSB";
+import { Pricing } from "../Pricing";
 
 const Membership = () => {
   return (
@@ -101,7 +102,7 @@ const Membership = () => {
         {/* <!-- /Navbar --> */}
 
         {/* <!-- Main --> */}
-        <div className="h-full overflow-hidden pl-10">
+        {/* <div className="h-full overflow-hidden pl-10">
           <div className="h-full overflow-auto px-4 py-10">
             <div className="mb-14 flex items-center justify-center text-gray-900">
               <div className="inline-flex items-center justify-center rounded-full border font-semibold bg-slate-100 p-2">
@@ -351,7 +352,10 @@ const Membership = () => {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
+
+        <Pricing />
+
         {/* <!-- /Main --> */}
       </div>
     </div>
