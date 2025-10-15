@@ -73,7 +73,6 @@ const router = createBrowserRouter(
       <Route path="account" element={<AccountSettings />}></Route>
       <Route path="orders" element={<MyOrdersHistory />}></Route>
       <Route path="membership" element={<Membership />}></Route>
-
       {/* <Route path="billing" element={<Billing />}></Route> */}
       {/* Authentication Routes */}
       <Route element={<AuthLayout />}>
@@ -97,16 +96,16 @@ const router = createBrowserRouter(
         <Route path="/:subdomain/signup" element={<SignUp />} />
         <Route path="/:subdomain/forgotpassword/:id/:token" element={<ResetPassword />} />
         <Route path="/:subdomain/forgot-password" element={<ForgetPassword />} />
-        <Route path="/:subdomain/success" element={<PaymentSuccess />} />
-
       </Route>
 
-      {/* <Route path="/:subdomain" element={<Home />} /> */}
 
       <Route element={<PersistLogin />}>
 
         <Route path="/" element={<App />} />
         <Route path="/:subdomain" element={<Home />} />
+        <Route path="/:subdomain/membership" element={<Membership />}></Route>
+
+        <Route path="/:subdomain/success" element={<PaymentSuccess />} />
 
 
         {/* Protected Dashboard Routes */}
