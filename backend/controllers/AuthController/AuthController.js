@@ -677,7 +677,7 @@ const SigninUser = asyncHandler(async (req, res) => {
             UserInfo: user_info,
           },
           process.env.JWT_SECRET,
-          { expiresIn: "1m" }
+          { expiresIn: "1h" }
         );
 
         const refresh_token = refreshToken(user_info); //refresh token
@@ -693,7 +693,7 @@ const SigninUser = asyncHandler(async (req, res) => {
         res.json({
           accessToken: AccessToken,
           user: {
-            id: user?.id,
+            id: user?.user_id,
             name: user?.name,
             email: user?.email,
             authSource: "email",
@@ -820,7 +820,7 @@ const RefreshToken = async (req, res) => {
         res.send({
           accessToken,
           user: {
-            id: user?.id,
+            id: user?.id || user?.user_id,
             name: user?.name,
             email: user?.email,
             roleId: user?.role_id,
