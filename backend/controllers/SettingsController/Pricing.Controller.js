@@ -50,7 +50,7 @@ const createStripePriceAndPaymentLink = async (
     after_completion: {
       type: "redirect",
       redirect: {
-        url: `http://localhost:5173/${subdomain}/success?session_id={CHECKOUT_SESSION_ID}`,
+        url: `${LIBRARY_URL}/${subdomain}/success?session_id={CHECKOUT_SESSION_ID}`,
       },
     },
     metadata: {
