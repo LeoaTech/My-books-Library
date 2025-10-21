@@ -29,10 +29,17 @@ const bookingRoutes = require("./routes/BookingsRoutes/index.js");
 const settingsRoutes = require("./routes/SettingsRoutes/SettingsRoutes.js");
 const pricingRoutes = require("./routes/SettingsRoutes/Pricing/PricingRoutes.js");
 
+// Client Checkout session routes
+const stripeCheckout = require("./routes/PaymentRoutes/stripe.checkout.js");
+const activateFreePlan = require("./routes/PaymentRoutes/ActiveFreePlanRoute.js"); //active Free Plan
+const currentPlan = require("./routes/PaymentRoutes/CurrentActivePlan.js");
 const dashboardRoute = require("./routes/dashboardRoutes/DashboardRoutes.js");
-const webhooks = require("./webhooks/stripe/index.js");
+
+
+const webhooks = require("./webhooks/stripe/index.js");  //Stripe webhook
+
 // Cron Job
-require("./services/scheduleTask.js");
+require("./services/scheduleTask.js"); //Add Due Date Fine
 
 const { pool } = require("./config/dbConfig.js");
 const port = process.env.PORT || 8100;
@@ -82,7 +89,7 @@ app.use(
 );
 
 app.options("*", cors());
-app.use(webhooks); //stripe webhook, 
+app.use(webhooks); //stripe webhook,
 
 // app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json({ limit: "100mb" }));
@@ -125,7 +132,9 @@ app.use("/api/pricing", pricingRoutes);
 //Dashboard Routes
 
 app.use("/api/dashboard", dashboardRoute);
-
+app.use("/api/create-checkout-session", stripeCheckout);
+app.use("/api/activate-free-plan", activateFreePlan);
+app.use("/api/current-plan", currentPlan)
 app.use(notfound);
 app.use(errorHanlder);
 
