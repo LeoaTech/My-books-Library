@@ -2,13 +2,15 @@ const db = require("../../config/dbConfig.js");
 const stripe = require("../../config/stripe.js");
 const express = require("express");
 const { checkAuth } = require("../../middleware/authMiddleware.js");
-
+const {
+  totalBooks,
+  totalUsers,
+} = require("../../controllers/dashboardController/DashboardController.js");
 const router = express.Router();
 
 router.use(checkAuth);
 
 async function getPlanNameFromPriceId(priceId) {
-
   if (!priceId) {
     throw new Error("Price ID is undefined, cannot fetch plan details.");
   }
@@ -16,60 +18,66 @@ async function getPlanNameFromPriceId(priceId) {
   const price = await stripe.prices.retrieve(priceId, {
     expand: ["product"],
   });
-  // console.log(price, "Price");
 
   const product = price.product;
-  // console.log(product, "Product Plan");
-
   return product.name || undefined;
 }
 
+//Get Current Plan:
 router.get("/", async (req, res) => {
   console.log(req.user);
 
   const { userId } = req.user;
-
-  const paidSubscription = await db.query(
-    `SELECT 
-         stripe_price_id, 
-         subscription_valid_until, 
-         current_period_end, 
-         status 
-       FROM 
-         client_subscription 
-       WHERE 
-         user_id = $1 AND status = ANY($2)`,
-    [userId, ["active", "pending_cancellation"]]
-  );
-
-  console.log(paidSubscription.rows, "Paid Subscriptions");
-   
-  // If a paid subscription exists.
-  if (paidSubscription.rows.length > 0) {
-    //get the plan name using the stripe_product_id
-    const planName = await getPlanNameFromPriceId(
-      paidSubscription?.rows[0].stripe_price_id
+  const entityId = req?.entityId || req?.entity_id;
+  try {
+    const subscriptionResult = await db.query(
+      `SELECT stripe_subscription_id, status, current_period_end, stripe_price_id,cancel_at_period_end
+       FROM client_subscription
+       WHERE user_id = $1`,
+      [userId]
     );
-    console.log(planName, "Plan Name");
 
-    res.json({
-      plan: {
-        planName: planName,
-        status: paidSubscription.status, // "active" , "pending_cancellation"
-        accessUntil: paidSubscription.subscription_valid_until,
-        renewsOn: paidSubscription.current_period_end,
-      },
-    });
-  } else {
-    //  If no active or pending_cancellation subscription is found, then user is on the Free plan.
-    res.json({
-      plan: {
-        planName: "Free",
-        status: "active", // The free plan is active
-        accessUntil: null,
-        renewsOn: null,
-      },
-    });
+    if (subscriptionResult.rows.length > 0) {
+      // User has subscription
+      const currentSubscription = subscription.rows[0];
+
+      const isActive = ["active", "trialing"].includes(
+        currentSubscription.status
+      );
+
+       const planName = await getPlanNameFromPriceId(
+        currentSubscription.stripe_price_id
+      );
+
+      res.send({
+        isActive: isActive,
+        subscription: {
+          planName: currentSubscription ? planName : null,
+          stripeSubscriptionId: currentSubscription.stripe_subscription_id,
+          status: currentSubscription.status,
+          currentPeriodEnd: currentSubscription.current_period_end,
+          stripePriceId: currentSubscription.stripe_price_id,
+          cancelAtPeriodEnd:currentSubscription?.cancel_at_period_end
+        },
+      });
+    } else {
+      // User does not have an active subscription, Restrict the resource access for users
+
+      const totalBookCount = await totalBooks(db, entityId);
+      console.log(totalBookCount, "Total Books");
+      const totalUsersCount = await totalUsers(db, entityId);
+
+      res.json({
+        isActive: false,
+        subscription: null,
+        booksCount: totalBookCount?.books || 0,
+        userCounts: totalUsersCount?.users || 0,
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching user subscription status:", error);
+
+    res.status(500).json({ message: "Error Fetching user subscription details" });
   }
 });
 module.exports = router;
