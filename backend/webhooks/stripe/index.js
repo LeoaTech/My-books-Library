@@ -36,27 +36,28 @@ router.post(
       case "customer.subscription.trial_will_end":
         subscription = event?.data?.object;
         status = subscription?.status;
-        console.log(`Subscription status is ${status}.`);
+        // console.log(`Subscription status is ${status}.`);
         // Then define and call a method to handle the subscription trial ending.
         // handleSubscriptionTrialEnding(subscription);
         break;
       case "customer.subscription.deleted":
         subscription = event?.data.object;
         status = subscription?.status;
-        console.log(`Subscription status is ${status}.`);
+        // console.log(`Subscription status is ${status}.`);
         //  define and call a method to handle the subscription deleted.
         // handleSubscriptionDeleted(subscriptionDeleted);
         break;
       // New Subscription
       case "checkout.session.completed":
         const session = event?.data?.object;
-        console.log(session, "Session of checkout");
+        // console.log(session, "Session of checkout");
         const metadata = session.metadata;
 
         const entityId = metadata?.entityId;
         const subdomain = metadata?.subdomain;
 
         const user_type = metadata?.user_type;
+        const planName = metadata?.planName;
 
         const userId = session?.client_reference_id || metadata?.app_client_id;
 
@@ -79,48 +80,64 @@ router.post(
             checkoutSession?.subscription?.items?.data[0];
           //  DB save data for user subscription
           const dbUserId = checkoutSession?.client_reference_id || userId;
-          const customerId = checkoutSession?.customer;
+          const customerId = session?.cutomer || checkoutSession?.customer;
 
-          console.log(
-            "Items Subscription: ",
-            checkoutSession?.subscription?.items?.data[0]
-          );
-
-          // Update the customer's ID
-          await db.query(
-            `UPDATE users SET stripe_customer_id =$1 WHERE id=$2`,
-            [customerId, dbUserId]
-          );
+          // console.log(
+          //   "Items Subscription: ",
+          //   checkoutSession?.subscription?.items?.data[0]
+          // );
 
           // User Type: CLIENT
           if (user_type == "client") {
             //
+
+            const subscriptionId = session?.subscription;
+            // console.log("In Client Type", subscriptionId);
+
+            const subscription = await stripe.subscriptions.retrieve(
+              subscriptionId
+            );
+
+            // Update the customer's ID
             await db.query(
-              `INSERT INTO client_subscription(
-            user_id,stripe_price_id,stripe_product_id,
-            subscription_id, current_period_end, latest_invoice_id,
-            status,start_date, end_date) VALUES ($1, $2, $3, $4, $5, $6, $7,$8,$9)`,
+              `UPDATE users SET stripe_customer_id =$1, plan =$2 WHERE id=$3`,
+              [customerId, planName, dbUserId]
+            );
+
+            await db.query(
+              `INSERT INTO client_subscription (
+                        user_id, stripe_subscription_id, stripe_price_id, stripe_product_id,
+                        status, current_period_end, cancel_at_period_end, start_date, auto_renew
+                    ) VALUES ($1, $2, $3, $4, $5, TO_TIMESTAMP($6), $7,TO_TIMESTAMP($8),$9) ON CONFLICT (stripe_subscription_id) DO NOTHING`,
               [
                 userId,
-                subscription?.plan?.id,
-                subscription?.plan?.product,
-                subscription?.id,
-                new Date(subscriptionItem?.current_period_end * 1000),
-                subscription?.latest_invoice,
-                subscription?.status,
-                new Date(subscriptionItem?.current_period_start * 1000),
-                new Date(subscriptionItem?.current_period_end * 1000),
+                subscription.id,
+                subscription.items.data[0].price.id,
+                subscription.items.data[0].price.product,
+                subscription.status, // e.g., 'active' or 'trialing'
+                subscription?.items.data[0]?.current_period_end,
+                subscription.cancel_at_period_end,
+                subscription?.items.data[0]?.current_period_start,
+                true,
               ]
             );
           } else {
             // USER TYPE - CUSTOMER
             const dbPlanId = await db.query(
-              `SELECT plan_id from membership_plan WHERE stripe_product_id=$1 `,
+              `SELECT plan_id,plan_name from membership_plan WHERE stripe_product_id=$1 `,
               [subscriptionItem?.plan?.product]
             );
             if (dbPlanId.rows === 0) {
               console.log("No plan exists for this product Id");
+              break;
             }
+
+            const dbPlan = dbPlanId?.rows[0];
+            // Update the customer's ID
+            await db.query(
+              `UPDATE users SET stripe_customer_id =$1 and plan =$2 WHERE id=$3`,
+              [customerId, dbPlan?.plan_name, dbUserId]
+            );
 
             //
             await db.query(
@@ -130,7 +147,7 @@ router.post(
             status,start_date, end_date) VALUES ($1, $2, $3, $4, $5, $6, $7,$8,$9)`,
               [
                 dbUserId,
-                dbPlanId?.rows[0]?.plan_id,
+                dbPlan.plan_id,
                 subscription?.plan?.id,
                 subscription?.id,
                 new Date(subscriptionItem?.current_period_end * 1000),
@@ -146,120 +163,203 @@ router.post(
       case "customer.subscription.created":
         subscription = event.data.object;
         // status = subscription?.status;
-        console.log(`Subscription status is ${subscription}.`);
+        // console.log(`Subscription status is ${subscription}.`);
         break;
 
       case "customer.subscription.updated":
         subscription = event?.data?.object;
+        // console.log(`Subscription is ${event?.data?.object}.`);
+
         status = subscription?.status;
         console.log(`Subscription status is ${status}.`);
         // define and call a method to handle the subscription update.
         // handleSubscriptionUpdated(subscription);
-        // Check if the status is active and the previous status wasn't 'active'
-        // (to avoid constant updates during minor changes)
-        if (subscription.status === "active") {
-          await db.query(
-            `
-            UPDATE subscriptions SET 
-                status = $1, 
-                current_period_end = $2,
-                latest_invoice_id = $3,
-                updated_at = NOW()
-            WHERE subscription_id = $4
-        `,
-            [
-              subscription.status,
-              new Date(subscription.current_period_end * 1000),
-              subscription.latest_invoice,
-              subscription.id,
-            ]
-          );
-          // If the user changed plans (e.g., monthly to annual), you'd update
-          // stripe_price_id and credits_allocated here too.
+
+        await db.query(
+          `UPDATE client_subscription 
+         SET 
+            stripe_price_id = $1,
+            stripe_product_id = $2,
+            status = $3,
+            current_period_end = TO_TIMESTAMP($4),
+            cancel_at_period_end = $5
+         WHERE stripe_subscription_id = $6`,
+          [
+            subscription.items.data[0].price.id,
+            subscription.items.data[0].price.product,
+            subscription.status,
+            subscription.items.data[0].current_period_end,
+            subscription.cancel_at_period_end,
+            subscription.id,
+          ]
+        );
+
+        const getUserId = await db.query(
+          `SELECT id from users WHERE stripe_customer_id=$1`,
+          [subscription.customer]
+        );
+        if (getUserId.rows > 0) {
+          if (subscription.status === "canceled") {
+            await db.query(`UPDATE user set plan =$1 WHERE id =$2`, [
+              "Free",
+              getUserId?.rows[0].id,
+            ]);
+          }
         }
+
+        console.log(
+          `Subscription ${subscription.id} was updated in the database.`
+        );
+      
 
         break;
       case "customer.subscription.deleted":
         const subscriptionDeleted = event.data.object;
         await db.query(
-          `
-        UPDATE subscriptions SET 
+          `UPDATE client_subscription SET 
             status = $1,
-            auto_renew  
-            end_date = NOW(),
             updated_at = NOW()
-        WHERE subscription_id = $2
+        WHERE stripe_subscription_id = $2
     `,
           [
-            "canceled", // Use 'canceled' or 'expired'
+            "canceled", 
             subscriptionDeleted.id,
           ]
         );
-        // Removed ACCESS to library pro features here!
+
+        const UserId = await db.query(
+          `SELECT id from users WHERE stripe_customer_id=$1`,
+          [subscription.customer]
+        );
+        if (subscription.status === "canceled") {
+          await db.query(`UPDATE user set plan =$1 WHERE id =$1`, [
+            "Free",
+            UserId?.rows[0].id,
+          ]);
+        }
         break;
+
+      case "invoice.paid": {
+        const invoice = event.data.object;
+        // console.log(invoice, "invoice Paid webhook");
+
+        // Wait 2 seconds before checkout session complete webhook populate the table
+        await new Promise((resolve) => setTimeout(resolve, 2000)); // Delay for 2 seconds
+
+        const customerId = invoice.customer;
+        if (!customerId) {
+          console.error(
+            `Webhook Error: Invoice ${invoice.id} has no customer ID.`
+          );
+          break;
+        }
+
+        const subscriptionId = invoice.parent.subscription_details.subscription;
+        if (!subscriptionId) {
+          console.log(
+            `Skipping invoice ${invoice.id} because no subscription exists.`
+          );
+          break;
+        }
+        // Find user_id and subscription
+        const subResult = await db.query(
+          `SELECT id, user_id 
+                     FROM client_subscription 
+                     WHERE stripe_subscription_id = $1`,
+          [subscriptionId]
+        );
+
+        if (subResult.rows.length === 0) {
+          console.log(
+            `Subscription ${subscriptionId} not found. Creating it from invoice.paid event to handle race condition.`
+          );
+          const subscription = await stripe.subscriptions.retrieve(
+            subscriptionId
+          );
+          const userResult = await db.query(
+            "SELECT id FROM users WHERE stripe_customer_id = $1",
+            [customerId]
+          );
+          if (userResult.rows.length === 0) {
+            console.error(
+              ` User not found for customer_id: ${customerId}`
+            );
+            break;
+          }
+          const userId = userResult.rows[0].id;
+
+          // Create the subscription record
+          await db.query(
+            `INSERT INTO client_subscription (user_id, stripe_subscription_id, stripe_price_id, stripe_product_id, status, current_period_end, cancel_at_period_end, start_date,auto_renew)
+             VALUES ($1, $2, $3, $4, $5, TO_TIMESTAMP($6), $7,TO_TIMESTAMP($8),$9)
+                 ON CONFLICT (stripe_subscription_id) DO NOTHING`,
+            [
+              userId,
+              subscription.id,
+              subscription.items.data[0].price.id,
+              subscription.items.data[0].price.product,
+              subscription.status,
+              subscription.items.data[0].current_period_end,
+              subscription.cancel_at_period_end,
+              subscription.items.data[0].current_period_start,
+              true,
+            ]
+          );
+          console.log(
+            `Subscription record ${subscriptionId} created from invoice webhook.`
+          );
+
+          // Re-fetch the record we just created to get its primary key
+          subRecord = await db.query(
+            "SELECT id, user_id FROM client_subscription WHERE stripe_subscription_id = $1",
+            [subscriptionId]
+          );
+        }
+        // We only care about invoices for new subscriptions or renewals
+        if (
+          invoice.billing_reason === "subscription_create" ||
+          invoice.billing_reason === "subscription_cycle" ||
+          invoice.billing_reason === "subscription_update"
+        ) {
+          const { id: clientSubscriptionId, user_id: userId } =
+            subResult.rows[0];
+
+          // --- INSERT into client_transactions ---
+          await db.query(
+            `INSERT INTO client_transactions (
+                user_id, client_subscription_id, stripe_subscription_id, stripe_invoice_id,
+                stripe_charge_id, amount_paid, status, billing_reason, invoice_pdf
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            ON CONFLICT (stripe_invoice_id) DO NOTHING`, // This prevents duplicates
+            [
+              userId,
+              clientSubscriptionId,
+              subscriptionId,
+              invoice.id,
+              invoice.charge,
+              invoice.amount_paid,
+              "paid",
+              invoice.billing_reason,
+              invoice.invoice_pdf,
+            ]
+          );
+          console.log(`Transaction record created for invoice ${invoice.id}`);
+        }
+        break;
+      }
 
       // Renew Subscription
       case "invoice.payment_succeeded": {
         const invoice = event.data.object;
-        console.log(invoice, "Payment succeed");
+        // console.log(invoice, "Invoice Payment succeeded Webhook");
 
-        // if (invoice.billing_reason === "subscription_cycle") {
-        //   console.log(" Successfully subscription renewed!");
-
-        //   const stripeSubscriptionId = invoice.subscription;
-
-        //   // 1. FIND the subscription in your database with active status.
-
-        //   //  2.  UPDATEthe existing record to make its status inactive, then inserting a new one with active status.
-        //   const subscriptionRecord = await db.query(
-        //     `SELECT id, user_id,stripe_price_id,stripe_product_id from client_subscriptions  where subscription_id=$1`,
-        //     [stripeSubscriptionId]
-        //   );
-
-        //   if (subscriptionRecord.rows.length > 0) {
-        //     // 3. UPDATE the subscription to add new period in your database.
-
-        //     // 4. fetch the latest subscription data from Stripe.
-        //     const subscription = await stripe.subscriptions.retrieve(
-        //       stripeSubscriptionId
-        //     );
-
-        //     await db.query(
-        //       `INSERT INTO client_subscription(
-        //     user_id,stripe_price_id,stripe_product_id,
-        //     subscription_id, current_period_end, latest_invoice_id,
-        //     status,start_date, end_date) VALUES ($1, $2, $3, $4, $5, $6, $7,$8,$9)`,
-        //       [
-        //         subscriptionRecord.rows[0]?.user_id,
-        //         subscriptionRecord.rows[0]?.stripe_price_id,
-        //         subscriptionRecord.rows[0]?.stripe_product_id,
-        //         subscription?.id,
-        //         new Date(subscription.current_period_end * 1000),
-        //          invoice.id,
-        //         subscription?.status,
-        //         new Date(subscription.current_period_start * 1000),
-        //         new Date(subscription.current_period_end * 1000),
-        //       ]
-        //     );
-          
-        
-
-        //     console.log(
-        //       `Updated subscription ${stripeSubscriptionId} for the new period.`
-        //     );
-        //   } else {
-        //     console.warn(
-        //       `Webhook for renewal received, but no matching subscription found for ID: ${stripeSubscriptionId}`
-        //     );
-        //   }
-        // }
         break;
       }
 
       case "invoice.payment_failed": {
         const invoice = event.data.object;
-        console.log(invoice, "PAyment failed");
-        
+        // console.log(invoice, "Payment failed webhook");
+
         // A renewal payment failed.
         // 1. Find the subscription in your DB.
         // 2. Update its status to 'past_due'.
@@ -274,122 +374,3 @@ router.post(
 );
 
 module.exports = router;
-
-
-// Invoice payment succeed
-
-/* {
-  id: 'in_1SKUEtCs7Tavj7OjXLleXv6r',
-  object: 'invoice',
-  account_country: 'US',
-  account_name: null,
-  account_tax_ids: null,
-  amount_due: 249900,
-  amount_overpaid: 0,
-  amount_paid: 249900,
-  amount_remaining: 0,
-  amount_shipping: 0,
-  application: null,
-  attempt_count: 0,
-  attempted: true,
-  auto_advance: false,
-  automatic_tax: {
-    disabled_reason: null,
-    enabled: false,
-    liability: null,
-    provider: null,
-    status: null
-  },
-  automatically_finalizes_at: null,
-  billing_reason: 'subscription_create',
-  collection_method: 'charge_automatically',
-  created: 1761009591,
-  currency: 'pkr',
-  custom_fields: null,
-  customer: 'cus_TH2J0OtyxB3D6W',
-  customer_address: {
-    city: null,
-    country: 'PK',
-    line1: null,
-    line2: null,
-    postal_code: null,
-    state: null
-  },
-  customer_email: 'zoya.akhter@gmail.com',
-  customer_name: 'Zoya Akhter',
-  customer_phone: null,
-  customer_shipping: null,
-  customer_tax_exempt: 'none',
-  customer_tax_ids: [],
-  default_payment_method: null,
-  default_source: null,
-  default_tax_rates: [],
-  description: null,
-  discounts: [],
-  due_date: null,
-  effective_at: 1761009591,
-  ending_balance: 0,
-  footer: null,
-  from_invoice: null,
-  hosted_invoice_url: 'https://invoice.stripe.com/i/acct_1SFPl1Cs7Tavj7Oj/test_YWNjdF8xU0ZQbDFDczdUYXZqN09qLF9USDJKZXVsejh4SEtUNVVKUXVhQzdlN01GTm5RMHU3LDE1MTU1MDM5NQ0200CNTjpGGe?s=ap',
-  invoice_pdf: 'https://pay.stripe.com/invoice/acct_1SFPl1Cs7Tavj7Oj/test_YWNjdF8xU0ZQbDFDczdUYXZqN09qLF9USDJKZXVsejh4SEtUNVVKUXVhQzdlN01GTm5RMHU3LDE1MTU1MDM5NQ0200CNTjpGGe/pdf?s=ap',
-  issuer: { type: 'self' },
-  last_finalization_error: null,
-  latest_revision: null,
-  lines: {
-    object: 'list',
-    data: [ [Object] ],
-    has_more: false,
-    total_count: 1,
-    url: '/v1/invoices/in_1SKUEtCs7Tavj7OjXLleXv6r/lines'
-  },
-  livemode: false,
-  metadata: {},
-  next_payment_attempt: null,
-  number: '023WODXB-0001',
-  on_behalf_of: null,
-  parent: {
-    quote_details: null,
-    subscription_details: { metadata: {}, subscription: 'sub_1SKUEvCs7Tavj7OjWdgoR7WC' },
-    type: 'subscription_details'
-  },
-  payment_settings: {
-    default_mandate: null,
-    payment_method_options: {
-      acss_debit: null,
-      bancontact: null,
-      card: [Object],
-      customer_balance: null,
-      konbini: null,
-      sepa_debit: null,
-      us_bank_account: null
-    },
-    payment_method_types: [ 'card' ]
-  },
-  period_end: 1761009591,
-  period_start: 1761009591,
-  post_payment_credit_notes_amount: 0,
-  pre_payment_credit_notes_amount: 0,
-  receipt_number: null,
-  rendering: null,
-  shipping_cost: null,
-  shipping_details: null,
-  starting_balance: 0,
-  statement_descriptor: null,
-  status: 'paid',
-  status_transitions: {
-    finalized_at: 1761009591,
-    marked_uncollectible_at: null,
-    paid_at: 1761009592,
-    voided_at: null
-  },
-  subtotal: 249900,
-  subtotal_excluding_tax: 249900,
-  test_clock: null,
-  total: 249900,
-  total_discount_amounts: [],
-  total_excluding_tax: 249900,
-  total_pretax_credit_amounts: [],
-  total_taxes: [],
-  webhooks_delivered_at: null
-} Payment succeed */
