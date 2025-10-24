@@ -39,7 +39,7 @@ router.get("/", async (req, res) => {
 
     if (subscriptionResult.rows.length > 0) {
       // User has subscription
-      const currentSubscription = subscription.rows[0];
+      const currentSubscription = subscriptionResult?.rows[0];
 
       const isActive = ["active", "trialing"].includes(
         currentSubscription.status
