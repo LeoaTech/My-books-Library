@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import SidebarLinkGroup from "./SidebarLinkGroup";
 import user from "../../../assets/user.svg";
@@ -7,15 +7,47 @@ import { AiOutlineLogout } from "react-icons/ai";
 import { useLogout } from "../../../hooks/useLogout";
 import { useAuthContext } from "../../../hooks/useAuthContext";
 import routes, { accountRoutes, roleRoutes } from "../../../utils";
+import { useFetchCurrentPlan } from "../../../hooks/current_plan/useFetchCurrentPlan";
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const { auth } = useAuthContext();
   let role = auth?.role_name;
 
+  const { data: currentPlan, isLoading } = useFetchCurrentPlan(auth)
 
   const location = useLocation();
   const { pathname } = location;
   const { logout, signout } = useLogout();
+
+// Filtered routes based on the active plan
+  const filteredRoutes = useMemo(() => {
+    if (isLoading || !currentPlan) {
+      return []; 
+    }
+
+    const planName = currentPlan?.isActive ? currentPlan?.subscriptionDetails?.planName : "Free"; 
+    const plansToHideFor = ['Free', 'School'];
+
+    const shouldHidePriceSettings = plansToHideFor.includes(planName);
+
+    if (!shouldHidePriceSettings) {
+      return routes; 
+    }
+    return routes.map(route => {
+      if (!route.subRoutes) {
+        return route;
+      }
+      const filteredSubRoutes = route.subRoutes.filter(
+        subRoute => subRoute.title !== "Pricing Plan Settings"
+      );
+      return {
+        ...route,
+        subRoutes: filteredSubRoutes,
+      };
+    });
+
+  }, [currentPlan, isLoading]);
+  // console.log(filteredRoutes, "Filtered Routes");
 
   const trigger = useRef(null);
   const sidebar = useRef(null);
@@ -121,7 +153,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
             </h3>
 
             <ul className="mb-6 flex flex-col gap-1.5">
-              {routes?.map((route) => (
+              {filteredRoutes?.map((route) => (
                 <li key={route.title}>
 
 
