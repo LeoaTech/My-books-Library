@@ -384,7 +384,7 @@ passport.deserializeUser(async (user, done) => {
            e.name AS entity_name, e.subdomain,
            b.name AS branch_name,
            r.name AS role_name,
-           u.email, u.name
+           u.email, u.name, u.plan
          FROM user_entity_roles uer
          JOIN entities e ON uer.entity_id = e.id
          JOIN branches b ON uer.branch_id = b.id

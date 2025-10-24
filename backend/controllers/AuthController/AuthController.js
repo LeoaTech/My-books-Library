@@ -202,6 +202,7 @@ const RegisterUser = asyncHandler(async (req, res) => {
       user: {
         id: userId,
         email,
+        plan:"Free",
         name: fullName,
         entityId: entity.id,
         entityName: entity.name,
@@ -254,7 +255,7 @@ const LoginUser = asyncHandler(async (req, res) => {
         e.name AS entity_name, e.subdomain,
         b.name AS branch_name,
         r.name AS role_name,
-        u.name, u.password, u.email
+        u.name, u.password,u.plan, u.email
       FROM user_entity_roles uer
       JOIN entities e ON uer.entity_id = e.id
       JOIN branches b ON uer.branch_id = b.id
@@ -345,6 +346,7 @@ const LoginUser = asyncHandler(async (req, res) => {
           entityId: ownerAssociation.entity_id,
           entityName: ownerAssociation.entity_name,
           authSource: "email",
+          plan:ownerAssociation?.plan,
           subdomain: ownerAssociation?.subdomain,
         },
         message: "Login Successfully",
@@ -391,7 +393,7 @@ const SelectAccount = asyncHandler(async (req, res) => {
         e.name AS entity_name, e.subdomain,
         b.name AS branch_name,
         r.name AS role_name,
-        u.email,u.password, u.name
+        u.email,u.password,u.plan, u.name
       FROM user_entity_roles uer
       JOIN entities e ON uer.entity_id = e.id
       JOIN branches b ON uer.branch_id = b.id
@@ -474,6 +476,7 @@ const SelectAccount = asyncHandler(async (req, res) => {
         entityId: association.entity_id,
         entityName: association.entity_name,
         authSource: "email",
+        plan:association?.plan,
         subdomain: association?.subdomain,
       },
       message: "Login Successfully",
@@ -633,7 +636,7 @@ const SigninUser = asyncHandler(async (req, res) => {
         e.name AS entity_name, e.subdomain,
         b.name AS branch_name,
         r.name AS role_name,
-        u.email,u.password, u.name
+        u.email,u.password,u.plan, u.name
       FROM user_entity_roles uer
       JOIN entities e ON uer.entity_id = e.id
       JOIN branches b ON uer.branch_id = b.id
@@ -695,6 +698,7 @@ const SigninUser = asyncHandler(async (req, res) => {
           user: {
             id: user?.user_id,
             name: user?.name,
+            plan:user?.plan,
             email: user?.email,
             authSource: "email",
             roleId: user?.role_id,
@@ -780,7 +784,7 @@ const RefreshToken = async (req, res) => {
         e.name AS entity_name, e.subdomain,
         b.name AS branch_name,
         r.name AS role_name,
-        u.email, u.name
+        u.email, u.name,u.plan
       FROM user_entity_roles uer
       JOIN entities e ON uer.entity_id = e.id
       JOIN branches b ON uer.branch_id = b.id
@@ -824,6 +828,7 @@ const RefreshToken = async (req, res) => {
             name: user?.name,
             email: user?.email,
             roleId: user?.role_id,
+            plan:user?.plan,
             role_name: user?.role_name,
             branchId: user.branch_id,
             branchName: user.branch_name,
