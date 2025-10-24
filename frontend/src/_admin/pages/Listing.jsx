@@ -5,6 +5,7 @@ import { MdWarning } from "react-icons/md";
 import Loader from "../../components/_admin/Loader/Loader";
 import SkeletonTable from "../../components/Loader/SkeletonTable";
 import useVerifyPermissions from "../../hooks/verifyPermissions";
+import { useFetchCurrentPlan } from "../../hooks/current_plan/useFetchCurrentPlan";
 
 // * Lazy Load Components
 const UnAuthorizedRoles = lazy(() => import("../../components/_admin/UnAuthorized"));
@@ -16,6 +17,10 @@ const Listing = () => {
   const [showModal, setShowModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const { auth } = useAuthContext();
+
+  const { data: currentPlan } = useFetchCurrentPlan(auth)
+
+  const hasLimitToAddBook = currentPlan?.booksCount ?.count <= 15;
 
   // Get the Role Permissions to Perform Action on the Page
 
@@ -61,7 +66,8 @@ const Listing = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
             {/* Authhorized roles can access Create Book Form  */}
-            {hasPermission("CREATE") ? (
+            {/* Restrict the Users to Create Books based the Plan */}
+            {hasPermission("CREATE") && (!currentPlan?.isActive && hasLimitToAddBook) ? (
               <button
                 className="bg-[#758aae] text-white active:bg-[#80CAEE] 
       font-medium rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 px-2 py-2 md:px-3 "
