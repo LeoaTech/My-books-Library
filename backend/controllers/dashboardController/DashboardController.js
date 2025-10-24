@@ -61,6 +61,20 @@ async function totalBookings(db, entityId) {
   }
 }
 
+async function totalUsers(db, entityId) {
+  try {
+    const getUsersCount = await db.query(
+      `SELECT COUNT(*) FROM user_entity_roles 
+          WHERE entity_id = $1`,
+      [entityId]
+    );
+    return { users: getUsersCount?.rows[0] };
+  } catch (error) {
+    return { error: error, users: [] };
+  }
+}
+
+
 // Get Recently Added Books
 async function recentlyAddedBook(db, entityId) {
   const getEntityBranches = `Select id from branches where entity_id = $1`;
@@ -145,6 +159,9 @@ LIMIT 10`,
   }
 }
 
+
+
+
 // Get Books Count by Authors
 
 async function booksAuthors(db, entityId) {
@@ -189,4 +206,4 @@ LIMIT 20`,
     return { error, booksAuthors: [] };
   }
 }
-module.exports = getDashboardMetrics;
+module.exports ={totalBooks,totalUsers, getDashboardMetrics};
