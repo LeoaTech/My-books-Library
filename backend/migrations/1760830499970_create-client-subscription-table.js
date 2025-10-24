@@ -23,18 +23,18 @@ const up = (pgm) => {
     },
     stripe_price_id: { type: "TEXT", notNull: false },
     stripe_product_id: { type: "TEXT", notNull: false },
-    subscription_id: {
+        // CHANGED: Renamed for clarity and consistency.
+    stripe_subscription_id: {
       type: "TEXT",
-      notNull: false,
+      notNull: true,
+      unique: true,
     },
     current_period_end: {
       type: "TIMESTAMP WITHOUT TIME ZONE",
     },
-    subscription_valid_until: {
-      type: "TIMESTAMP WITHOUT TIME ZONE",
-    },
-    latest_invoice_id: {
-      type: "TEXT",
+
+    cancel_at_period_end: {
+      type: "boolean",
     },
     status: {
       type: "TEXT",
@@ -44,9 +44,7 @@ const up = (pgm) => {
       type: "TIMESTAMP WITHOUT TIME ZONE",
       notNull: true,
     },
-    end_date: {
-      type: "TIMESTAMP WITHOUT TIME ZONE",
-    },
+
     auto_renew: {
       type: "BOOLEAN",
       notNull: true,
@@ -61,6 +59,60 @@ const up = (pgm) => {
       type: "TIMESTAMP WITHOUT TIME ZONE",
     },
   });
+
+  pgm.createTable("client_transactions", {
+    id: {
+      type: "SERIAL",
+      primaryKey: true,
+      notNull: true,
+    },
+    user_id: {
+      type: "INTEGER",
+      notNull: true,
+      references: "users",
+      onDelete: "CASCADE",
+    },
+   
+    client_subscription_id: {
+      type: "INTEGER",
+      notNull: true,
+      references: "client_subscription",
+      onDelete: "CASCADE",
+    },
+    stripe_subscription_id: {
+      type: "TEXT",
+      notNull: true,
+    },
+    stripe_invoice_id: {
+      type: "TEXT",
+      notNull: true,
+      unique: true,
+    },
+    stripe_charge_id: {
+      type: "TEXT",
+      unique: true,
+    },
+    amount_paid: {
+      type: "INTEGER", 
+      notNull: true,
+    },
+    status: {
+      type: "TEXT", 
+      notNull: true,
+    },
+    billing_reason: {
+      type: "TEXT", // 'subscription_create', 'subscription_cycle'
+      notNull: true,
+    },
+    invoice_pdf: {
+      type: "TEXT",
+    },
+    created_at: {
+      type: "TIMESTAMP WITHOUT TIME ZONE",
+      notNull: true,
+      default: pgm.func("now()"),
+    },
+  });
 };
 
 /**
@@ -69,6 +121,7 @@ const up = (pgm) => {
  * @returns {Promise<void> | void}
  */
 const down = (pgm) => {
+  pgm.dropTable("client_transactions");
   pgm.dropTable("client_subscription");
 };
 
