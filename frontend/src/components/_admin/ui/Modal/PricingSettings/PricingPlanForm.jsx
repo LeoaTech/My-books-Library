@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { RxCross1 } from 'react-icons/rx';
-import {  z } from "zod";
+import { z } from "zod";
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import LoadingSpinner from '../../../Loader/LoadingSpinner.jsx';
@@ -14,7 +14,8 @@ const DualPricingPlanForm = ({ setOpenModal, plan }) => {
   const queryClient = useQueryClient();
   const PKR_MINIMUM_CHARGE = 150;
 
-  
+  console.log(plan, "Edit");
+
   const schema = z.object({
     plan_name: z.string().min(1, { message: 'Plan Name is required' }),
     monthly_price: z.coerce.number()
@@ -30,7 +31,7 @@ const DualPricingPlanForm = ({ setOpenModal, plan }) => {
     features: z.array(z.string().min(1, { message: 'Feature cannot be empty' })).min(1, { message: 'At least one feature is required' }),
   });
 
-  const { createPlan, updatePlan, isLoading,  deletePlan } = usePricingApi();
+  const { createPlan, updatePlan, isLoading, deletePlan } = usePricingApi();
 
   // Mutation to Create New Plan
   const { mutateAsync: createPlanMutation } = useMutation({
@@ -59,6 +60,14 @@ const DualPricingPlanForm = ({ setOpenModal, plan }) => {
     },
   });
 
+  const defaultFormValues = useMemo(() => ({
+    plan_name: plan?.plan_name || '',
+    monthly_price: plan?.plan_details?.monthly?.price_value || 0,
+    yearly_price: plan?.plan_details?.yearly?.price_value || 0,
+    yearly_credits_allocated: plan?.plan_details?.yearly?.credits_allocated || 0,
+    monthly_credits_allocated: plan?.plan_details?.monthly?.credits_allocated || 0,
+    features: plan?.plan_details?.features || [],
+  }), [plan]);
   const {
     register,
     handleSubmit,
@@ -66,14 +75,7 @@ const DualPricingPlanForm = ({ setOpenModal, plan }) => {
     formState: { errors, isSubmitting, isDirty },
   } = useForm({
     resolver: zodResolver(schema),
-    defaultValues: {
-      plan_name: plan ? plan?.plan_name : '',
-      monthly_price: plan ? plan?.monthly_price : '',
-      yearly_price: plan ? plan?.yearly_price : '',
-      yearly_credits_allocated: plan ? plan?.yearly_credits_allocated : '',
-      monthly_credits_allocated: plan ? plan?.monthly_credits_allocated : '',
-      features: plan ? plan?.features : [],
-    },
+    defaultValues: defaultFormValues,
   });
 
   // Features CREATE,UPDATE OR DELETE
@@ -108,7 +110,57 @@ const DualPricingPlanForm = ({ setOpenModal, plan }) => {
     console.log(apiData, "Create dual plan");
 
     if (plan) {
-      await updatePlanMutation({ ...apiData, plan_id: plan?.plan_id });
+      // Update Plan details (name or features) and prices
+
+      const isMonthlyPriceChanged =
+        apiData.monthly_price !== defaultFormValues.monthly_price ||
+        apiData.monthly_credits_allocated !== defaultFormValues.monthly_credits_allocated;
+
+      const isYearlyPriceChanged =
+        apiData.yearly_price !== defaultFormValues.yearly_price ||
+        apiData.yearly_credits_allocated !== defaultFormValues.yearly_credits_allocated;
+
+      const updatedPayload = {
+        plan_id: plan?.plan_id,
+        stripe_product_id: plan?.stripe_product_id,
+        plan_name: data?.plan_name,
+        features,
+        isMonthlyPriceChanged: isMonthlyPriceChanged,
+        monthlyUpdate: isMonthlyPriceChanged ? {
+          monthly_price: data.monthly_price,
+          monthly_credits_allocated: data.monthly_credits_allocated,
+          monthly_duration: 30,
+          monthly_old_price_id: plan.plan_details.monthly.price_id,
+          monthly_old_payment_link_id: plan.plan_details.monthly.payment_link_id,
+        } : {
+          price_id: plan.plan_details.monthly.price_id,
+          price_value: plan.plan_details.monthly.price_value,
+          payment_link: plan.plan_details.monthly.payment_link,
+          payment_link_id: plan.plan_details.monthly.payment_link_id,
+          duration_days: plan.plan_details.monthly.duration_days,
+          credits_allocated: plan.plan_details.monthly.credits_allocated
+        },
+        isYearlyPriceChanged: isYearlyPriceChanged,
+        yearlyUpdate: isYearlyPriceChanged ? {
+          yearly_price: data.yearly_price,
+          yearly_credits_allocated: data.yearly_credits_allocated,
+          yearly_duration: 365,
+          isChanged: true,
+          yearly_old_price_id: plan?.plan_details?.yearly?.price_id,
+          yearly_old_payment_link_id: plan.plan_details.yearly?.payment_link_id,
+        } : {
+          price_id: plan.plan_details.yearly.price_id,
+          price_value: plan.plan_details.yearly.price_value,
+          payment_link: plan.plan_details.yearly.payment_link,
+          payment_link_id: plan.plan_details.yearly.payment_link_id,
+          duration_days: plan.plan_details.yearly.duration_days,
+          credits_allocated: plan.plan_details.yearly.credits_allocated
+        },
+      };
+
+      console.log(updatedPayload, "Update dual plan API payload");
+
+      await updatePlanMutation(updatedPayload);
     } else {
       await createPlanMutation(apiData);
     }
@@ -284,7 +336,20 @@ const DualPricingPlanForm = ({ setOpenModal, plan }) => {
                   {isLoading ? <LoadingSpinner /> : plan ? "Update Plan" : 'Create Plan'}
                 </button>
 
-                {plan && (
+
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  );
+}
+
+export default DualPricingPlanForm
+
+{/* {plan && (
                   <>
                     <p className="mt-8"> Delete Plan:</p>
                     <button
@@ -322,15 +387,4 @@ const DualPricingPlanForm = ({ setOpenModal, plan }) => {
                       {isLoading ? <LoadingSpinner /> : "Delete Plan"}
                     </button>
                   </>
-                )}
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-  );
-}
-
-export default DualPricingPlanForm
+                )} */}
