@@ -34,6 +34,7 @@ import AccountSettings from "../_root/pages/UserProfile/AccountSettings";
 import MyOrdersHistory from "../_root/pages/UserProfile/MyOrdersHistory";
 import Membership from "../_root/pages/UserProfile/Membership";
 import PaymentSuccess from "../_admin/pages/PaymentSuccess";
+import Pricing from "../pages/pricing";
 
 
 // import Billing from "../_root/pages/UserProfile/Billing";
@@ -65,7 +66,6 @@ const renderRoutes = (routes) => {
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route>
-      <Route path="/" element={<Home />}></Route>
       <Route path="library" element={<Library />}></Route>
       <Route path="shop" element={<Shop />}></Route>
       <Route path="book" element={<BookOverview />}></Route>
@@ -101,11 +101,12 @@ const router = createBrowserRouter(
 
       <Route element={<PersistLogin />}>
 
-        <Route path="/" element={<App />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/pricing" element={<Pricing />}></Route>
         <Route path="/:subdomain" element={<Home />} />
         <Route path="/:subdomain/membership" element={<Membership />}></Route>
-
         <Route path="/:subdomain/success" element={<PaymentSuccess />} />
+        <Route path="/:subdomain/pricing" element={<Pricing />}></Route>
 
 
         {/* Protected Dashboard Routes */}
