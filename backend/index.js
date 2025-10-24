@@ -31,7 +31,8 @@ const pricingRoutes = require("./routes/SettingsRoutes/Pricing/PricingRoutes.js"
 
 // Client Checkout session routes
 const stripeCheckout = require("./routes/PaymentRoutes/stripe.checkout.js");
-const activateFreePlan = require("./routes/PaymentRoutes/ActiveFreePlanRoute.js"); //active Free Plan
+const cancelSubscription = require("./routes/PaymentRoutes/CancelSubscriptionRoute.js"); //active Free Plan
+const changeSubscription = require("./routes/PaymentRoutes/ChangeSubscriptionRoute.js"); //active School Plan
 const currentPlan = require("./routes/PaymentRoutes/CurrentActivePlan.js");
 const dashboardRoute = require("./routes/dashboardRoutes/DashboardRoutes.js");
 
@@ -133,7 +134,8 @@ app.use("/api/pricing", pricingRoutes);
 
 app.use("/api/dashboard", dashboardRoute);
 app.use("/api/create-checkout-session", stripeCheckout);
-app.use("/api/activate-free-plan", activateFreePlan);
+app.use("/api/cancel-subscription", cancelSubscription);
+app.use("/api/change-subscription", changeSubscription);
 app.use("/api/current-plan", currentPlan)
 app.use(notfound);
 app.use(errorHanlder);
