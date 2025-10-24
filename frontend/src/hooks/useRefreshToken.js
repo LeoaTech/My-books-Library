@@ -22,6 +22,7 @@ const useRefreshToken = () => {
           name: response?.data?.user?.name,
           role_name: response?.data?.user?.role_name,
           id: response?.data?.user?.id || response?.data?.user?.userId,
+          plan: response?.data?.user?.plan,
           email: response?.data?.user?.email,
           branchId: response?.data?.user?.branchId,
           branchName: response?.data?.user?.branchName,
