@@ -25,17 +25,31 @@ router.post("/", async (req, res) => {
   const customerEmail = await db.query(`SELECT email from users where id =$1`, [
     userId,
   ]);
-  // console.log(req.body, "priceId");
 
   const userEmail = customerEmail?.rows[0]?.email;
-  // 2. Get the price ID from the frontend request
-  const { priceId } = req.body;
+  const { priceId , planName} = req.body;
 
   if (!priceId) {
     return res.status(400).json({ error: "priceId is required" });
   }
 
   try {
+
+     const existingSub = await db.query(
+      `SELECT id, status, stripe_price_id 
+       FROM client_subscription 
+       WHERE user_id = $1 
+         AND status IN ('active', 'past_due') 
+       LIMIT 1`,
+      [userId]
+    );
+
+    if (existingSub.rows.length > 0) {
+      return res.status(409).json({ 
+        error: 'User already has an active subscription.', 
+        current_plan: existingSub.rows[0].stripe_price_id 
+      });
+    }
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       payment_method_types: ["card"],
@@ -51,10 +65,11 @@ router.post("/", async (req, res) => {
         entityId,
         subdomain,
         app_client_id: userId, 
+        planName:planName
       },
       client_reference_id: userId,
       success_url: `${CLIENT_URL}/${subdomain}/success`,
-      cancel_url: `${CLIENT_URL}/pricing?payment=cancelled`,
+      cancel_url: `${CLIENT_URL}/pricing?payment=canceled`,
     });
     // console.log(session, "Checkout session");
     res.json({ url: session.url });
