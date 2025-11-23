@@ -2,9 +2,7 @@ const asyncHandler = require("express-async-handler");
 const db = require("../../config/dbConfig");
 const { pool } = require("../../config/dbConfig.js");
 const { createUser } = require("../../helpers/user_onboarding.js");
-const bcrypt = require("bcryptjs")
-
-
+const bcrypt = require("bcryptjs");
 
 const getAllUsers = asyncHandler(async (req, res) => {
   // console.log(req.user, "Query user");
@@ -200,8 +198,11 @@ const CreateUser = asyncHandler(async (req, res) => {
       "INSERT INTO user_entity_roles (user_id, entity_id, branch_id, role_id) VALUES ($1, $2, $3, $4) Returning *",
       [userId, entityId, branchId, roleId]
     );
-    await client.query("COMMIT")
-    res.status(200).json({ data: userRole.rows[0], message: "Inside the User creation  API" });
+    await client.query("COMMIT");
+    res.status(200).json({
+      data: userRole.rows[0],
+      message: "Inside the User creation  API",
+    });
   } catch (error) {
     console.log(error);
     await client.query("ROLLBACK");
@@ -233,6 +234,27 @@ const DeleteUser = asyncHandler(async (req, res) => {
   }
 });
 
+const registerDeviceToken = asyncHandler(async (req, res) => {
+  // console.log(req.body, "payload from client");
+
+  try {
+    const { fcmToken, userId } = req.body;
+
+    if (userId !== req.userId) {
+      return res.status(403).json({ error: "Unauthorized User" });
+    }
+    const query = `
+        INSERT INTO user_fcm_tokens (user_id, token) 
+        VALUES ($1, $2) 
+        ON CONFLICT (user_id, token) DO NOTHING
+    `;
+    await db.query(query, [userId, fcmToken]);
+    res.json({ message: "Token added successfully for user !",userId });
+  } catch (err) {
+    console.error("Update token error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
 module.exports = {
   UpdateRoles,
   DeleteUser,
@@ -241,4 +263,5 @@ module.exports = {
   getAllUsers,
   getLibraryUsers,
   CreateUser,
+  registerDeviceToken,
 };
