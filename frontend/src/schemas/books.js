@@ -18,7 +18,9 @@ export const bookSchema = z.object({
   isbn: z.string().min(8, { message: "Please Enter book ISBN number" }),
   isAvailable: z.boolean().default(false),
   vendor_id: z.unknown().optional(),
-  branch_id: null || z.string(),
+  // branch_id: null || z.string(),
+  // branch_id: z.string().nullable().optional(),
+  branch_id: z.unknown(),
   cover_img_url:
     z.unknown() ||
     z
@@ -35,7 +37,8 @@ export const bookSchema = z.object({
       .min(1, { message: "Please add a valid credits for books" }) ||
     z.unknown(),
   author: selectOptionSchema.transform((val) => val?.value) || z.unknown(),
+  quantity:
+    z.coerce.number().min(1, { message: "Please add a valid quantity" }) ||
+    z.unknown(),
+  edition: z.string().optional(),
 });
-
-
- 
