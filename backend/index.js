@@ -1,8 +1,10 @@
 const express = require("express");
-
 const cors = require("cors");
 require("dotenv").config();
 const bodyParser = require("body-parser");
+
+
+// Subscribe Route
 const { notfound, errorHanlder } = require("./middleware/errorMiddleware.js");
 const session = require("express-session");
 const passport = require("passport");
@@ -35,32 +37,21 @@ const cancelSubscription = require("./routes/PaymentRoutes/CancelSubscriptionRou
 const changeSubscription = require("./routes/PaymentRoutes/ChangeSubscriptionRoute.js"); //active School Plan
 const currentPlan = require("./routes/PaymentRoutes/CurrentActivePlan.js");
 const dashboardRoute = require("./routes/dashboardRoutes/DashboardRoutes.js");
-
-
-const webhooks = require("./webhooks/stripe/index.js");  //Stripe webhook
+const stripeStatus = require("./routes/PG_Onboarding/StripeStatus.js");
+const stripeConnect = require("./routes/PG_Onboarding/StripeConnect.js");
+const stripeOnboarding = require("./routes/PG_Onboarding/StripeOnboarding.js");
+const webhooks = require("./webhooks/stripe/index.js"); //Stripe webhook
 
 // Cron Job
 require("./services/scheduleTask.js"); //Add Due Date Fine
 
 const { pool } = require("./config/dbConfig.js");
+const stripeRouter = require("./routes/PG_Onboarding/StripeOauth.js");
 const port = process.env.PORT || 8100;
 
 const app = express();
+
 app.set("trust proxy", 1);
-// app.use(
-//   session({
-//     secret: process.env.SESSION_SECRET,
-//     resave: false,
-//     saveUninitialized: false,
-//     cookie: {
-//       httpOnly: true,
-//       secure: false || process.env.NODE_ENV === "production",
-//       sameSite: "lax",
-//       // maxAge: 3600000,
-//       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 day max
-//     },
-//   })
-// );
 
 app.use(
   session({
@@ -93,8 +84,8 @@ app.options("*", cors());
 app.use(webhooks); //stripe webhook,
 
 // app.use(express.urlencoded({ extended: true }));
-app.use(bodyParser.json({ limit: "100mb" }));
-app.use(bodyParser.urlencoded({ limit: "100mb", extended: true }));
+app.use(bodyParser.json({ limit: "10mb" }));
+app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
 app.use(express.json());
 app.use(cookieParser()); //cookies middleware
 app.use(passport.initialize());
@@ -107,6 +98,8 @@ app.get("/", (req, res) => {
 
   res.json({ status: "Backend is running", clientUrl: process.env.CLIENT_URL });
 });
+
+
 // * Routes
 app.use("/", googleOAuthRouter);
 app.use("/api/auth", authRouter);
@@ -136,7 +129,16 @@ app.use("/api/dashboard", dashboardRoute);
 app.use("/api/create-checkout-session", stripeCheckout);
 app.use("/api/cancel-subscription", cancelSubscription);
 app.use("/api/change-subscription", changeSubscription);
-app.use("/api/current-plan", currentPlan)
+app.use("/api/current-plan", currentPlan);
+
+/* Payment Method - Connect Stripe Account for Client Onboarding  */
+app.use("/api/library/:entityId/stripe/status", stripeStatus);
+app.use("/api/library/:entityId/stripe/onboarding-complete", stripeOnboarding);
+app.use("/api/library/:entityId/stripe/connect", stripeConnect);
+
+// Stripe Oauth Flow for Connecting Existing Accounts
+app.use(stripeRouter);
+
 app.use(notfound);
 app.use(errorHanlder);
 
