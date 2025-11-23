@@ -1,9 +1,34 @@
-import React from 'react'
+import StripeConnect from '../../components/_admin/Account/StripeConnect/StripeConnect';
+import { useAuthContext } from '../../hooks/useAuthContext';
 
 const Profile = () => {
-  return (
-    <div>Profile</div>
-  )
+
+  const { auth } = useAuthContext();
+  const entityId = auth?.entityId;
+  if (!auth?.entityId) {
+    return (
+      <p> No Library ID found</p>
+    )
+  }
+
+  
+
+  if (entityId) {
+    return (
+      <div className="p-6 max-w-4xl mx-auto">
+        <h1 className="text-2xl font-bold mb-6">Profile</h1>
+
+        <section className="mb-8">
+          <StripeConnect
+            entityId={entityId}
+          />
+        </section>
+
+
+      </div>
+    );
+  }
 }
 
 export default Profile
+
