@@ -1,4 +1,4 @@
-import React from "react";
+// import React from "react";
 import Navbar from "../../components/_user/Navbar/Navbar";
 import HeroSection from "../../components/_user/HeroSection/HeroSection";
 import RecommendedBooks from "../../components/_user/Recommended/RecommendedBooks";
@@ -8,6 +8,7 @@ import Stats from "../../components/_user/Stats/Stats";
 import Footer from "../../components/_user/Footer/Footer";
 import { useAuthContext } from "../../hooks/useAuthContext";
 import { useEffect } from "react";
+import PushNotificationHandler from "../../components/main/PushNotification/PushNotificationHandler";
 
 const Home = () => {
   const genres = [
@@ -33,7 +34,6 @@ const Home = () => {
 
   const { auth, googleAuth, getUser } = useAuthContext();
 
-
   useEffect(() => {
     const handleAuth = async () => {
       const redirectUrl = await getUser();
@@ -48,8 +48,10 @@ const Home = () => {
     }
   }, [getUser, googleAuth]);
 
+
   return (
     <>
+      {auth?.accessToken && <PushNotificationHandler />}
       <Navbar />
       <HeroSection />
       <RecommendedBooks />
