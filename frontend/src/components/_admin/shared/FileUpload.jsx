@@ -64,21 +64,31 @@ export default function FileUpload({ imagesList, setImagesList }) {
         setImagesList((prev) => prev.filter((_, idx) => idx !== indexToRemove));
     };
 
-    const getFileName = (file) =>
-        file instanceof File
-            ? file.name
-            : file.secure_url?.split('/')?.pop() || 'Uploaded Image';
-
+    const getFileName = (file) => {
+        if (file.name) return file.name;
+        if (file instanceof File) return file.name;
+        if (file.secure_url) return file.secure_url.split('/').pop().split('?')[0];
+        return 'Untitled Image';
+    };
     const getFileSize = (file) =>
         file instanceof File ? formatFileSize(file.size) : '';
 
     const getFilePreview = (file) => {
 
-        if (file instanceof File && file.type.startsWith('image/')) {
-            return URL.createObjectURL(file);
-        } else if (file.secure_url && file.secure_url.match(/\.(jpeg|jpg|png|gif)/)) {
+        if (file.base64 && typeof file.base64 === 'string') {
+            return file.base64;
+        }
+        if (Array.isArray(file.url) && file.url[0]) {
+            return file.url[0];
+        }
+        if (file.secure_url) {
             return file.secure_url;
         }
+
+        if (file instanceof File && file.type.startsWith('image/')) {
+            return URL.createObjectURL(file);
+        }
+
         return null;
     };
 
@@ -156,13 +166,6 @@ export default function FileUpload({ imagesList, setImagesList }) {
         </div>
     );
 }
-
-
-
-// Display Selected Files
-
-
-
 
 function FileInput({ inputRef, onFileSelect, maxImages, imagesList }) {
     return (
