@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, Controller } from "react-hook-form";
 import { useSaveBook } from "../../../../../hooks/books/useSaveBook";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation,  useQueryClient } from "@tanstack/react-query";
 import { useFetchAuthors } from "../../../../../hooks/books/useFetchAuthors";
 import { useAuthor } from "../../../../../hooks/books/useSaveAuthor";
 import {
@@ -42,11 +42,10 @@ const CreateBookModal = ({ setShowModal }) => {
   // Add these new state variables at the top of your component
   const [bookSearchResults, setBookSearchResults] = useState([]);
   const [selectedBook, setSelectedBook] = useState(null);
-
-
-
   const theme = localStorage.getItem("color-theme")?.replace(/"/g, '') || "light";
   const selectStyles = useMemo(() => getCustomSelectStyles(theme), [theme]);
+
+
   const {
     register,
     control,
@@ -72,6 +71,8 @@ const CreateBookModal = ({ setShowModal }) => {
       summary: "",
       publish_year: "",
       credit: "",
+      edition: "",
+      quantity: 1
     },
     resolver: zodResolver(bookSchema),
     mode: "all",
@@ -347,52 +348,35 @@ const CreateBookModal = ({ setShowModal }) => {
     }
   });
 
+
   const selectedAuthor = watch("author");
   const selectedCondition = watch("condition");
   const selectedCategory = watch("category");
   const selectedCover = watch("cover");
   const selectedPublisher = watch("publisher");
 
-
-  // console.log(selectedAuthor, "Selected Author",
-  // selectedCategory, "Category",
-  // selectedCondition, "Condition",
-  // selectedCover,"Cover",
-  // selectedPublisher,"publisher"
-  // );
-
+  // console.log(errors, "Is Book Added Form Valid");
 
 
   const findOrCreateAndSet = useCallback(
     async ({ fieldName, apiName, options, mutationFn }) => {
-      // console.log("Step 1", apiName);
-
       if (!apiName) return;
-
-      // console.log("Step 1/2", options);
       let optionName = apiName?.name || apiName
       const existingOption = options?.find(
         (option) => option?.label?.toLowerCase() == optionName?.toLowerCase()
       );
-      // console.log("Step 2 option found", existingOption);
 
       if (existingOption) {
-        // console.log("Step 3, Option Already exists");
-
         setValue(fieldName, existingOption);
         return existingOption;
       } else {
         try {
-          // console.log("Step 3: Creating new options");
 
           const newObject = await mutationFn(apiName);
-          // console.log(newObject, "New option");
           const newOption = {
             value: newObject?.data ? newObject?.data?.id : newObject?.id,
             label: newObject?.data ? newObject?.data?.name : newObject?.name,
           };
-
-          // console.log("Step 4", newOption);
 
           setValue(fieldName, newOption); // Set the form value
           return newOption; // Return the newly created object
@@ -419,7 +403,7 @@ const CreateBookModal = ({ setShowModal }) => {
   const handleSearch = () => {
     setBookSearchResults([]);
     setSelectedBook(null);
-    refetch(); 
+    refetch();
   };
 
   const handleIsbnSearch = () => {
@@ -435,6 +419,7 @@ const CreateBookModal = ({ setShowModal }) => {
   }, [searchData]);
 
   // console.log(bookSearchResults, "Search by Title Results", selectedBook);
+
   // Use a separate effect to handle the ISBN search results when they arrive
   useEffect(() => {
     if (searchIsbnData?.items?.length > 0) {
@@ -545,6 +530,7 @@ const CreateBookModal = ({ setShowModal }) => {
   /* Save Book Details Form function */
   const onSubmit = async (data) => {
     // console.log(data);
+    // Create new book
     const booksForm = {
       ...data,
       author: selectedAuthor?.value,
@@ -560,7 +546,11 @@ const CreateBookModal = ({ setShowModal }) => {
 
     // console.log(booksForm, "Form Details of Book");
 
-    await addBookMutation(booksForm); //add book mutation
+    await addBookMutation(booksForm); 
+
+
+
+
   };
 
   if (
@@ -613,7 +603,7 @@ const CreateBookModal = ({ setShowModal }) => {
     <div className="fixed left-0 top-0  inset-0 bg-[#64748B] bg-opacity-75 transition-opacity dark:bg-slate-400 dark:bg-opacity-75 lg:left-[18rem]">
       <div className="relative p-5 rounded-md">
         {/* Modal Close Button */}
-        <div className="flex justify-end p-5 md:p-10  ">
+        <div className="flex justify-end p-5 md:p-10">
           <RxCross1
             style={{
               height: 18,
@@ -622,6 +612,7 @@ const CreateBookModal = ({ setShowModal }) => {
               color: "#FFF !IMPORTANT",
               strokeWidth: 2,
             }}
+            aria-disabled={isSubmitting}
             onClick={() => setShowModal(false)}
           />
         </div>
@@ -739,10 +730,8 @@ const CreateBookModal = ({ setShowModal }) => {
                         <button
                           type="button"
                           onClick={handleIsbnSearch}
-
                           disabled={!IsbnValue || isIsbnSearchLoading}
                           className="absolute top-1/2 right-2 -translate-y-1/2"
-                        // className="rounded-sm bg-[#FFBA00] px-4 py-3 text-sm font-semibold text-white shadow-sm disabled:opacity-50"
                         >
                           {isIsbnSearchLoading ? <LoadingSpinner /> : <svg
                             className="fill-[#64748B] hover:fill-[#3C50E0] dark:fill-[#AEB7C0] dark:hover:fill-[#3C50E0]"
@@ -987,7 +976,44 @@ const CreateBookModal = ({ setShowModal }) => {
                       )}
                     </div>
                   </div>
+                  <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
+                    <div className="w-full xl:w-1/2" autoFocus>
+                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
+                        Edition
+                      </label>
+                      <input
+                        type="text"
+                        name="edition"
+                        placeholder="Add Book Edition"
+                        {...register("edition")}
+                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                      />
+                      {errors?.edition?.message && (
+                        <p className="format-message error">
+                          {errors.edition.message}
+                        </p>
+                      )}
+                    </div>
 
+                    <div className="w-full xl:w-1/2">
+                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
+                        Total Available Items <span className="text-red-600">*</span>
+                      </label>
+                      <input
+                        type="number"
+                        min={1}
+                        name="quantity"
+                        placeholder="Add Quantity"
+                        {...register("quantity", { required: true })}
+                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                      />
+                      {errors?.quantity?.message && (
+                        <p className="format-message error">
+                          {errors.quantity.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
                   {/* Seventh Row */}
 
                   <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
