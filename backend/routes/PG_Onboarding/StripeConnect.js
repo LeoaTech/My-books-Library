@@ -8,7 +8,6 @@ const { checkAuth } = require("../../middleware/authMiddleware.js");
 
 router.use(checkAuth);
 router.post('/', async (req, res) => {
-    console.log("params",req.params);
     
   try {
     const { entityId } = req.user;
