@@ -19,19 +19,15 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const { pathname } = location;
   const { logout, signout } = useLogout();
 
-// Filtered routes based on the active plan
+  // Filtered routes based on the active plan
   const filteredRoutes = useMemo(() => {
-    if (isLoading || !currentPlan) {
-      return []; 
-    }
-
-    const planName = currentPlan?.isActive ? currentPlan?.subscriptionDetails?.planName : "Free"; 
+    const planName = currentPlan && currentPlan?.isActive ? currentPlan?.subscriptionDetails?.planName : "Free";
     const plansToHideFor = ['Free', 'School'];
 
     const shouldHidePriceSettings = plansToHideFor.includes(planName);
 
     if (!shouldHidePriceSettings) {
-      return routes; 
+      return routes;
     }
     return routes.map(route => {
       if (!route.subRoutes) {
@@ -46,7 +42,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
       };
     });
 
-  }, [currentPlan, isLoading]);
+  }, [currentPlan]);
   // console.log(filteredRoutes, "Filtered Routes");
 
   const trigger = useRef(null);
