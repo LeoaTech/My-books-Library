@@ -1,6 +1,6 @@
 const asyncHandler = require("express-async-handler");
 const db = require("../../config/dbConfig.js");
-const { pushQueue } = require("../../queues/index.js");
+const { pushQueue, emailQueue } = require("../../queues/index.js");
 
 const queryBooking = `SELECT 
     b.id AS booking_id,
@@ -118,11 +118,15 @@ const CreateBooking = asyncHandler(async (req, res) => {
         [userId]
       );
 
+      await emailQueue.add("booking-created-email", {
+        to: tokenResult?.rows[0]?.email,
+        name: tokenResult?.rows[0]?.name,
+      });
       // console.log(tokenResult, "Token Result");
-      const userTokens = tokenResult.rows.map((row) => row.token);      
+      const userTokens = tokenResult.rows.map((row) => row.token);
       if (userTokens.length > 0) {
         await pushQueue.add("send-booking-create-push", {
-          tokens: userTokens, 
+          tokens: userTokens,
           name: tokenResult?.rows[0].name,
         });
       }
