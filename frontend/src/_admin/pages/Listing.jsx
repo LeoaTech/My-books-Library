@@ -18,9 +18,12 @@ const Listing = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const { auth } = useAuthContext();
 
-  const { data: currentPlan } = useFetchCurrentPlan(auth)
+  const { data: currentPlan, isLoading } = useFetchCurrentPlan(auth)
 
-  const hasLimitToAddBook = currentPlan?.booksCount ?.count <= 15;
+  // console.log(currentPlan, "Current Plans");
+
+  const hasLimitToAddBook = !isLoading ? currentPlan?.isActive ? true : currentPlan?.booksCount?.count <= 15:false;
+  // console.log(hasLimitToAddBook);
 
   // Get the Role Permissions to Perform Action on the Page
 
@@ -29,7 +32,7 @@ const Listing = () => {
 
   // console.log(permissions, "Access actions");
 
-  if (isPending) {
+  if (isPending || isLoading) {
     return (
       <Loader />
     )
@@ -67,47 +70,49 @@ const Listing = () => {
             />
             {/* Authhorized roles can access Create Book Form  */}
             {/* Restrict the Users to Create Books based the Plan */}
-            {hasPermission("CREATE") && (!currentPlan?.isActive && hasLimitToAddBook) ? (
-              <button
-                className="bg-[#758aae] text-white active:bg-[#80CAEE] 
+            <div >
+              {hasPermission("CREATE") && hasLimitToAddBook ? (
+                <button
+                  className="bg-[#758aae] text-white active:bg-[#80CAEE] 
       font-medium rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 px-2 py-2 md:px-3 "
-                type="button"
-                onClick={() => setShowModal(true)}
-              >
-                <span className="flex justify-center items-center gap-1 lg:gap-2">
-                  <HiPlus /> New Book
-                </span>
-              </button>
-            ) : (
-              <>
-                <div className="group relative m-2 flex justify-center">
-
-                  <span className="absolute -top-10 scale-0 transition-all rounded bg-gray-800 p-2 text-xs text-red-500 group-hover:scale-100">
-                    <span className="flex gap-2 items-center">
-                      {" "}
-                      <MdWarning /> Access Denied!
-                    </span>{" "}
+                  type="button"
+                  onClick={() => setShowModal(true)}
+                >
+                  <span className="flex justify-center items-center gap-1 lg:gap-2">
+                    <HiPlus /> New Book
                   </span>
-                  <button
-                    className="bg-[#758aae] text-white 
-      font-medium rounded outline-none cursor-not-allowed focus:outline-none mr-1 mb-2 px-2 py-2 lg:px-3 "
-                    type="button"
-                    disabled
-                  >
-                    <span className="flex justify-center items-center gap-1 lg:gap-2">
-                      <HiPlus /> New Book
+                </button>
+              ) : (
+                <>
+                  <div className="group relative m-2 flex justify-center">
+
+                    <span className="absolute -top-10 scale-0 transition-all rounded bg-gray-800 p-2 text-xs text-red-500 group-hover:scale-100">
+                      <span className="flex gap-2 items-center">
+                        {" "}
+                        <MdWarning /> Access Denied!
+                      </span>{" "}
                     </span>
-                  </button>
-                </div>
-              </>
-            )}
+                    <button
+                      className="bg-[#758aae] text-white 
+      font-medium rounded outline-none cursor-not-allowed focus:outline-none mr-1 mb-2 px-2 py-2 lg:px-3 "
+                      type="button"
+                      disabled
+                    >
+                      <span className="flex justify-center items-center gap-1 lg:gap-2">
+                        <HiPlus /> New Book
+                      </span>
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
 
 
           {/* Show Table Only when Role has Read Authority */}
           {hasPermission("READ") ? (
             <Suspense fallback={<SkeletonTable rows={7} columns={7} />}>
-              <ListingTable hasPermission={hasPermission} searchQuery={searchQuery} />
+              <ListingTable showModal={showModal} setShowModal={setShowModal} hasPermission={hasPermission} searchQuery={searchQuery} />
 
             </Suspense>
           ) : (
