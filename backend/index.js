@@ -40,6 +40,7 @@ const dashboardRoute = require("./routes/dashboardRoutes/DashboardRoutes.js");
 const stripeStatus = require("./routes/PG_Onboarding/StripeStatus.js");
 const stripeConnect = require("./routes/PG_Onboarding/StripeConnect.js");
 const stripeOnboarding = require("./routes/PG_Onboarding/StripeOnboarding.js");
+const uploadBooksFromFile = require("./routes/booksRoutes/FileUploadBooks.js");
 const webhooks = require("./webhooks/stripe/index.js"); //Stripe webhook
 
 // Cron Job
@@ -138,6 +139,7 @@ app.use("/api/library/:entityId/stripe/connect", stripeConnect);
 
 // Stripe Oauth Flow for Connecting Existing Accounts
 app.use(stripeRouter);
+app.use(uploadBooksFromFile);
 
 app.use(notfound);
 app.use(errorHanlder);
