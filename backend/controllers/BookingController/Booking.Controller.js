@@ -1,5 +1,6 @@
 const asyncHandler = require("express-async-handler");
 const db = require("../../config/dbConfig.js");
+const { pushQueue } = require("../../queues/index.js");
 
 const queryBooking = `SELECT 
     b.id AS booking_id,
@@ -59,6 +60,8 @@ const getBookings = asyncHandler(async (req, res) => {
 const CreateBooking = asyncHandler(async (req, res) => {
   console.log(req.body);
   const entityId = req?.user?.entityId || req.user?.entity_id;
+  const userId = req?.user?.userId || req.user?.user_id;
+
   if (!entityId) {
     res.send(400).json({ message: "Invalid Request, No Library ID provided" });
   }
@@ -105,6 +108,25 @@ const CreateBooking = asyncHandler(async (req, res) => {
 
     console.log(createBookingQuery?.rows[0], "Booking added");
 
+    if (createBookingQuery.rowCount > 0) {
+      const tokenResult = await db.query(
+        `SELECT uft.token,
+         u.name,u.email
+        FROM user_fcm_tokens uft 
+        JOIN users u ON uft.user_id = u.id
+        WHERE uft.user_id = $1`,
+        [userId]
+      );
+
+      // console.log(tokenResult, "Token Result");
+      const userTokens = tokenResult.rows.map((row) => row.token);      
+      if (userTokens.length > 0) {
+        await pushQueue.add("send-booking-create-push", {
+          tokens: userTokens, 
+          name: tokenResult?.rows[0].name,
+        });
+      }
+    }
     res.status(200).json({
       booking: createBookingQuery?.rows[0],
       message: "New Booking Added ",
@@ -146,7 +168,7 @@ const UpdateBooking = asyncHandler(async (req, res) => {
       credits_used,
       renewed,
       renew_return_date,
-      booking_id
+      booking_id,
     } = bookingForm;
 
     const itemsJson = JSON.stringify(items);
