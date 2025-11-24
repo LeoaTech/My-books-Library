@@ -1,10 +1,11 @@
-const { Worker } = require('bullmq');
-const send_email = require('../utils/sendEmail.js');
-const { connection } = require('../config/redisConfig.js');
+const { Worker } = require("bullmq");
+const send_email = require("../utils/sendEmail.js");
+const { connection } = require("../config/redisConfig.js");
 
-const QUEUE_NAME = 'email-notifications';
+const QUEUE_NAME = "email-notifications";
 
 const processEmailQueue = () => {
+  console.log("emailWorker started");
 
   return new Promise((resolve, reject) => {
     const worker = new Worker(
@@ -13,11 +14,22 @@ const processEmailQueue = () => {
         const { name, data } = job;
 
         switch (name) {
-          case 'send-welcome-email':
-          case 'send-customer-welcome-email':  
-            await send_email(data.email, "Welcome Email", `Hi ${data.name}, Welcome to your library`);
+          case "send-welcome-email":
+          case "send-customer-welcome-email":
+            await send_email(
+              data.email,
+              "Welcome Email",
+              `Hi ${data.name}, Welcome to your library`
+            );
             break;
-          case 'subscription-created-email':
+          case "booking-created-email":
+            await send_email(
+              data.email,
+              "Booking Created Successfully!",
+              `Hi ${data.name}, Congratulations you bookings is created successfully. See Booking details`
+            );
+            break;
+          case "subscription-created-email":
             break;
           default:
             throw new Error(`Unknown job name: ${name}`);
@@ -25,36 +37,38 @@ const processEmailQueue = () => {
       },
       {
         connection,
-        concurrency: 5, 
+        concurrency: 5,
         limiter: { max: 100, duration: 60000 },
         attempts: 5,
         backoff: {
-          type: 'exponential',
+          type: "exponential",
           delay: 5000,
-        }
+        },
       }
     );
 
-    worker.on('drained', async () => {
-      console.log('Email queue is drained. Closing worker.');
-      await worker.close(); 
-      resolve(); 
+    worker.on("drained", async () => {
+      console.log("Email queue is drained. Closing worker.");
+      await worker.close();
+      resolve();
     });
 
-    worker.on('failed', (job, error) => {
-      console.error(`Job ${job?.id} of type ${job?.name} failed with error: ${error.message}`);
+    worker.on("failed", (job, error) => {
+      console.error(
+        `Job ${job?.id} of type ${job?.name} failed with error: ${error.message}`
+      );
     });
 
-    worker.on('error', (err) => {
-      console.error('An error occurred in the email worker:', err);
-      reject(err); 
+    worker.on("error", (err) => {
+      console.error("An error occurred in the email worker:", err);
+      reject(err);
     });
 
     (async () => {
       const waitingCount = await worker.getWaitingCount();
       const activeCount = await worker.getActiveCount();
       if (waitingCount === 0 && activeCount === 0) {
-        console.log('Email queue is empty. Closing worker.');
+        console.log("Email queue is empty. Closing worker.");
         await worker.close();
         resolve();
       }
