@@ -22,6 +22,7 @@ const {
   createDummyVendor,
   createDefaultRoles,
 } = require("../../helpers/user_onboarding.js");
+const { emailQueue } = require("../../queues/index.js");
 // Generate Access JWT
 const generateToken = (data) => {
   //5m in production
@@ -197,12 +198,16 @@ const RegisterUser = asyncHandler(async (req, res) => {
 
     await client.query("COMMIT");
 
+    await emailQueue.add("send-welcome-email", {
+      to: userResult.email,
+      name: userResult.name,
+    });
     res.status(201).json({
       message: "Library Created successfully",
       user: {
         id: userId,
         email,
-        plan:"Free",
+        plan: "Free",
         name: fullName,
         entityId: entity.id,
         entityName: entity.name,
@@ -255,7 +260,7 @@ const LoginUser = asyncHandler(async (req, res) => {
         e.name AS entity_name, e.subdomain,
         b.name AS branch_name,
         r.name AS role_name,
-        u.name, u.password,u.plan, u.email
+        u.name, u.password,u.plan,u.email
       FROM user_entity_roles uer
       JOIN entities e ON uer.entity_id = e.id
       JOIN branches b ON uer.branch_id = b.id
@@ -273,7 +278,7 @@ const LoginUser = asyncHandler(async (req, res) => {
       // throw new Error("Invalid Email Address");
     }
 
-    console.log(associatedEntities.rows, "Association for email ID");
+    // console.log(associatedEntities.rows, "Association for email ID");
 
     // Check if it has a role of owner
     const ownerAssociation = associatedEntities.rows?.find(
@@ -328,10 +333,9 @@ const LoginUser = asyncHandler(async (req, res) => {
         httpOnly: true,
         sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
         secure: process.env.NODE_ENV === "production",
-        maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
-        // domain:
-        //   process.env.NODE_ENV === "production" ? ".vercel.app" : "localhost",
+        maxAge: 1 * 24 * 60 * 60 * 1000,
       });
+
       res.json({
         accessToken: AccessToken,
         user: {
@@ -346,25 +350,12 @@ const LoginUser = asyncHandler(async (req, res) => {
           entityId: ownerAssociation.entity_id,
           entityName: ownerAssociation.entity_name,
           authSource: "email",
-          plan:ownerAssociation?.plan,
+          plan: ownerAssociation?.plan,
           subdomain: ownerAssociation?.subdomain,
         },
         message: "Login Successfully",
         redirect: `${process.env.CLIENT_URL}/${ownerAssociation?.subdomain}`,
       });
-      // res.status(200).json({
-      //   message: "Login successful, select a Library",
-      //   user: { id: user.id, email },
-      //   LibraryAccounts: associatedEntities?.rows?.map((row) => ({
-      //     entityId: row.entity_id,
-      //     entityName: row.entity_name,
-      //     subdomain: row.subdomain,
-      //     branchId: row.branch_id,
-      //     branchName: row.branch_name,
-      //     roleId: row.role_id,
-      //     role_name: row.role_name,
-      //   })),
-      // });
     }
   } catch (error) {
     console.log(error, "Signin");
@@ -476,7 +467,7 @@ const SelectAccount = asyncHandler(async (req, res) => {
         entityId: association.entity_id,
         entityName: association.entity_name,
         authSource: "email",
-        plan:association?.plan,
+        plan: association?.plan,
         subdomain: association?.subdomain,
       },
       message: "Login Successfully",
@@ -538,15 +529,7 @@ const SignupUser = asyncHandler(async (req, res) => {
     let role;
     if (roleResult.rows.length > 0) {
       role = roleResult.rows[0];
-      // console.log(
-      //   "Roles",
-      //   roleResult.rows,
-      //   "Step 3: Existing customer role from Library found",
-      //   role.role_id
-      // );
     }
-   
-    // console.log("Step 3: ", role.role_id, " role ID created");
 
     // check if user with email exists in DB
     const userExists = await db.query("SELECT id FROM users Where email = $1", [
@@ -586,6 +569,10 @@ const SignupUser = asyncHandler(async (req, res) => {
     // console.log("Step 6: ",userRole.rows, "User Entity Role created");
     await client.query("COMMIT");
 
+    await emailQueue.add("send-customer-welcome-email", {
+      to: userResult.email,
+      name: userResult.name,
+    });
     return res.status(200).json({
       message:
         "Congratulations, you signed up successfully, Please Login to your account",
@@ -693,12 +680,14 @@ const SigninUser = asyncHandler(async (req, res) => {
           maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
           // domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : 'localhost'
         });
+
+      
         res.json({
           accessToken: AccessToken,
           user: {
             id: user?.user_id,
             name: user?.name,
-            plan:user?.plan,
+            plan: user?.plan,
             email: user?.email,
             authSource: "email",
             roleId: user?.role_id,
@@ -723,6 +712,7 @@ const SigninUser = asyncHandler(async (req, res) => {
     res.status(400).json({ error: "Invalid Credentials" });
   }
 });
+
 // User Logout
 
 const Logout = asyncHandler(async (req, res) => {
@@ -828,7 +818,7 @@ const RefreshToken = async (req, res) => {
             name: user?.name,
             email: user?.email,
             roleId: user?.role_id,
-            plan:user?.plan,
+            plan: user?.plan,
             role_name: user?.role_name,
             branchId: user.branch_id,
             branchName: user.branch_name,
@@ -899,7 +889,7 @@ const ForgetPassword = asyncHandler(async (req, res) => {
 
           // send Password Reset Email
           try {
-            await send_email(email, "Reset Password ✔", RESET_EMAIL_TXT);
+            await send_email(email, "Reset Password", RESET_EMAIL_TXT);
 
             res.status(200).json({ message: "Check your  email " });
           } catch (error) {
