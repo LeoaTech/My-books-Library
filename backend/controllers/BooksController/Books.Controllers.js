@@ -1,66 +1,13 @@
 const asyncHandler = require("express-async-handler");
 const db = require("../../config/dbConfig");
-const cloudinary = require("cloudinary").v2;
+const { uploadOne } = require("../../helpers/books/CloudinaryUploadImages");
 
-// Cloudinary Configuration
-cloudinary.config({
-  cloud_name: process.env.CLOUD_NAME,
-  api_key: process.env.CLOUD_API_KEY,
-  api_secret: process.env.CLOUD_API_SECRET,
-  secure: true,
-});
-
-// Options for image upload on cloudinary
-const options = {
-  folder: "books",
-  use_filename: true,
-  unique_filename: false,
-  overwrite: true,
-};
 
 // Get All Books
 
 const GetAllBooks = asyncHandler(async (req, res) => {
   const user = req.user;
-
   const entityId = user?.entityId || user?.entity_id;
-
-  console.log(req.user, "User Object", entityId, "Entity ID");
-
-  /* const fetchBooksFromSingleBranch=`SELECT
-    books.id,
-    books.title,
-    books.summary,
-    books.member_price,
-    books.purchase_price,
-    books.discount_percentage,
-    books.publish_year,
-    branches.name AS branch_name,
-    vendors.id AS vendor_id,
-    authors.name AS author_name,
-    covers.name AS cover_name,
-    categories.name AS category_name,
-    conditions.name AS condition_name,
-    publishers.name AS publisher_name,
-    books.is_available AS Available,
-    books.comments,
-    books.added_by,
-    books.cover_img_url,
-    books.isbn,
-    books.credit,
-    books.created_at
-FROM
-    public.books
-JOIN public.authors ON books.author = authors.id
-JOIN public.covers ON books.cover = covers.id
-LEFT JOIN public.vendors ON books.vendor_id = vendors.id   
-JOIN public.conditions ON books.condition = conditions.id
-JOIN public.branches ON books.branch_id = branches.id
-JOIN public.publishers ON books.publisher = publishers.id
-JOIN public.categories ON books.category = categories.id 
-WHERE
-    branch_id = $1
-;` */
 
   if (!entityId) {
     res.status(400).json({ message: "No Library Exists " });
@@ -73,13 +20,21 @@ WHERE
     books.purchase_price,
     books.discount_percentage,
     books.publish_year,
+    books.edition,
+    books.quantity,
     branches.name AS branch_name,
+    branches.id AS branch_id,
     vendors.id AS vendor_id,
+    books.author,
     authors.name AS author_name,
     covers.name AS cover_name,
+    books.cover,
     categories.name AS category_name,
+    books.category,
     conditions.name AS condition_name,
+    books.condition,
     publishers.name AS publisher_name,
+    books.publisher,
     books.is_available AS Available,
     books.comments,
     books.added_by,
@@ -143,6 +98,8 @@ const GetAvailableBooks = asyncHandler(async (req, res) => {
   const fetchAvailableBooks = `
     SELECT
         b.id,
+        b.edition,
+        b.quantity,
         b.title,
         b.summary,
         b.member_price,
@@ -274,6 +231,7 @@ const GetBookById = asyncHandler(async (req, res) => {
   }
 });
 
+
 // Create New Book Data
 const CreateNewBook = asyncHandler(async (req, res) => {
   const { books } = req.body;
@@ -297,30 +255,30 @@ const CreateNewBook = asyncHandler(async (req, res) => {
     credit,
     cover_img_url,
     role_id,
+    edition,
+    quantity,
   } = books;
 
   // Upload Images To Cloudinary
   let images = [...cover_img_url];
-  const imagesUrls = [];
+  let imagesUrls = [];
 
   try {
-    for (let i = 0; i < images.length; i++) {
-      const uploadImg = await cloudinary.uploader.upload(
-        images[i].base64,
-        options
-      );
-      console.log(uploadImg);
-      imagesUrls.push({ ...uploadImg });
-      // return uploadImg?.public_id;
-    }
-  } catch (error) {
-    console.log(error);
-  }
+    const uploadPromises = images.map((img) => uploadOne(img, options));
 
+    const uploadResults = await Promise.all(uploadPromises);
+
+    imagesUrls = uploadResults.map((result) => ({
+      ...result,
+    }));
+
+    console.log("All images uploaded successfully:", imagesUrls);
+  } catch (error) {
+    console.log("Error uploading images to Cloudinary: ", error);
+  }
   const imagesUrlsJson = JSON.stringify(imagesUrls);
 
   //   Save Book in database with or without images
-
   try {
     const saveBook = await db.query(
       `INSERT INTO books (
@@ -341,9 +299,11 @@ const CreateNewBook = asyncHandler(async (req, res) => {
           discount_percentage, 
           credit,
           summary,
-          added_by
+          added_by,
+          edition,
+          quantity
           ) 
-          values ($1,$2,$3,$4,$5,$6,$7,$8,$9 ,$10,$11,$12,$13,$14,$15,$16,$17,$18) Returning *`,
+          values ($1,$2,$3,$4,$5,$6,$7,$8,$9 ,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19, $20) Returning *`,
       [
         title,
         member_price,
@@ -363,6 +323,8 @@ const CreateNewBook = asyncHandler(async (req, res) => {
         credit,
         summary,
         role_id,
+        edition,
+        quantity,
       ]
     );
     console.log(saveBook?.rowCount, "Book Saved");
@@ -419,6 +381,8 @@ const DeleteBook = asyncHandler(async (req, res) => {
 // Update A Book Details
 const UpdateBook = asyncHandler(async (req, res) => {
   const { book } = req.body;
+  // console.log(req.body, "Update Form");
+
   const {
     title,
     member_price,
@@ -439,32 +403,53 @@ const UpdateBook = asyncHandler(async (req, res) => {
     summary,
     bookId,
     imageUpdated,
+    edition,
+    quantity,
   } = book;
 
+  let failedUploadImage;
+  let countFailedUpload;
   let imagesUrlsJson;
-  if (imageUpdated) {
+  if (imageUpdated && Array.isArray(cover_img_url)) {
     let images = [...cover_img_url];
-    const imagesUrls = [];
-
     try {
-      for (let i = 0; i < images.length; i++) {
-        if (!images[i].public_id || !images[i].secure_url) {
-          const uploadImg = await cloudinary.uploader.upload(
-            images[i].base64,
-            options
-          );
-          console.log(uploadImg);
-          imagesUrls.push({ ...uploadImg });
-          // return uploadImg?.public_id;
-        } else {
-          imagesUrls.push(images[i]);
-        }
+      const uploadPromises = images?.map((img) => uploadOne(img, options));
+
+      const uploadResults = await Promise.allSettled(uploadPromises);
+
+      const successfulUploads = uploadResults
+        .filter(
+          (result) => result.status == "fulfilled" && result.value !== null
+        )
+        .map((r) => r.value);
+
+      failedUploadImage = uploadResults.filter(
+        (res) => res.status == "rejected"
+      );
+      countFailedUpload = failedUploadImage.length;
+
+      if (countFailedUpload > 0) {
+        console.warn(`${countFailedUpload} images failed to upload.`);
+        failedUploadImage.forEach((f) => console.error("Reason:", f.reason));
+      }
+      if (successfulUploads.length > 0) {
+        imagesUrlsJson = JSON.stringify(successfulUploads);
+      } else if (successfulUploads.length === 0 && uploadErrors > 0) {
+        const oldImagesOnly = cover_img_url.filter(
+          (img) => img.secure_url || (Array.isArray(img.url) && !img.base64)
+        );
+        imagesUrlsJson = JSON.stringify(oldImagesOnly);
+        console.log(
+          "All new image uploads failed. keeping the existing db images only."
+        );
+      } else {
+        imagesUrlsJson = JSON.stringify([]);
       }
     } catch (error) {
-      console.log(error);
+      console.log("Error uploading images to Cloudinary: ", error);
+      const oldImagesOnly = cover_img_url.filter((img) => !img.base64);
+      imagesUrlsJson = JSON.stringify(oldImagesOnly);
     }
-
-    imagesUrlsJson = JSON.stringify(imagesUrls);
   } else {
     imagesUrlsJson = JSON.stringify(cover_img_url);
   }
@@ -489,9 +474,11 @@ const UpdateBook = asyncHandler(async (req, res) => {
       publisher=$14,
       credit=$15,
       author=$16,
-      cover_img_url=$17
+      cover_img_url=$17,
+      edition=$18,
+      quantity=$19
       WHERE 
-      id = $18
+      id = $20
        Returning *`,
       [
         title,
@@ -511,21 +498,29 @@ const UpdateBook = asyncHandler(async (req, res) => {
         credit,
         author,
         imagesUrlsJson,
+        edition,
+        quantity,
         bookId,
       ]
     );
 
     // console.log(updateBook?.rows[0]);
     if (updateBook?.rowCount > 0) {
-      return res.status(200).json({ message: "Book Updated successfully" });
+      const response = {
+        result: updateBook?.rows[0],
+        message: "Book Updated successfully",
+      };
+
+      if (countFailedUpload > 0) {
+        response.warning = `${countFailedUpload} images failed to upload`;
+      }
+      return res.status(200).json(response);
     }
     res.status(400).json({ message: "Error Updating Book" });
   } catch (error) {
     console.log(error, "Error Updating book: ");
     return res.status(500).json({ message: "Error Updating Book" });
   }
-
-  // res.status(200).json({ message: "Book updated Successfully" });
 });
 
 module.exports = {
@@ -535,4 +530,5 @@ module.exports = {
   CreateNewBook,
   DeleteBook,
   UpdateBook,
+  uploadOne,
 };
