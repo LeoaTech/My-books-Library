@@ -14,6 +14,7 @@ const processEmailQueue = () => {
 
         switch (name) {
           case 'send-welcome-email':
+          case 'send-customer-welcome-email':  
             await send_email(data.email, "Welcome Email", `Hi ${data.name}, Welcome to your library`);
             break;
           case 'subscription-created-email':
