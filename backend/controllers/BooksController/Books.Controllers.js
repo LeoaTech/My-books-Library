@@ -2,7 +2,6 @@ const asyncHandler = require("express-async-handler");
 const db = require("../../config/dbConfig");
 const { uploadOne } = require("../../helpers/books/CloudinaryUploadImages");
 
-
 // Get All Books
 
 const GetAllBooks = asyncHandler(async (req, res) => {
@@ -231,7 +230,6 @@ const GetBookById = asyncHandler(async (req, res) => {
   }
 });
 
-
 // Create New Book Data
 const CreateNewBook = asyncHandler(async (req, res) => {
   const { books } = req.body;
@@ -261,22 +259,37 @@ const CreateNewBook = asyncHandler(async (req, res) => {
 
   // Upload Images To Cloudinary
   let images = [...cover_img_url];
-  let imagesUrls = [];
+  let imagesUrlsJson;
+  let failedImagesCount = 0;
+  if (
+    cover_img_url &&
+    Array.isArray(cover_img_url) &&
+    cover_img_url.length > 0
+  ) {
+    try {
+      const uploadPromises = images.map((img) => uploadOne(img, options));
 
-  try {
-    const uploadPromises = images.map((img) => uploadOne(img, options));
+      const uploadResults = await Promise.allSettled(uploadPromises);
 
-    const uploadResults = await Promise.all(uploadPromises);
+      const successfulImages = [];
 
-    imagesUrls = uploadResults.map((result) => ({
-      ...result,
-    }));
-
-    console.log("All images uploaded successfully:", imagesUrls);
-  } catch (error) {
-    console.log("Error uploading images to Cloudinary: ", error);
+      uploadResults.forEach((result, index) => {
+        if (result.status === "fulfilled" && result.value !== null) {
+          successfulImages.push(result.value);
+        } else {
+          failedImagesCount++;
+          console.error(
+            `Image at index ${index} failed:`,
+            result.reason?.message || "Unknown Error"
+          );
+        }
+      });
+      imagesUrlsJson = JSON.stringify(successfulImages);
+    } catch (error) {
+      console.log("Error uploading images to Cloudinary: ", error);
+      imagesUrlsJson = JSON.stringify([]);
+    }
   }
-  const imagesUrlsJson = JSON.stringify(imagesUrls);
 
   //   Save Book in database with or without images
   try {
@@ -329,13 +342,16 @@ const CreateNewBook = asyncHandler(async (req, res) => {
     );
     console.log(saveBook?.rowCount, "Book Saved");
     if (saveBook?.rowCount > 0) {
-      return res.status(200).json({
+
+      const response = {
         books: saveBook?.rows[0],
-        message:
-          imagesUrls.length > 0
-            ? "Book Details saved successfully"
-            : "Book Details Saved without cover_images",
-      });
+        message: "Book Details saved successfully",
+      }
+
+      if(failedImagesCount > 0){
+        response.warning = `Book Created but ${failedImagesCount} images failed to upload`
+      }
+      return res.status(200).json(response);
     } else {
       return res.status(400).json({ message: "Error Creating Book" });
     }
