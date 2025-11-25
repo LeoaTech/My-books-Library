@@ -12,11 +12,6 @@
             "source": "/(.*)",
             "destination": "/index.js"
         }
-    ],
-    "crons": [
-        {
-            "path": "/api/process-queue.js",
-            "schedule": "* 9 * * *"
-        }
     ]
+   
 }
