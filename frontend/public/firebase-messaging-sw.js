@@ -5,13 +5,13 @@ importScripts(
   "https://www.gstatic.com/firebasejs/10.13.1/firebase-messaging-compat.js"
 );
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
+  apiKey: "AIzaSyDXgrml3YLilt6g3scSB6QsP1M0GjkQrt8",
+  authDomain: "library-app-60fbd.firebaseapp.com",
+  projectId: "library-app-60fbd",
+  storageBucket: "library-app-60fbd.firebasestorage.app",
+  messagingSenderId: "647065725387",
+  appId: "1:647065725387:web:6507cb5da4060d1deaee4e",
+  measurementId: "G-ZGD0KEY3P9",
 };
 firebase.initializeApp(firebaseConfig);
 
@@ -23,7 +23,6 @@ messaging.onBackgroundMessage((payload) => {
   const notificationTitle = payload.notification?.title || "New Notification";
   const notificationOptions = {
     body: payload.notification?.body || "You have a new message.",
-    // icon: "/logo.png",
     vibrate: [100, 50, 100],
     data: payload.data,
   };
