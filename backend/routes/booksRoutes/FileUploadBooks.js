@@ -5,6 +5,8 @@ const multer = require("multer");
 const csv = require("csv-parser");
 const xlsx = require("xlsx");
 const fs = require("fs");
+const os = require("os"); 
+
 const { pool } = require("../../config/dbConfig.js");
 
 const {
@@ -18,7 +20,8 @@ const {
 
 router.use(checkAuth);
 
-const upload = multer({ dest: "uploads/" });
+// const upload = multer({ dest: "uploads/" });
+const upload = multer({ dest: os.tmpdir() }); 
 
 router.post("/api/upload", upload.single("file"), (req, res) => {
   const user = req.user;
