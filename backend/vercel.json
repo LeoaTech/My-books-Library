@@ -16,7 +16,7 @@
     "crons": [
         {
             "path": "/api/process-queue.js",
-            "schedule": "* * * * *"
+            "schedule": "* 9 * * *"
         }
     ]
 }
