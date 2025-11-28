@@ -2,11 +2,11 @@ import { lazy } from "react";
 import { HomeIcon } from "../components/_admin/SVGs";
 import BookIcon from "../assets/books2.svg";
 import UserIcon from "../assets/user.svg";
-import OrderIcon from "../assets/order2.svg";
-import ReturnsIcon from "../assets/returns.svg";
-import ShippedIcon from "../assets/ship1.svg";
-import QCIcon from "../assets/qc.svg";
-import ShippingIcon from "../assets/shipment.svg";
+// import OrderIcon from "../assets/order2.svg";
+// import ReturnsIcon from "../assets/returns.svg";
+// import ShippedIcon from "../assets/ship1.svg";
+// import QCIcon from "../assets/qc.svg";
+// import ShippingIcon from "../assets/shipment.svg";
 import { MdCalendarMonth, MdOutlineCheckCircleOutline } from "react-icons/md";
 import { GrSettingsOption } from "react-icons/gr";
 import { IoSettings, IoSettingsSharp } from "react-icons/io5";
@@ -145,11 +145,11 @@ export const accountRoutes = [
         path: "/dashboard/profile",
         component: Profile,
       },
-      // {
-      //   title: "Notifications",
-      //   path: "/dashboard/notifications",
-      //   component: NotificationsPage,
-      // },
+      {
+        title: "Notifications",
+        path: "/dashboard/notifications",
+        component: NotificationsPage,
+      },
     ],
   },
 ];
