@@ -47,6 +47,34 @@ const fetchTemplates = async (req, res) => {
   }
 };
 
+const UpdateTemplate = async (req, res) => {
+  const { entityId } = req.user;
+  const { event, channel, subject, body, is_active } = req.body;
+  
+  try {
+    const query = `
+      INSERT INTO notification_templates (entity_id, channel, event, subject, body, is_active, updated_at)
+      VALUES ($1, $2, $3, $4, $5, $6, NOW())
+      ON CONFLICT (entity_id, channel, event) 
+      DO UPDATE SET 
+        subject = EXCLUDED.subject,
+        body = EXCLUDED.body,
+        is_active = EXCLUDED.is_active,
+        updated_at = NOW()
+      RETURNING *;
+    `;
 
+    const values = [entityId, channel, event, subject, body, is_active];
+    const result = await pool.query(query, values);
 
-module.exports = { fetchTemplates };
+    const cacheKey = `template:${entityId}:${channel}:${event}`;
+    await connection.del(cacheKey);
+
+    res.json({ success: true, template: result.rows[0] });
+  } catch (error) {
+    console.error("Save Template Error:", error);
+    res.status(500).json({ message: "Failed to save template" });
+  }
+};
+
+module.exports = { fetchTemplates, UpdateTemplate };
