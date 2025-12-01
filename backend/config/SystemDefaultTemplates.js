@@ -12,15 +12,15 @@ const SYSTEM_DEFAULTS = {
     channel: "push",
   },
   "booking-created-email": {
-    subject: "Booking Confirmed: {{booking_title}}",
-    body: "Hi {{customer_name}},\n\nYour booking for {{booking_title}} (ID: {{booking_id}}) is confirmed. Please pick it up at {{address}}.\n\nThanks!",
-    variables: ["customer_name", "booking_title", "booking_id", "address"],
+    subject: "Booking Confirmed",
+    body: "Hi {{customer_name}},\n\nYour booking (ID: {{booking_id}}) is confirmed. Please pick it up at {{address}}.\n\nThanks!",
+    variables: ["customer_name", "booking_id", "address"],
     channel: "email",
   },
   "booking-created-push": {
-    subject: "Booking Confirmed: {{booking_title}}",
-    body: "Hi {{customer_name}},\n\nYour booking for {{booking_title}} (ID: {{booking_id}}) is confirmed.Thanks for Shopping!",
-    variables: ["customer_name", "booking_title", "booking_id"],
+    subject: "Booking Confirmed",
+    body: "Hi {{customer_name}},\n\nYour booking (ID: {{booking_id}}) is confirmed.Thanks for Shopping!",
+    variables: ["customer_name", "booking_id"],
     channel: "push",
   },
   "subscription-created-email": {
