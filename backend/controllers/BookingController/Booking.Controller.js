@@ -106,33 +106,31 @@ const CreateBooking = asyncHandler(async (req, res) => {
       ]
     );
 
-    console.log(createBookingQuery?.rows[0], "Booking added");
+    const bookingData = createBookingQuery?.rows[0];
 
     if (createBookingQuery.rowCount > 0) {
-      const tokenResult = await db.query(
-        `SELECT uft.token,
-         u.name,u.email
-        FROM user_fcm_tokens uft 
-        JOIN users u ON uft.user_id = u.id
-        WHERE uft.user_id = $1`,
-        [userId]
-      );
+      const userTokenQuery = `
+    SELECT 
+    uft.token,
+    u.name,
+    u.email
+    FROM users u
+  LEFT JOIN user_fcm_tokens uft 
+    ON uft.user_id = u.id
+  WHERE u.id = $1`;
+      const userTokenResult = await db.query(userTokenQuery, [user_id]);
 
+      let userInfo = userTokenResult?.rows[0];
       await emailQueue.add("booking-created-email", {
-        to: tokenResult?.rows[0]?.email,
-        name: tokenResult?.rows[0]?.name,
+        to: userInfo?.email,
+        entityId,
+        userData: userInfo,
+        bookingData,
       });
-      // console.log(tokenResult, "Token Result");
-      const userTokens = tokenResult.rows.map((row) => row.token);
-      if (userTokens.length > 0) {
-        await pushQueue.add("send-booking-create-push", {
-          tokens: userTokens,
-          name: tokenResult?.rows[0].name,
-        });
-      }
+      
     }
     res.status(200).json({
-      booking: createBookingQuery?.rows[0],
+      booking: bookingData,
       message: "New Booking Added ",
     });
   } catch (error) {
