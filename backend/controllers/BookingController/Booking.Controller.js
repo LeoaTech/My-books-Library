@@ -127,7 +127,14 @@ const CreateBooking = asyncHandler(async (req, res) => {
         userData: userInfo,
         bookingData,
       });
-      
+      const userTokens = userTokenResult.rows.map((row) => row?.token);
+      if (userTokens.length > 0) {
+        await pushQueue.add("booking-created-push", {
+          tokens: userTokens,
+          userData,
+          bookingData,
+        });
+      }
     }
     res.status(200).json({
       booking: bookingData,
