@@ -3,7 +3,6 @@ const cors = require("cors");
 require("dotenv").config();
 const bodyParser = require("body-parser");
 
-
 // Subscribe Route
 const { notfound, errorHanlder } = require("./middleware/errorMiddleware.js");
 const session = require("express-session");
@@ -100,7 +99,6 @@ app.get("/", (req, res) => {
   res.json({ status: "Backend is running", clientUrl: process.env.CLIENT_URL });
 });
 
-
 // * Routes
 app.use("/", googleOAuthRouter);
 app.use("/api/auth", authRouter);
@@ -144,9 +142,8 @@ app.use(uploadBooksFromFile);
 app.use(notfound);
 app.use(errorHanlder);
 
-if (process.env.NODE_ENV !== "production") {
-  app.listen(port, () => {
-    console.log("Server is listening on port", port);
-  });
-}
+app.listen(port, () => {
+  console.log("Server is listening on port", port);
+});
+
 module.exports = app;
