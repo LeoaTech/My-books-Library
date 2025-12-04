@@ -1,0 +1,68 @@
+# See Example on Official DOC of Render: https://render.com/docs/blueprint-spec#environment-variables
+services:
+  # 1. Backend API
+  - type: web
+    name: library-api
+    env: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - fromGroup: global-secrets
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: PORT
+        sync: false
+      - key: CLIENT_URL
+        fromService:
+          type: web
+          name: library-frontend  
+          property: url
+      - key: SERVER_URL
+        fromService:
+          type: web
+          name: library-api  
+          property: url
+      - key: NODE_ENV
+        value: production
+
+  # 2. Email Worker
+  - type: worker
+    name: email-worker
+    env: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node workers/emailWorker.js
+    envVars:
+      - fromGroup: global-secrets
+
+  # 3. Push Worker
+  - type: worker
+    name: push-worker
+    env: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node workers/pushWorker.js
+    envVars:
+      - fromGroup: global-secrets
+
+
+  # 4. Frontend
+  - type: web
+    name: library-frontend
+    env: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist 
+    envVars:
+      - fromGroup: client-global-secret
+      - key: VITE_SERVER_ENDPOINT
+        fromService:
+          type: web
+          name: library-api
+          property: url
+      
