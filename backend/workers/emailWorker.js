@@ -20,9 +20,9 @@ const worker = new Worker(
         ...data,
       };
       const bookingVariables = {
-        user_id: bookingData?.user_id,
-        booking_id: bookingData?.id,
-        address: bookingData?.shipping_address,
+        user_id: data?.bookingData?.user_id,
+        booking_id: data?.bookingData?.id,
+        address: data?.bookingData?.shipping_address,
       };
 
       let content;
