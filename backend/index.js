@@ -42,6 +42,9 @@ const stripeOnboarding = require("./routes/PG_Onboarding/StripeOnboarding.js");
 const uploadBooksFromFile = require("./routes/booksRoutes/FileUploadBooks.js");
 const webhooks = require("./webhooks/stripe/index.js"); //Stripe webhook
 
+
+const notificationRoute = require("./routes/NotificationRoutes/NotificationRoutes.js");
+
 // Cron Job
 require("./services/scheduleTask.js"); //Add Due Date Fine
 
@@ -138,6 +141,11 @@ app.use("/api/library/:entityId/stripe/connect", stripeConnect);
 // Stripe Oauth Flow for Connecting Existing Accounts
 app.use(stripeRouter);
 app.use(uploadBooksFromFile);
+
+
+// Notification templates
+app.use("/api/notifications", notificationRoute)
+
 
 app.use(notfound);
 app.use(errorHanlder);
