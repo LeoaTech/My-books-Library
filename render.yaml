@@ -18,15 +18,7 @@ services:
       - key: PORT
         sync: false
       - key: CLIENT_URL
-        fromService:
-          type: web
-          name: library-frontend  
-          property: url
-      - key: SERVER_URL
-        fromService:
-          type: web
-          name: library-api  
-          property: url
+        sync: false
       - key: NODE_ENV
         value: production
 
@@ -61,8 +53,5 @@ services:
     envVars:
       - fromGroup: client-global-secret
       - key: VITE_SERVER_ENDPOINT
-        fromService:
-          type: web
-          name: library-api
-          property: url
+        sync: false
       
