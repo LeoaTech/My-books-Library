@@ -73,7 +73,7 @@ const getNotificationContent = async ({
     let bodyTemplate = "";
     if (dbTemplate) {
       subjectTemplate = dbTemplate.subject || systemDefault?.subject || "";
-      bodyTemplate = dbTemplate.body(systemDefault?.body || "");
+      bodyTemplate = dbTemplate.body || (systemDefault?.body || "");
     } else {
       subjectTemplate = systemDefault?.subject || "";
       bodyTemplate = systemDefault?.body || "";
