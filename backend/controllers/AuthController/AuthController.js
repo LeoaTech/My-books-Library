@@ -72,7 +72,7 @@ const RegisterUser = asyncHandler(async (req, res) => {
       throw new Error("Missing required fields");
     }
 
-    let userData;
+    // let userData;
 
     // Check if user already exists
     let userResult = await client.query(
@@ -199,7 +199,7 @@ const RegisterUser = asyncHandler(async (req, res) => {
 
     await client.query("COMMIT");
 
-    // send Email to Client 
+    // send Email to Client
 
     // await emailQueue.add("send-welcome-email", {
     //   to: userResult?.email || email,
@@ -345,8 +345,6 @@ const LoginUser = asyncHandler(async (req, res) => {
         maxAge: 1 * 24 * 60 * 60 * 1000,
       });
 
-     
-
       res.json({
         accessToken: AccessToken,
         user: {
@@ -417,7 +415,7 @@ const SignupUser = asyncHandler(async (req, res) => {
     const userExists = await db.query("SELECT id FROM users Where email = $1", [
       email,
     ]);
-
+    let userData;
     // console.log("Step 4: ", userExists, "user Founded");
     let userId;
     if (userExists?.rowCount == 0) {
@@ -438,6 +436,14 @@ const SignupUser = asyncHandler(async (req, res) => {
 
       const userResult = await createUser(client, userDetails);
       userId = userResult.id;
+      userData = {
+        name: userResult?.name,
+        email: userResult?.email,
+        city,
+        country,
+        address,
+        phone,
+      };
     } else {
       userId = userExists?.rows[0]?.id;
     }
@@ -447,12 +453,14 @@ const SignupUser = asyncHandler(async (req, res) => {
       [userId, entityId, branchId, role.role_id]
     );
     await client.query("COMMIT");
-    console.log(userResult, "userResult");
 
     await emailQueue.add("send-welcome-email", {
-      to: userResult?.email || email,
+      to: userData?.email || email,
       entityId,
-      userData: userResult,
+      userData: {
+        ...userData,
+        subdomain: subdomain,
+      },
     });
     return res.status(200).json({
       message:
