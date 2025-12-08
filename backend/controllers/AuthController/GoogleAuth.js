@@ -14,6 +14,7 @@ const {
   createDummyVendor,
 } = require("../../helpers/user_onboarding.js");
 const { pool } = require("../../config/dbConfig.js");
+const { emailQueue } = require("../../queues/index.js");
 
 passport.use(
   new GoogleStrategy(
@@ -116,6 +117,11 @@ passport.use(
           if (userRoleCheck.rows.length > 0) {
             console.log("User already associated as customer");
             userEntity = { userId, entityId, branchId, roleId: role.role_id };
+            await emailQueue.add("send-welcome-email", {
+              to: userResult?.email || email,
+              entityId,
+              userData: userResult,
+            });
             return done(null, userEntity);
           } else {
             const userRole = await client.query(
