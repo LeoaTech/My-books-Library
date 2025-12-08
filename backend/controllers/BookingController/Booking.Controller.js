@@ -88,7 +88,7 @@ const CreateBooking = asyncHandler(async (req, res) => {
       borrow_date, return_due,return_date,booking_status,
        shipping_address,shipping_city, shipping_country,
        shipping_phone,credits_used,entity_id )
-      VALUES ($1,$2, $3, $4, $5, $6, $7, $8, $9,$10, $11, $12, $13) RETURNING *`,
+      VALUES ($1,$2, $3, $4, $5, $6, $7, $8, $9,$10, $11, $12, $13) RETURNING id, user_id,return_due, shipping_address;`,
       [
         user_id,
         null,
@@ -107,7 +107,8 @@ const CreateBooking = asyncHandler(async (req, res) => {
     );
 
     const bookingData = createBookingQuery?.rows[0];
-
+    // console.log(bookingData, "Booking Data");
+    
     if (createBookingQuery.rowCount > 0) {
       const userTokenQuery = `
     SELECT 
@@ -122,19 +123,20 @@ const CreateBooking = asyncHandler(async (req, res) => {
 
       let userInfo = userTokenResult?.rows[0];
       await emailQueue.add("booking-created-email", {
-        to: userInfo?.email,
+        to: 'razaa.komal@gmail.com'||userInfo?.email,
         entityId,
         userData: userInfo,
         bookingData,
       });
-      const userTokens = userTokenResult.rows.map((row) => row?.token);
-      if (userTokens.length > 0) {
-        await pushQueue.add("booking-created-push", {
-          tokens: userTokens,
-          userData,
-          bookingData,
-        });
-      }
+      // const userTokens = userTokenResult.rows.map((row) => row?.token);
+      // if (userTokens.length > 0) {
+      //   await pushQueue.add("booking-created-push", {
+      //     tokens: userTokens,
+      //     entityId,
+      //     userData,
+      //     bookingData,
+      //   });
+      // }
     }
     res.status(200).json({
       booking: bookingData,
