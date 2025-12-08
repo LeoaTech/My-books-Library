@@ -412,11 +412,12 @@ const SignupUser = asyncHandler(async (req, res) => {
     }
 
     // check if user with email exists in DB
-    const userExists = await db.query("SELECT id FROM users Where email = $1", [
-      email,
-    ]);
+    const userExists = await db.query(
+      "SELECT id,name,email,phone,city,country address FROM users Where email = $1",
+      [email]
+    );
     let userData;
-    // console.log("Step 4: ", userExists, "user Founded");
+    console.log("Step 4: ", userExists, "user Founded");
     let userId;
     if (userExists?.rowCount == 0) {
       // Create as a  New User
@@ -435,17 +436,29 @@ const SignupUser = asyncHandler(async (req, res) => {
       };
 
       const userResult = await createUser(client, userDetails);
+      // console.log(userResult, "Create User");
+
       userId = userResult.id;
       userData = {
         name: userResult?.name,
         email: userResult?.email,
-        city,
-        country,
-        address,
-        phone,
+        city: userResult?.city || "",
+        country: userResult?.country || "",
+        address: userResult?.address || "",
+        phone: userResult?.phone || "",
+        subdomain,
       };
     } else {
       userId = userExists?.rows[0]?.id;
+      userData = {
+        name: userExists?.rows[0]?.name,
+        email: userExists?.rows[0]?.email,
+        city: userExists?.rows[0]?.city || "",
+        country: userExists?.rows[0]?.country || "",
+        address: userExists?.rows[0]?.address || "",
+        phone: userExists?.rows[0]?.phone || "",
+        subdomain,
+      };
     }
     // Add the user Id's associated entity, role_id and branch_id in the user_entity_roles table
     const userRole = await client.query(
@@ -455,12 +468,9 @@ const SignupUser = asyncHandler(async (req, res) => {
     await client.query("COMMIT");
 
     await emailQueue.add("send-welcome-email", {
-      to: userData?.email || email,
+      to: "razaa.komal@gmail.com" || userData?.email || email,
       entityId,
-      userData: {
-        ...userData,
-        subdomain: subdomain,
-      },
+      userData,
     });
     return res.status(200).json({
       message:
