@@ -1,14 +1,16 @@
 const SYSTEM_DEFAULTS = {
+  
+  // From Client to Customer
   "send-welcome-email": {
     subject: "Welcome to {{library_name}}!",
-    body: "Hi {{customer_name}},\n\nWelcome to {{library_name}}! We are excited to have you start exploring our collection of books.\n\nIf you have questions, contact us at {{phone}}.\n\nHappy Reading!",
-    variables: ["customer_name", "library_name", "phone", "email"],
+    body: "Hi {{customer_name}},\n\nWelcome to {{library_name}}! We are excited to have you. Start exploring our collection of books.\n\nIf you have questions, contact us at {{contact}}.\n\nHappy Reading!",
+    variables: ["customer_name", "library_name", "contact", "email"],
     channel: "email",
   },
   "send-welcome-push": {
     subject: "Welcome to {{library_name}}!",
     body: "Hi {{customer_name}},\n\nWelcome to {{library_name}}!",
-    variables: ["customer_name", "library_name", "phone", "email"],
+    variables: ["customer_name", "library_name"],
     channel: "push",
   },
   "booking-created-email": {
