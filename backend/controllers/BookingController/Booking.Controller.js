@@ -123,7 +123,7 @@ const CreateBooking = asyncHandler(async (req, res) => {
 
       let userInfo = userTokenResult?.rows[0];
       await emailQueue.add("booking-created-email", {
-        to: 'razaa.komal@gmail.com'||userInfo?.email,
+        to: userInfo?.email,
         entityId,
         userData: userInfo,
         bookingData,
