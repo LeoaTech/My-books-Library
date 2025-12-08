@@ -3,20 +3,19 @@ const send_email = require("../utils/sendEmail");
 const { connection } = require("../config/redisConfig.js");
 const { getNotificationContent } = require("../utils/templatesHandler.js");
 
-
 const worker = new Worker(
   "email-notifications",
   async (job) => {
-    
     const { name, data } = job;
     const { userData } = data;
     try {
       const variables = {
         customer_name: userData?.name || "User",
-        library_name: userData?.subdomain || "Library",
+        library_name: userData?.entity_name || userData?.subdomain || "Library",
         entityId: userData?.entity_id || data?.entityId,
         email: userData?.email,
         phone: userData?.phone || "",
+        contact: "+923402134256",
         ...data,
       };
       const bookingVariables = {
@@ -50,7 +49,6 @@ const worker = new Worker(
 
       // Send the email
       if (content) {
-
         await send_email(data?.to, content.subject, content.body);
       }
     } catch (error) {
