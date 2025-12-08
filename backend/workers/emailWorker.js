@@ -7,14 +7,14 @@ const { getNotificationContent } = require("../utils/templatesHandler.js");
 const worker = new Worker(
   "email-notifications",
   async (job) => {
+    
     const { name, data } = job;
     const { userData } = data;
-
     try {
       const variables = {
         customer_name: userData?.name || "User",
         library_name: userData?.subdomain || "Library",
-        entityId: userData?.entity_id || entityId,
+        entityId: userData?.entity_id || data?.entityId,
         email: userData?.email,
         phone: userData?.phone || "",
         ...data,
@@ -29,7 +29,7 @@ const worker = new Worker(
       switch (name) {
         case "send-welcome-email":
           content = await getNotificationContent({
-            entityId: variables?.entityId,
+            entityId: variables?.entityId || data?.entityId,
             channel: "email",
             event: "send-welcome-email",
             variables,
@@ -37,10 +37,10 @@ const worker = new Worker(
           break;
         case "booking-created-email":
           content = await getNotificationContent({
-            entityId: variables?.entityId,
+            entityId: variables?.entityId || data?.entityId,
             channel: "email",
             event: "booking-created-email",
-            variables: { ...variables, bookingVariables },
+            variables: { ...variables, ...bookingVariables },
           });
           break;
 
@@ -50,6 +50,7 @@ const worker = new Worker(
 
       // Send the email
       if (content) {
+
         await send_email(data?.to, content.subject, content.body);
       }
     } catch (error) {
@@ -66,3 +67,5 @@ const worker = new Worker(
 );
 
 worker.on("failed", (job, err) => console.log(`${job.id} failed`, err));
+
+module.exports = worker;
