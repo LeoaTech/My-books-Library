@@ -9,6 +9,7 @@ import Footer from "../../components/_user/Footer/Footer";
 import { useAuthContext } from "../../hooks/useAuthContext";
 import { useEffect } from "react";
 import PushNotificationHandler from "../../components/main/PushNotification/PushNotificationHandler";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
   const genres = [
@@ -33,18 +34,16 @@ const Home = () => {
 
 
   const { auth, googleAuth, getUser } = useAuthContext();
-
+  const navigate = useNavigate()
   useEffect(() => {
     const handleAuth = async () => {
       const redirectUrl = await getUser();
       console.log(redirectUrl, "URL")
+      navigate(redirectUrl);
     };
 
     if (googleAuth != "email" && !auth) {
       handleAuth();
-    } else {
-      console.log("No need to fetch google auth result");
-
     }
   }, [getUser, googleAuth]);
 
