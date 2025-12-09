@@ -47,23 +47,30 @@ passport.use(
         }
         let userId;
         let userEntity = {};
-        if (action === "join_lib") {
-          // console.log("Inside Join Lib Action");
+        let userInfo;
 
+        if (action === "join_lib") {
           const subdomain = state.subdomain;
           if (!subdomain) {
-            throw new Error("Subdomain missing for library join");
+            throw new Error("Subdomain missing.Failed to join library");
           }
-
-          // Check if the user already exists in the database
           let userResult = await pool.query(
-            "SELECT id FROM users WHERE email = $1",
+            "SELECT id,name, email, city,country,phone,address FROM users WHERE email = $1",
             [profile.email]
           );
 
+          
+
           if (userResult?.rows?.length > 0) {
-            // get the already existing user_id form db
-            userId = userResult.rows[0].id;
+            userId = userResult?.rows[0].id;
+            userInfo = {
+              name: userResult?.rows[0]?.name,
+              email: userResult?.rows[0]?.email,
+              city: userResult?.rows[0]?.city || "",
+              country: userResult?.rows[0]?.country || "",
+              address: userResult?.rows[0]?.address || "",
+              phone: userResult?.rows[0]?.phone || "",
+            };
           } else {
             const userData = {
               fullName: profile.displayName,
@@ -75,81 +82,75 @@ passport.use(
               phone: "",
               img_url: profile?.picture || profile.photos?.[0]?.value,
             };
-            // User doesn't exist, create a new user
+            //  create a new user
             const userResult = await createUser(client, userData);
-            console.log(userId, "User Created");
 
             userId = userResult?.id;
+            userInfo = {
+              name: userResult?.name,
+              email: userResult?.email,
+              city: userResult?.city || "",
+              country: userResult?.country || "",
+              address: userResult?.address || "",
+              phone: userResult?.phone || "",
+            };
           }
 
           const entityId = await getEntity(db, subdomain);
 
-          console.log("Step 1: ", entityId, " Entity Founded");
-
           const branchId = await getBranch(db, entityId);
 
-          console.log("Step 2: ", branchId, "Branch Founded");
-
-          // Check if "customer" role already exists for this entity
           const roleResult = await client.query(
             "SELECT role_id FROM roles WHERE entity_id = $1 and name=$2 ",
             [entityId, "customer"]
           );
 
-          console.log(roleResult.rows, "Roles Exists");
-
           let role;
           if (roleResult.rows.length > 0) {
             role = roleResult.rows[0];
-            console.log(
-              "Roles",
-              roleResult.rows,
-              "Step 3: Existing customer role from Library found",
-              role.role_id
-            );
+           
           }
-          // Check if user_entity_roles entry already exists
           const userRoleCheck = await client.query(
             "SELECT id FROM user_entity_roles WHERE user_id = $1 AND entity_id = $2 AND branch_id = $3 AND role_id = $4",
             [userId, entityId, branchId, role.role_id]
           );
 
-          if (userRoleCheck.rows.length > 0) {
-            console.log("User already associated as customer");
+          if (userRoleCheck?.rows?.length > 0) {
             userEntity = { userId, entityId, branchId, roleId: role.role_id };
-            await emailQueue.add("send-welcome-email", {
-              to: userResult?.email || email,
-              entityId,
-              userData: userResult,
-            });
+
             return done(null, userEntity);
           } else {
-            const userRole = await client.query(
+            await client.query(
               "INSERT INTO user_entity_roles (user_id, entity_id, branch_id, role_id) VALUES ($1, $2, $3, $4) RETURNING id",
               [userId, entityId, branchId, role.role_id]
             );
-            console.log(
-              "Step 4: ",
-              userRole.rows[0],
-              "User Entity Role Created"
-            );
-          }
+          }          
           await client.query("COMMIT");
+          await emailQueue.add("send-welcome-email", {
+            to: userInfo?.email || profile?.email,
+            entityId,
+            userData: { ...userInfo, subdomain, entityId },
+          });
           userEntity = { userId, entityId, branchId, roleId: role.role_id };
+
           return done(null, userEntity);
         } else if (action === "create_lib") {
-          // console.log("Inside Create Library Action");
-
-          // Check if the user already exists in the database
+        
           let userResult = await pool.query(
-            "SELECT id FROM users WHERE email = $1",
+            "SELECT id,name,email,phone,address,city,country FROM users WHERE email = $1",
             [profile.email]
           );
 
-          // User already exists
           if (userResult?.rows?.length > 0) {
-            // get the already existing user_id form db
             userId = userResult.rows[0].id;
+            userInfo = {
+              name: userResult?.rows[0]?.name,
+              email: userResult?.rows[0]?.email,
+              city: userResult?.rows[0]?.city || "",
+              country: userResult?.rows[0]?.country || "",
+              address: userResult?.rows[0]?.address || "",
+              phone: userResult?.rows[0]?.phone || "",
+            };
 
             // Check if user already has an "owner" role in any organization
             const ownerCheck = await pool.query(
@@ -162,14 +163,13 @@ passport.use(
               [userId]
             );
 
-            if (ownerCheck.rows.length > 0) {
+            if (ownerCheck?.rows?.length > 0) {
               await client.query("ROLLBACK");
               return done(null, false, {
                 message: "User already owns a library",
               });
             }
           } else {
-            // Before creating a user, Check if this email is not own a library
             const userData = {
               fullName: profile.displayName,
               email: profile.email,
@@ -180,23 +180,25 @@ passport.use(
               phone: "",
               img_url: profile?.picture || profile.photos?.[0]?.value,
             };
-            // User doesn't exist, create a new user
+            //  create a new user
             const userResult = await createUser(client, userData);
-            console.log(userId, "User Created");
 
             userId = userResult?.id;
+            userInfo = {
+              name: userResult?.name,
+              email: userResult?.email,
+              city: userResult?.city || "",
+              country: userResult?.country || "",
+              address: userResult?.address || "",
+              phone: userResult?.phone || "",
+            };
           }
 
           // Generate a subdomain
           const subdomain = generateSubdomain(profile.displayName);
 
-          console.log(subdomain, "subdomain created");
-
-          // make sure the subdomain for each entity_id is unique
-
           const uniqueSubdomain = await checkSubdomain(client, subdomain);
 
-          /* Create an Entity  */
 
           const entityData = {
             businessName: profile?.displayName + "-library",
@@ -213,10 +215,9 @@ passport.use(
           };
           /* Create an Organization */
           const entity = await createEntity(client, entityData);
-          console.log(entity.id, "entity Created");
 
           const branchData = {
-            businessName: profile.displayName + "-branch(main)", //to identify an entity Id main branch
+            businessName: profile.displayName + "-branch(main)",
             city: "",
             country: "",
             address: "",
@@ -225,23 +226,13 @@ passport.use(
             entityId: entity.id,
           };
           const branch = await createBranch(client, branchData, entity.id);
-          console.log(branch.id, "Branch Created");
 
-          /* Important: user Sign up with google account to create library will be act as an owner */
           const roles = await createDefaultRoles(client, entity.id);
 
-          console.log(roles, "New Role Created for Entity ", entity.id);
-
-          // Get the owner role_id from roles list
           let ownerRole = roles.find((role) => role.name == "owner");
-          // Add permissions => Allow all permissions to the `owner` role
           const roleAdded = await addPermissions(client, ownerRole.role_id);
-          console.log(roleAdded, "Roles permissions added");
 
-          // Create a Dummy vendor
           let vendorRole = roles.find((role) => role.name == "vendor");
-
-          // Create dummy vendor_id for the Library
 
           let vendorId = await createDummyVendor(
             client,
@@ -249,26 +240,30 @@ passport.use(
             vendorRole.role_id
           );
 
-          console.log(vendorId, "Dummy Vendor for Library Added");
-
-          // Add the user Id associated entity, role_id and branch
           const userRole = await client.query(
             "INSERT INTO user_entity_roles (user_id, entity_id, branch_id, role_id) VALUES ($1, $2, $3, $4)",
             [userId, entity.id, branch.id, ownerRole.role_id]
           );
-          console.log(userRole, "Created new user with entity role");
           await client.query("COMMIT");
+          await emailQueue.add("saas-signup-welcome", {
+            to: userInfo?.email || profile?.email,
+            userData: {
+              ...userInfo,
+              entity_name: entity?.name,
+              subdomain: entity?.subdomain,
+            },
+            entityId: entity?.id,
+          });
           userEntity = {
             userId,
             entityId: entity.id,
             branchId: branch.id,
             roleId: ownerRole.role_id,
           };
+
           return done(null, userEntity);
         } else {
-          // Default Login Action
 
-          console.log("Inside Login Action");
 
           // Check if the user already exists in the database
           let userResult = await pool.query(
@@ -276,36 +271,24 @@ passport.use(
             [profile.email]
           );
 
-          if (userResult.rows.length === 0) {
+          if (userResult?.rows?.length === 0) {
             await client.query("ROLLBACK");
             return done(null, false, {
               message: "User not found. Please create or join a library first.",
             });
           }
 
-          // get the already existing user_id form db
-          userId = userResult.rows[0].id;
-          const subdomain = state.subdomain;
-
-          // console.log(subdomain);
+          userId = userResult?.rows[0]?.id;
+          const subdomain = state?.subdomain;
 
           if (subdomain) {
-            // console.log("Inside Library Domain Login Action", subdomain);
 
             const entityId = await getEntity(db, subdomain);
 
-            console.log("Step 1: ", entityId, " Entity Founded");
-
             const branchId = await getBranch(db, entityId);
 
-            console.log("Step 2: ", branchId, "Branch Founded");
-
-            // get the role_id belongs to that subdomain entity id and user_id.
-            // As one user_id must belongs to an entity and with one role_id ( user is associated with an entity with single )
-
             const userRole = await client.query(
-              `
-            SELECT uer.entity_id, uer.branch_id, uer.role_id
+              `SELECT uer.entity_id, uer.branch_id, uer.role_id
               FROM user_entity_roles uer
               JOIN roles r ON uer.role_id = r.role_id
               WHERE uer.user_id = $1 and uer.entity_id =$2
@@ -313,10 +296,10 @@ passport.use(
               [userId, entityId]
             );
 
-            if (userRole.rows.length == 0) {
+            if (userRole?.rows?.length == 0) {
               await client.query("ROLLBACK");
               return done(null, false, {
-                message: "User is not found for the library domain",
+                message: `User is not found for ${subdomain} library`,
               });
             }
 
@@ -329,9 +312,7 @@ passport.use(
 
             return done(null, userEntity);
           } else {
-            // console.log("Inside Owner Login Action from app domain");
 
-            // Else check for owner login
             const ownerCheck = await client.query(
               `
               SELECT uer.entity_id, uer.branch_id, uer.role_id
@@ -401,13 +382,12 @@ passport.deserializeUser(async (user, done) => {
       [user.userId, user.entityId, user.branchId, user.roleId]
     );
 
-    console.log(result.rowCount, "Deserialized user");
+    // console.log(result.rowCount, "Deserialized user");
     if (result?.rows?.length > 0) {
       // User already exists, return the user
       return done(null, result?.rows[0]);
     }
 
-    // return done("User not found", null);
     return done(null, false, {
       message: "User not found. Please create or join a library first.",
     });
