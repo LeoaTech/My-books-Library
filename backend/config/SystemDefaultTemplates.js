@@ -1,4 +1,12 @@
 const SYSTEM_DEFAULTS = {
+
+  //From Library Saas App to Client
+  "saas-signup-welcome": {
+    subject: "Welcome to {{saas_app_name}} - Let's set up your library",
+    body: "Hi {{customer_name}},\n\nWelcome to {{saas_app_name}}! We are thrilled to help you digitize your library.\n\nTo get started:\n1. Go to Dashboard and Complete your profile\n2. Add your first book\n3. Set up your pricing plans\n\n[Link: Read our Setup Guide]\n\nNeed help? Reply to this email or contact {{saas_support_email}}.",
+    variables: ["customer_name", "saas_app_name", "saas_support_email"],
+    channel: "email",
+  },
   
   // From Client to Customer
   "send-welcome-email": {
@@ -51,4 +59,6 @@ const SYSTEM_DEFAULTS = {
   },
 };
 
-module.exports = SYSTEM_DEFAULTS;
+
+
+module.exports=SYSTEM_DEFAULTS
