@@ -8,6 +8,8 @@ const worker = new Worker(
   async (job) => {
     const { name, data } = job;
     const { userData } = data;
+
+    
     try {
       const variables = {
         customer_name: userData?.name || "User",
@@ -16,6 +18,8 @@ const worker = new Worker(
         email: userData?.email,
         phone: userData?.phone || "",
         contact: "+923402134256",
+        saas_app_name:"BookHive",
+        saas_support_email:"info@bookhive.com",
         ...data,
       };
       const bookingVariables = {
@@ -34,6 +38,14 @@ const worker = new Worker(
             variables,
           });
           break;
+         case "saas-signup-welcome":
+          content = await getNotificationContent({
+            entityId: variables?.entityId || data?.entityId,
+            channel: "email",
+            event: "saas-signup-welcome",
+            variables,
+          });
+          break;  
         case "booking-created-email":
           content = await getNotificationContent({
             entityId: variables?.entityId || data?.entityId,
@@ -49,6 +61,8 @@ const worker = new Worker(
 
       // Send the email
       if (content) {
+
+        
         await send_email(data?.to, content.subject, content.body);
       }
     } catch (error) {
