@@ -76,7 +76,7 @@ const RegisterUser = asyncHandler(async (req, res) => {
 
     // Check if user already exists
     let userResult = await client.query(
-      "SELECT id FROM users WHERE email = $1",
+      "SELECT id,name,email,phone,address,city, country FROM users WHERE email = $1",
       [email]
     );
     let userId;
@@ -103,13 +103,21 @@ const RegisterUser = asyncHandler(async (req, res) => {
       userData = {
         name: userResult?.name,
         email: userResult?.email,
-        city,
-        country,
-        address,
-        phone,
+        city: userResult?.city || "",
+        country: userResult?.country || "",
+        address: userResult?.address || "",
+        phone: userResult?.phone || "",
       };
     } else {
-      userId = userResult.rows[0].id;
+      userId = userResult?.rows[0].id;
+      userData = {
+        name: userResult?.rows[0]?.name,
+        email: userResult?.rows[0]?.email,
+        city: userResult?.rows[0]?.city || "",
+        country: userResult?.rows[0]?.country || "",
+        address: userResult?.rows[0]?.address || "",
+        phone: userResult?.rows[0]?.phone || "",
+      };
     }
 
     // Check if user ID with the email already has an "owner" role in any other library(entity_id)
@@ -124,14 +132,14 @@ const RegisterUser = asyncHandler(async (req, res) => {
     );
 
     /* user is already an owner of a Library */
-    if (ownerCheck.rows.length > 0) {
+    if (ownerCheck?.rows?.length > 0) {
       await client.query("ROLLBACK"); // Stop Library Registeration Process
       return res.status(403).json({
         error:
           "Failed to Create Library, User's email already associates to a Library as an owner",
       });
     }
-    /*Continue with Library Registration Steps  */
+    /*Continue with Library Registration  */
 
     // Generate a subdomain from the Business name
     const subdomain = generateSubdomain(businessName);
@@ -195,21 +203,19 @@ const RegisterUser = asyncHandler(async (req, res) => {
       [userId, entity.id, branch.id, ownerRole.role_id]
     );
 
-    console.log(userResult, "User Resulr");
-
     await client.query("COMMIT");
 
     // send Email to Client
 
-    // await emailQueue.add("send-welcome-email", {
-    //   to: userResult?.email || email,
-    //   userData: {
-    //     ...userData,
-    //     entity_name: entity?.name,
-    //     subdomain: entity?.subdomain,
-    //   },
-    //   entityId: entity?.id,
-    // });
+    await emailQueue.add("saas-signup-welcome", {
+      to: userResult?.email || email,
+      userData: {
+        ...userData,
+        entity_name: entity?.name,
+        subdomain: entity?.subdomain,
+      },
+      entityId: entity?.id,
+    });
 
     res.status(201).json({
       message: "Library Created successfully",
@@ -468,7 +474,7 @@ const SignupUser = asyncHandler(async (req, res) => {
     await client.query("COMMIT");
 
     await emailQueue.add("send-welcome-email", {
-      to: "razaa.komal@gmail.com" || userData?.email || email,
+      to:  userData?.email || email,
       entityId,
       userData,
     });
