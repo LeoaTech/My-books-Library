@@ -50,7 +50,7 @@ router.get("/auth/google", (req, res, next) => {
 router.get(
   "/auth/google/callback",
   passport.authenticate("google", {
-    successRedirect: process.env.CLIENT_URL, //Redirect to Client Home Page
+    successRedirect: process.env.CLIENT_URL, 
     failureRedirect: "/auth/google/failure",
     failureMessage: true,
   })
@@ -79,7 +79,7 @@ router.get("/auth/logout", (req, res) => {
 
 // Google Login Failure Routes
 router.get("/auth/google/failure", (req, res) => {
-  const errorMessage = req.session.messages?.[0] || "Authentication failed";
+  const errorMessage = req?.session?.messages?.[0] || "Authentication failed";
   console.log("Authentication failed:", errorMessage);
 
   // Redirect to the client-side failure page with an error message
