@@ -9,7 +9,7 @@ const worker = new Worker(
     const { name, data } = job;
     const { userData } = data;
 
-    
+
     try {
       const variables = {
         customer_name: userData?.name || "User",
@@ -18,8 +18,12 @@ const worker = new Worker(
         email: userData?.email,
         phone: userData?.phone || "",
         contact: "+923402134256",
-        saas_app_name:"BookHive",
-        saas_support_email:"info@bookhive.com",
+        saas_app_name: "BookHive",
+        saas_support_email: "info@bookhive.com",
+        plan_name: data?.subscriptionData?.plan_name,
+        billing_cycle: data?.subscriptionData?.billing_cycle,
+        amount: data?.subscriptionData?.amount,
+        invoice_link: data?.subscriptionData?.invoice_link,
         ...data,
       };
       const bookingVariables = {
@@ -38,14 +42,14 @@ const worker = new Worker(
             variables,
           });
           break;
-         case "saas-signup-welcome":
+        case "saas-signup-welcome":
           content = await getNotificationContent({
             entityId: variables?.entityId || data?.entityId,
             channel: "email",
             event: "saas-signup-welcome",
             variables,
           });
-          break;  
+          break;
         case "booking-created-email":
           content = await getNotificationContent({
             entityId: variables?.entityId || data?.entityId,
@@ -54,15 +58,20 @@ const worker = new Worker(
             variables: { ...variables, ...bookingVariables },
           });
           break;
-
+        case "saas-subscription-created":
+          content = await getNotificationContent({
+            entityId: variables?.entityId || data?.entityId,
+            channel: "email",
+            event: "saas-subscription-created",
+            variables,
+          });
+          break;
         default:
           throw new Error(`Unknown job name: ${name}`);
       }
 
       // Send the email
       if (content) {
-
-        
         await send_email(data?.to, content.subject, content.body);
       }
     } catch (error) {
