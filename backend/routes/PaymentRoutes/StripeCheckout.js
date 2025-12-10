@@ -1,7 +1,6 @@
-// Install Stripe: npm install stripe
 const express = require("express");
-const stripe = require("../../config/stripe.js"); // Use your Stripe secret key
-const { checkAuth } = require("../../middleware/authMiddleware");
+const stripe = require("../../config/stripe.js"); 
+const { checkAuth } = require("../../middleware/authMiddleware.js");
 
 const db = require("../../config/dbConfig.js");
 
@@ -13,10 +12,11 @@ router.use(checkAuth);
 
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
 
+
+
+// API Endpoint to Checkout URL for Subscription
 router.post("/", async (req, res) => {
   const user = req.user;
-
-  // console.log(req.user, "User ");
 
   const userId = user?.userId || user?.user_id;
   const entityId = req?.user?.entityId || req?.user?.entity_id;
@@ -56,7 +56,7 @@ router.post("/", async (req, res) => {
       customer_email: userEmail,
       line_items: [
         {
-          price: priceId, // The ID of the plan
+          price: priceId, 
           quantity: 1,
         },
       ],
