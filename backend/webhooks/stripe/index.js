@@ -32,28 +32,34 @@ router.post(
     }
     let subscription;
     let status;
+    let planName;
+    let invoice;
+    let metadata;
+
+    let entityId;
+    let subdomain;
     // Handle the event
     switch (event.type) {
       case "customer.subscription.deleted":
         subscription = event?.data.object;
         status = subscription?.status;
-      
+
         break;
       // New Subscription
       case "checkout.session.completed":
         const session = event?.data?.object;
 
-        const metadata = session.metadata;
+        metadata = session.metadata;
 
-        const entityId = metadata?.entityId;
-        const subdomain = metadata?.subdomain;
+        entityId = metadata?.entityId;
+        subdomain = metadata?.subdomain;
 
         const user_type = metadata?.user_type;
-        const planName = metadata?.planName;
+        planName = metadata?.planName;
 
         const userId = session?.client_reference_id || metadata?.app_client_id;
         const invoiceId = session?.invoice;
-        const invoice = await stripe.invoices.retrieve(invoiceId);
+        invoice = await stripe.invoices.retrieve(invoiceId);
 
         if (session?.subscription) {
           // Checkout Session:
@@ -63,14 +69,13 @@ router.post(
               expand: ["subscription"],
             }
           );
-         
+
           const subscription = checkoutSession?.subscription;
           const subscriptionItem =
             checkoutSession?.subscription?.items?.data[0];
           //  DB save data for user subscription
           const dbUserId = checkoutSession?.client_reference_id || userId;
           const customerId = session?.cutomer || checkoutSession?.customer;
-
 
           // User Type: CLIENT
           if (user_type == "client") {
@@ -97,7 +102,7 @@ router.post(
                 subscription.id,
                 subscription.items.data[0].price.id,
                 subscription.items.data[0].price.product,
-                subscription.status, 
+                subscription.status,
                 subscription?.items.data[0]?.current_period_end,
                 subscription.cancel_at_period_end,
                 subscription?.items.data[0]?.current_period_start,
@@ -171,10 +176,20 @@ router.post(
 
       case "customer.subscription.updated":
         subscription = event?.data?.object;
-        // console.log(`Subscription is ${event?.data?.object}.`);
+        metadata = subscription.metadata;
+
+        entityId = metadata?.entityId;
+        subdomain = metadata?.subdomain;
+        const prevAttributes = event?.data?.previous_attributes;
+
+        if (!prevAttributes?.items && !prevAttributes?.plan) {
+          break;
+        }
+
+        planName = subscription?.metadata?.planName;
 
         status = subscription?.status;
-        console.log(`Subscription status is ${status}.`);
+
         // define and call a method to handle the subscription update.
         // handleSubscriptionUpdated(subscription);
 
@@ -207,6 +222,46 @@ router.post(
               "Free",
               getUserId?.rows[0].id,
             ]);
+          }
+        }
+
+        const isPlanChange = prevAttributes?.items !== undefined;
+        if (isPlanChange) {
+          const oldPriceId = prevAttributes?.items?.data?.[0]?.price?.id;
+
+          const currentPriceId = subscription?.items?.data[0]?.price?.id;
+
+          if (oldPriceId && oldPriceId !== currentPriceId) {
+            const customer = await stripe.customers.retrieve(
+              subscription.customer
+            );
+            planName = subscription?.metadata?.planName;
+
+            const currentPlanName =
+              subscription?.items?.data[0]?.price?.nickname ||
+              subscription?.metadata?.planName ||
+              "New Plan";
+
+            await emailQueue.add("saas-subscription-updated", {
+              to:  customer?.email,
+              userData: {
+                name: customer?.name || "",
+                city: customer?.address.city || "",
+                country: customer?.address?.country || "",
+                phone: customer?.phone || "",
+                subdomain,
+              },
+              subscriptionData: {
+                plan_name: currentPlanName,
+                amount: (
+                  subscription?.items?.data[0]?.price?.unit_amount / 100
+                ).toFixed(2),
+                billing_cycle:
+                  subscription?.items?.data[0]?.price?.recurring?.interval ||
+                  "",
+              },
+              entityId,
+            });
           }
         }
 
@@ -243,7 +298,7 @@ router.post(
         const invoice = event.data.object;
         console.log(invoice, "invoice Paid webhook");
 
-        await new Promise((resolve) => setTimeout(resolve, 2000)); 
+        await new Promise((resolve) => setTimeout(resolve, 2000));
 
         const customerId = invoice.customer;
         if (!customerId) {
