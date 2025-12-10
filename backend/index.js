@@ -31,7 +31,7 @@ const settingsRoutes = require("./routes/SettingsRoutes/SettingsRoutes.js");
 const pricingRoutes = require("./routes/SettingsRoutes/Pricing/PricingRoutes.js");
 
 // Client Checkout session routes
-const stripeCheckout = require("./routes/PaymentRoutes/stripe.checkout.js");
+const stripeCheckout = require("./routes/PaymentRoutes/StripeCheckout.js");
 const cancelSubscription = require("./routes/PaymentRoutes/CancelSubscriptionRoute.js"); //active Free Plan
 const changeSubscription = require("./routes/PaymentRoutes/ChangeSubscriptionRoute.js"); //active School Plan
 const currentPlan = require("./routes/PaymentRoutes/CurrentActivePlan.js");
