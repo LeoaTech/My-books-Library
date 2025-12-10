@@ -9,7 +9,6 @@ const worker = new Worker(
     const { name, data } = job;
     const { userData } = data;
 
-
     try {
       const variables = {
         customer_name: userData?.name || "User",
@@ -63,6 +62,14 @@ const worker = new Worker(
             entityId: variables?.entityId || data?.entityId,
             channel: "email",
             event: "saas-subscription-created",
+            variables,
+          });
+          break;
+        case "saas-subscription-updated":
+          content = await getNotificationContent({
+            entityId: variables?.entityId || data?.entityId,
+            channel: "email",
+            event: "saas-subscription-updated",
             variables,
           });
           break;
