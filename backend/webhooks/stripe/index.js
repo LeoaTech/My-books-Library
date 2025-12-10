@@ -2,6 +2,7 @@ const express = require("express");
 const { default: Stripe } = require("stripe");
 const db = require("../../config/dbConfig.js");
 const stripe = require("../../config/stripe.js");
+const { emailQueue } = require("../../queues/index.js");
 
 const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
 
@@ -33,24 +34,15 @@ router.post(
     let status;
     // Handle the event
     switch (event.type) {
-      case "customer.subscription.trial_will_end":
-        subscription = event?.data?.object;
-        status = subscription?.status;
-        // console.log(`Subscription status is ${status}.`);
-        // Then define and call a method to handle the subscription trial ending.
-        // handleSubscriptionTrialEnding(subscription);
-        break;
       case "customer.subscription.deleted":
         subscription = event?.data.object;
         status = subscription?.status;
-        // console.log(`Subscription status is ${status}.`);
-        //  define and call a method to handle the subscription deleted.
-        // handleSubscriptionDeleted(subscriptionDeleted);
+      
         break;
       // New Subscription
       case "checkout.session.completed":
         const session = event?.data?.object;
-        // console.log(session, "Session of checkout");
+
         const metadata = session.metadata;
 
         const entityId = metadata?.entityId;
@@ -60,6 +52,8 @@ router.post(
         const planName = metadata?.planName;
 
         const userId = session?.client_reference_id || metadata?.app_client_id;
+        const invoiceId = session?.invoice;
+        const invoice = await stripe.invoices.retrieve(invoiceId);
 
         if (session?.subscription) {
           // Checkout Session:
@@ -69,36 +63,25 @@ router.post(
               expand: ["subscription"],
             }
           );
-          console.log(
-            "Full subscription from checkout: ",
-            checkoutSession?.subscription
-          );
-
+         
           const subscription = checkoutSession?.subscription;
-          console.log(subscription, "Subscription");
           const subscriptionItem =
             checkoutSession?.subscription?.items?.data[0];
           //  DB save data for user subscription
           const dbUserId = checkoutSession?.client_reference_id || userId;
           const customerId = session?.cutomer || checkoutSession?.customer;
 
-          // console.log(
-          //   "Items Subscription: ",
-          //   checkoutSession?.subscription?.items?.data[0]
-          // );
 
           // User Type: CLIENT
           if (user_type == "client") {
             //
 
             const subscriptionId = session?.subscription;
-            // console.log("In Client Type", subscriptionId);
 
             const subscription = await stripe.subscriptions.retrieve(
               subscriptionId
             );
 
-            // Update the customer's ID
             await db.query(
               `UPDATE users SET stripe_customer_id =$1, plan =$2 WHERE id=$3`,
               [customerId, planName, dbUserId]
@@ -114,13 +97,32 @@ router.post(
                 subscription.id,
                 subscription.items.data[0].price.id,
                 subscription.items.data[0].price.product,
-                subscription.status, // e.g., 'active' or 'trialing'
+                subscription.status, 
                 subscription?.items.data[0]?.current_period_end,
                 subscription.cancel_at_period_end,
                 subscription?.items.data[0]?.current_period_start,
                 true,
               ]
             );
+
+            await emailQueue.add("saas-subscription-created", {
+              to: session?.customer_email,
+              userData: {
+                name: session?.customer_details?.name || "",
+                city: session?.customer_details?.address.city || "",
+                country: session?.customer_details?.address?.country || "",
+                phone: session?.customer_details?.phone || "",
+                subdomain,
+              },
+              subscriptionData: {
+                plan_name: planName,
+                subscription_id: subscription.id,
+                amount: (session?.amount_total / 100).toFixed(2),
+                billing_cycle: subscriptionItem?.plan?.interval,
+                invoice_link: invoice?.hosted_invoice_url || "",
+              },
+              entityId,
+            });
           } else {
             // USER TYPE - CUSTOMER
             const dbPlanId = await db.query(
@@ -160,6 +162,7 @@ router.post(
           }
         }
         break;
+
       case "customer.subscription.created":
         subscription = event.data.object;
         // status = subscription?.status;
@@ -210,9 +213,9 @@ router.post(
         console.log(
           `Subscription ${subscription.id} was updated in the database.`
         );
-      
 
         break;
+
       case "customer.subscription.deleted":
         const subscriptionDeleted = event.data.object;
         await db.query(
@@ -221,10 +224,7 @@ router.post(
             updated_at = NOW()
         WHERE stripe_subscription_id = $2
     `,
-          [
-            "canceled", 
-            subscriptionDeleted.id,
-          ]
+          ["canceled", subscriptionDeleted.id]
         );
 
         const UserId = await db.query(
@@ -241,10 +241,9 @@ router.post(
 
       case "invoice.paid": {
         const invoice = event.data.object;
-        // console.log(invoice, "invoice Paid webhook");
+        console.log(invoice, "invoice Paid webhook");
 
-        // Wait 2 seconds before checkout session complete webhook populate the table
-        await new Promise((resolve) => setTimeout(resolve, 2000)); // Delay for 2 seconds
+        await new Promise((resolve) => setTimeout(resolve, 2000)); 
 
         const customerId = invoice.customer;
         if (!customerId) {
@@ -261,7 +260,6 @@ router.post(
           );
           break;
         }
-        // Find user_id and subscription
         const subResult = await db.query(
           `SELECT id, user_id 
                      FROM client_subscription 
@@ -281,14 +279,11 @@ router.post(
             [customerId]
           );
           if (userResult.rows.length === 0) {
-            console.error(
-              ` User not found for customer_id: ${customerId}`
-            );
+            console.error(` User not found for customer_id: ${customerId}`);
             break;
           }
           const userId = userResult.rows[0].id;
 
-          // Create the subscription record
           await db.query(
             `INSERT INTO client_subscription (user_id, stripe_subscription_id, stripe_price_id, stripe_product_id, status, current_period_end, cancel_at_period_end, start_date,auto_renew)
              VALUES ($1, $2, $3, $4, $5, TO_TIMESTAMP($6), $7,TO_TIMESTAMP($8),$9)
@@ -309,13 +304,11 @@ router.post(
             `Subscription record ${subscriptionId} created from invoice webhook.`
           );
 
-          // Re-fetch the record we just created to get its primary key
           subRecord = await db.query(
             "SELECT id, user_id FROM client_subscription WHERE stripe_subscription_id = $1",
             [subscriptionId]
           );
         }
-        // We only care about invoices for new subscriptions or renewals
         if (
           invoice.billing_reason === "subscription_create" ||
           invoice.billing_reason === "subscription_cycle" ||
