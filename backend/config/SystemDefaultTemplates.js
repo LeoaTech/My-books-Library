@@ -19,6 +19,13 @@ const SYSTEM_DEFAULTS = {
     channel: "email",
   },
 
+  "saas-subscription-updated": {
+    subject: "Your Subscription Plan has been Updated",
+    body: "Hi {{customer_name}},\n\nYour subscription has been successfully updated to the {{plan_name}} plan.\n\nSince this change happened mid-cycle, you may see a prorated adjustment on your next invoice.\n\nNew Amount: {{amount}}\n\nBest wishes: {{saas_support_email}}",
+    variables: ["customer_name", "plan_name", "amount", "saas_support_email"],
+    channel: "email",
+  },
+ 
   // From Client Library to its Customers
   "send-welcome-email": {
     subject: "Welcome to {{library_name}}!",
