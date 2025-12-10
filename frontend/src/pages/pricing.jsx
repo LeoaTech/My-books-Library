@@ -5,6 +5,7 @@ import { useFetchCurrentPlan } from '../hooks/current_plan/useFetchCurrentPlan';
 import { useQueryClient } from '@tanstack/react-query';
 import Navbar from "../components/_user/Navbar/Navbar"
 import Banner from '../components/main/Banner';
+
 const content = {
     pricing: {
         badge: "Fair & Simple Pricing",
@@ -125,7 +126,7 @@ const Pricing = () => {
     const { data: currentPlan } = useFetchCurrentPlan(auth);
 
     const activeSubscription = currentPlan?.isActive;
-    const subscribedPlan = currentPlan?.isActive && currentPlan?.subscription?.stripePriceId;
+    // const subscribedPlan = currentPlan?.isActive && currentPlan?.subscription?.stripePriceId;
     const subscriptionExpiredAt = `${new Date(currentPlan?.subscription?.currentPeriodEnd).toDateString()} at ${new Date(currentPlan?.subscription?.currentPeriodEnd).toLocaleTimeString()}`;
 
     const isCancelledAtPeriodEnd = currentPlan?.subscription?.cancelAtPeriodEnd
@@ -150,7 +151,7 @@ const Pricing = () => {
     }
     // Activate: Change PAID PLAN
 
-    const handleChangePlan = async (newPriceId) => {
+    const handleChangePlan = async (newPriceId, planName) => {
         if (isChangingPlan) return;
         setIsChangingPlan(true);
         try {
@@ -160,7 +161,7 @@ const Pricing = () => {
                     'Content-Type': 'application/json',
                 },
                 credentials: "include",
-                body: JSON.stringify({ newPriceId: newPriceId, userId: auth?.userId || auth?.id })
+                body: JSON.stringify({ newPriceId: newPriceId, planName, userId: auth?.userId || auth?.id })
             });
 
             if (!response.ok) {
@@ -213,8 +214,6 @@ const Pricing = () => {
             <Navbar />
 
             <main className="flex-1">
-
-
                 <section className="py-20 px-4">
 
                     <div className="container mx-auto max-w-6xl">
@@ -321,10 +320,10 @@ const Pricing = () => {
                                                         return;
                                                     }
                                                     if (activeSubscription) {
-                                                        handleChangePlan(finalPriceId);
+                                                        handleChangePlan(finalPriceId, plan?.name);
                                                     }
                                                     else {
-                                                        handleCreateCheckoutSession(finalPriceId);
+                                                        handleCreateCheckoutSession(finalPriceId, plan?.name);
                                                     }
                                                 }}
                                                 disabled={isCurrentPlan}
@@ -340,8 +339,6 @@ const Pricing = () => {
                                 )
                             })}
                         </div>
-
-
                     </div>
                 </section>
             </main>
