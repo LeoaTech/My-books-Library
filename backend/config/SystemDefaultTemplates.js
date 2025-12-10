@@ -1,5 +1,4 @@
 const SYSTEM_DEFAULTS = {
-
   //From Library Saas App to Client
   "saas-signup-welcome": {
     subject: "Welcome to {{saas_app_name}} - Let's set up your library",
@@ -7,8 +6,20 @@ const SYSTEM_DEFAULTS = {
     variables: ["customer_name", "saas_app_name", "saas_support_email"],
     channel: "email",
   },
-  
-  // From Client to Customer
+  "saas-subscription-created": {
+    subject: "Upgrade Confirmed: You are now on the {{plan_name}} Plan",
+    body: "Hi {{customer_name}},\n\nSuccess! You have upgraded your library to the {{plan_name}}.\n\nBilling Cycle: {{billing_cycle}}\nAmount: {{amount}}\n\nYou now have access to {{plan_name}} features.\n\nView Invoice: {{invoice_link}}",
+    variables: [
+      "customer_name",
+      "plan_name",
+      "billing_cycle",
+      "amount",
+      "invoice_link",
+    ],
+    channel: "email",
+  },
+
+  // From Client Library to its Customers
   "send-welcome-email": {
     subject: "Welcome to {{library_name}}!",
     body: "Hi {{customer_name}},\n\nWelcome to {{library_name}}! We are excited to have you. Start exploring our collection of books.\n\nIf you have questions, contact us at {{contact}}.\n\nHappy Reading!",
@@ -59,6 +70,4 @@ const SYSTEM_DEFAULTS = {
   },
 };
 
-
-
-module.exports=SYSTEM_DEFAULTS
+module.exports = SYSTEM_DEFAULTS;
