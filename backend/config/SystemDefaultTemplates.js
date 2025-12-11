@@ -25,7 +25,14 @@ const SYSTEM_DEFAULTS = {
     variables: ["customer_name", "plan_name", "amount", "saas_support_email"],
     channel: "email",
   },
- 
+
+  "saas-subscription-cancel-request": {
+    subject: "Subscription Cancellation Confirmed",
+    body: "Hi {{customer_name}},\n\nWe have received your request to cancel your subscription.\n\nYour access to paid features will continue until the end of your current billing period on {{end_date}}.\n\nWe are sorry to see you go. If this was a mistake, you can resubscribe at any time.",
+    variables: ["customer_name", "end_date"],
+    channel: "email",
+  },
+
   // From Client Library to its Customers
   "send-welcome-email": {
     subject: "Welcome to {{library_name}}!",
