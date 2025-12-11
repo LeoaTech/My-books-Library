@@ -19,11 +19,12 @@ const worker = new Worker(
         contact: "+923402134256",
         saas_app_name: "BookHive",
         saas_support_email: "info@bookhive.com",
-        plan_name: data?.subscriptionData?.plan_name,
-        billing_cycle: data?.subscriptionData?.billing_cycle,
-        amount: data?.subscriptionData?.amount,
-        invoice_link: data?.subscriptionData?.invoice_link,
+        plan_name: data?.subscriptionData?.plan_name || "",
+        billing_cycle: data?.subscriptionData?.billing_cycle || "",
+        amount: data?.subscriptionData?.amount || "",
+        invoice_link: data?.subscriptionData?.invoice_link || "",
         end_date: data?.subscriptionData?.end_date || "",
+        next_billing_date: data?.subscriptionData?.next_billing_date || "",
         ...data,
       };
       const bookingVariables = {
@@ -88,6 +89,14 @@ const worker = new Worker(
             entityId: variables?.entityId || data?.entityId,
             channel: "email",
             event: "saas-subscription-deleted",
+            variables,
+          });
+          break;
+        case "saas-subscription-renewed":
+          content = await getNotificationContent({
+            entityId: variables?.entityId || data?.entityId,
+            channel: "email",
+            event: "saas-subscription-renewed",
             variables,
           });
           break;
