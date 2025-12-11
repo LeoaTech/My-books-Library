@@ -342,7 +342,7 @@ router.post(
             const subdomain = subscriptionDeleted?.metadata?.subdomain;
 
             await emailQueue.add("saas-subscription-deleted", {
-              to: customer?.email, 
+              to: customer?.email,
               userData: {
                 name: customer?.name || "Customer",
                 city: customer?.address?.city || "",
@@ -463,9 +463,47 @@ router.post(
 
       // Renew Subscription
       case "invoice.payment_succeeded": {
-        const invoice = event.data.object;
-        // console.log(invoice, "Invoice Payment succeeded Webhook");
+        const invoiceSucceed = event?.data?.object;
+        // console.log(invoiceSucceed, "Invoice Payment succeeded Webhook");
+        if (invoiceSucceed.billing_reason === "subscription_cycle") {
 
+          const subscription = await stripe.subscriptions.retrieve(
+            invoiceSucceed.subscription
+          );
+
+          const customer = await stripe.customers.retrieve(invoiceSucceed.customer);
+
+          const priceAmount = invoiceSucceed?.amount_paid / 100 ||subscription?.items?.data[0]?.price?.unit_amount /100; 
+          const planName =
+            subscription?.items?.data[0]?.price?.nickname || subscription?.metadata?.planName ||"Plan";
+
+          const nextBillingDate = new Date(
+            subscription.current_period_end * 1000
+          ).toDateString();
+
+          const entityId = subscription.metadata?.entityId;
+          const subdomain = subscription.metadata?.subdomain;
+
+          // 3. Send the Renewal Email
+          await emailQueue.add("saas-subscription-renewed", {
+            to: customer?.email,
+            userData: {
+              name: customer?.name || "Customer",
+              city: customer?.address?.city || "",
+              country: customer?.address?.country || "",
+              phone: customer?.phone || "",
+              subdomain,
+            },
+            subscriptionData: {
+              plan_name: planName,
+              amount: priceAmount?.toFixed(2),
+              next_billing_date: nextBillingDate,
+            },
+            entityId,
+          });
+
+          console.log(`Renewal email sent to ${customer.email}`);
+        }
         break;
       }
 
