@@ -176,13 +176,20 @@ router.post(
 
       case "customer.subscription.updated":
         subscription = event?.data?.object;
+        // console.log(subscription, "subscription");
+
         metadata = subscription.metadata;
 
         entityId = metadata?.entityId;
         subdomain = metadata?.subdomain;
         const prevAttributes = event?.data?.previous_attributes;
 
-        if (!prevAttributes?.items && !prevAttributes?.plan) {
+        if (
+          !prevAttributes?.items &&
+          !prevAttributes?.plan &&
+          prevAttributes?.cancel_at_period_end === undefined
+        ) {
+          console.log("No subscription changes detected.");
           break;
         }
 
@@ -212,6 +219,37 @@ router.post(
           ]
         );
 
+        if (
+          subscription.cancel_at_period_end === true &&
+          prevAttributes?.cancel_at_period_end === false
+        ) {
+          const customer = await stripe.customers.retrieve(
+            subscription.customer
+          );
+          planName = subscription?.metadata?.planName;
+          console.log("Inside the cancellation subscription");
+
+          await emailQueue.add("saas-subscription-cancel-request", {
+            to: customer?.email,
+            userData: {
+              name: customer?.name || "",
+              city: customer?.address.city || "",
+              country: customer?.address?.country || "",
+              phone: customer?.phone || "",
+              subdomain,
+            },
+            subscriptionData: {
+              plan_name: planName,
+              end_date: new Date(
+                subscription?.items?.data[0]?.current_period_end * 1000
+              ).toDateString(),
+            },
+            entityId,
+          });
+
+          // console.log("email sent for cancellation request");
+        }
+
         const getUserId = await db.query(
           `SELECT id from users WHERE stripe_customer_id=$1`,
           [subscription.customer]
@@ -226,7 +264,7 @@ router.post(
         }
 
         const isPlanChange = prevAttributes?.items !== undefined;
-        if (isPlanChange) {
+        if (isPlanChange && subscription.cancel_at_period_end === false) {
           const oldPriceId = prevAttributes?.items?.data?.[0]?.price?.id;
 
           const currentPriceId = subscription?.items?.data[0]?.price?.id;
@@ -243,7 +281,7 @@ router.post(
               "New Plan";
 
             await emailQueue.add("saas-subscription-updated", {
-              to:  customer?.email,
+              to: customer?.email,
               userData: {
                 name: customer?.name || "",
                 city: customer?.address.city || "",
@@ -273,6 +311,8 @@ router.post(
 
       case "customer.subscription.deleted":
         const subscriptionDeleted = event.data.object;
+        console.log(subscriptionDeleted, "Deleted subscription");
+
         await db.query(
           `UPDATE client_subscription SET 
             status = $1,
