@@ -14,7 +14,7 @@ router.post("/", async (req, res) => {
       `SELECT stripe_subscription_id FROM client_subscription WHERE user_id = $1 AND status = $2`,
       [userId,'active']
     );
-    console.log(subResult, "SubResult in Cancel Subscription");
+    // console.log(subResult, "SubResult in Cancel Subscription");
     
     const subscriptionId = subResult.rows[0]?.stripe_subscription_id;
 
