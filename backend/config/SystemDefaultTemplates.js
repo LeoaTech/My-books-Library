@@ -27,9 +27,16 @@ const SYSTEM_DEFAULTS = {
   },
 
   "saas-subscription-cancel-request": {
-    subject: "Subscription Cancellation Confirmed",
+    subject: "Subscription Cancellation Request",
     body: "Hi {{customer_name}},\n\nWe have received your request to cancel your subscription.\n\nYour access to paid features will continue until the end of your current billing period on {{end_date}}.\n\nWe are sorry to see you go. If this was a mistake, you can resubscribe at any time.",
     variables: ["customer_name", "end_date"],
+    channel: "email",
+  },
+
+  "saas-subscription-deleted": {
+    subject: "Your Subscription Has Ended",
+    body: "Hi {{customer_name}},\n\nYour subscription has officially ended and your account has been downgraded to the Free plan.\n\nWe hope you enjoyed using our service. You can upgrade again at any time to regain access to premium features.\n\nBest regards,\nThe Team {{saas_app_name}}",
+    variables: ["customer_name", "saas_app_name"],
     channel: "email",
   },
 
