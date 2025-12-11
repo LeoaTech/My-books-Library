@@ -23,6 +23,7 @@ const worker = new Worker(
         billing_cycle: data?.subscriptionData?.billing_cycle,
         amount: data?.subscriptionData?.amount,
         invoice_link: data?.subscriptionData?.invoice_link,
+        end_date: data?.subscriptionData?.end_date || "",
         ...data,
       };
       const bookingVariables = {
@@ -73,6 +74,16 @@ const worker = new Worker(
             variables,
           });
           break;
+
+        case "saas-subscription-cancel-request":
+          content = await getNotificationContent({
+            entityId: variables?.entityId || data?.entityId,
+            channel: "email",
+            event: "saas-subscription-cancel-request",
+            variables,
+          });
+          break;
+        
         default:
           throw new Error(`Unknown job name: ${name}`);
       }
