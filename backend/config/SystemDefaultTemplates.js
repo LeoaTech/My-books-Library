@@ -40,6 +40,13 @@ const SYSTEM_DEFAULTS = {
     channel: "email",
   },
 
+  "saas-subscription-renewed": {
+    subject: "Subscription Renewal Successful",
+    body: "Hi {{customer_name}},\n\nThis is a confirmation that your subscription for {{plan_name}} has been successfully renewed.\n\nAmount Paid: ${{amount}}\nNext Billing Date: {{next_billing_date}}\n\nThank you for continuing with us!",
+    variables: ["customer_name", "plan_name", "amount", "next_billing_date"],
+    channel: "email",
+  },
+
   // From Client Library to its Customers
   "send-welcome-email": {
     subject: "Welcome to {{library_name}}!",
