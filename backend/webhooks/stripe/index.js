@@ -40,6 +40,7 @@ router.post(
     let subdomain;
     let subscriptionData;
     let userData;
+    let userId;
     // Handle the event
     switch (event.type) {
       case "customer.subscription.deleted":
@@ -59,7 +60,7 @@ router.post(
         const user_type = metadata?.user_type;
         planName = metadata?.planName;
 
-        const userId = session?.client_reference_id || metadata?.app_client_id;
+        userId = session?.client_reference_id || metadata?.app_client_id;
         const invoiceId = session?.invoice;
         invoice = await stripe.invoices.retrieve(invoiceId);
 
@@ -187,6 +188,7 @@ router.post(
       case "customer.subscription.updated":
         subscription = event?.data?.object;
         // console.log(subscription, "subscription");
+        userId = session?.client_reference_id || metadata?.app_client_id;
 
         metadata = subscription.metadata;
 
@@ -256,6 +258,12 @@ router.post(
             userData,
             subscriptionData,
             entityId,
+          });
+          await pushQueue.add("saas-subscription-cancel-request-push", {
+            entityId,
+            userId,
+            userData,
+            subscriptionData,
           });
 
           // console.log("email sent for cancellation request");
