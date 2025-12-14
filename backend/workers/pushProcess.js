@@ -1,33 +1,68 @@
-const {  Worker } = require("bullmq");
+const { Worker } = require("bullmq");
 const connection = require("../config/redisConfig.js");
 const {
   send_push_notification,
 } = require("../utils/send_push_notification.js");
-
+const { getNotificationContent } = require("../utils/templatesHandler.js");
 
 const QUEUE_NAME = "push-notifications";
 
 const processPushQueue = () => {
-
   return new Promise((resolve, reject) => {
     const worker = new Worker(
       QUEUE_NAME,
       async (job) => {
         const { name, data } = job;
+
+        const variables = {
+          name: data.name,
+          ...data,
+        };
+        let content;
+
         switch (name) {
           case "send-welcome-push":
-            response = await send_push_notification(
+            content = await getNotificationContent({
+              entityId: data.entityId,
+              channel: "push",
+              event: "send-welcome-push",
+              defaultSubject: "Welcome!",
+              defaultBody: "Hi {{name}}, welcome to your library",
+              variables: variables,
+            });
+
+            await send_push_notification(
               data.tokens,
-              "Welcome!",
-              `Hi ${data.name}, welcome to your library`
+              content.subject,
+              content.body
             );
+            // response = await send_push_notification(
+            //   data.tokens,
+            //   "Welcome!",
+            //   `Hi ${data.name}, welcome to your library`
+            // );
             break;
+
           case "send-booking-create-push":
-            response = await send_push_notification(
+            content = await getNotificationContent({
+              entityId: data.entity_id,
+              channel: "push",
+              event: "send-booking-create-push",
+              defaultSubject: "Congratulations!",
+              defaultBody: "Hi {{name}}, Your booking is created successfully!",
+              variables: variables,
+            });
+
+            await send_push_notification(
               data.tokens,
-              "Congratulations!",
-              `Hi ${data.name}, Your booking is created successfully!`
+              content.subject,
+              content.body
             );
+            // response = await send_push_notification(
+            //   data.tokens,
+            //   "Congratulations!",
+            //   `Hi ${data.name}, Your booking is created successfully!`
+            // );
             break;
           default:
             throw new Error(`Unknown job name: ${name}`);
