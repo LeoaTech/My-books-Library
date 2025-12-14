@@ -66,6 +66,16 @@ const worker = new Worker(
             variables: { ...variables, bookingVariables },
           });
           break;
+       
+        case "saas-subscription-updated-push":
+          content = await getNotificationContent({
+            entityId: variables?.entityId || data?.entityId,
+            channel: "push",
+            event: "saas-subscription-updated-push",
+            variables,
+          });
+          break;
+
         default:
           throw new Error(`Unknown job name: ${name}`);
       }
