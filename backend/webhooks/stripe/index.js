@@ -507,6 +507,7 @@ router.post(
           const customer = await stripe.customers.retrieve(
             invoiceSucceed.customer
           );
+          userId = invoiceSucceed?.client_reference_id || invoiceSucceed?.metadata?.app_client_id;
 
           const priceAmount =
             invoiceSucceed?.amount_paid / 100 ||
@@ -523,22 +524,30 @@ router.post(
           const entityId = subscription.metadata?.entityId;
           const subdomain = subscription.metadata?.subdomain;
 
+          userData = {
+            name: customer?.name || "Customer",
+            city: customer?.address?.city || "",
+            country: customer?.address?.country || "",
+            phone: customer?.phone || "",
+            subdomain,
+          };
+          subscriptionData = {
+            plan_name: planName,
+            amount: priceAmount?.toFixed(2),
+            next_billing_date: nextBillingDate,
+          };
           // 3. Send the Renewal Email
           await emailQueue.add("saas-subscription-renewed", {
             to: customer?.email,
-            userData: {
-              name: customer?.name || "Customer",
-              city: customer?.address?.city || "",
-              country: customer?.address?.country || "",
-              phone: customer?.phone || "",
-              subdomain,
-            },
-            subscriptionData: {
-              plan_name: planName,
-              amount: priceAmount?.toFixed(2),
-              next_billing_date: nextBillingDate,
-            },
+            userData,
+            subscriptionData,
             entityId,
+          });
+          await pushQueue.add("saas-subscription-renewed-push", {
+            entityId,
+            userId,
+            userData,
+            subscriptionData,
           });
 
           console.log(`Renewal email sent to ${customer.email}`);
