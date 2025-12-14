@@ -100,6 +100,15 @@ const worker = new Worker(
             variables,
           });
           break;
+        case "saas-subscription-deleted-push":
+          content = await getNotificationContent({
+            entityId: variables?.entityId || data?.entityId,
+            channel: "push",
+            event: "saas-subscription-deleted-push",
+            variables,
+          });
+          break;
+
         default:
           throw new Error(`Unknown job name: ${name}`);
       }
