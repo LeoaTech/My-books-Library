@@ -2,7 +2,7 @@ const express = require("express");
 const { default: Stripe } = require("stripe");
 const db = require("../../config/dbConfig.js");
 const stripe = require("../../config/stripe.js");
-const { emailQueue } = require("../../queues/index.js");
+const { emailQueue, pushQueue } = require("../../queues/index.js");
 
 const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
 
@@ -38,6 +38,8 @@ router.post(
 
     let entityId;
     let subdomain;
+    let subscriptionData;
+    let userData;
     // Handle the event
     switch (event.type) {
       case "customer.subscription.deleted":
@@ -226,24 +228,25 @@ router.post(
           const customer = await stripe.customers.retrieve(
             subscription.customer
           );
+          userData = {
+            name: customer?.name || "",
+            city: customer?.address.city || "",
+            country: customer?.address?.country || "",
+            phone: customer?.phone || "",
+            subdomain,
+          };
+          subscriptionData = {
+            plan_name: planName,
+            end_date: new Date(
+              subscription?.items?.data[0]?.current_period_end * 1000
+            ).toDateString(),
+          };
           planName = subscription?.metadata?.planName;
-          console.log("Inside the cancellation subscription");
 
           await emailQueue.add("saas-subscription-cancel-request", {
             to: customer?.email,
-            userData: {
-              name: customer?.name || "",
-              city: customer?.address.city || "",
-              country: customer?.address?.country || "",
-              phone: customer?.phone || "",
-              subdomain,
-            },
-            subscriptionData: {
-              plan_name: planName,
-              end_date: new Date(
-                subscription?.items?.data[0]?.current_period_end * 1000
-              ).toDateString(),
-            },
+            userData,
+            subscriptionData,
             entityId,
           });
 
@@ -254,8 +257,12 @@ router.post(
           `SELECT id from users WHERE stripe_customer_id=$1`,
           [subscription.customer]
         );
+
         if (getUserId.rows > 0) {
-          if (subscription.status === "canceled") {
+          if (
+            subscription.status === "canceled" ||
+            subscription.status === "cancelled"
+          ) {
             await db.query(`UPDATE user set plan =$1 WHERE id =$2`, [
               "Free",
               getUserId?.rows[0].id,
@@ -273,6 +280,21 @@ router.post(
             const customer = await stripe.customers.retrieve(
               subscription.customer
             );
+            userData = {
+              name: customer?.name || "",
+              city: customer?.address.city || "",
+              country: customer?.address?.country || "",
+              phone: customer?.phone || "",
+              subdomain,
+            };
+            subscriptionData = {
+              plan_name: currentPlanName,
+              amount: (
+                subscription?.items?.data[0]?.price?.unit_amount / 100
+              ).toFixed(2),
+              billing_cycle:
+                subscription?.items?.data[0]?.price?.recurring?.interval || "",
+            };
             planName = subscription?.metadata?.planName;
 
             const currentPlanName =
@@ -280,25 +302,21 @@ router.post(
               subscription?.metadata?.planName ||
               "New Plan";
 
+            // Send Email Alert
             await emailQueue.add("saas-subscription-updated", {
               to: customer?.email,
-              userData: {
-                name: customer?.name || "",
-                city: customer?.address.city || "",
-                country: customer?.address?.country || "",
-                phone: customer?.phone || "",
-                subdomain,
-              },
-              subscriptionData: {
-                plan_name: currentPlanName,
-                amount: (
-                  subscription?.items?.data[0]?.price?.unit_amount / 100
-                ).toFixed(2),
-                billing_cycle:
-                  subscription?.items?.data[0]?.price?.recurring?.interval ||
-                  "",
-              },
+              userData,
+              subscriptionData,
               entityId,
+            });
+
+            // Send Push Alert
+
+            await pushQueue.add("saas-subscription-updated-push", {
+              entityId,
+              userId: getUserId?.rows[0].id,
+              userData,
+              subscriptionData,
             });
           }
         }
@@ -466,16 +484,21 @@ router.post(
         const invoiceSucceed = event?.data?.object;
         // console.log(invoiceSucceed, "Invoice Payment succeeded Webhook");
         if (invoiceSucceed.billing_reason === "subscription_cycle") {
-
           const subscription = await stripe.subscriptions.retrieve(
             invoiceSucceed.subscription
           );
 
-          const customer = await stripe.customers.retrieve(invoiceSucceed.customer);
+          const customer = await stripe.customers.retrieve(
+            invoiceSucceed.customer
+          );
 
-          const priceAmount = invoiceSucceed?.amount_paid / 100 ||subscription?.items?.data[0]?.price?.unit_amount /100; 
+          const priceAmount =
+            invoiceSucceed?.amount_paid / 100 ||
+            subscription?.items?.data[0]?.price?.unit_amount / 100;
           const planName =
-            subscription?.items?.data[0]?.price?.nickname || subscription?.metadata?.planName ||"Plan";
+            subscription?.items?.data[0]?.price?.nickname ||
+            subscription?.metadata?.planName ||
+            "Plan";
 
           const nextBillingDate = new Date(
             subscription.current_period_end * 1000
