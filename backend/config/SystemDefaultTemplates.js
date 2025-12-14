@@ -18,6 +18,18 @@ const SYSTEM_DEFAULTS = {
     ],
     channel: "email",
   },
+  "saas-subscription-created-push": {
+    subject: "Upgrade Confirmed: You are now on the {{plan_name}} Plan",
+    body: "Hi {{customer_name}},\n\nSuccess! You have upgraded your library to the {{plan_name}}.\n\nView Invoice: {{invoice_link}}",
+    variables: [
+      "customer_name",
+      "plan_name",
+      "billing_cycle",
+      "amount",
+      "invoice_link",
+    ],
+    channel: "push",
+  },
 
   "saas-subscription-updated": {
     subject: "Your Subscription Plan has been Updated",
