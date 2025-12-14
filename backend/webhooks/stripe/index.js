@@ -43,11 +43,7 @@ router.post(
     let userId;
     // Handle the event
     switch (event.type) {
-      case "customer.subscription.deleted":
-        subscription = event?.data.object;
-        status = subscription?.status;
-
-        break;
+     
       // New Subscription
       case "checkout.session.completed":
         const session = event?.data?.object;
