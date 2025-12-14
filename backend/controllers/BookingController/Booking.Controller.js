@@ -108,35 +108,25 @@ const CreateBooking = asyncHandler(async (req, res) => {
 
     const bookingData = createBookingQuery?.rows[0];
     // console.log(bookingData, "Booking Data");
-    
-    if (createBookingQuery.rowCount > 0) {
-      const userTokenQuery = `
-    SELECT 
-    uft.token,
-    u.name,
-    u.email
-    FROM users u
-  LEFT JOIN user_fcm_tokens uft 
-    ON uft.user_id = u.id
-  WHERE u.id = $1`;
-      const userTokenResult = await db.query(userTokenQuery, [user_id]);
 
-      let userInfo = userTokenResult?.rows[0];
+    if (createBookingQuery.rowCount > 0) {
+      const userInfoQuery = `SELECT id,name,email,phone,address,city, 
+      country FROM users WHERE id = $1`;
+      const userInfoResult = await db.query(userInfoQuery, [user_id]);
+
+      let userInfo = userInfoResult?.rows[0];
       await emailQueue.add("booking-created-email", {
         to: userInfo?.email,
         entityId,
         userData: userInfo,
         bookingData,
       });
-      // const userTokens = userTokenResult.rows.map((row) => row?.token);
-      // if (userTokens.length > 0) {
-      //   await pushQueue.add("booking-created-push", {
-      //     tokens: userTokens,
-      //     entityId,
-      //     userData,
-      //     bookingData,
-      //   });
-      // }
+      await pushQueue.add("booking-created-push", {
+        entityId,
+        userId: user_id, 
+        userData:userInfo,
+        bookingData,
+      });
     }
     res.status(200).json({
       booking: bookingData,
