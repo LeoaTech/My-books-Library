@@ -44,7 +44,6 @@ const SYSTEM_DEFAULTS = {
     variables: ["customer_name", "plan_name"],
     channel: "push",
   },
-
   "saas-subscription-cancel-request": {
     subject: "Subscription Cancellation Request",
     body: "Hi {{customer_name}},\n\nWe have received your request to cancel your subscription.\n\nYour access to paid features will continue until the end of your current billing period on {{end_date}}.\n\nWe are sorry to see you go. If this was a mistake, you can resubscribe at any time.",
@@ -69,6 +68,13 @@ const SYSTEM_DEFAULTS = {
     body: "Hi {{customer_name}},\n\nThis is a confirmation that your subscription for {{plan_name}} has been successfully renewed.\n\nAmount Paid: ${{amount}}\nNext Billing Date: {{next_billing_date}}\n\nThank you for continuing with us!",
     variables: ["customer_name", "plan_name", "amount", "next_billing_date"],
     channel: "email",
+  },
+
+  "saas-subscription-renewed-push": {
+    subject: "Subscription Renewal Successful",
+    body: "Hi {{customer_name}},\n\nYour subscription for {{plan_name}} has been successfully renewed.\n\nAmount Paid: ${{amount}}\nThank you for continuing with us!",
+    variables: ["customer_name", "plan_name", "amount", "next_billing_date"],
+    channel: "push",
   },
 
   // From Client Library to its Customers
