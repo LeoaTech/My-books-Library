@@ -26,6 +26,13 @@ const SYSTEM_DEFAULTS = {
     channel: "email",
   },
 
+  "saas-subscription-updated-push": {
+    subject: "Your Subscription Plan has been Updated",
+    body: "Hi {{customer_name}},\n\nYour subscription has been successfully updated to the {{plan_name}} plan.",
+    variables: ["customer_name", "plan_name"],
+    channel: "push",
+  },
+
   "saas-subscription-cancel-request": {
     subject: "Subscription Cancellation Request",
     body: "Hi {{customer_name}},\n\nWe have received your request to cancel your subscription.\n\nYour access to paid features will continue until the end of your current billing period on {{end_date}}.\n\nWe are sorry to see you go. If this was a mistake, you can resubscribe at any time.",
