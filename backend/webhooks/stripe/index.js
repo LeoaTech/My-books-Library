@@ -88,7 +88,20 @@ router.post(
             const subscription = await stripe.subscriptions.retrieve(
               subscriptionId
             );
-
+            userData = {
+              name: session?.customer_details?.name || "",
+              city: session?.customer_details?.address.city || "",
+              country: session?.customer_details?.address?.country || "",
+              phone: session?.customer_details?.phone || "",
+              subdomain,
+            };
+            subscriptionData = {
+              plan_name: planName,
+              subscription_id: subscription?.id,
+              amount: (session?.amount_total / 100).toFixed(2),
+              billing_cycle: subscriptionItem?.plan?.interval,
+              invoice_link: invoice?.hosted_invoice_url || "",
+            };
             await db.query(
               `UPDATE users SET stripe_customer_id =$1, plan =$2 WHERE id=$3`,
               [customerId, planName, dbUserId]
@@ -114,21 +127,16 @@ router.post(
 
             await emailQueue.add("saas-subscription-created", {
               to: session?.customer_email,
-              userData: {
-                name: session?.customer_details?.name || "",
-                city: session?.customer_details?.address.city || "",
-                country: session?.customer_details?.address?.country || "",
-                phone: session?.customer_details?.phone || "",
-                subdomain,
-              },
-              subscriptionData: {
-                plan_name: planName,
-                subscription_id: subscription.id,
-                amount: (session?.amount_total / 100).toFixed(2),
-                billing_cycle: subscriptionItem?.plan?.interval,
-                invoice_link: invoice?.hosted_invoice_url || "",
-              },
+              userData,
+              subscriptionData,
               entityId,
+            });
+
+            await pushQueue.add("saas-subscription-created-push", {
+              entityId,
+              userId: dbUserId,
+              userData,
+              subscriptionData,
             });
           } else {
             // USER TYPE - CUSTOMER
