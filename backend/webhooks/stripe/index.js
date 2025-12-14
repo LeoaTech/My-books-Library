@@ -356,18 +356,18 @@ router.post(
           ["canceled", subscriptionDeleted.id]
         );
 
-        const UserId = await db.query(
+        const getUser = await db.query(
           `SELECT id from users WHERE stripe_customer_id=$1`,
           [subscriptionDeleted?.customer]
         );
-        if (UserId?.rows?.length > 0) {
+        if (getUser?.rows?.length > 0) {
           if (
             subscriptionDeleted.status === "canceled" ||
             subscriptionDeleted.status === "cancelled"
           ) {
             await db.query(`UPDATE user set plan =$1 WHERE id =$1`, [
               "Free",
-              UserId?.rows[0].id,
+              getUser?.rows[0]?.id,
             ]);
 
             // Send Email
@@ -375,20 +375,29 @@ router.post(
             const entityId = subscriptionDeleted?.metadata?.entityId;
             const subdomain = subscriptionDeleted?.metadata?.subdomain;
 
-            await emailQueue.add("saas-subscription-deleted", {
-              to: customer?.email,
-              userData: {
+            userData= {
                 name: customer?.name || "Customer",
                 city: customer?.address?.city || "",
                 country: customer?.address?.country || "",
                 phone: customer?.phone || "",
                 subdomain,
-              },
+              }
+            await emailQueue.add("saas-subscription-deleted", {
+              to: customer?.email,
+              userData,
               subscriptionData: {
                 plan_name: "Free",
               },
               entityId,
             });
+
+            
+             await pushQueue.add("saas-subscription-deleted-push", {
+            entityId,
+            userId:getUser?.rows[0]?.id,
+            userData,
+            subscriptionData:{plan_name: "Free"},
+          });
           }
         }
         break;
