@@ -50,7 +50,7 @@ const SYSTEM_DEFAULTS = {
     variables: ["customer_name", "end_date"],
     channel: "email",
   },
- "saas-subscription-cancel-request-push": {
+  "saas-subscription-cancel-request-push": {
     subject: "Subscription Cancellation Request",
     body: "Hi {{customer_name}},\n\nWe are sorry to see you go.\n\nIf this was a mistake, you can resubscribe at any time before {{end_date}}.",
     variables: ["customer_name", "end_date"],
@@ -61,6 +61,12 @@ const SYSTEM_DEFAULTS = {
     body: "Hi {{customer_name}},\n\nYour subscription has officially ended and your account has been downgraded to the Free plan.\n\nWe hope you enjoyed using our service. You can upgrade again at any time to regain access to premium features.\n\nBest regards,\nThe Team {{saas_app_name}}",
     variables: ["customer_name", "saas_app_name"],
     channel: "email",
+  },
+  "saas-subscription-deleted-push": {
+    subject: "Your Subscription Has Ended",
+    body: "Hi {{customer_name}},\n\nYour subscription has officially ended and your account has been downgraded to the Free plan.\n\nBest regards,\nThe Team {{saas_app_name}}",
+    variables: ["customer_name", "saas_app_name"],
+    channel: "push",
   },
 
   "saas-subscription-renewed": {
