@@ -1,7 +1,7 @@
 const asyncHandler = require("express-async-handler");
 const db = require("../../config/dbConfig");
 const { uploadOne } = require("../../helpers/books/CloudinaryUploadImages");
-const { emailQueue } = require("../../queues");
+const { emailQueue, pushQueue } = require("../../queues");
 
 const options = {
   folder: "books",
@@ -430,7 +430,7 @@ const UpdateBook = asyncHandler(async (req, res) => {
   } = book;
 
   const newStock = parseInt(quantity);
-  // Get the Book Quantity 
+  // Get the Book Quantity
 
   const itemQuery = `
       SELECT quantity
@@ -472,6 +472,13 @@ const UpdateBook = asyncHandler(async (req, res) => {
       await emailQueue.add("send-book-available-email", {
         to: user?.email,
         entityId,
+        userData: user,
+        book_title: title,
+      });
+
+      await pushQueue.add("send-book-available-push", {
+        entityId,
+        userId: row?.id,
         userData: user,
         book_title: title,
       });
