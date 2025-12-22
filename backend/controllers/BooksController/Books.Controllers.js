@@ -1,7 +1,14 @@
 const asyncHandler = require("express-async-handler");
 const db = require("../../config/dbConfig");
 const { uploadOne } = require("../../helpers/books/CloudinaryUploadImages");
+const { emailQueue } = require("../../queues");
 
+const options = {
+  folder: "books",
+  use_filename: true,
+  unique_filename: false,
+  overwrite: true,
+};
 // Get All Books
 
 const GetAllBooks = asyncHandler(async (req, res) => {
@@ -342,14 +349,13 @@ const CreateNewBook = asyncHandler(async (req, res) => {
     );
     console.log(saveBook?.rowCount, "Book Saved");
     if (saveBook?.rowCount > 0) {
-
       const response = {
         books: saveBook?.rows[0],
         message: "Book Details saved successfully",
-      }
+      };
 
-      if(failedImagesCount > 0){
-        response.warning = `Book Created but ${failedImagesCount} images failed to upload`
+      if (failedImagesCount > 0) {
+        response.warning = `Book Created but ${failedImagesCount} images failed to upload`;
       }
       return res.status(200).json(response);
     } else {
@@ -398,7 +404,7 @@ const DeleteBook = asyncHandler(async (req, res) => {
 const UpdateBook = asyncHandler(async (req, res) => {
   const { book } = req.body;
   // console.log(req.body, "Update Form");
-
+  const { userId, entityId } = req.user;
   const {
     title,
     member_price,
@@ -422,6 +428,55 @@ const UpdateBook = asyncHandler(async (req, res) => {
     edition,
     quantity,
   } = book;
+
+  const newStock = parseInt(quantity);
+  // Get the Book Quantity 
+
+  const itemQuery = `
+      SELECT quantity
+      FROM books
+      WHERE id = $1
+      LIMIT 1
+    `;
+  const itemResult = await db.query(itemQuery, [bookId]);
+
+  if (itemResult.rowCount === 0) {
+    return res.status(404).json({ error: "book item not found" });
+  }
+
+  const item = itemResult.rows[0];
+  const oldStock = item.quantity;
+
+  if ((oldStock === 0 && newStock > 0) || (oldStock === 1 && newStock > 1)) {
+    // fetch users to notify and send notifications
+    const wishesQuery = `
+        SELECT u.id,u.email, u.name, u.city,u.country,u.address
+        FROM wishlist w
+        INNER JOIN users u ON w.user_id = u.id
+        WHERE w.book_id = $1
+          AND w.entity_id = $2
+          AND w.notified = false
+      `;
+    const wishesResult = await db.query(wishesQuery, [bookId, entityId]);
+
+    // console.log(wishesResult, "Wishlist users");
+
+    for (const row of wishesResult.rows) {
+      const user = {
+        email: row?.email || "",
+        name: row?.name || "",
+        city: row?.city || "",
+        country: row?.country || "",
+        address: row?.address || "",
+      };
+      await emailQueue.add("send-book-available-email", {
+        to: user?.email,
+        entityId,
+        userData: user,
+        book_title: title,
+      });
+    }
+  }
 
   let failedUploadImage;
   let countFailedUpload;
@@ -470,7 +525,7 @@ const UpdateBook = asyncHandler(async (req, res) => {
     imagesUrlsJson = JSON.stringify(cover_img_url);
   }
 
-  //   Save Book in database
+  //   Save Book in database -> also the quantity if changed
   try {
     const updateBook = await db.query(
       `UPDATE books SET 
