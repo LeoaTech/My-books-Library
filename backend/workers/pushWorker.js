@@ -107,6 +107,13 @@ const worker = new Worker(
             event: "saas-subscription-deleted-push",
             variables,
           });
+        case "send-book-available-push":
+          content = await getNotificationContent({
+            entityId: variables?.entityId || data?.entityId,
+            channel: "email",
+            event: "send-book-available-push",
+            variables: { ...variables, book_title: data?.book_title },
+          });
           break;
 
         default:
