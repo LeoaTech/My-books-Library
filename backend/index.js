@@ -39,6 +39,8 @@ const dashboardRoute = require("./routes/dashboardRoutes/DashboardRoutes.js");
 const stripeStatus = require("./routes/PG_Onboarding/StripeStatus.js");
 const stripeConnect = require("./routes/PG_Onboarding/StripeConnect.js");
 const stripeOnboarding = require("./routes/PG_Onboarding/StripeOnboarding.js");
+
+const wishlistRoute = require("./routes/ProductWishlist/ProductWishlistRoute.js")
 const uploadBooksFromFile = require("./routes/booksRoutes/FileUploadBooks.js");
 const webhooks = require("./webhooks/stripe/index.js"); //Stripe webhook
 
@@ -142,6 +144,9 @@ app.use("/api/library/:entityId/stripe/connect", stripeConnect);
 app.use(stripeRouter);
 app.use(uploadBooksFromFile);
 
+
+// Add Book Item to Wishlist:
+app.use(wishlistRoute)
 
 // Notification templates
 app.use("/api/notifications", notificationRoute)
