@@ -114,7 +114,12 @@ const SYSTEM_DEFAULTS = {
     variables: ["customer_name", "book_title", "library_name"],
     channel: "email",
   },
-
+   "send-book-available-push": {
+    subject: "Book {{book_title}} is Available Now",
+    body: "Hi {{customer_name}},\n\nYour Book Item ( {{book_title}}) is restocked. Please visit {{library_name}} to buy it.\n\nThanks!",
+    variables: ["customer_name", "book_title", "library_name"],
+    channel: "push",
+  },
   "subscription-created-email": {
     subject: "Subscription Created : {{subscription_id}}",
     body: "Hi {{customer_name}}, \n\n Thanks for Purchasing. Your Subscription for ID {{subscription_id}} created successfully. You can use the {{plan_name}} features",
