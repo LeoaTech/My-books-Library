@@ -100,6 +100,14 @@ const worker = new Worker(
             variables,
           });
           break;
+        case "send-book-available-email":
+          content = await getNotificationContent({
+            entityId: variables?.entityId || data?.entityId,
+            channel: "email",
+            event: "send-book-available-email",
+            variables: { ...variables, book_title: data?.book_title },
+          });
+          break;
         default:
           throw new Error(`Unknown job name: ${name}`);
       }
