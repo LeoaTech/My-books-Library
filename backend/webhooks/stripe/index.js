@@ -400,9 +400,9 @@ router.post(
 
       case "invoice.paid": {
         const invoice = event.data.object;
-        console.log(invoice, "invoice Paid webhook");
+        // console.log(invoice, "invoice Paid webhook");
 
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        await new Promise((resolve) => setTimeout(resolve, 3000));
 
         const customerId = invoice.customer;
         if (!customerId) {
@@ -426,7 +426,7 @@ router.post(
           [subscriptionId]
         );
 
-        if (subResult.rows.length === 0) {
+        if (subResult?.rows?.length === 0) {
           console.log(
             `Subscription ${subscriptionId} not found. Creating it from invoice.paid event to handle race condition.`
           );
@@ -437,11 +437,11 @@ router.post(
             "SELECT id FROM users WHERE stripe_customer_id = $1",
             [customerId]
           );
-          if (userResult.rows.length === 0) {
+          if (userResult?.rows?.length === 0) {
             console.error(` User not found for customer_id: ${customerId}`);
             break;
           }
-          const userId = userResult.rows[0].id;
+          const userId = userResult?.rows[0]?.id;
 
           await db.query(
             `INSERT INTO client_subscription (user_id, stripe_subscription_id, stripe_price_id, stripe_product_id, status, current_period_end, cancel_at_period_end, start_date,auto_renew)
@@ -474,7 +474,7 @@ router.post(
           invoice.billing_reason === "subscription_update"
         ) {
           const { id: clientSubscriptionId, user_id: userId } =
-            subResult.rows[0];
+            subResult?.rows[0];
 
           // --- INSERT into client_transactions ---
           await db.query(
