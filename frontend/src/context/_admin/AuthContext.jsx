@@ -54,8 +54,8 @@ export const AuthContextProvider = ({ children }) => {
           localStorage.setItem("user", JSON.stringify(data?.user));
 
           dispatch({ type: "Login", payload: data });
-          setAuth({ ...data, accessToken: data?.accessToken });
-          // <Navigate to={`/${data.subdomain}`} replace />
+          setAuth({ ...data, accessToken: response?.data?.accessToken });
+          dispatch({ type: "Login", payload: data });
           const redirectURL = `/${data?.subdomain}`
           return redirectURL;
 
@@ -78,7 +78,7 @@ export const AuthContextProvider = ({ children }) => {
         auth,
         googleAuth,
         setGoogleAuth,
-        setAuth,getUser
+        setAuth, getUser
       }}
     >
       {children}
