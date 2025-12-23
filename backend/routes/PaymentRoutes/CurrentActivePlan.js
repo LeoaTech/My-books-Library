@@ -37,12 +37,15 @@ router.get("/", async (req, res) => {
       [userId]
     );
 
-    if (subscriptionResult.rows.length > 0) {
+    // console.log(subscriptionResult.rows, "Plan details");
+    
+
+    if (subscriptionResult?.rows?.length > 0) {
       // User has subscription
       const currentSubscription = subscriptionResult?.rows[0];
 
-      const isActive = ["active", "trialing"].includes(
-        currentSubscription.status
+      const isActive = ["active"].includes(
+        currentSubscription?.status
       );
 
        const planName = await getPlanNameFromPriceId(
@@ -53,10 +56,10 @@ router.get("/", async (req, res) => {
         isActive: isActive,
         subscription: {
           planName: currentSubscription ? planName : null,
-          stripeSubscriptionId: currentSubscription.stripe_subscription_id,
-          status: currentSubscription.status,
-          currentPeriodEnd: currentSubscription.current_period_end,
-          stripePriceId: currentSubscription.stripe_price_id,
+          stripeSubscriptionId: currentSubscription?.stripe_subscription_id,
+          status: currentSubscription?.status,
+          currentPeriodEnd: currentSubscription?.current_period_end,
+          stripePriceId: currentSubscription?.stripe_price_id,
           cancelAtPeriodEnd:currentSubscription?.cancel_at_period_end
         },
       });
@@ -64,7 +67,7 @@ router.get("/", async (req, res) => {
       // User does not have an active subscription, Restrict the resource access for users
 
       const totalBookCount = await totalBooks(db, entityId);
-      console.log(totalBookCount, "Total Books");
+      // console.log(totalBookCount, "Total Books");
       const totalUsersCount = await totalUsers(db, entityId);
 
       res.json({
