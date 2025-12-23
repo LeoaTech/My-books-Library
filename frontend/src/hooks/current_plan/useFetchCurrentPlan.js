@@ -29,7 +29,7 @@ export const useFetchCurrentPlan = (auth) => {
   return useQuery({
     queryKey: ["current-plan"],
     queryFn: fetchCurrentPlan,
-    enabled: !!auth?.accessToken,
+    enabled: !!auth?.accessToken || !!auth?.id,
     refetchOnWindowFocus: true,
   });
 };
