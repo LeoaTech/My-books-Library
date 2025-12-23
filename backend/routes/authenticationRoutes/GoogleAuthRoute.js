@@ -15,7 +15,7 @@ const refreshToken = (data) => {
 // Google Authentication
 
 router.get("/auth/google", (req, res, next) => {
-  const action = req.query.action; // 'create_lib' or 'join_lib'
+  const action = req.query.action; // 'creatlle_lib' or 'join_lib'
   const subdomain = req.query.subdomain;
 
   // console.log(action, subdomain);
@@ -50,7 +50,7 @@ router.get("/auth/google", (req, res, next) => {
 router.get(
   "/auth/google/callback",
   passport.authenticate("google", {
-    successRedirect: process.env.CLIENT_URL, 
+    successRedirect: process.env.CLIENT_URL,
     failureRedirect: "/auth/google/failure",
     failureMessage: true,
   })
@@ -66,12 +66,12 @@ router.get("/auth/logout", (req, res) => {
     res.clearCookie("refreshToken", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     });
     res.clearCookie("connect.sid", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     });
     res.json({ message: "Logout successful" });
   });
@@ -146,9 +146,9 @@ router.get("/auth/login/success", async (req, res) => {
     // Set JWT in an HTTP-only cookie
     res.cookie("refreshToken", refresh_token, {
       httpOnly: true,
-      sameSite: "none", 
-      secure: process.env.NODE_ENV === "production", 
-      maxAge: 1 * 24 * 60 * 60 * 1000, 
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 1 * 24 * 60 * 60 * 1000,
     });
 
     res.status(200).json({
@@ -157,7 +157,7 @@ router.get("/auth/login/success", async (req, res) => {
         auth: true,
         authSource: "google",
         id: user?.user_id,
-        plan:user?.plan,
+        plan: user?.plan,
         name: user?.name,
         email: user?.email,
         roleId: user?.role_id,
