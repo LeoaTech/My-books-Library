@@ -5,13 +5,13 @@ importScripts(
   "https://www.gstatic.com/firebasejs/10.13.1/firebase-messaging-compat.js"
 );
 const firebaseConfig = {
-  apiKey: "AIzaSyDXgrml3YLilt6g3scSB6QsP1M0GjkQrt8",
-  authDomain: "library-app-60fbd.firebaseapp.com",
-  projectId: "library-app-60fbd",
-  storageBucket: "library-app-60fbd.firebasestorage.app",
-  messagingSenderId: "647065725387",
-  appId: "1:647065725387:web:6507cb5da4060d1deaee4e",
-  measurementId: "G-ZGD0KEY3P9",
+  apiKey: "AIzaSyBCn5QTpk0JD5sbWOsbNZqP-VgVqrYOY-o",
+  authDomain: "bookhive-notification.firebaseapp.com",
+  projectId: "bookhive-notification",
+  storageBucket: "bookhive-notification.firebasestorage.app",
+  messagingSenderId: "557297495364",
+  appId: "1:557297495364:web:33d19c887b29f4925fbb11",
+  measurementId: "G-6FLK7C4STF",
 };
 firebase.initializeApp(firebaseConfig);
 
