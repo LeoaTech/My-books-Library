@@ -1,5 +1,6 @@
 const asyncHandler = require("express-async-handler");
 const db = require("../../config/dbConfig.js");
+const { pushQueue, emailQueue } = require("../../queues/index.js");
 
 const queryBooking = `SELECT 
     b.id AS booking_id,
@@ -59,6 +60,8 @@ const getBookings = asyncHandler(async (req, res) => {
 const CreateBooking = asyncHandler(async (req, res) => {
   console.log(req.body);
   const entityId = req?.user?.entityId || req.user?.entity_id;
+  const userId = req?.user?.userId || req.user?.user_id;
+
   if (!entityId) {
     res.send(400).json({ message: "Invalid Request, No Library ID provided" });
   }
@@ -85,7 +88,7 @@ const CreateBooking = asyncHandler(async (req, res) => {
       borrow_date, return_due,return_date,booking_status,
        shipping_address,shipping_city, shipping_country,
        shipping_phone,credits_used,entity_id )
-      VALUES ($1,$2, $3, $4, $5, $6, $7, $8, $9,$10, $11, $12, $13) RETURNING *`,
+      VALUES ($1,$2, $3, $4, $5, $6, $7, $8, $9,$10, $11, $12, $13) RETURNING id, user_id,return_due, shipping_address;`,
       [
         user_id,
         null,
@@ -103,10 +106,30 @@ const CreateBooking = asyncHandler(async (req, res) => {
       ]
     );
 
-    console.log(createBookingQuery?.rows[0], "Booking added");
+    const bookingData = createBookingQuery?.rows[0];
+    // console.log(bookingData, "Booking Data");
 
+    if (createBookingQuery.rowCount > 0) {
+      const userInfoQuery = `SELECT id,name,email,phone,address,city, 
+      country FROM users WHERE id = $1`;
+      const userInfoResult = await db.query(userInfoQuery, [user_id]);
+
+      let userInfo = userInfoResult?.rows[0];
+      await emailQueue.add("booking-created-email", {
+        to: userInfo?.email,
+        entityId,
+        userData: userInfo,
+        bookingData,
+      });
+      await pushQueue.add("booking-created-push", {
+        entityId,
+        userId: user_id, 
+        userData:userInfo,
+        bookingData,
+      });
+    }
     res.status(200).json({
-      booking: createBookingQuery?.rows[0],
+      booking: bookingData,
       message: "New Booking Added ",
     });
   } catch (error) {
@@ -146,7 +169,7 @@ const UpdateBooking = asyncHandler(async (req, res) => {
       credits_used,
       renewed,
       renew_return_date,
-      booking_id
+      booking_id,
     } = bookingForm;
 
     const itemsJson = JSON.stringify(items);

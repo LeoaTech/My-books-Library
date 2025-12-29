@@ -6,6 +6,7 @@ const {
   getUserProfile,
   getLibraryUsers,
   CreateUser,
+  registerDeviceToken,
 } = require("../controllers/userController/UserController");
 const { checkAuth } = require("../middleware/authMiddleware");
 const router = express.Router();
@@ -14,7 +15,7 @@ router.use(checkAuth);
 // Get All Users
 // router.get("/", getAllUsers);
 
-//Todo: Verify Role and  Permissions to access these routes
+router.post("/update-devicetoken",  registerDeviceToken);
 
 // Get a particular Library User
 router.get("/", getLibraryUsers);

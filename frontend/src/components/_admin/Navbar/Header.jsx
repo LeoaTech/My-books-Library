@@ -76,7 +76,7 @@ const Header = ({ sidebarOpen, setSidebarOpen }) => {
             {/* <!-- Dark Mode Toggler --> */}
 
             {/* <!-- Notification Menu Area --> */}
-            <DropdownNotification />
+            {/* <DropdownNotification /> */}
             {/* <!-- Notification Menu Area --> */}
           </ul>
 

@@ -33,6 +33,10 @@ import MyProfile from "../_root/pages/UserProfile/index";
 import AccountSettings from "../_root/pages/UserProfile/AccountSettings";
 import MyOrdersHistory from "../_root/pages/UserProfile/MyOrdersHistory";
 import Membership from "../_root/pages/UserProfile/Membership";
+import PaymentSuccess from "../_admin/pages/PaymentSuccess";
+import Pricing from "../pages/pricing";
+
+
 // import Billing from "../_root/pages/UserProfile/Billing";
 const renderRoutes = (routes) => {
   return routes?.map((route, i) => {
@@ -62,7 +66,6 @@ const renderRoutes = (routes) => {
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route>
-      <Route path="/" element={<Home />}></Route>
       <Route path="library" element={<Library />}></Route>
       <Route path="shop" element={<Shop />}></Route>
       <Route path="book" element={<BookOverview />}></Route>
@@ -76,7 +79,6 @@ const router = createBrowserRouter(
 
         {/* App auth routes to register new library or sign in to their library */}
         <Route path="/register" element={<Register />} />
-
 
         {/* Library's routes to add new users, roles or customers */}
         <Route path="/signin" element={<SignIn />} />
@@ -96,16 +98,19 @@ const router = createBrowserRouter(
         <Route path="/:subdomain/forgot-password" element={<ForgetPassword />} />
       </Route>
 
-      {/* <Route path="/:subdomain" element={<Home />} /> */}
 
       <Route element={<PersistLogin />}>
 
-        <Route path="/" element={<App />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/pricing" element={<Pricing />}></Route>
         <Route path="/:subdomain" element={<Home />} />
+        <Route path="/:subdomain/membership" element={<Membership />}></Route>
+        <Route path="/:subdomain/success" element={<PaymentSuccess />} />
+        <Route path="/:subdomain/pricing" element={<Pricing />}></Route>
 
 
         {/* Protected Dashboard Routes */}
-        <Route element={<RequiredAuth allowedRoles={["owner","vendor","admin"]} />}>
+        <Route element={<RequiredAuth allowedRoles={["owner", "vendor", "admin"]} />}>
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<DashboardPage />} />
             {renderRoutes(routes)}

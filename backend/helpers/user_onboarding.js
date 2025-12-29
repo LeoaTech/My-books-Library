@@ -148,8 +148,8 @@ async function createUser(client, userData) {
   } = userData;
 
   const query = `
-    INSERT INTO users (name, email,password,city,country,address, phone, img_url)
-    VALUES ($1, $2, $3, $4,$5,$6,$7,$8)
+    INSERT INTO users (name, email,password,city,country,address, phone, img_url,plan)
+    VALUES ($1, $2, $3, $4,$5,$6,$7,$8,$9)
     RETURNING *;
   `;
   const values = [
@@ -161,6 +161,7 @@ async function createUser(client, userData) {
     address,
     phone,
     img_url || "",
+    "Free"
   ];
   const result = await client.query(query, values);
   return result.rows[0];

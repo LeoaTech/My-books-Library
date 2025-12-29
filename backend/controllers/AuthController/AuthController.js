@@ -12,7 +12,6 @@ const { pool } = require("../../config/dbConfig.js");
 const {
   createEntity,
   createBranch,
-  createRole,
   createUser,
   addPermissions,
   checkSubdomain,
@@ -22,6 +21,8 @@ const {
   createDummyVendor,
   createDefaultRoles,
 } = require("../../helpers/user_onboarding.js");
+
+const { emailQueue, pushQueue } = require("../../queues/index.js");
 // Generate Access JWT
 const generateToken = (data) => {
   //5m in production
@@ -29,7 +30,6 @@ const generateToken = (data) => {
 };
 
 // Refresh token Generate
-
 const refreshToken = (data) => {
   return jwt.sign({ data }, process.env.JWT_REFRESH_SECRET, {
     expiresIn: "3h", //in production 7 day
@@ -72,9 +72,11 @@ const RegisterUser = asyncHandler(async (req, res) => {
       throw new Error("Missing required fields");
     }
 
+    // let userData;
+
     // Check if user already exists
     let userResult = await client.query(
-      "SELECT id FROM users WHERE email = $1",
+      "SELECT id,name,email,phone,address,city, country FROM users WHERE email = $1",
       [email]
     );
     let userId;
@@ -98,10 +100,25 @@ const RegisterUser = asyncHandler(async (req, res) => {
 
       const userResult = await createUser(client, userDetails);
       userId = userResult.id;
+      userData = {
+        name: userResult?.name,
+        email: userResult?.email,
+        city: userResult?.city || "",
+        country: userResult?.country || "",
+        address: userResult?.address || "",
+        phone: userResult?.phone || "",
+      };
     } else {
-      userId = userResult.rows[0].id;
+      userId = userResult?.rows[0].id;
+      userData = {
+        name: userResult?.rows[0]?.name,
+        email: userResult?.rows[0]?.email,
+        city: userResult?.rows[0]?.city || "",
+        country: userResult?.rows[0]?.country || "",
+        address: userResult?.rows[0]?.address || "",
+        phone: userResult?.rows[0]?.phone || "",
+      };
     }
-    console.log(userId, "User Created");
 
     // Check if user ID with the email already has an "owner" role in any other library(entity_id)
     const ownerCheck = await pool.query(
@@ -115,24 +132,22 @@ const RegisterUser = asyncHandler(async (req, res) => {
     );
 
     /* user is already an owner of a Library */
-    if (ownerCheck.rows.length > 0) {
+    if (ownerCheck?.rows?.length > 0) {
       await client.query("ROLLBACK"); // Stop Library Registeration Process
       return res.status(403).json({
         error:
           "Failed to Create Library, User's email already associates to a Library as an owner",
       });
     }
-    /*Continue with Library Registration Steps  */
+    /*Continue with Library Registration  */
 
     // Generate a subdomain from the Business name
     const subdomain = generateSubdomain(businessName);
 
-    console.log(subdomain, "subdomain Created");
+    // console.log(subdomain, "subdomain Created");
 
-    // make sure the subdomain for each entity_id is unique
-
+    //validate the subdomain for each entity_id is unique
     const uniqueSubdomain = await checkSubdomain(client, subdomain);
-    console.log(uniqueSubdomain, "Refine - to add Unique subdomain");
 
     // Step 1: Create an Entity
     const entityData = {
@@ -149,7 +164,7 @@ const RegisterUser = asyncHandler(async (req, res) => {
       uniqueSubdomain,
     };
     const entity = await createEntity(client, entityData);
-    console.log(entity.id, "New Entity Created");
+    // console.log(entity.id, "New Entity Created");
 
     // Step 2: Create a default branch as main branch
 
@@ -163,18 +178,13 @@ const RegisterUser = asyncHandler(async (req, res) => {
       entityId: entity.id,
     };
     const branch = await createBranch(client, branchData, entity.id);
-    console.log(branch.id, "Branch Created");
 
-    //Step 3: Create  default Roles for the Library (owner,vendor and customer)
     const roles = await createDefaultRoles(client, entity.id);
-
-    console.log(roles, "New Role Created for Entity ", entity.id);
 
     // Get the owner role_id from roles list
     let ownerRole = roles.find((role) => role.name == "owner");
-    // Add permissions => Allow all permissions to the `owner` role
+    // Add default owner permissions
     const roleAdded = await addPermissions(client, ownerRole.role_id);
-    console.log(roleAdded, "Roles Added");
 
     // Create a Dummy vendor
     let vendorRole = roles.find((role) => role.name == "vendor");
@@ -193,15 +203,26 @@ const RegisterUser = asyncHandler(async (req, res) => {
       [userId, entity.id, branch.id, ownerRole.role_id]
     );
 
-    console.log(userRole.rows, "User Entity Role created");
-
     await client.query("COMMIT");
+
+    // send Email to Client
+
+    await emailQueue.add("saas-signup-welcome", {
+      to: userResult?.email || email,
+      userData: {
+        ...userData,
+        entity_name: entity?.name,
+        subdomain: entity?.subdomain,
+      },
+      entityId: entity?.id,
+    });
 
     res.status(201).json({
       message: "Library Created successfully",
       user: {
         id: userId,
         email,
+        plan: "Free",
         name: fullName,
         entityId: entity.id,
         entityName: entity.name,
@@ -254,7 +275,7 @@ const LoginUser = asyncHandler(async (req, res) => {
         e.name AS entity_name, e.subdomain,
         b.name AS branch_name,
         r.name AS role_name,
-        u.name, u.password, u.email
+        u.name, u.password,u.plan,u.email
       FROM user_entity_roles uer
       JOIN entities e ON uer.entity_id = e.id
       JOIN branches b ON uer.branch_id = b.id
@@ -272,7 +293,7 @@ const LoginUser = asyncHandler(async (req, res) => {
       // throw new Error("Invalid Email Address");
     }
 
-    console.log(associatedEntities.rows, "Association for email ID");
+    // console.log(associatedEntities.rows, "Association for email ID");
 
     // Check if it has a role of owner
     const ownerAssociation = associatedEntities.rows?.find(
@@ -327,10 +348,9 @@ const LoginUser = asyncHandler(async (req, res) => {
         httpOnly: true,
         sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
         secure: process.env.NODE_ENV === "production",
-        maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
-        // domain:
-        //   process.env.NODE_ENV === "production" ? ".vercel.app" : "localhost",
+        maxAge: 1 * 24 * 60 * 60 * 1000,
       });
+
       res.json({
         accessToken: AccessToken,
         user: {
@@ -345,24 +365,12 @@ const LoginUser = asyncHandler(async (req, res) => {
           entityId: ownerAssociation.entity_id,
           entityName: ownerAssociation.entity_name,
           authSource: "email",
+          plan: ownerAssociation?.plan,
           subdomain: ownerAssociation?.subdomain,
         },
         message: "Login Successfully",
         redirect: `${process.env.CLIENT_URL}/${ownerAssociation?.subdomain}`,
       });
-      // res.status(200).json({
-      //   message: "Login successful, select a Library",
-      //   user: { id: user.id, email },
-      //   LibraryAccounts: associatedEntities?.rows?.map((row) => ({
-      //     entityId: row.entity_id,
-      //     entityName: row.entity_name,
-      //     subdomain: row.subdomain,
-      //     branchId: row.branch_id,
-      //     branchName: row.branch_name,
-      //     roleId: row.role_id,
-      //     role_name: row.role_name,
-      //   })),
-      // });
     }
   } catch (error) {
     console.log(error, "Signin");
@@ -371,126 +379,11 @@ const LoginUser = asyncHandler(async (req, res) => {
   }
 });
 
-// Select an account to sign in
-
-const SelectAccount = asyncHandler(async (req, res) => {
-  console.log(req.body, "Select an Account");
-
-  const { userId, entityId, branchId, roleId, password } = req.body;
-  if (!userId || !entityId || !branchId || !roleId) {
-    return res.status(400).json({
-      error:
-        "User ID, entity ID, branch ID, role ID, and password are required",
-    });
-  }
-
-  try {
-    const associationResult = await db.query(
-      `SELECT 
-        uer.user_id, uer.entity_id, uer.branch_id, uer.role_id,
-        e.name AS entity_name, e.subdomain,
-        b.name AS branch_name,
-        r.name AS role_name,
-        u.email,u.password, u.name
-      FROM user_entity_roles uer
-      JOIN entities e ON uer.entity_id = e.id
-      JOIN branches b ON uer.branch_id = b.id
-      JOIN roles r ON uer.role_id = r.role_id
-      JOIN users u ON uer.user_id = u.id
-      WHERE uer.user_id = $1 AND uer.entity_id = $2 AND uer.branch_id = $3 AND uer.role_id = $4
-      `,
-      [userId, entityId, branchId, roleId]
-    );
-
-    console.log(associationResult.rows[0], "User Result on Select");
-
-    if (associationResult.rows.length === 0) {
-      return res
-        .status(403)
-        .json({ error: "Invalid library, branch, or role selection" });
-    }
-
-    const association = associationResult.rows[0];
-    console.log(association, "Association");
-
-    if (!association.password) {
-      return res
-        .status(401)
-        .json({ error: "No password set for this entity (use Google OAuth?)" });
-    }
-
-    const isValidPassword = await bcrypt.compare(
-      password,
-      association.password
-    );
-    if (!isValidPassword) {
-      return res
-        .status(401)
-        .json({ error: "Invalid password for this Library" });
-    }
-
-    const user_info = {
-      userId: userId,
-      roleId: roleId,
-      branchId: branchId,
-      entityId: entityId,
-      subdomain: association.subdomain,
-    };
-
-    // console.log(user_info, "User info for token");
-
-    // Assign a Token to the user by role_id,branch_id,entity_id
-    const AccessToken = jwt.sign(
-      {
-        UserInfo: user_info,
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: "5m" }
-    );
-
-    const refresh_token = refreshToken(user_info); //refresh token
-    // console.log(refresh_token, "Token");
-
-    // Set the cookie with refresh token
-    res.cookie("refreshToken", refresh_token, {
-      httpOnly: true,
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // Use "none" with secure: true for cross-origin
-      secure: process.env.NODE_ENV === "production", // true on Vercel, false locally
-      maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
-      // domain:
-      //   process.env.NODE_ENV === "production" ? ".vercel.app" : "localhost",
-    });
-    res.json({
-      accessToken: AccessToken,
-      user: {
-        id: association?.user_id,
-        name: association?.name,
-        email: association?.email,
-        authSource: "email",
-        roleId: association?.role_id,
-        role_name: association?.role_name,
-        branchId: association.branch_id,
-        branchName: association.branch_name,
-        entityId: association.entity_id,
-        entityName: association.entity_name,
-        authSource: "email",
-        subdomain: association?.subdomain,
-      },
-      message: "Login Successfully",
-      redirect: `${process.env.CLIENT_URL}/${association?.subdomain}`,
-    });
-  } catch (error) {
-    console.error("Error selecting library:", error);
-    res.status(500).json({ error: "Failed to select a library account" });
-  }
-});
-
 // Sign up to Join a Library from library domain (usign email and password)
 
 // Create New User Account
 const SignupUser = asyncHandler(async (req, res) => {
   const client = await pool.connect();
-
   const { name, email, password, subdomain } = req.body;
 
   if (!subdomain) {
@@ -498,8 +391,6 @@ const SignupUser = asyncHandler(async (req, res) => {
       message: `No Domain is provided `,
     });
   }
-  console.log(req.body, "Domain Signup Form");
-
   if (!name || !email || !password) {
     res.status(400);
     throw Error("Please add all required fields");
@@ -513,44 +404,26 @@ const SignupUser = asyncHandler(async (req, res) => {
   // }
   try {
     await client.query("BEGIN");
-
     const entityId = await getEntity(db, subdomain);
-
-    // console.log("Step 1: ", entityId, " Entity Founded");
-
     const branchId = await getBranch(db, entityId);
 
-    // console.log("Step 2: ", branchId, "Branch Founded");
-
-    // const role = await createRole(client, entityId, "customer");
-
-    // Check if "customer" role already exists for this entity
     const roleResult = await client.query(
       "SELECT role_id FROM roles WHERE entity_id = $1 and name=$2 ",
       [entityId, "customer"]
     );
 
-    // console.log(roleResult.rows, "Roles Exists");
-
     let role;
     if (roleResult.rows.length > 0) {
       role = roleResult.rows[0];
-      // console.log(
-      //   "Roles",
-      //   roleResult.rows,
-      //   "Step 3: Existing customer role from Library found",
-      //   role.role_id
-      // );
     }
-   
-    // console.log("Step 3: ", role.role_id, " role ID created");
 
     // check if user with email exists in DB
-    const userExists = await db.query("SELECT id FROM users Where email = $1", [
-      email,
-    ]);
-
-    // console.log("Step 4: ", userExists, "user Founded");
+    const userExists = await db.query(
+      "SELECT id,name,email,phone,city,country address FROM users Where email = $1",
+      [email]
+    );
+    let userData;
+    console.log("Step 4: ", userExists, "user Founded");
     let userId;
     if (userExists?.rowCount == 0) {
       // Create as a  New User
@@ -569,20 +442,42 @@ const SignupUser = asyncHandler(async (req, res) => {
       };
 
       const userResult = await createUser(client, userDetails);
+      // console.log(userResult, "Create User");
+
       userId = userResult.id;
+      userData = {
+        name: userResult?.name,
+        email: userResult?.email,
+        city: userResult?.city || "",
+        country: userResult?.country || "",
+        address: userResult?.address || "",
+        phone: userResult?.phone || "",
+        subdomain,
+      };
     } else {
       userId = userExists?.rows[0]?.id;
+      userData = {
+        name: userExists?.rows[0]?.name,
+        email: userExists?.rows[0]?.email,
+        city: userExists?.rows[0]?.city || "",
+        country: userExists?.rows[0]?.country || "",
+        address: userExists?.rows[0]?.address || "",
+        phone: userExists?.rows[0]?.phone || "",
+        subdomain,
+      };
     }
-    // console.log("Step 5: ", userId, " add user email with new branch ");
     // Add the user Id's associated entity, role_id and branch_id in the user_entity_roles table
     const userRole = await client.query(
       "INSERT INTO user_entity_roles (user_id, entity_id, branch_id, role_id) VALUES ($1, $2, $3, $4)",
       [userId, entityId, branchId, role.role_id]
     );
-
-    // console.log("Step 6: ",userRole.rows, "User Entity Role created");
     await client.query("COMMIT");
 
+    await emailQueue.add("send-welcome-email", {
+      to:  userData?.email || email,
+      entityId,
+      userData,
+    });
     return res.status(200).json({
       message:
         "Congratulations, you signed up successfully, Please Login to your account",
@@ -600,7 +495,6 @@ const SignupUser = asyncHandler(async (req, res) => {
 // Sign in to a Library Domain (using email and password)
 
 // Sign in from a Library Domain
-//!Warning  => Don't touch this
 const SigninUser = asyncHandler(async (req, res) => {
   const { email, password, subdomain } = req.body;
   if (!email || !password) {
@@ -618,13 +512,9 @@ const SigninUser = asyncHandler(async (req, res) => {
     }
     const userId = userResult.rows[0].id;
 
-    // If sign in request coming from a specific library domain
+    // If sign in request coming from a library sub-domain
     if (subdomain) {
-      // Get Subdomain entity_id;
-
       const entityId = await getEntity(db, subdomain);
-
-      console.log("Step 1: ", entityId, " Entity Founded");
 
       const associationResult = await db.query(
         `
@@ -633,7 +523,7 @@ const SigninUser = asyncHandler(async (req, res) => {
         e.name AS entity_name, e.subdomain,
         b.name AS branch_name,
         r.name AS role_name,
-        u.email,u.password, u.name
+        u.email,u.password,u.plan, u.name
       FROM user_entity_roles uer
       JOIN entities e ON uer.entity_id = e.id
       JOIN branches b ON uer.branch_id = b.id
@@ -677,7 +567,7 @@ const SigninUser = asyncHandler(async (req, res) => {
             UserInfo: user_info,
           },
           process.env.JWT_SECRET,
-          { expiresIn: "1m" }
+          { expiresIn: "1h" }
         );
 
         const refresh_token = refreshToken(user_info); //refresh token
@@ -685,16 +575,17 @@ const SigninUser = asyncHandler(async (req, res) => {
         // Set the cookie with refresh token
         res.cookie("refreshToken", refresh_token, {
           httpOnly: true,
-          sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // Use "none"
-          secure: process.env.NODE_ENV === "production", // true on Vercel, false locally
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+          secure: process.env.NODE_ENV === "production",
           maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
-          // domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : 'localhost'
         });
+
         res.json({
           accessToken: AccessToken,
           user: {
-            id: user?.id,
+            id: user?.user_id,
             name: user?.name,
+            plan: user?.plan,
             email: user?.email,
             authSource: "email",
             roleId: user?.role_id,
@@ -719,6 +610,7 @@ const SigninUser = asyncHandler(async (req, res) => {
     res.status(400).json({ error: "Invalid Credentials" });
   }
 });
+
 // User Logout
 
 const Logout = asyncHandler(async (req, res) => {
@@ -780,7 +672,7 @@ const RefreshToken = async (req, res) => {
         e.name AS entity_name, e.subdomain,
         b.name AS branch_name,
         r.name AS role_name,
-        u.email, u.name
+        u.email, u.name,u.plan
       FROM user_entity_roles uer
       JOIN entities e ON uer.entity_id = e.id
       JOIN branches b ON uer.branch_id = b.id
@@ -820,10 +712,11 @@ const RefreshToken = async (req, res) => {
         res.send({
           accessToken,
           user: {
-            id: user?.id,
+            id: user?.id || user?.user_id,
             name: user?.name,
             email: user?.email,
             roleId: user?.role_id,
+            plan: user?.plan,
             role_name: user?.role_name,
             branchId: user.branch_id,
             branchName: user.branch_name,
@@ -894,7 +787,7 @@ const ForgetPassword = asyncHandler(async (req, res) => {
 
           // send Password Reset Email
           try {
-            await send_email(email, "Reset Password ✔", RESET_EMAIL_TXT);
+            await send_email(email, "Reset Password", RESET_EMAIL_TXT);
 
             res.status(200).json({ message: "Check your  email " });
           } catch (error) {
@@ -1025,5 +918,4 @@ module.exports = {
   ResetPassword,
   SigninUser,
   SignupUser,
-  SelectAccount,
 };

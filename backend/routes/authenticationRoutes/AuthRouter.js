@@ -9,7 +9,6 @@ const {
   ResetPassword,
   SignupUser,
   SigninUser,
-  SelectAccount,
 } = require("../../controllers/AuthController/AuthController.js");
 
 const router = express.Router();
@@ -23,7 +22,7 @@ router.post("/register",RegisterUser);
 
 
 // Select an account
-router.post('/select-account', SelectAccount)
+// router.post('/select-account', SelectAccount)
 
 // Log-in Route for Owner users only
 router.post("/signin", LoginUser);

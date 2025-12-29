@@ -2,6 +2,8 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 const bodyParser = require("body-parser");
+
+// Subscribe Route
 const { notfound, errorHanlder } = require("./middleware/errorMiddleware.js");
 const session = require("express-session");
 const passport = require("passport");
@@ -28,35 +30,40 @@ const bookingRoutes = require("./routes/BookingsRoutes/index.js");
 const settingsRoutes = require("./routes/SettingsRoutes/SettingsRoutes.js");
 const pricingRoutes = require("./routes/SettingsRoutes/Pricing/PricingRoutes.js");
 
+// Client Checkout session routes
+const stripeCheckout = require("./routes/PaymentRoutes/StripeCheckout.js");
+const cancelSubscription = require("./routes/PaymentRoutes/CancelSubscriptionRoute.js"); //active Free Plan
+const changeSubscription = require("./routes/PaymentRoutes/ChangeSubscriptionRoute.js"); //active School Plan
+const currentPlan = require("./routes/PaymentRoutes/CurrentActivePlan.js");
+const dashboardRoute = require("./routes/dashboardRoutes/DashboardRoutes.js");
+const stripeStatus = require("./routes/PG_Onboarding/StripeStatus.js");
+const stripeConnect = require("./routes/PG_Onboarding/StripeConnect.js");
+const stripeOnboarding = require("./routes/PG_Onboarding/StripeOnboarding.js");
 
-require("./services/scheduleTask.js")
+const wishlistRoute = require("./routes/ProductWishlist/ProductWishlistRoute.js")
+const uploadBooksFromFile = require("./routes/booksRoutes/FileUploadBooks.js");
+const webhooks = require("./webhooks/stripe/index.js"); //Stripe webhook
+
+
+const notificationRoute = require("./routes/NotificationRoutes/NotificationRoutes.js");
+
+// Cron Job
+require("./services/scheduleTask.js"); //Add Due Date Fine
 
 const { pool } = require("./config/dbConfig.js");
+const stripeRouter = require("./routes/PG_Onboarding/StripeOauth.js");
 const port = process.env.PORT || 8100;
 
 const app = express();
+
 app.set("trust proxy", 1);
-// app.use(
-//   session({
-//     secret: process.env.SESSION_SECRET,
-//     resave: false,
-//     saveUninitialized: false,
-//     cookie: {
-//       httpOnly: true,
-//       secure: false || process.env.NODE_ENV === "production",
-//       sameSite: "lax",
-//       // maxAge: 3600000,
-//       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 day max
-//     },
-//   })
-// );
 
 app.use(
   session({
     store: new pgSession({
       pool: pool,
       tableName: "session",
-      createTable: false,
+      createTable: true,
       errorLog: (err) => console.error("Session store error:", err), // Log DB errors
     }),
     secret: process.env.SESSION_SECRET || "test", // Use env var in production
@@ -79,9 +86,11 @@ app.use(
 );
 
 app.options("*", cors());
+app.use(webhooks); //stripe webhook,
+
 // app.use(express.urlencoded({ extended: true }));
-app.use(bodyParser.json({ limit: "100mb" }));
-app.use(bodyParser.urlencoded({ limit: "100mb", extended: true }));
+app.use(bodyParser.json({ limit: "10mb" }));
+app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
 app.use(express.json());
 app.use(cookieParser()); //cookies middleware
 app.use(passport.initialize());
@@ -94,6 +103,7 @@ app.get("/", (req, res) => {
 
   res.json({ status: "Backend is running", clientUrl: process.env.CLIENT_URL });
 });
+
 // * Routes
 app.use("/", googleOAuthRouter);
 app.use("/api/auth", authRouter);
@@ -117,12 +127,36 @@ app.use(bookingRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/pricing", pricingRoutes);
 
+//Dashboard Routes
+
+app.use("/api/dashboard", dashboardRoute);
+app.use("/api/create-checkout-session", stripeCheckout);
+app.use("/api/cancel-subscription", cancelSubscription);
+app.use("/api/change-subscription", changeSubscription);
+app.use("/api/current-plan", currentPlan);
+
+/* Payment Method - Connect Stripe Account for Client Onboarding  */
+app.use("/api/library/:entityId/stripe/status", stripeStatus);
+app.use("/api/library/:entityId/stripe/onboarding-complete", stripeOnboarding);
+app.use("/api/library/:entityId/stripe/connect", stripeConnect);
+
+// Stripe Oauth Flow for Connecting Existing Accounts
+app.use(stripeRouter);
+app.use(uploadBooksFromFile);
+
+
+// Add Book Item to Wishlist:
+app.use(wishlistRoute)
+
+// Notification templates
+app.use("/api/notifications", notificationRoute)
+
+
 app.use(notfound);
 app.use(errorHanlder);
 
-if (process.env.NODE_ENV !== "production") {
-  app.listen(port, () => {
-    console.log("Server is listening on port", port);
-  });
-}
+app.listen(port, () => {
+  console.log("Server is listening on port", port);
+});
+
 module.exports = app;

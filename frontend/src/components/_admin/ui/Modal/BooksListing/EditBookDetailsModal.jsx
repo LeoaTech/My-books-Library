@@ -36,13 +36,11 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
   const [imagesList, setImagesList] = useState([]);
   console.log(bookValue, "ID");
 
-
   const { data: bookDetail, isPending: isBookLoading, error: isBookError } = useQuery({
     queryFn: () => FetchBookById(bookValue),
     queryKey: ["books", { bookValue }],
     enabled: !bookValue?.title
   });
-
 
   const { addAuthor } = useAuthor();
   const { addPublisher } = usePublisher();
@@ -250,14 +248,9 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
     [addPublisherMutation]
   );
 
-  // const createOption = (label) => ({
-  //   label,
-  //   value: label.toLowerCase().replace(/\W/g, ""),
-  // });
-
   // console.log(bookDetail, "Edit book details");
   const bookDetails = bookValue?.title ? bookValue : bookDetail?.book
-  // console.log(bookDetails, "Book Details");
+  console.log(bookDetails, "Book Details");
 
   const {
     register,
@@ -298,6 +291,8 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
         summary: bookDetails?.summary || '',
         publish_year: bookDetails?.publish_year || '',
         credit: bookDetails?.credit || '',
+        quantity: bookDetails?.quantity || 1,
+        edition: bookDetails?.edition || ''
       }),
       [bookDetail]
     ),
@@ -336,45 +331,28 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
   // update the existing cover_images url in the imagesList
   useEffect(() => {
     if (bookDetails?.cover_img_url?.length > 0) {
-      // console.log(typeof bookDetails?.cover_img_url, "Cover images", bookDetails?.cover_img_url);
       setImagesList(bookDetails?.cover_img_url);
     } else {
       setImagesList([])
     }
   }, [bookDetails?.cover_img_url]);
 
-  // const selectedAuthor = watch("author");
-  // const selectedCondition = watch("condition");
-  // const selectedCategory = watch("category");
-  // const selectedCover = watch("cover");
-  // const selectedPublisher = watch("publisher");
-  // const selectedBranch = watch("branch_id")
+
   // Mutation to Update Book Details
   const { mutateAsync: updateBookMutation } = useMutation({
     mutationFn: updateBook,
     onSuccess: () => {
-      reset();
-
       queryClient.invalidateQueries(["books"]); // invalidate books query to refetch
       close();
     },
   });
-
-  // console.log(selectedAuthor, "Selected Author",
-  //   selectedCategory, "Category",
-  //   selectedCondition, "Condition",
-  //   selectedCover, "Cover",
-  //   selectedPublisher, "publisher",
-  //   selectedBranch, "Branch"
-  // );
-
   // console.log(errors, "Errors", isValid);
 
   const onSubmit = useCallback(async (updateData) => {
     try {
       const booksForm = {
         ...updateData,
-        bookId: bookValue,
+        bookId: bookValue.id,
         available: updateData?.isAvailable,
         cover_img_url:
           imagesList?.length > 0
@@ -383,16 +361,13 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
         imageUpdated: imagesList?.length > 0 ? true : false,
       };
 
-      // console.log(booksForm, "Form Edit");
+      console.log(booksForm, "Form Edit");
       await updateBookMutation(booksForm);
     } catch (error) {
       console.log(error, "Error updating Form");
 
     }
   }, [updateBookMutation, imagesList, bookValue]);
-
-
-  // console.log(imagesList, "Uploaded images");
 
 
   if (
@@ -402,7 +377,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
     isPendingCovers ||
     isPendingPublishers ||
     isPendingVendors ||
-    isPendingBranches || bookValue && isBookLoading
+    isPendingBranches || !bookValue && isBookLoading
   ) {
     return (
       <div className="flex justify-center items-center fixed inset-0 bg-[#64748B] bg-opacity-75 transition-opacity">
@@ -716,6 +691,83 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                       )}
                     </div>
                   </div>
+
+
+                  <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
+                    <div className="w-full xl:w-1/2" autoFocus>
+                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
+                        Discount Percentage
+                      </label>
+                      <input
+                        type="text"
+                        name="discount_percentage"
+                        placeholder="Add discount_percentage"
+                        {...register("discount_percentage")}
+                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                      />
+                      {errors?.discount_percentage?.message && (
+                        <p className="format-message error">
+                          {errors.discount_percentage.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="w-full xl:w-1/2">
+                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
+                        Credits <span className="text-red-600">*</span>
+                      </label>
+                      <input
+                        type="number"
+                        name="credit"
+                        placeholder="Add Credits"
+                        {...register("credit", { required: true })}
+                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                      />
+                      {errors?.credit?.message && (
+                        <p className="format-message error">
+                          {errors.credit.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
+                    <div className="w-full xl:w-1/2" autoFocus>
+                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
+                        Edition
+                      </label>
+                      <input
+                        type="text"
+                        name="edition"
+                        placeholder="Add Book Edition"
+                        {...register("edition")}
+                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                      />
+                      {errors?.edition?.message && (
+                        <p className="format-message error">
+                          {errors.edition.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="w-full xl:w-1/2">
+                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
+                        Total Available Items <span className="text-red-600">*</span>
+                      </label>
+                      <input
+                        type="number"
+                        min={1}
+                        name="quantity"
+                        placeholder="Add Quantity"
+                        {...register("quantity", { required: true })}
+                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                      />
+                      {errors?.quantity?.message && (
+                        <p className="format-message error">
+                          {errors.quantity.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
                   {/* Seventh Row */}
                   <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap:9">
                     <div className="w-full xl:w-1/2" autoFocus>
@@ -776,12 +828,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                           className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:text-neutral-100 dark:focus:text-neutral-100 dark:focus:border-[#3C50E0]"
                           name="branch_id"
                           {...register("branch_id")}
-                        // defaultValue={branchesData?.branches?.find(
-                        //   (branch) => {
-                        //     if (branch.name == bookDetails?.branch_name)
-                        //       return branch.id;
-                        //   }
-                        // )}
+                          defaultValue={bookDetails?.branch_id}
                         >
                           <option value="" disabled>Select</option>
                           {branchesData?.branches &&
