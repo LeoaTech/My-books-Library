@@ -15,20 +15,22 @@ async function getPlanNameFromPriceId(priceId) {
     throw new Error("Price ID is undefined, cannot fetch plan details.");
   }
 
-  const price = await stripe.prices.retrieve(priceId, {
+  const price = await stripe?.prices?.retrieve(priceId, {
     expand: ["product"],
   });
 
-  const product = price.product;
-  return product.name || undefined;
+  const product = price?.product;
+  return product?.name || undefined;
 }
 
 //Get Current Plan:
 router.get("/", async (req, res) => {
-  console.log(req.user);
+  // console.log(req.user);
+  const user = req.user;
 
-  const { userId } = req.user;
-  const entityId = req?.entityId || req?.entity_id;
+  const userId = user?.user_id || user?.userId;
+  const entityId = user?.entityId || user?.entity_id;
+
   try {
     const subscriptionResult = await db.query(
       `SELECT stripe_subscription_id, status, current_period_end, stripe_price_id,cancel_at_period_end
