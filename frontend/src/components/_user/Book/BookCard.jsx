@@ -31,12 +31,14 @@ const BookCard = ({ id, img, title, purchase_price, member_price, discount_perce
           <img
             src={img}
             alt={title}
-            className="w-full object-cover mx-auto mb-2 rounded-lg"
-            style={{ height: "250px" }}
+            className="w-full mx-auto mb-2 rounded-lg"
+            style={{ height: "280px" }}
           />
-          <span className="absolute top-0 right-0 m-2 p-2 rounded-full bg-white hover:bg-black hover:text-white text-2xl">
-            <FaHeart className="stroke-red-500 stroke-2" />
-          </span>
+          {!hideWishlist && (
+            <span className="absolute top-0 right-0 m-2 p-2 rounded-full bg-white hover:bg-black hover:text-white text-2xl">
+              <FaHeart className="stroke-red-500 stroke-2" />
+            </span>
+          )}
         </Link>
         <Link to="/book">
           <h1
@@ -92,4 +94,5 @@ BookCard.propTypes = {
   id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   discount_percentage: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   isAvailable: PropTypes.bool,
+  hideWishlist: PropTypes.bool,
 };
