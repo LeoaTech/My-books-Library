@@ -83,7 +83,7 @@ const Navbar = () => {
           </Link>
 
           {/* Desktop Links */}
-          {/* <ul className="hidden md:flex gap-8 text-white uppercase font-medium">
+          <ul className="hidden md:flex gap-8 text-white uppercase font-medium">
             {headerLinks.map(({ title, path }) => (
               <li key={path}>
                 <Link
@@ -94,7 +94,7 @@ const Navbar = () => {
                 </Link>
               </li>
             ))}
-          </ul> */}
+          </ul>
 
           {/* Right buttons (Desktop) */}
           <div className="hidden md:flex items-center gap-4 text-white">
@@ -151,7 +151,7 @@ const Navbar = () => {
         {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="md:hidden mt-4 px-4 py-6 bg-white/20 backdrop-blur-lg rounded-lg shadow-lg space-y-4 text-white">
-            {/* {headerLinks.map(({ title, path }) => (
+            {headerLinks.map(({ title, path }) => (
               <Link
                 key={path}
                 to={path}
@@ -160,10 +160,10 @@ const Navbar = () => {
               >
                 {title}
               </Link>
-            ))} */}
+            ))}
 
             <Link
-              // to="/cart"
+              to="/cart"
               onClick={onToggle}
               className="flex items-center gap-2 uppercase hover:text-purple-300"
             >
@@ -199,7 +199,7 @@ const Navbar = () => {
               </>
             )}
 
-            {/* {auth?.roleId && (
+            {auth?.roleId && (
               <button
                 onClick={() => {
                   logout();
@@ -208,7 +208,7 @@ const Navbar = () => {
               >
                 Sign Out
               </button>
-            )} */}
+            )}
 
             {auth?.roleId && !auth?.auth && (
               <button onClick={logout} className="block w-full bg-blue-500 px-4 py-1 rounded-lg uppercase text-white hover:bg-blue-400">
