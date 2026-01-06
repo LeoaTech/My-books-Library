@@ -10,12 +10,16 @@ const BookCard = ({ id, img, title, purchase_price, member_price, discount_perce
     <FaStar key={index} className="text-yellow text-sm" />
   ));
 
+  const [isHovered, setIsHovered] = useState(false);
+
   return (
     <div className="slide flex gap-4 mb-8">
       <article
         key={id}
         className="book bg-purple-300 rounded-lg p-4 text-center flex flex-col items-center"
-        style={{ width: "200px" }}
+        style={{ width: "250px" }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
         <Link to="/book" className="relative w-full">
           {/* Badge: show only when sold out or when there's a discount */}
