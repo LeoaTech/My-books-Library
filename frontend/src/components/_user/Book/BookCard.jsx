@@ -56,19 +56,31 @@ const BookCard = ({ id, img, title, purchase_price, member_price, discount_perce
             {/* <span class="mr-2 ml-3 rounded bg-yellow-200 px-2.5 py-0.5 text-xs font-semibold">5.0</span> */}
           </div>
         </div>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            className="w-20 bg-black text-white py-2 px-4 rounded"
-          >
-            Buy
-          </button>
-          <button
-            type="button"
-            className="w-20 bg-black text-white py-2 px-4 rounded"
-          >
-            Borrow
-          </button>
+        <div className={`flex gap-2 w-full ${isHovered ? 'block' : 'hidden'}`}>
+          {!isAvailable ? (
+            <button
+              type="button"
+              className={`w-full py-2 px-4 rounded bg-gray-400 text-gray-700 cursor-not-allowed text-center`}
+              disabled
+            >
+              Sold out
+            </button>
+          ) : (
+            <>
+              <button
+                type="button"
+                className={`w-full py-2 px-4 rounded bg-black text-white`}
+              >
+                Buy
+              </button>
+              <button
+                type="button"
+                className={`w-full py-2 px-4 rounded bg-black text-white`}
+              >
+                Borrow
+              </button>
+            </>
+          )}
         </div>
       </article>
     </div>
