@@ -53,8 +53,10 @@ const BookCard = ({ id, img, title, purchase_price, member_price, discount_perce
         </div>
         <div className="mt-2 mb-2 flex items-center justify-between gap-4">
           <p>
-            <span className="text-lg font-bold text-slate-900">$449</span>
-            <span className="text-sm text-slate-900 line-through"> $699</span>
+            <span className="text-lg font-bold text-slate-900">${purchase_price || member_price || ""}</span>
+            {discount_percentage && Number(discount_percentage) > 0 ? (
+              <span className="text-sm text-slate-900 line-through"> ${Math.round((Number(purchase_price || member_price) * (1 + Number(discount_percentage) / 100)) || 0)}</span>
+            ) : null}
           </p>
           <div className="flex items-center justify-center">
             {stars}
@@ -93,10 +95,13 @@ const BookCard = ({ id, img, title, purchase_price, member_price, discount_perce
 };
 
 export default BookCard;
+
 BookCard.propTypes = {
   id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   img: PropTypes.string,
   title: PropTypes.string.isRequired,
+  purchase_price: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  member_price: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   discount_percentage: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   publisher: PropTypes.string,
   publish_year: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
