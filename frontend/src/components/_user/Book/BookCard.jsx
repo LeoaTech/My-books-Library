@@ -1,9 +1,10 @@
-import React from "react";
+import PropTypes from 'prop-types';
+import { useState } from 'react';
 import { Link } from "react-router-dom";
 import { FaStar } from "react-icons/fa";
 import { FaHeart } from "react-icons/fa";
 
-const BookCard = ({ id, img, title }) => {
+const BookCard = ({ id, img, title, purchase_price, member_price, discount_percentage, publisher, publish_year, isAvailable = true, hideWishlist = false }) => {
   // rating
   const stars = Array.from({ length: 5 }, (_, index) => (
     <FaStar key={index} className="text-yellow text-sm" />
@@ -17,6 +18,16 @@ const BookCard = ({ id, img, title }) => {
         style={{ width: "200px" }}
       >
         <Link to="/book" className="relative w-full">
+          {/* Badge: show only when sold out or when there's a discount */}
+          {(!isAvailable || Number(discount_percentage) > 0) && (
+            <div className="absolute top-0 m-1 rounded-full bg-white">
+              <p
+                className={`rounded-full bg-white p-1 text-[14px] font-bold tracking-wide sm:py-1 sm:px-3 ${isAvailable ? 'text-purple-900' : 'text-red-600'}`}
+              >
+                {!isAvailable ? 'Sold out' : 'Sale'}
+              </p>
+            </div>
+          )}
           <img
             src={img}
             alt={title}
@@ -65,3 +76,8 @@ const BookCard = ({ id, img, title }) => {
 };
 
 export default BookCard;
+BookCard.propTypes = {
+  id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  discount_percentage: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  isAvailable: PropTypes.bool,
+};
