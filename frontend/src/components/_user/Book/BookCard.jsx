@@ -48,6 +48,9 @@ const BookCard = ({ id, img, title, purchase_price, member_price, discount_perce
             {title}
           </h1>
         </Link>
+        <div className={`text-xs text-gray-600 ${isHovered ? 'hidden' : 'block mb-2'}`}>
+          {publisher && <span className="block">{publisher}{publish_year ? ` • ${publish_year}` : ''}</span>}
+        </div>
         <div className="mt-2 mb-2 flex items-center justify-between gap-4">
           <p>
             <span className="text-lg font-bold text-slate-900">$449</span>
@@ -92,7 +95,11 @@ const BookCard = ({ id, img, title, purchase_price, member_price, discount_perce
 export default BookCard;
 BookCard.propTypes = {
   id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  img: PropTypes.string,
+  title: PropTypes.string.isRequired,
   discount_percentage: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  publisher: PropTypes.string,
+  publish_year: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   isAvailable: PropTypes.bool,
   hideWishlist: PropTypes.bool,
 };
