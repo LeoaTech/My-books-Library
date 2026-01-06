@@ -4,6 +4,10 @@ import { useFetchBooks } from "../../../hooks/books/useFetchBooks";
 import Loader from "../Loader/Loader";
 
 const NewArrivalBooks = () => {
+  const { isLoading, error, data: booksData } = useFetchBooks();
+
+  if (isLoading) return <Loader />;
+  if (error) return null;
 
   const booksList = booksData?.books || [];
 

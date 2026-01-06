@@ -4,6 +4,11 @@ import { useFetchBooks } from "../../../hooks/books/useFetchBooks";
 import Loader from "../Loader/Loader";
 
 const RecommendedBooks = () => {
+  const { isPending, error, data: booksData } = useFetchBooks();
+
+  if (isPending) return <Loader />;
+  if (error) return null;
+
   const booksList = booksData?.books || [];
 
   // Map API book object to slider expected props (minimal)
