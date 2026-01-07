@@ -32,16 +32,16 @@ const requireAuth = async (req, res, next) => {
 
 // Verify Authorization of a User using JWT or User Authentication
 const checkAuth = async (req, res, next) => {
-  const authorization = req.headers?.cookie;
+  const authorization = req?.headers?.cookie;
 
   // Parsing the cookie string to extract individual cookie values
-  const cookiesArray = authorization.split(";").map((cookie) => cookie.trim());
+  const cookiesArray = authorization?.split(";")?.map((cookie) => cookie?.trim());
 
   if (!cookiesArray?.length)
     return res.status(401).json({ error: "Un-authorized" });
 
-  if (req.user) {
-    console.log(req.user, "Check Auth");
+  if (req?.user) {
+    console.log(req?.user, "Check Auth");
 
     //extract user data from request
     req.user = req.user;
@@ -50,7 +50,7 @@ const checkAuth = async (req, res, next) => {
     // Find the "refreshToken" cookie and extract its value
     let refreshTokenValue;
     for (const cookie of cookiesArray) {
-      const [cookieName, cookieValue] = cookie.split("=");
+      const [cookieName, cookieValue] = cookie?.split("=");
       if (cookieName === "refreshToken") {
         refreshTokenValue = cookieValue;
         break;
