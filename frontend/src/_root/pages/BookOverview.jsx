@@ -4,6 +4,7 @@ import { FaStar } from "react-icons/fa";
 import RelatedBookCard from "../../components/_user/Book/RelatedBookCard";
 import BookDetailsTable from "../../components/_user/Book/BookDetailsTable";
 import ReviewCard from "../../components/_user/Reviews/ReviewCard";
+import { useAuthContext } from "../../hooks/useAuthContext";
 
 
 const AddToWishListButton = lazy(() => import("../../components/_user/Wishlist/WishlistButton"));
@@ -12,6 +13,9 @@ const BookOverview = () => {
   const [showLoader, setShowLoader] = useState(true);
   const [detailsActive, setDetailsActive] = useState(true);
   const [reviewsActive, setReviewsActive] = useState(false);
+  const { auth } = useAuthContext();
+
+  console.log(auth);
 
   const handleDetailsActive = () => {
     setDetailsActive(true);
@@ -107,9 +111,9 @@ const BookOverview = () => {
               <h2 className="relative text-md font-semibold tracking-widest text-purple-900 title-font">
                 {book.author}
                 <div className="absolute right-0 sm:bottom-4 sm:relative bottom-24">
-                  <Suspense fallback={<Loader />}>
+                  {auth?.accessToken || auth?.id && <Suspense fallback={<Loader />}>
                     <AddToWishListButton bookId={book.id} stock_quantity={book.quantity} />
-                  </Suspense>
+                  </Suspense>}
 
                 </div>
               </h2>
