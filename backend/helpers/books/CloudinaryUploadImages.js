@@ -1,7 +1,6 @@
 const cloudinary = require("cloudinary").v2;
 const axios = require("axios");
 
-
 // Cloudinary Configuration
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
@@ -10,18 +9,16 @@ cloudinary.config({
   secure: true,
 });
 
-
 const options = {
   folder: "books",
   use_filename: true,
   unique_filename: false,
   overwrite: true,
 };
-
-// Fetch Remote URL for Google API Books Cover image
+// Fetch Remote URL for cover image
 async function fetchRemoteURL(url) {
   const resp = await axios.get(url, {
-    timeout: 5000,
+    timeout: 10000,
     responseType: "arraybuffer",
     headers: {
       "User-Agent": "Mozilla/5.0 (compatible; BookCoverUploader/1.0)",
@@ -30,6 +27,7 @@ async function fetchRemoteURL(url) {
   if (resp.status !== 200) throw new Error(`HTTP ${resp.status} for ${url}`);
   return Buffer.from(resp.data, "binary");
 }
+
 // Upload images to cloudinary
 async function uploadOne(image, options) {
   const getExtension = (mime) => {
@@ -80,4 +78,44 @@ async function uploadOne(image, options) {
   }
 }
 
-module.exports = { fetchRemoteURL, uploadOne };
+async function uploadBulkImage(imageUrl) {
+  if (!imageUrl || typeof imageUrl !== "string") return null;
+
+  const cleanUrl = imageUrl.trim().replace(/['"]+/g, "");
+
+  try {
+    const result = await cloudinary.uploader.upload(cleanUrl, {
+      folder: "books",
+      resource_type: "image",
+      timeout: 30000,
+    });
+
+    return result;
+  } catch (directError) {
+    try {
+      const buffer = await fetchRemoteURL(cleanUrl);
+
+      return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          {
+            folder: "books",
+            resource_type: "image",
+          },
+          (err, result) => {
+            if (err) return reject(err);
+            resolve(result);
+          }
+        );
+        stream.end(buffer);
+      });
+    } catch (fallbackError) {
+      console.error(`failed to upload image url : ${cleanUrl}`);
+      return null;
+    }
+  }
+}
+
+module.exports = {
+  uploadOne,
+  uploadBulkImage,
+};
