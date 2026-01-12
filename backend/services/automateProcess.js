@@ -1,4 +1,5 @@
 const { pool } = require("../config/dbConfig");
+const { emailQueue } = require("../queues/index");
 
 async function checkOverdueStatusAndFine() {
   const client = await pool.connect();
@@ -95,7 +96,49 @@ async function checkUpcomingDueDates() {
       `Found ${result.rowCount} booking items return due in 2 days. sending reminders...`
     );
 
-   
+    const bookingsMap = new Map();
+
+    for (const row of result.rows) {
+      if (!bookingsMap.has(row.booking_id)) {
+        bookingsMap.set(row.booking_id, {
+          userData: {
+            name: row.user_name,
+            email: row.user_email,
+            phone: row.user_phone,
+            entity_name: row.entity_name,
+            subdomain: row.subdomain,
+            entity_id: row.entity_id,
+          },
+          entityId: row.entity_id,
+          bookingData: { id: row.booking_id, user_id: row.user_id },
+          book_title: row.book_title,
+          due_date: row.return_due,
+          books: [],
+        });
+      }
+      bookingsMap.get(row.booking_id).books.push({
+        title: row.book_title,
+        due_date: row.return_due,
+      });
+    }
+
+    for (const [bookingId, data] of bookingsMap) {
+      const emailData = {
+        userData: data.userData,
+        entityId: data.entityId,
+        book_title: data.book_title,
+        due_date: data.due_date,
+        books: data.books,
+        bookingData: data.bookingData,
+        to: data.userData.email,
+      };
+
+      await emailQueue.add("booking-due-reminder-email", emailData);
+    }
+
+    console.log(
+      `Reminder jobs added successfully for ${bookingsMap.size} bookings.`
+    );
   } catch (error) {
     console.error("Error checking upcoming due dates:", error);
   } finally {
