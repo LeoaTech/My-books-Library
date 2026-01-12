@@ -1,10 +1,12 @@
-const {pool} = require("../config/dbConfig");
+const { pool } = require("../config/dbConfig");
 
 async function checkOverdueStatusAndFine() {
   const client = await pool.connect();
   try {
-    console.log('Running overdue staus check for all bookings for all tenants...');
-    
+    console.log(
+      "Running overdue staus check for all bookings for all tenants..."
+    );
+
     const query = `
         UPDATE bookings
         SET items = (
@@ -45,7 +47,9 @@ async function checkOverdueStatusAndFine() {
     `;
 
     const result = await client.query(query);
-    console.log(`Overdue fines applied to ${result.rowCount} bookings across all tenants.`);
+    console.log(
+      `Overdue fines applied to ${result.rowCount} bookings across all tenants.`
+    );
   } catch (error) {
     console.error("Error applying overdue fines :", error);
   } finally {
@@ -53,5 +57,50 @@ async function checkOverdueStatusAndFine() {
   }
 }
 
+// Check upcoming due dates in all booking
+async function checkUpcomingDueDates() {
+  const client = await pool.connect();
+  try {
+    console.log("Checking for upcoming due dates...");
 
-module.exports = {  checkOverdueStatusAndFine };
+    const query = `
+      SELECT 
+        b.id as booking_id,
+        b.entity_id,
+        b.user_id,
+        u.name as user_name,
+        u.email as user_email,
+        u.phone as user_phone,
+        items.item->>'title' as book_title,
+        items.item->>'return_due' as return_due,
+        e.name as entity_name,
+        e.subdomain
+      FROM bookings b
+      CROSS JOIN jsonb_array_elements(b.items) as items(item)
+      JOIN users u ON b.user_id = u.id
+      LEFT JOIN entities e ON b.entity_id = e.id
+      WHERE 
+        (items.item->>'status') NOT IN ('returned', 'cancelled')
+        AND (items.item->>'return_due')::date = CURRENT_DATE + INTERVAL '2 days'
+    `;
+
+    const result = await client.query(query);
+
+    if (result.rowCount === 0) {
+      console.log("No bookings found with return due date in coming 2 days.");
+      return;
+    }
+
+    console.log(
+      `Found ${result.rowCount} booking items return due in 2 days. sending reminders...`
+    );
+
+   
+  } catch (error) {
+    console.error("Error checking upcoming due dates:", error);
+  } finally {
+    client.release();
+  }
+}
+
+module.exports = { checkUpcomingDueDates, checkOverdueStatusAndFine };
