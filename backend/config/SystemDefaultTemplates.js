@@ -150,7 +150,12 @@ const SYSTEM_DEFAULTS = {
     variables: ["customer_name", "book_title", "due_date", "library_name"],
     channel: "email",
   },
-  
+  "booking-due-reminder-push": {
+    subject: "Return Reminder: {{book_title}}",
+    body: "Hi {{customer_name}}, your booking for Book:  '{{book_title}}' is due on {{due_date}}. Please return it expecting.",
+    variables: ["customer_name", "book_title", "due_date"],
+    channel: "push",
+  },
 };
 
 module.exports = SYSTEM_DEFAULTS;
