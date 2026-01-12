@@ -1,13 +1,12 @@
-const { pool } = require("../config/dbConfig");
-const { emailQueue } = require("../queues/index");
+const {pool} = require("../config/dbConfig");
+const { emailQueue, pushQueue } = require("../queues/index");
+
 
 async function checkOverdueStatusAndFine() {
   const client = await pool.connect();
   try {
-    console.log(
-      "Running overdue staus check for all bookings for all tenants..."
-    );
-
+    console.log('Running overdue staus check for all bookings for all tenants...');
+    
     const query = `
         UPDATE bookings
         SET items = (
@@ -48,9 +47,7 @@ async function checkOverdueStatusAndFine() {
     `;
 
     const result = await client.query(query);
-    console.log(
-      `Overdue fines applied to ${result.rowCount} bookings across all tenants.`
-    );
+    console.log(`Overdue fines applied to ${result.rowCount} bookings across all tenants.`);
   } catch (error) {
     console.error("Error applying overdue fines :", error);
   } finally {
@@ -63,7 +60,7 @@ async function checkUpcomingDueDates() {
   const client = await pool.connect();
   try {
     console.log("Checking for upcoming due dates...");
-
+    
     const query = `
       SELECT 
         b.id as booking_id,
@@ -87,17 +84,16 @@ async function checkUpcomingDueDates() {
 
     const result = await client.query(query);
 
+    
     if (result.rowCount === 0) {
       console.log("No bookings found with return due date in coming 2 days.");
       return;
     }
 
-    console.log(
-      `Found ${result.rowCount} booking items return due in 2 days. sending reminders...`
-    );
+    console.log(`Found ${result.rowCount} booking items return due in 2 days. sending reminders...`);
 
     const bookingsMap = new Map();
-
+    
     for (const row of result.rows) {
       if (!bookingsMap.has(row.booking_id)) {
         bookingsMap.set(row.booking_id, {
@@ -107,18 +103,18 @@ async function checkUpcomingDueDates() {
             phone: row.user_phone,
             entity_name: row.entity_name,
             subdomain: row.subdomain,
-            entity_id: row.entity_id,
+            entity_id: row.entity_id
           },
           entityId: row.entity_id,
           bookingData: { id: row.booking_id, user_id: row.user_id },
           book_title: row.book_title,
           due_date: row.return_due,
-          books: [],
+          books: []
         });
       }
       bookingsMap.get(row.booking_id).books.push({
         title: row.book_title,
-        due_date: row.return_due,
+        due_date: row.return_due
       });
     }
 
@@ -126,19 +122,24 @@ async function checkUpcomingDueDates() {
       const emailData = {
         userData: data.userData,
         entityId: data.entityId,
-        book_title: data.book_title,
-        due_date: data.due_date,
-        books: data.books,
+        book_title: data.book_title, 
+        due_date: data.due_date,     
+        books: data.books,     
         bookingData: data.bookingData,
-        to: data.userData.email,
+        to: data.userData.email
       };
 
       await emailQueue.add("booking-due-reminder-email", emailData);
+      
+      // added push job to send reminder  
+      await pushQueue.add("booking-due-reminder-push", {
+        ...emailData,
+        userId: data?.bookingData?.user_id
+      });
     }
 
-    console.log(
-      `Reminder jobs added successfully for ${bookingsMap.size} bookings.`
-    );
+    console.log(`Reminder jobs added successfully for ${bookingsMap.size} bookings in queues.`);
+
   } catch (error) {
     console.error("Error checking upcoming due dates:", error);
   } finally {
