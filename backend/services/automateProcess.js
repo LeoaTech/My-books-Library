@@ -5,7 +5,7 @@ const { emailQueue, pushQueue } = require("../queues/index");
 async function checkOverdueStatusAndFine() {
   const client = await pool.connect();
   try {
-    console.log('Running overdue staus check for all bookings for all tenants...');
+    // console.log('Running overdue staus check for all bookings for all tenants...');
     
     const query = `
         UPDATE bookings
@@ -59,7 +59,7 @@ async function checkOverdueStatusAndFine() {
 async function checkUpcomingDueDates() {
   const client = await pool.connect();
   try {
-    console.log("Checking for upcoming due dates...");
+    // console.log("Checking for upcoming due dates...");
     
     const query = `
       SELECT 
@@ -108,13 +108,13 @@ async function checkUpcomingDueDates() {
           entityId: row.entity_id,
           bookingData: { id: row.booking_id, user_id: row.user_id },
           book_title: row.book_title,
-          due_date: row.return_due,
+          due_date: new Date(row.return_due).toLocaleString(),
           books: []
         });
       }
       bookingsMap.get(row.booking_id).books.push({
         title: row.book_title,
-        due_date: row.return_due
+        due_date: new Date(row.return_due).toLocaleString()
       });
     }
 
@@ -123,7 +123,7 @@ async function checkUpcomingDueDates() {
         userData: data.userData,
         entityId: data.entityId,
         book_title: data.book_title, 
-        due_date: data.due_date,     
+        due_date: new Date(data.due_date).toLocaleString(),     
         books: data.books,     
         bookingData: data.bookingData,
         to: data.userData.email
@@ -147,4 +147,59 @@ async function checkUpcomingDueDates() {
   }
 }
 
-module.exports = { checkUpcomingDueDates, checkOverdueStatusAndFine };
+
+//Check Late Returns / Overdue Fine Payments for Bookings 
+async function checkFineReminders() {
+  const client = await pool.connect();
+  try {
+    // console.log("Checking for fine payment reminders...");
+ 
+    const query = `
+      SELECT 
+        b.id as booking_id,
+        b.entity_id,
+        b.user_id,
+        u.name as user_name,
+        u.email as user_email,
+        u.phone as user_phone,
+        items.item->>'title' as book_title,
+        items.item->>'return_due' as return_due,
+        items.item->>'return_date' as return_date,
+        items.item->>'overdue_fine' as fine_amount,
+        items.item->>'status' as item_status,
+        e.name as entity_name,
+        e.subdomain
+      FROM bookings b
+      CROSS JOIN jsonb_array_elements(b.items) as items(item)
+      JOIN users u ON b.user_id = u.id
+      LEFT JOIN entities e ON b.entity_id = e.id
+      WHERE 
+        (items.item->>'overdue_fine')::numeric > 0
+        AND (
+            (
+                (items.item->>'status') = 'overdue' 
+                AND (items.item->>'return_due')::date = CURRENT_DATE - INTERVAL '1 day'
+            )
+            OR 
+            (
+                (items.item->>'status') = 'returned' 
+                AND (items.item->>'return_date')::date = CURRENT_DATE - INTERVAL '1 day'
+            )
+        )
+    `;
+
+    const result = await client.query(query);
+
+    if (result.rowCount === 0) {
+      console.log("No fine reminders to send.");
+      return;
+    }
+    console.log(`Pending ${result.rowCount} items for fine pament reminders. Sending reminders...`);
+  } catch (error) {
+    console.error("Error checking fine payment reminders:", error);
+  } finally {
+    client.release();
+  }
+}
+
+module.exports = { checkUpcomingDueDates, checkOverdueStatusAndFine, checkFineReminders };
