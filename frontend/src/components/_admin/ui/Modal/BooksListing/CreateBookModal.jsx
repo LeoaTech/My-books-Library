@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, Controller } from "react-hook-form";
 import { useSaveBook } from "../../../../../hooks/books/useSaveBook";
-import { useMutation,  useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useFetchAuthors } from "../../../../../hooks/books/useFetchAuthors";
 import { useAuthor } from "../../../../../hooks/books/useSaveAuthor";
 import {
@@ -63,9 +63,9 @@ const CreateBookModal = ({ setShowModal }) => {
       cover: null,
       condition: "",
       isbn: "",
-      isAvailable: false,
-      vendor_id: null,
-      branch_id: null,
+      isAvailable: true,
+      vendor_id: "",
+      branch_id: "",
       cover_img_url: [],
       discount_percentage: "",
       summary: "",
@@ -527,6 +527,17 @@ const CreateBookModal = ({ setShowModal }) => {
     }
   }, [setValue, selectedBook, addAuthorMutation, addCategoryMutation, findOrCreateAndSet, addPublisherMutation]);
 
+  //By Default Main Branch is selected for a New Book
+  useEffect(() => {
+    if (branchesData?.branches?.length > 0) {
+      const mainBranch = branchesData.branches[0];
+      const currentBranchId = watch("branch_id");
+      if (!currentBranchId) {
+        setValue("branch_id", String(mainBranch.id), { shouldValidate: true, shouldDirty: true });
+      }
+    }
+  }, [branchesData, setValue, watch]);
+
   /* Save Book Details Form function */
   const onSubmit = async (data) => {
     // console.log(data);
@@ -539,14 +550,14 @@ const CreateBookModal = ({ setShowModal }) => {
       cover_img_url: [...imagesList],
       publisher: selectedPublisher?.value,
       condition: selectedCondition?.value,
-      vendor_id: data?.vendor_id == "" ? null : data?.vendor_id,
+      vendor_id: data?.vendor_id || null,
+      branch_id: data?.branch_id,
       role_id: auth?.roleId,
       added_by: auth?.role_name,
     };
 
-    // console.log(booksForm, "Form Details of Book");
 
-    await addBookMutation(booksForm); 
+    await addBookMutation(booksForm);
 
 
 
@@ -666,8 +677,7 @@ const CreateBookModal = ({ setShowModal }) => {
                     {/* Search by Title */}
                     <div className="w-full xl:w-1/2">
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
-                        Title
-                        <span className="text-red-600">*</span>
+                        Title <span className="text-red-600">*</span>
                       </label>
                       <div className="flex gap-2 relative">
 
@@ -1026,9 +1036,9 @@ const CreateBookModal = ({ setShowModal }) => {
                         <select
                           className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:text-neutral-100 dark:focus:text-neutral-100 dark:focus:border-[#3C50E0]"
                           name="vendor_id"
-                          {...register("vendor_id", { required: true })}
+                          {...register("vendor_id")}
                         >
-                          <option disabled>Select</option>
+                          <option value="" disabled>Select Vendor</option>
 
                           {vendorsData?.vendors &&
                             vendorsData?.vendors?.map((vendor) => (
@@ -1065,7 +1075,7 @@ const CreateBookModal = ({ setShowModal }) => {
                     </div>}
                     <div className="w-full xl:w-1/2">
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
-                        Branch
+                        Branch <span className="text-red-600">*</span>
                       </label>
                       <div className="relative z-20 bg-transparent dark:bg-form-input">
                         <select
@@ -1073,7 +1083,7 @@ const CreateBookModal = ({ setShowModal }) => {
                           name="branch_id"
                           {...register("branch_id", { required: true })}
                         >
-                          <option disabled>Select</option>
+                          <option value="" disabled>Select Branch</option>
                           {branchesData?.branches &&
                             branchesData?.branches?.map((branch) => (
                               <option key={branch?.id} value={branch?.id}>
