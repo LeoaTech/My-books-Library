@@ -447,7 +447,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                   <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap:9">
                     <div className="w-full xl:w-1/2">
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
-                        Title
+                        Title <span className="text-red-600">*</span>
                       </label>
                       <input
                         autoFocus
@@ -464,9 +464,99 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                       )}
                     </div>
 
+                    <div className="mb-4.5 w-full xl:w-1/2">
+                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
+                        ISBN <span className="text-red-600">*</span>
+                      </label>
+                      <input
+                        name="isbn"
+                        type="text"
+                        placeholder="Enter ISBN "
+                        {...register("isbn")}
+                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                      />
+                      {errors?.isbn?.message && (
+                        <p className="format-message error">
+                          {errors.isbn.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Second Row Fields */}
+                  <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap:9">
                     <div className="w-full xl:w-1/2">
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
-                        Author
+                        Publisher <span className="text-red-600">*</span>
+                      </label>
+
+                      <Controller
+                        control={control}
+                        className="bg-white dark:bg-slate-800"
+                        name="publisher"
+                        render={({ field }) => (
+                          <CreatableSelect
+                            {...field}
+                            options={publisherOptions}
+                            isClearable
+                            isDisabled={isPendingPublishers}
+                            isLoading={isPendingPublishers}
+                            styles={selectStyles}
+                            onChange={async (newValue, actionMeta) => {
+                              if (actionMeta.action === "create-option") {
+                                await onPublisherCreate(newValue.label);
+                              } else {
+                                field.onChange(newValue);
+                              }
+                            }}
+                            value={field.value}
+                          />
+                        )}
+                      />
+
+                      {errors?.publisher?.message && (
+                        <p className="format-message error">
+                          {errors.publisher.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="w-full xl:w-1/2">
+                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
+                        Publish Year
+                      </label>
+                      <input
+                        type="text"
+                        name="publish_year"
+                        placeholder="Add Publish Year"
+                        {...register("publish_year")}
+                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                      />
+
+                      {errors?.publish_year?.message && (
+                        <p className="format-message error">
+                          {errors.publish_year.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+
+                  {/* Third Row fields */}
+                  <div className="mt-2 mb-4.5 flex flex-col gap-2 md:flex-row md:gap:9">
+
+                    <CategoryCreatableSelect
+                      control={control}
+                      errors={errors}
+                      isPendingCategories={isPendingCategories}
+                      categoriesData={categoriesData}
+                      handleCreateCategory={handleCreateCategory}
+                      newStyles={selectStyles}
+                    />
+
+                    <div className="w-full xl:w-1/2">
+                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
+                        Author <span className="text-red-600">*</span>
                       </label>
 
                       <Controller
@@ -499,18 +589,43 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                         </p>
                       )}
                     </div>
+
                   </div>
 
-                  {/* Second Row Fields */}
+
+                  {/* Fourth Row Fields */}
+                  <div className="mt-2 mb-4.5 flex flex-col gap-2 md:flex-row md:gap:9">
+
+
+                    <ConditionsCreatableSelect
+                      control={control}
+                      errors={errors}
+                      isPendingConditions={isPendingConditions}
+                      conditionsData={conditionsData}
+                      handleCreateConditions={handleCreateConditions}
+                      newStyles={selectStyles}
+                    />
+
+                    <CoversCreatableSelect
+                      control={control}
+                      errors={errors}
+                      isPendingCovers={isPendingCovers}
+                      coversData={coversData}
+                      handleCreateCovers={handleCreateCovers}
+                      newStyles={selectStyles}
+                    />
+                  </div>
+
+                  {/* Fifth Row */}
                   <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap:9">
                     <div className="w-full xl:w-1/2" autoFocus>
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
-                        Rental Price
+                        Member Price
                       </label>
                       <input
                         type="text"
                         name="member_price"
-                        placeholder="Add Rent Price"
+                        placeholder="Add Member Price"
                         {...register("member_price")}
                         className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                       />
@@ -541,159 +656,8 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                     </div>
                   </div>
 
-                  {/* Third Row fields */}
-                  <div className="mt-2 mb-4.5 flex flex-col gap-2 md:flex-row md:gap:9">
-
-
-                    <ConditionsCreatableSelect
-                      control={control}
-                      errors={errors}
-                      isPendingConditions={isPendingConditions}
-                      conditionsData={conditionsData}
-                      handleCreateConditions={handleCreateConditions}
-                      newStyles={selectStyles}
-                    />
-
-                    <CoversCreatableSelect
-                      control={control}
-                      errors={errors}
-                      isPendingCovers={isPendingCovers}
-                      coversData={coversData}
-                      handleCreateCovers={handleCreateCovers}
-                      newStyles={selectStyles}
-                    />
-                  </div>
-
-                  {/* Fourth Row Fields */}
-                  <div className="mt-2 mb-4.5 flex flex-col gap-2 md:flex-row md:gap:9">
-
-                    <CategoryCreatableSelect
-                      control={control}
-                      errors={errors}
-                      isPendingCategories={isPendingCategories}
-                      categoriesData={categoriesData}
-                      handleCreateCategory={handleCreateCategory}
-                      newStyles={selectStyles}
-                    />
-                    <div className="mb-4.5 w-full xl:w-1/2">
-                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
-                        ISBN <span className="text-meta-1">*</span>
-                      </label>
-                      <input
-                        name="isbn"
-                        type="text"
-                        placeholder="Enter ISBN "
-                        {...register("isbn")}
-                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
-                      />
-                      {errors?.isbn?.message && (
-                        <p className="format-message error">
-                          {errors.isbn.message}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Fifth Row */}
-                  <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap:9">
-                    <div className="w-full xl:w-1/2">
-                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
-                        Publisher
-                      </label>
-
-                      <Controller
-                        control={control}
-                        className="bg-white dark:bg-slate-800"
-                        name="publisher"
-                        render={({ field }) => (
-                          <CreatableSelect
-                            {...field}
-                            options={publisherOptions}
-                            isClearable
-                            isDisabled={isPendingPublishers}
-                            isLoading={isPendingPublishers}
-                            styles={selectStyles}
-                            onChange={async (newValue, actionMeta) => {
-                              // Use actionMeta.action to check if the change is a creation
-                              if (actionMeta.action === "create-option") {
-                                await onPublisherCreate(newValue.label); // Pass the label of the new option
-                              } else {
-                                field.onChange(newValue); // Regular option selected
-                              }
-                            }}
-                            value={field.value}
-                          />
-                        )}
-                      />
-
-                      {errors?.author?.message && (
-                        <p className="format-message error">
-                          {errors.author.message}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="w-full xl:w-1/2">
-                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
-                        Publish Year
-                      </label>
-                      <input
-                        type="text"
-                        name="publish_year"
-                        placeholder="Add Publish Year"
-                        {...register("publish_year")}
-                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
-                      />
-
-                      {errors?.publish_year?.message && (
-                        <p className="format-message error">
-                          {errors.publish_year.message}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
                   {/* Sixth Row */}
                   <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap:9">
-                    <div className="w-full xl:w-1/2" autoFocus>
-                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
-                        Discount Percentage
-                      </label>
-                      <input
-                        type="text"
-                        name="discount_percentage"
-                        placeholder="Add discount_percentage"
-                        {...register("discount_percentage")}
-                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
-                      />
-                      {errors?.discount_percentage?.message && (
-                        <p className="format-message error">
-                          {errors.discount_percentage.message}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="w-full xl:w-1/2">
-                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
-                        Credits
-                      </label>
-                      <input
-                        type="number"
-                        name="credit"
-                        placeholder="Add Credits"
-                        {...register("credit")}
-                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
-                      />
-                      {errors?.credit?.message && (
-                        <p className="format-message error">
-                          {errors.credit.message}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-
-                  <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
                     <div className="w-full xl:w-1/2" autoFocus>
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
                         Discount Percentage
@@ -720,7 +684,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                         type="number"
                         name="credit"
                         placeholder="Add Credits"
-                        {...register("credit", { required: true })}
+                        {...register("credit")}
                         className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                       />
                       {errors?.credit?.message && (
@@ -730,7 +694,10 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                       )}
                     </div>
                   </div>
-                  <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
+
+
+
+                  <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap:9">
                     <div className="w-full xl:w-1/2" autoFocus>
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
                         Edition
@@ -821,7 +788,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
 
                     <div className="w-full xl:w-1/2">
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
-                        Branch
+                        Branch <span className="text-red-600">*</span>
                       </label>
                       <div className="relative z-20 bg-transparent dark:bg-form-input">
                         <select
