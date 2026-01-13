@@ -1,12 +1,11 @@
-const {pool} = require("../config/dbConfig");
+const { pool } = require("../config/dbConfig");
 const { emailQueue, pushQueue } = require("../queues/index");
-
 
 async function checkOverdueStatusAndFine() {
   const client = await pool.connect();
   try {
     // console.log('Running overdue staus check for all bookings for all tenants...');
-    
+
     const query = `
         UPDATE bookings
         SET items = (
@@ -47,7 +46,9 @@ async function checkOverdueStatusAndFine() {
     `;
 
     const result = await client.query(query);
-    console.log(`Overdue fines applied to ${result.rowCount} bookings across all tenants.`);
+    console.log(
+      `Overdue fines applied to ${result.rowCount} bookings across all tenants.`
+    );
   } catch (error) {
     console.error("Error applying overdue fines :", error);
   } finally {
@@ -60,7 +61,7 @@ async function checkUpcomingDueDates() {
   const client = await pool.connect();
   try {
     // console.log("Checking for upcoming due dates...");
-    
+
     const query = `
       SELECT 
         b.id as booking_id,
@@ -84,16 +85,17 @@ async function checkUpcomingDueDates() {
 
     const result = await client.query(query);
 
-    
     if (result.rowCount === 0) {
       console.log("No bookings found with return due date in coming 2 days.");
       return;
     }
 
-    console.log(`Found ${result.rowCount} booking items return due in 2 days. sending reminders...`);
+    console.log(
+      `Found ${result.rowCount} booking items return due in 2 days. sending reminders...`
+    );
 
     const bookingsMap = new Map();
-    
+
     for (const row of result.rows) {
       if (!bookingsMap.has(row.booking_id)) {
         bookingsMap.set(row.booking_id, {
@@ -103,18 +105,18 @@ async function checkUpcomingDueDates() {
             phone: row.user_phone,
             entity_name: row.entity_name,
             subdomain: row.subdomain,
-            entity_id: row.entity_id
+            entity_id: row.entity_id,
           },
           entityId: row.entity_id,
           bookingData: { id: row.booking_id, user_id: row.user_id },
           book_title: row.book_title,
           due_date: new Date(row.return_due).toLocaleString(),
-          books: []
+          books: [],
         });
       }
       bookingsMap.get(row.booking_id).books.push({
         title: row.book_title,
-        due_date: new Date(row.return_due).toLocaleString()
+        due_date: new Date(row.return_due).toLocaleString(),
       });
     }
 
@@ -122,24 +124,25 @@ async function checkUpcomingDueDates() {
       const emailData = {
         userData: data.userData,
         entityId: data.entityId,
-        book_title: data.book_title, 
-        due_date: new Date(data.due_date).toLocaleString(),     
-        books: data.books,     
+        book_title: data.book_title,
+        due_date: new Date(data.due_date).toLocaleString(),
+        books: data.books,
         bookingData: data.bookingData,
-        to: data.userData.email
+        to: data.userData.email,
       };
 
       await emailQueue.add("booking-due-reminder-email", emailData);
-      
-      // added push job to send reminder  
+
+      // added push job to send reminder
       await pushQueue.add("booking-due-reminder-push", {
         ...emailData,
-        userId: data?.bookingData?.user_id
+        userId: data?.bookingData?.user_id,
       });
     }
 
-    console.log(`Reminder jobs added successfully for ${bookingsMap.size} bookings in queues.`);
-
+    console.log(
+      `Reminder jobs added successfully for ${bookingsMap.size} bookings in queues.`
+    );
   } catch (error) {
     console.error("Error checking upcoming due dates:", error);
   } finally {
@@ -147,13 +150,12 @@ async function checkUpcomingDueDates() {
   }
 }
 
-
-//Check Late Returns / Overdue Fine Payments for Bookings 
+//Check Late Returns / Overdue Fine Payments for Bookings
 async function checkFineReminders() {
   const client = await pool.connect();
   try {
-    // console.log("Checking for fine payment reminders...");
- 
+    console.log("Checking for Pending fine payment reminders...");
+
     const query = `
       SELECT 
         b.id as booking_id,
@@ -194,7 +196,55 @@ async function checkFineReminders() {
       console.log("No fine reminders to send.");
       return;
     }
-    console.log(`Pending ${result.rowCount} items for fine pament reminders. Sending reminders...`);
+    console.log(
+      `Pending ${result.rowCount} items for fine pament reminders. Sending reminders...`
+    );
+
+
+     const bookingsMap = new Map();
+
+    for (const row of result.rows) {
+        if (!bookingsMap.has(row.booking_id)) {
+            bookingsMap.set(row.booking_id, {
+                userData: {
+                    name: row.user_name,
+                    email: row.user_email,
+                    phone: row.user_phone,
+                    entity_name: row.entity_name,
+                    subdomain: row.subdomain,
+                    entity_id: row.entity_id
+                },
+                entityId: row.entity_id,
+                bookingData: { id: row.booking_id, user_id: row.user_id },
+                books: [],
+                total_fine: 0
+            });
+        }
+        
+        const fine = parseFloat(row.fine_amount) || 0;
+        bookingsMap.get(row.booking_id).books.push({
+            title: row.book_title,
+            fine: fine.toFixed(2),
+            status: row.item_status
+        });
+        bookingsMap.get(row.booking_id).total_fine += fine;
+    }
+
+    for (const [bookingId, data] of bookingsMap) {
+        const emailData = {
+            userData: data.userData,
+            entityId: data.entityId,
+            books: data.books,
+            total_fine: data.total_fine.toFixed(2),
+            bookingData: data.bookingData,
+            to: data.userData.email
+        };
+
+        await emailQueue.add("fine-payment-reminder-email", emailData);
+    }
+
+    console.log(`Pending Fine reminders added for ${bookingsMap.size} bookings into the worker queue.`);
+
   } catch (error) {
     console.error("Error checking fine payment reminders:", error);
   } finally {
@@ -202,4 +252,8 @@ async function checkFineReminders() {
   }
 }
 
-module.exports = { checkUpcomingDueDates, checkOverdueStatusAndFine, checkFineReminders };
+module.exports = {
+  checkUpcomingDueDates,
+  checkOverdueStatusAndFine,
+  checkFineReminders,
+};
