@@ -145,7 +145,7 @@ const SYSTEM_DEFAULTS = {
     channel: "push",
   },
   "booking-due-reminder-email": {
-    subject: "Reminder: Return Due Soon for {{book_title}}",
+    subject: "Reminder: Return Due for {{book_title}}",
     body: "Hi {{customer_name}},\n\nThis is a friendly reminder that your booking for Book \n\n {{book_title}} is due for return on {{due_date}}.\n\nPlease return it on time to avoid any late fees.\n\nHappy Reading!\n{{library_name}}",
     variables: ["customer_name", "book_title", "due_date", "library_name"],
     channel: "email",
@@ -155,6 +155,12 @@ const SYSTEM_DEFAULTS = {
     body: "Hi {{customer_name}}, your booking for Book:  '{{book_title}}' is due on {{due_date}}. Please return it expecting.",
     variables: ["customer_name", "book_title", "due_date"],
     channel: "push",
+  },
+  "fine-payment-reminder-email": {
+    subject: "Action Required: Pending Fine Payment",
+    body: "Hi {{customer_name}},\n\nYou have pending late return fines for the following books:\n\n{{books_list}}\n\nTotal Fine: {{total_fine}}\n\nPlease pay the fine to avoid account restrictions.\n\nRegards,\n{{library_name}}",
+    variables: ["customer_name", "books_list", "total_fine", "library_name"],
+    channel: "email",
   },
 };
 
