@@ -111,7 +111,7 @@ const BookOverview = () => {
               <h2 className="relative text-md font-semibold tracking-widest text-purple-900 title-font">
                 {book.author}
                 <div className="absolute right-0 sm:bottom-4 sm:relative bottom-24">
-                  {auth?.accessToken || auth?.id && <Suspense fallback={<Loader />}>
+                  {auth?.id && <Suspense fallback={<Loader />}>
                     <AddToWishListButton bookId={book.id} stock_quantity={book.quantity} />
                   </Suspense>}
 

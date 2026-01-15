@@ -27,12 +27,7 @@ const AddToWishListButton = ({ bookId, stock_quantity }) => {
                 body: JSON.stringify({ itemId: id }),
             });
 
-
-            // console.log(response, "Response");
-
             const wishlistResponse = await response.json();
-            // console.log(wishlistResponse);
-
             if (response.ok) {
                 queryClient.invalidateQueries("wishlist")
                 toast.update(toastId, {
@@ -41,9 +36,16 @@ const AddToWishListButton = ({ bookId, stock_quantity }) => {
                     isLoading: false,
                     autoClose: 2000,
                 });
+            } else {
+                toast.update(toastId, {
+                    render: `Error: ${wishlistResponse?.error || "Failed to add items in the wishlist"}`,
+                    type: 'error',
+                    isLoading: false,
+                    autoClose: 1000,
+                });
+                setWishlistItems(wishlistItems.filter((item) => item.itemId == id))
+
             }
-
-
         } catch (error) {
             console.error('Error updating wishlist:', error);
             toast.update(toastId, {
