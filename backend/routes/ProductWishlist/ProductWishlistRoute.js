@@ -3,6 +3,7 @@ const { checkAuth } = require("../../middleware/authMiddleware");
 const db = require("../../config/dbConfig");
 const { pool } = require("../../config/dbConfig");
 const router = express.Router();
+const { getMainBranchId } = require("../../helpers/books/index.js");
 
 router.use(checkAuth);
 
@@ -13,11 +14,12 @@ router.post("/api/wishlist", async (req, res) => {
   const client = await pool.connect();
 
   try {
+
     if (!itemId || isNaN(itemId)) {
       return res.status(400).json({ error: "Invalid Book ID" });
     }
-
     const branchId = await getMainBranchId(client, entityId);
+
     if (!branchId) {
       throw new Error("Main Branch ID not found.");
     }
