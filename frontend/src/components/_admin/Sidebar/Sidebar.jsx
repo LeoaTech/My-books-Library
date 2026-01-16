@@ -112,7 +112,7 @@ console.log(auth, "auth");
           />
 
           <span className=" border-r-2 text-white dark:bg-blue-900"></span>
-          <span className="font-bold text-2xl "> {name || "Dashboard"}</span>
+          <span className="font-bold text-lg "> {name || "Dashboard"}</span>
 
         </Link>
 
