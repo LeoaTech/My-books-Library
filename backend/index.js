@@ -46,6 +46,7 @@ const webhooks = require("./webhooks/stripe/index.js"); //Stripe webhook
 
 
 const notificationRoute = require("./routes/NotificationRoutes/NotificationRoutes.js");
+const libraryRoutes = require("./routes/LibraryRoutes");
 
 // Cron Job
 require("./services/scheduleTask.js"); //Add Due Date Fine
@@ -139,6 +140,8 @@ app.use("/api/current-plan", currentPlan);
 app.use("/api/library/:entityId/stripe/status", stripeStatus);
 app.use("/api/library/:entityId/stripe/onboarding-complete", stripeOnboarding);
 app.use("/api/library/:entityId/stripe/connect", stripeConnect);
+
+app.use("/api/library", libraryRoutes);
 
 // Stripe Oauth Flow for Connecting Existing Accounts
 app.use(stripeRouter);
