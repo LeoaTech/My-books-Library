@@ -3,12 +3,11 @@ import { BASE_URL } from '../../../../utils/baseAPIURL';
 import { useFetchUserPaymentMethod } from '../../../../hooks/users/useFetchPaymentMethodDetails';
 import { useState } from 'react';
 
-const StripeConnect = ( entityId) => {
+const StripeConnect = ({ entityId }) => {
     // const [status, setStatus] = useState('disconnected'); 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
-    // console.log(entityId, "Library Id");
     const { data: fetchPaymentStatus, isLoading, refetch } = useFetchUserPaymentMethod(entityId);
     // console.log(fetchPaymentStatus, "Fetch  Status of Payment")
 
@@ -24,9 +23,20 @@ const StripeConnect = ( entityId) => {
 
             const data = await res.json();
             console.log("Response for Connect API", res)
-            window.location.href = data.url; // Redirect to Stripe's hosted onboarding
+
+            if (!res.ok) {
+                throw new Error(data.error || "Failed to initiate Stripe connection");
+            }
+
+            if (data.url) {
+                window.location.href = data.url; // Redirect to Stripe's hosted onboarding
+            } else {
+                setError("Received invalid redirect URL from server.");
+            }
         } catch (err) {
-            setError('Failed to start onboarding');
+            // console.error(err);
+            setError(err.message || 'Failed to start onboarding');
+        } finally {
             setLoading(false);
         }
     };
@@ -42,11 +52,22 @@ const StripeConnect = ( entityId) => {
             });
 
             const data = await res.json();
-            console.log("res", res, "data", data);
+            // console.log("res", res, "data", data);
 
-            window.location.href = data.url;  // Redirect to Stripe OAuth
+            if (!res.ok) {
+                throw new Error(data.error || "Failed to get Stripe OAuth URL");
+            }
+
+            if (data.url) {
+                window.location.href = data.url;  // Redirect to Stripe OAuth
+            } else {
+                setError("Received invalid redirect URL from server.");
+            }
+
         } catch (err) {
-            setError('Failed to connect exising stripe account');
+            // console.error(err);
+            setError(err.message || 'Failed to connect exising stripe account');
+        } finally {
             setLoading(false);
         }
     };
@@ -85,7 +106,7 @@ const StripeConnect = ( entityId) => {
 
             {fetchPaymentStatus?.status === 'pending' && (
                 <div className="text-yellow-600 text-sm mb-4">
-                    Onboarding in progress... <button onClick={fetchPaymentStatus} className="underline">Check Status</button>
+                    Onboarding in progress... <p className="underline">Status is {fetchPaymentStatus?.status }</p>
                 </div>
             )}
 
@@ -103,7 +124,7 @@ const StripeConnect = ( entityId) => {
 
 
             <div className='mb-4 py-4'>
-                <p className= 'font-semibold text-md mb-2 py-2'>Want to Integrate Existing Standard Account?</p>
+                <p className='font-semibold text-md mb-2 py-2'>Want to Integrate Existing Standard Account?</p>
                 <button
                     className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white font-medium py-2 px-4 rounded-md transition-colors"
                     onClick={handleConnectExisting}>Connect Existing Stripe Account</button>
