@@ -5,12 +5,13 @@ const router = express.Router();
 const db = require("../../config/dbConfig.js");
 const { getEntityInfo, updateEntityStripeInfo } = require("../../helpers/stripe_onbaording.js");
 const { checkAuth } = require("../../middleware/authMiddleware.js");
-
+require("dotenv").config()
 router.use(checkAuth);
 router.post('/', async (req, res) => {
     
   try {
-    const { entityId } = req.user;
+        const entityId = req?.user?.entityId || req?.user?.entity_id;
+
     const entity = await getEntityInfo(db,entityId);
     if (!entity) return res.status(404).json({ error: 'Entity ID not found' });
 
@@ -38,11 +39,15 @@ router.post('/', async (req, res) => {
       await updateEntityStripeInfo(db,userId, accountId,  account);
     }
 
-    // Generate onboarding link (Stripe's pre-built hosted UI)
+
+    const protocol = req.protocol; // 'http' or 'https'
+    const host = req.get('host'); // e.g., 'localhost:8000'
+    const serverBaseUrl = process.env.SERVER_URL ||`${protocol}://${host}`;
+    //  onboarding link (Stripe's pre-built hosted UI)
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
-      refresh_url: `${req.headers.origin}/entitys/${entityId}/stripe/reauth`, 
-      return_url: `${req.headers.origin}/api/library/${entityId}/stripe/onboarding-complete?account=${accountId}`,
+      refresh_url: `${req.headers.origin}/dashboard/profile`, 
+      return_url: `${serverBaseUrl}/api/library/${entityId}/stripe/onboarding-complete?account=${accountId}`,
       type: 'account_onboarding',
     });
 
