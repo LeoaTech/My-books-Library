@@ -31,6 +31,7 @@ const ManageSettings = lazy(() =>
   import("../components/_admin/Settings/ManageSettings")
 );
 const PricingSettings = lazy(() => import("../_admin/pages/PricingSettings"));
+const MyLibrary = lazy(() => import("../_admin/pages/MyLibrary"));
 
 /**
  * ⚠ These are internal routes!
@@ -149,6 +150,11 @@ export const accountRoutes = [
         title: "Notifications",
         path: "/dashboard/notifications",
         component: NotificationsPage,
+      },
+      {
+        title: "My Library",
+        path: "/dashboard/mylibrary",
+        component: MyLibrary,
       },
     ],
   },
