@@ -106,12 +106,10 @@ GROUP BY
   });
 });
 
-
-
 // Get User Profile Details
 
 const userDetails = asyncHandler(async (req, res) => {
-  console.log(req.params, "User ID",req.query);
+  console.log(req.params, "User ID", req.query);
   const { user_id } = req.params;
   const getUserProfile = `SELECT
   u.id AS user_id,
@@ -134,6 +132,99 @@ WHERE
   });
 });
 
+// Update User Profile
+const updateUserProfile = asyncHandler(async (req, res) => {
+  const { name, email, phone, address, city, country, password } = req.body;
+  const userId = req?.user?.user_id || req?.user?.userId;
+
+  try {
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+
+      let hashedPassword;
+      if (password) {
+        const salt = await bcrypt.genSalt(10);
+        hashedPassword = await bcrypt.hash(password, salt);
+      }
+
+      let updateFields = [];
+      let values = [];
+      let paramCount = 1;
+
+      if (name) {
+        updateFields.push(`name = $${paramCount}`);
+        values.push(name);
+        paramCount++;
+      }
+      if (phone) {
+        updateFields.push(`phone = $${paramCount}`);
+        values.push(phone);
+        paramCount++;
+      }
+      if (address) {
+        updateFields.push(`address = $${paramCount}`);
+        values.push(address);
+        paramCount++;
+      }
+      if (city) {
+        updateFields.push(`city = $${paramCount}`);
+        values.push(city);
+        paramCount++;
+      }
+      if (country) {
+        updateFields.push(`country = $${paramCount}`);
+        values.push(country);
+        paramCount++;
+      }
+      if (hashedPassword) {
+        updateFields.push(`password = $${paramCount}`);
+        values.push(hashedPassword);
+        paramCount++;
+      }
+
+      if (email) {
+        updateFields.push(`email = $${paramCount}`);
+        values.push(email);
+        paramCount++;
+      }
+
+      if (updateFields.length === 0) {
+        await client.query("ROLLBACK");
+        return res.status(400).json({ message: "No fields to update" });
+      }
+
+      values.push(userId);
+      const updateQuery = `
+        UPDATE users 
+        SET ${updateFields.join(", ")} 
+        WHERE id = $${paramCount} 
+        RETURNING id, name, email, phone, address, city, country
+      `;
+
+      const result = await client.query(updateQuery, values);
+
+      await client.query("COMMIT");
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.status(200).json({
+        message: "User profile updated successfully",
+        user: result.rows[0],
+      });
+    } catch (err) {
+      await client.query("ROLLBACK");
+      throw err;
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    console.error("Error updating user profile:", error);
+    res.status(500).json({ message: "Server error updating profile" });
+  }
+});
 
 // Update User Role for a Library
 const UpdateRoles = asyncHandler(async (req, res) => {
@@ -255,6 +346,7 @@ const DeleteUser = asyncHandler(async (req, res) => {
   }
 });
 
+// Register Device token to send push notifications
 const registerDeviceToken = asyncHandler(async (req, res) => {
   // console.log(req.body, "payload from client");
 
@@ -270,7 +362,7 @@ const registerDeviceToken = asyncHandler(async (req, res) => {
         ON CONFLICT (user_id, token) DO NOTHING
     `;
     await db.query(query, [userId, fcmToken]);
-    res.json({ message: "Token added successfully for user !",userId });
+    res.json({ message: "Token added successfully for user !", userId });
   } catch (err) {
     console.error("Update token error:", err);
     res.status(500).json({ error: "Server error" });
@@ -285,4 +377,5 @@ module.exports = {
   getLibraryUsers,
   CreateUser,
   registerDeviceToken,
+  updateUserProfile,
 };
