@@ -1,4 +1,5 @@
 import StripeConnect from '../../components/_admin/Account/StripeConnect/StripeConnect';
+import ProfileUpdateForm from '../../components/_admin/Account/ProfileUpdateForm';
 import { useAuthContext } from '../../hooks/useAuthContext';
 
 const Profile = () => {
@@ -11,7 +12,7 @@ const Profile = () => {
     )
   }
 
-  
+
 
   if (entityId) {
     return (
@@ -22,6 +23,10 @@ const Profile = () => {
           <StripeConnect
             entityId={entityId}
           />
+        </section>
+
+        <section>
+          <ProfileUpdateForm />
         </section>
 
 
