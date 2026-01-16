@@ -10,7 +10,7 @@ function generateSubdomain(name) {
 
 // Verify subdomain and get a unique subdomain
 
-async function checkSubdomain(client, subdomain) {
+async function checkSubdomain(subdomain) {
   let newSubdomain = subdomain;
   while (true) {
     const subdomainCheck = await db.query(
