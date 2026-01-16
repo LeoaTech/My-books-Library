@@ -21,18 +21,18 @@ const Tables = ({ hasPermission, searchQuery }) => {
   const { isPending, error, data: booksData } = useFetchBooks();
 
 
-  const [data, setData] = useState([]);
   const [pagination, setPagination] = useState({
-    pageIndex: 0, //initial page index
-    pageSize: 10, //default page size
+    pageIndex: 0, 
+    pageSize: 10, 
   });
   const columnHelper = createColumnHelper();
+  // const [data, setData] = useState([]);
 
-  useEffect(() => {
-    if (booksData) {
-      setData(booksData);
-    }
-  }, [booksData]);
+  // useEffect(() => {
+  //   if (booksData) {
+  //     setData(booksData);
+  //   }
+  // }, [booksData]);
 
 
 
@@ -110,18 +110,19 @@ const Tables = ({ hasPermission, searchQuery }) => {
       columnHelper.accessor("actions", {
         header: "Actions",
         cell: (info) => {
+          const book = info.row.original;
           const bookId = info.row.original?.id;
           const bookTitle = info.row.original?.title
 
           return (
             <div className=" max-w-[120px] flex gap-3">
               {hasPermission("EDIT") ? (
-              <button
-                onClick={() => editBookDetails(bookId)}
-                className="text-green-600"
-              >
-                <MdEdit />
-              </button>
+                <button
+                  onClick={() => editBookDetails(book)}
+                  className="text-green-600"
+                >
+                  <MdEdit />
+                </button>
               ) : (
                 <div className="group relative m-2 flex justify-center">
                   <span className="absolute -top-10 scale-0 transition-all px-3 py-1 rounded bg-gray-800 p-2 text-xs text-red-500 group-hover:scale-100">
@@ -131,21 +132,21 @@ const Tables = ({ hasPermission, searchQuery }) => {
                     <MdEdit />
                   </button>
                 </div>
-               )} 
+              )}
 
               <button
-                onClick={() => viewBookDetails(bookId)}
+                onClick={() => viewBookDetails(book)}
                 className="text-green-600"
               >
                 <MdOutlineRemoveRedEye />
               </button>
               {hasPermission("DELETE") ? (
-              <button
-                onClick={() => deleteBookDetails(bookId, bookTitle)}
-                className="text-red-500"
-              >
-                <MdOutlineDeleteOutline />
-              </button>
+                <button
+                  onClick={() => deleteBookDetails(bookId, bookTitle)}
+                  className="text-red-500"
+                >
+                  <MdOutlineDeleteOutline />
+                </button>
               ) : (
                 <div className="group relative m-2 flex justify-center">
                   <span className="absolute -top-10 scale-0 transition-all rounded bg-gray-800 p-2 text-xs text-red-500 group-hover:scale-100">
@@ -155,7 +156,7 @@ const Tables = ({ hasPermission, searchQuery }) => {
                     <MdOutlineDeleteOutline />
                   </button>
                 </div>
-               )} 
+              )}
             </div>
           );
         },
@@ -184,13 +185,13 @@ const Tables = ({ hasPermission, searchQuery }) => {
   const [editDetailModal, setEditDetailModal] = useState(false);
   const [deleteBookModal, setDeleteBookModal] = useState(false);
 
-  const viewBookDetails = (id) => {
-    const bookDetails = booksData?.books?.find((book) => book.id === id);
-    if (bookDetails) {
-      setValues(bookDetails)
-    } else {
-      setValues(id);
-    }
+  const viewBookDetails = (book) => {
+    // const bookDetails = filteredData?.books?.find((book) => book.id === id);
+    // if (bookDetails) {
+    //   setValues(bookDetails)
+    // } else {
+      setValues(book);
+    // }
 
     setBookDetailModal(true);
   };
@@ -200,13 +201,17 @@ const Tables = ({ hasPermission, searchQuery }) => {
     setDeleteBookModal(true);
   };
 
-  const editBookDetails = (id) => {
-    const bookDetails = booksData?.books?.find((book) => book.id === id);
-    if (bookDetails) {
-      setValues(bookDetails)
-    } else {
-      setValues(id)
-    }
+  const editBookDetails = (book) => {
+    // const bookDetails = filteredData?.length > 0 && filteredData?.find((book) => book.id == id);
+    // console.log(bookDetails, "Find Edit Book Details ");
+
+    // if (bookDetails) {
+    //   setValues(bookDetails)
+    // } else {
+    //   setValues(id)
+    // }
+
+    setValues(book)
 
     setEditDetailModal(true);
   };
