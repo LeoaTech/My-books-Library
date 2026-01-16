@@ -8,9 +8,8 @@ const { getEntityInfo } = require("../../helpers/stripe_onbaording.js");
 router.use(checkAuth);
 router.get("/", async (req, res) => {
   try {
-    // console.log("Params", req.params);
 
-    const { entityId } = req.user;
+    const entityId = req?.user?.entityId || req?.user?.entity_id;
 
     const entity = await getEntityInfo(db, entityId);
 
@@ -24,7 +23,7 @@ router.get("/", async (req, res) => {
 
     if (paymentMethods?.stripe_account_id) {
       const account = await stripe.accounts.retrieve(
-        paymentMethods.stripe_account_id
+        paymentMethods?.stripe_account_id
       );
 
       status = account.charges_enabled ? "connected" : "pending";
