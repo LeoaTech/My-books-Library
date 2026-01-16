@@ -105,11 +105,35 @@ GROUP BY
     message: "All users routes are available",
   });
 });
-// Update User Profile
 
-const updateUserPrfile = asyncHandler(async (req, res) => {
-  res.status(200).json({ message: "Update user Successfully" });
+
+
+// Get User Profile Details
+
+const userDetails = asyncHandler(async (req, res) => {
+  console.log(req.params, "User ID",req.query);
+  const { user_id } = req.params;
+  const getUserProfile = `SELECT
+  u.id AS user_id,
+  u.email,
+  u.phone,
+  u.name,
+  u.address,
+  u.city,
+  u.country
+FROM
+  public.users u
+WHERE
+  u.id = $1`;
+  const userExists = await db.query(getUserProfile, [user_id]);
+
+  console.log(userExists?.rows, "User Found");
+  res.status(200).json({
+    data: userExists?.rows[0],
+    message: "All users routes are available",
+  });
 });
+
 
 // Update User Role for a Library
 const UpdateRoles = asyncHandler(async (req, res) => {
@@ -117,15 +141,12 @@ const UpdateRoles = asyncHandler(async (req, res) => {
   const userId = req.params.user_id;
   const newRoleID = req.body.newRoleId;
 
-  // console.log(req.params, req.body);
-  /* Verify if user_id exists in db for the entity_id */
   const foundUserID = await db.query(
     `SELECT id from user_entity_roles where user_id= $1 and entity_id =$2`,
     [userId, entityId]
   );
   let user = foundUserID?.rows[0];
 
-  console.log("found user", user);
   if (!user) {
     return res
       .status(401)
@@ -257,8 +278,8 @@ const registerDeviceToken = asyncHandler(async (req, res) => {
 });
 module.exports = {
   UpdateRoles,
+  userDetails,
   DeleteUser,
-  updateUserPrfile,
   getUserProfile,
   getAllUsers,
   getLibraryUsers,
