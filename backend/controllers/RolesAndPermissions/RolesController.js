@@ -112,8 +112,6 @@ const DeleteRole = asyncHandler(async (req, res) => {
   try {
     const { role_id } = req.params;
 
-    console.log(req.params);
-
     if (!role_id) {
       res.status(400).json({ message: "Role ID Missing " });
     }
