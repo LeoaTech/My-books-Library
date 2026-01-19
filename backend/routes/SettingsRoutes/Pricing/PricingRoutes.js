@@ -1,6 +1,6 @@
 const express = require("express");
 const { checkAuth } = require("../../../middleware/authMiddleware");
-const { FetchPricingPlans, CreatePlan , UpdatePlan, DeletePlan, CreateDualPlan} = require("../../../controllers/SettingsController/Pricing.Controller");
+const { FetchPricingPlans, UpdatePlan, DeletePlan, CreateDualPlan} = require("../../../controllers/SettingsController/Pricing.Controller");
 
 const router = express.Router();
 // Verify User Authentication (Logged-in users can see this route)
