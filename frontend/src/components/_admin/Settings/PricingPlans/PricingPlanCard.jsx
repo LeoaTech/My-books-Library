@@ -23,7 +23,7 @@ const HiDotsVertical = ({ size = 20 }) => (
     <circle cx="12" cy="19" r="1"></circle>
   </svg>
 );
-const PricingPlanCard = ({ plans, handleEditPlan }) => {
+const PricingPlanCard = ({ isStripeConnected, plans, handleEditPlan }) => {
 
   const [openPlanActionId, setOpenPlanActionId] = useState(null);
   const [isYearly, setIsYearly] = useState(false);
@@ -80,9 +80,15 @@ const PricingPlanCard = ({ plans, handleEditPlan }) => {
     </div>
   );
 
-  if(plans?.length ==0){
+  if (plans?.length == 0 && isStripeConnected) {
     return (
-      <p className="flex justify-center items-center">Add New Plans</p>
+      <p className="mt-10 flex justify-center items-center">Add New Plans</p>
+    )
+  }
+
+  if (!isStripeConnected) {
+    return (
+      <p className="flex justify-center items-center text-[#758aae] mt-20">Connect Stripe to Add New Plans</p>
     )
   }
 
@@ -130,7 +136,7 @@ const PricingPlanCard = ({ plans, handleEditPlan }) => {
                   {openPlanActionId === plan.plan_id && (
                     <div
                       className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#1d2a39] rounded-md shadow-xl ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 dark:divide-gray-700"
-                      onClick={(e) => e.stopPropagation()} 
+                      onClick={(e) => e.stopPropagation()}
                     >
                       {/*  Edit Plan */}
                       <div
