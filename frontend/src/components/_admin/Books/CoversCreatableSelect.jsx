@@ -11,7 +11,6 @@ const CoversCreatableSelect = ({
   newStyles
 }) => {
 
-  console.log(coversData, "cover component");
 
   const coverOption = useMemo(() =>
     coversData?.covers?.map(cover => ({

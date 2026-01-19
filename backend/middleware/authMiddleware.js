@@ -1,11 +1,9 @@
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
-const requireAuth = async (req, res, next) => {
   // Verify Authorized access
 
-  console.log(req.headers, "Headers");
-  // Bearer Token
+const requireAuth = async (req, res, next) => {
   const authorization =
     req.headers?.Authorization || req.headers?.authorization;
 
@@ -14,18 +12,15 @@ const requireAuth = async (req, res, next) => {
 
   const token = authorization.split(" ")[1];
 
-  console.log(req.user, "Auth");
   try {
     jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
       if (err) return res.status(403).json({ error: "Invalid Token" });
-      console.log(decoded);
       req.user = decoded?.UserInfo;
       req.userId = decoded.UserInfo.id;
       req.role = decoded.UserInfo.role_id;
       next();
     });
   } catch (error) {
-    console.log(error);
     res.status(401).json({ error: "Request is not Authorized" });
   }
 };
@@ -41,7 +36,6 @@ const checkAuth = async (req, res, next) => {
     return res.status(401).json({ error: "Un-authorized" });
 
   if (req?.user) {
-    console.log(req?.user, "Check Auth");
 
     //extract user data from request
     req.user = req.user;
@@ -63,7 +57,6 @@ const checkAuth = async (req, res, next) => {
         process.env.JWT_REFRESH_SECRET,
         (err, decoded) => {
           if (err) return res.status(403).json({ error: "Invalid Token" });
-          console.log(decoded, "refersh token cookie");
           req.user = decoded?.data;
           req.userId = decoded?.data.userId;
           req.roleId = decoded?.data.roleId;
@@ -74,7 +67,6 @@ const checkAuth = async (req, res, next) => {
         }
       );
     } catch (error) {
-      console.log(error);
       res.status(401).json({ error: "Request is not Authorized" });
     }
   }
