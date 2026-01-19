@@ -355,16 +355,22 @@ const DeletePlan = asyncHandler(async (req, res) => {
           stripeError.type === "StripeInvalidRequestError" ||
           stripeError.code === "resource_missing"
         ) {
-         
-
-          return res.status(409).json({
-            message:
-              "Cannot delete plan. It has active subscriptions, payment links, or historical data on Stripe. Please contact support to archive the product instead.",
-            details: stripeError.message,
-          });
+          if (stripeError.code === "resource_missing") {
+             console.log("Product already deleted from Stripe");
+          } else {
+             console.log("Product has linked resources, archiving instead...");
+             try {
+                await stripe.products.update(stripeProductId, { active: false });
+                console.log(`Stripe Product Archived: ${stripeProductId}`);
+             } catch (archiveError) {
+                console.error(`Failed to archive product: ${archiveError.message}. Please Contact Support`);
+                throw archiveError; 
+             }
+          }
+        } else {
+             console.error(`Unhandled Stripe Error during deletion: ${stripeError}`);
+             throw stripeError;
         }
-        console.error(`Unhandled Stripe Error during deletion: ${stripeError}`);
-        throw stripeError;
       }
     }
 
@@ -389,7 +395,6 @@ const DeletePlan = asyncHandler(async (req, res) => {
 
 module.exports = {
   FetchPricingPlans,
-  CreatePlan,
   DeletePlan,
   UpdatePlan,
   CreateDualPlan,
