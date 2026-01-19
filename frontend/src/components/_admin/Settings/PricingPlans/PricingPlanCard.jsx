@@ -35,7 +35,9 @@ const PricingPlanCard = ({ isStripeConnected, plans, handleEditPlan }) => {
   const { mutateAsync: deletePlanMutation } = useMutation({
     mutationFn: deletePlan,
     onSuccess: () => {
-      queryClient.invalidateQueries(['pricing']);
+    },
+     onSettled: () => {
+      queryClient.invalidateQueries(["pricing"]);
     },
   });
 
