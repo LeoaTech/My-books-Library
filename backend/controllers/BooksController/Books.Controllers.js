@@ -65,7 +65,6 @@ WHERE
   const getEntityBranches = `Select id from branches where entity_id = $1`;
   try {
     const getBranchIds = await db.query(getEntityBranches, [entityId]);
-    console.log(getBranchIds.rows, "Branches");
 
     if (getBranchIds.rowCount == 0) {
       res
@@ -78,7 +77,6 @@ WHERE
       branchIds,
     ]);
 
-    console.log(getBooksList?.rowCount, "Books available");
     // if (getBooksList?.rowCount > 0) {
     res.status(200).json({
       books: getBooksList?.rows || [],
@@ -95,8 +93,6 @@ const GetAvailableBooks = asyncHandler(async (req, res) => {
   const user = req.user;
 
   const entityId = user?.entityId || user?.entity_id;
-
-  // console.log(req.user, "User Object", entityId, "Entity ID");
 
   if (!entityId) {
     res.status(400).json({ message: "No Library Exists " });
@@ -160,8 +156,6 @@ const GetAvailableBooks = asyncHandler(async (req, res) => {
 
     let branchIds = getBranchIds.rows.map((branch) => branch.id);
     const getBooksList = await db.query(fetchAvailableBooks, [branchIds]);
-
-    console.log(getBooksList?.rowCount, "Books available");
     // if (getBooksList?.rowCount > 0) {
     res.status(200).json({
       books: getBooksList?.rows || [],
@@ -169,7 +163,6 @@ const GetAvailableBooks = asyncHandler(async (req, res) => {
     });
     // }
   } catch (error) {
-    console.log(err, "Error getting books");
     return res.status(500).json({ message: "No books found" });
   }
 });
@@ -218,7 +211,6 @@ const GetBookById = asyncHandler(async (req, res) => {
   try {
     const getBookDetail = await db.query(bookQuery, [bookId]);
 
-    console.log(getBookDetail?.rows[0]);
     if (getBookDetail?.rowCount > 0) {
       res.status(200).json({
         book: getBookDetail?.rows[0],
@@ -230,7 +222,6 @@ const GetBookById = asyncHandler(async (req, res) => {
       });
     }
   } catch (error) {
-    console.log(error.message, "Error getting book Details");
     res.status(500).json({
       message: error.message || "Book details failed to retrieved",
     });
@@ -293,7 +284,6 @@ const CreateNewBook = asyncHandler(async (req, res) => {
       });
       imagesUrlsJson = JSON.stringify(successfulImages);
     } catch (error) {
-      console.log("Error uploading images to Cloudinary: ", error);
       imagesUrlsJson = JSON.stringify([]);
     }
   }
@@ -347,11 +337,10 @@ const CreateNewBook = asyncHandler(async (req, res) => {
         quantity,
       ]
     );
-    console.log(saveBook?.rowCount, "Book Saved");
     if (saveBook?.rowCount > 0) {
       const response = {
         books: saveBook?.rows[0],
-        message: "Book Details saved successfully",
+        message: "Book created successfully",
       };
 
       if (failedImagesCount > 0) {
@@ -362,10 +351,9 @@ const CreateNewBook = asyncHandler(async (req, res) => {
       return res.status(400).json({ message: "Error Creating Book" });
     }
   } catch (error) {
-    console.log(error, "Error saving book: ");
-    res
-      .status(400)
-      .json({ error, message: error.message || "Error Creating Book" });
+    let errorMessage = "Error Creating Book";
+
+    res.status(400).json({ error, message: errorMessage });
   }
 });
 
@@ -388,7 +376,6 @@ const DeleteBook = asyncHandler(async (req, res) => {
       book_id,
     ]);
 
-    console.log(deleteQuery?.rowCount, "Deleted");
 
     if (deleteQuery?.rowCount > 0) {
       res.status(200).json({ message: "Book deleted Suuccessfully" });
@@ -396,7 +383,9 @@ const DeleteBook = asyncHandler(async (req, res) => {
       res.status(204).json({ message: "Failed To Delete Book" });
     }
   } catch (error) {
-    console.log(error);
+
+
+    res.status(400).json({ message: 'Failed to delete book' });
   }
 });
 
@@ -517,14 +506,11 @@ const UpdateBook = asyncHandler(async (req, res) => {
           (img) => img.secure_url || (Array.isArray(img.url) && !img.base64)
         );
         imagesUrlsJson = JSON.stringify(oldImagesOnly);
-        console.log(
-          "All new image uploads failed. keeping the existing db images only."
-        );
+      
       } else {
         imagesUrlsJson = JSON.stringify([]);
       }
     } catch (error) {
-      console.log("Error uploading images to Cloudinary: ", error);
       const oldImagesOnly = cover_img_url.filter((img) => !img.base64);
       imagesUrlsJson = JSON.stringify(oldImagesOnly);
     }
@@ -596,8 +582,8 @@ const UpdateBook = asyncHandler(async (req, res) => {
     }
     res.status(400).json({ message: "Error Updating Book" });
   } catch (error) {
-    console.log(error, "Error Updating book: ");
-    return res.status(500).json({ message: "Error Updating Book" });
+    let errorMessage = "Error Updating Book";
+      return res.status(400).json({ message: errorMessage });
   }
 });
 
