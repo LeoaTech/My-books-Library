@@ -383,9 +383,15 @@ const DeleteBook = asyncHandler(async (req, res) => {
       res.status(204).json({ message: "Failed To Delete Book" });
     }
   } catch (error) {
+    let errorMessage = "Error Deleting Book";
 
+    if (error.code === '23503') {
+        errorMessage = "Cannot delete book because it is referenced by other records.";
+    } else {
+        errorMessage = error.message || errorMessage;
+    }
 
-    res.status(400).json({ message: 'Failed to delete book' });
+    res.status(400).json({ message: errorMessage });
   }
 });
 
