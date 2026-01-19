@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, Controller } from "react-hook-form";
@@ -34,8 +34,6 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
 
   const { error, message, updateBook } = useSaveBook();
   const [imagesList, setImagesList] = useState([]);
-  console.log(bookValue, "ID");
-
   const { data: bookDetail, isPending: isBookLoading, error: isBookError } = useQuery({
     queryFn: () => FetchBookById(bookValue),
     queryKey: ["books", { bookValue }],
@@ -123,7 +121,6 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
       });
       return newAuthor.data;
     } catch (error) {
-      // console.log(error, "Failed to create author");
       toast.update(toastId, {
         render: `Error: ${error.message}`,
         type: 'error',
@@ -137,12 +134,10 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
   /* Create New Category   */
   const handleCreateCategory = useCallback(
     async (inputValue) => {
-      // console.log(inputValue, "Value");
       const toastId = toast.loading('Creating new category...');
 
       try {
         const newCategory = await addCategory(inputValue);
-        // console.log(newCategory, "API response");
         toast.update(toastId, {
           render: 'Category created successfully!',
           type: 'success',
@@ -168,12 +163,10 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
 
   const handleCreateCovers = useCallback(
     async (inputValue) => {
-      // console.log(inputValue, "cover value");
       const toastId = toast.loading('Creating new cover...');
 
       try {
         const newCovers = await addCover(inputValue);
-        // console.log(newCovers, "API response");
         toast.update(toastId, {
           render: 'Cover created successfully!',
           type: 'success',
@@ -198,12 +191,10 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
   /* Create New Condition type for book   */
   const handleCreateConditions = useCallback(
     async (inputValue) => {
-      // console.log(inputValue, "condition value");
       const toastId = toast.loading('Creating new condition...');
 
       try {
         const newCondition = await addConditionType(inputValue);
-        // console.log(newCondition, "API response");
         toast.update(toastId, {
           render: 'Condition created successfully!',
           type: 'success',
@@ -248,9 +239,8 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
     [addPublisherMutation]
   );
 
-  // console.log(bookDetail, "Edit book details");
   const bookDetails = bookValue?.title ? bookValue : bookDetail?.book
-  console.log(bookDetails, "Book Details");
+  const toastId = useRef(null);
 
   const {
     register,
@@ -284,9 +274,9 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
         available: bookDetails?.available || false,
         member_price: bookDetails?.member_price || "",
         purchase_price: bookDetails?.purchase_price || "",
-        vendor_id: bookDetails?.vendor_id || null,
-        branch_id: bookDetails?.branch_id || null,
-        cover_img_url: bookDetails?.cover_img_url || [],
+        vendor_id: bookDetails?.vendor_id ? String(bookDetails.vendor_id) : null,
+        branch_id: bookDetails?.branch_id ? String(bookDetails.branch_id) : "",
+        cover_img_url: bookDetails?.cover_img_url?.map((img) => String(img) || String(img?.secure_url)) || [],
         discount_percentage: bookDetails?.discount_percentage || '',
         summary: bookDetails?.summary || '',
         publish_year: bookDetails?.publish_year || '',
@@ -341,18 +331,42 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
   // Mutation to Update Book Details
   const { mutateAsync: updateBookMutation } = useMutation({
     mutationFn: updateBook,
-    onSuccess: () => {
-      queryClient.invalidateQueries(["books"]); // invalidate books query to refetch
+    onSuccess: (data) => {
+      if (toastId.current) {
+        toast.update(toastId.current, {
+          render: data?.message || "Book updated successfully",
+          type: 'success',
+          isLoading: false,
+          autoClose: 2000,
+        });
+      } else {
+        toast.success(data?.message || "Book updated successfully");
+      }
+      queryClient.invalidateQueries(["books"]);
+
+
       close();
     },
+    onError: (error) => {
+      if (toastId.current) {
+        toast.update(toastId.current, {
+          render: error.message || "Failed to update book",
+          type: 'error',
+          isLoading: false,
+          autoClose: 1000,
+        });
+      } else {
+        toast.error(error.message || "Failed to update book");
+      }
+    }
   });
-  // console.log(errors, "Errors", isValid);
+  console.log(errors, "Errors", isValid);
 
   const onSubmit = useCallback(async (updateData) => {
     try {
       const booksForm = {
         ...updateData,
-        bookId: bookValue.id,
+        bookId: bookValue?.id,
         available: updateData?.isAvailable,
         cover_img_url:
           imagesList?.length > 0
@@ -361,10 +375,20 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
         imageUpdated: imagesList?.length > 0 ? true : false,
       };
 
-      console.log(booksForm, "Form Edit");
+      toastId.current = toast.loading('Updating book details...');
+
       await updateBookMutation(booksForm);
     } catch (error) {
-      console.log(error, "Error updating Form");
+      if (toastId.current) {
+        toast.update(toastId.current, {
+          render: error?.message || "Failed to update book",
+          type: 'error',
+          isLoading: false,
+          autoClose: 1000,
+        });
+      } else {
+        toast.error(error?.message || "Failed to update book");
+      }
 
     }
   }, [updateBookMutation, imagesList, bookValue]);
