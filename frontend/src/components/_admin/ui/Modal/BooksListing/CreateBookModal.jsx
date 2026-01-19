@@ -35,6 +35,8 @@ import { useBookSearch } from '../../../../../api/useBookSearch';
 import LoadingSpinner from "../../../Loader/LoadingSpinner";
 import { useBookSearchByIsbn } from "../../../../../api/useBookSearchByIsbn";
 
+let bookSaveToastId;
+
 const CreateBookModal = ({ setShowModal }) => {
   const { auth } = useAuthContext();
   const queryClient = useQueryClient();
@@ -193,7 +195,6 @@ const CreateBookModal = ({ setShowModal }) => {
           description: "",
         };
         const newAuthor = await addAuthorMutation(authorForm);
-        // console.log(newAuthor, "New Author");
 
         toast.update(toastId, {
           render: 'Author created successfully!',
@@ -220,12 +221,10 @@ const CreateBookModal = ({ setShowModal }) => {
   /* Create New Category   */
   const handleCreateCategory = useCallback(
     async (inputValue) => {
-      // console.log(inputValue, "Value");
       const toastId = toast.loading('Creating new category...');
 
       try {
         const newCategory = await addCategory(inputValue);
-        // console.log(newCategory, "API response");
         toast.update(toastId, {
           render: 'Category created successfully!',
           type: 'success',
@@ -251,11 +250,9 @@ const CreateBookModal = ({ setShowModal }) => {
 
   const handleCreateCovers = useCallback(
     async (inputValue) => {
-      // console.log(inputValue, "cover value");
       const toastId = toast.loading('Creating new covers...');
       try {
         const newCovers = await addCover(inputValue);
-        // console.log(newCovers, "API response");
         toast.update(toastId, {
           render: 'Cover type created successfully!',
           type: 'success',
@@ -280,12 +277,10 @@ const CreateBookModal = ({ setShowModal }) => {
   /* Create New Condition type for book   */
   const handleCreateConditions = useCallback(
     async (inputValue) => {
-      // console.log(inputValue, "condition value");
       const toastId = toast.loading('Creating new condition...');
 
       try {
         const newCondition = await addConditionType(inputValue);
-        // console.log(newCondition, "API response");
         toast.update(toastId, {
           render: 'Condition type created successfully!',
           type: 'success',
@@ -336,15 +331,24 @@ const CreateBookModal = ({ setShowModal }) => {
     mutationFn: addBook,
     onSuccess: (data) => {
       reset();
-      // console.log(data);
-      toast.success(message);
+      toast.update(bookSaveToastId, {
+        render: data.message || "Book added successfully",
+        type: 'success',
+        isLoading: false,
+        autoClose: 2000,
+      });
       setShowModal(false);
     },
     onSettled: () => {
-      queryClient.invalidateQueries(["books"]); // invalidate books query to refetch
+      queryClient.invalidateQueries(["books"]);
     },
-    onError: () => {
-      toast.error(message || "Failed to add book")
+    onError: (error) => {
+      toast.update(bookSaveToastId, {
+        render: `Error: ${error.message}` || "Failed to add book",
+        type: 'error',
+        isLoading: false,
+        autoClose: 1000,
+      });
     }
   });
 
@@ -354,8 +358,6 @@ const CreateBookModal = ({ setShowModal }) => {
   const selectedCategory = watch("category");
   const selectedCover = watch("cover");
   const selectedPublisher = watch("publisher");
-
-  // console.log(errors, "Is Book Added Form Valid");
 
 
   const findOrCreateAndSet = useCallback(
@@ -398,8 +400,6 @@ const CreateBookModal = ({ setShowModal }) => {
   });
 
 
-  console.log(searchIsbnData, "ISBN Book Search Data");
-
   const handleSearch = () => {
     setBookSearchResults([]);
     setSelectedBook(null);
@@ -418,9 +418,7 @@ const CreateBookModal = ({ setShowModal }) => {
     }
   }, [searchData]);
 
-  // console.log(bookSearchResults, "Search by Title Results", selectedBook);
 
-  // Use a separate effect to handle the ISBN search results when they arrive
   useEffect(() => {
     if (searchIsbnData?.items?.length > 0) {
       // Since ISBN search should be exact, we can directly select the first result
@@ -437,7 +435,6 @@ const CreateBookModal = ({ setShowModal }) => {
       const authorName = selectedBook?.authors?.[0];
       const publisherName = selectedBook?.publisher;
       const categoryName = selectedBook?.categories && selectedBook?.categories?.length > 0 ? selectedBook?.categories[0] : null;
-      // console.log(selectedBook, "API Book Data")
 
       const imageUrl = [
         selectedBook.imageLinks?.thumbnail ||
@@ -540,7 +537,6 @@ const CreateBookModal = ({ setShowModal }) => {
 
   /* Save Book Details Form function */
   const onSubmit = async (data) => {
-    // console.log(data);
     // Create new book
     const booksForm = {
       ...data,
@@ -555,7 +551,7 @@ const CreateBookModal = ({ setShowModal }) => {
       role_id: auth?.roleId,
       added_by: auth?.role_name,
     };
-
+    bookSaveToastId = toast.loading('Saving new book...');
 
     await addBookMutation(booksForm);
 
@@ -608,7 +604,6 @@ const CreateBookModal = ({ setShowModal }) => {
       </div>
     );
   }
-  // console.log(errors, "Form Error", isValid);
 
   return (
     <div className="fixed left-0 top-0  inset-0 bg-[#64748B] bg-opacity-75 transition-opacity dark:bg-slate-400 dark:bg-opacity-75 lg:left-[18rem]">
