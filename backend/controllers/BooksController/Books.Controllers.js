@@ -89,6 +89,9 @@ WHERE
   }
 });
 
+
+// In Bookings -> filtered issued books to show only the available books based on its quantity
+
 const GetAvailableBooks = asyncHandler(async (req, res) => {
   const user = req.user;
 
@@ -98,6 +101,15 @@ const GetAvailableBooks = asyncHandler(async (req, res) => {
     res.status(400).json({ message: "No Library Exists " });
   }
   const fetchAvailableBooks = `
+    WITH active_bookings AS (
+        SELECT 
+            (item->>'id')::int AS book_id, 
+            COUNT(*) AS booked_count
+        FROM public.bookings,
+             jsonb_array_elements(items) AS item
+        WHERE (item->>'status') IS DISTINCT FROM 'returned'
+        GROUP BY (item->>'id')::int
+    )
     SELECT
         b.id,
         b.edition,
@@ -131,14 +143,10 @@ const GetAvailableBooks = asyncHandler(async (req, res) => {
     JOIN public.branches br ON b.branch_id = br.id
     JOIN public.publishers p ON b.publisher = p.id
     JOIN public.categories cat ON b.category = cat.id
+    LEFT JOIN active_bookings ab ON b.id = ab.book_id
     WHERE
         b.branch_id = ANY ($1)
-        AND b.id NOT IN (
-            SELECT DISTINCT (item->>'id')::int
-            FROM public.bookings,
-                 jsonb_array_elements(items) AS item
-            WHERE (item->>'status') IS DISTINCT FROM 'returned'
-        );
+        AND b.quantity > COALESCE(ab.booked_count, 0);
   `;
 
   // Get All the branches related to an Entity Id (for a specific library)
