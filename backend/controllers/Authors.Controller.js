@@ -17,14 +17,13 @@ const FetchAllAuthors = asyncHandler(async (req, res) => {
       message: "Authors Found ",
     });
   } catch (error) {
-    console.log(error);
+    res.status(500).json({error:error?.message||"Failed to fetch authors."})
   }
 });
 
 /* Create New Author */
 
 const AddNewAuthor = asyncHandler(async (req, res) => {
-  console.log(req.body);
 
   const entityId = req?.user?.entityId || req?.user?.entity_id;
 
@@ -43,14 +42,11 @@ const AddNewAuthor = asyncHandler(async (req, res) => {
       [name, links, description, entityId]
     );
 
-    console.log(createAuthorQuery?.rows[0], "Authors Saved");
-
     res.status(200).json({
       authors: createAuthorQuery?.rows[0],
       message: "Authors Saved Successfully ",
     });
   } catch (error) {
-    console.log(error, "Error creating new author");
     res.status(500).json({
       error,
       message: error.message || "Error Creating Authors",
@@ -61,7 +57,6 @@ const AddNewAuthor = asyncHandler(async (req, res) => {
 /* Update Author Details */
 
 const UpdateAuthor = asyncHandler(async (req, res) => {
-  // console.log(req.body, req.params);
   try {
     if (!req.body.authorsForm) {
       return res.status(400).json("Invalid Authors Details");
@@ -80,14 +75,12 @@ const UpdateAuthor = asyncHandler(async (req, res) => {
       [name, links, description, author_id]
     );
 
-    console.log(updateAuthorQuery?.rows[0], "Authors Updated");
 
     res.status(200).json({
       authors: updateAuthorQuery?.rows[0],
       message: "Authors Updated Successfully ",
     });
   } catch (error) {
-    console.log(error, "Error Updating author");
     res.status(500).json({
       error,
       message: error.message || "Error Updating Authors",

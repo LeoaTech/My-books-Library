@@ -100,7 +100,7 @@ app.use(passport.session());
 
 app.get("/", (req, res) => {
   req.session.views = (req.session.views || 0) + 1;
-  console.log(`Views: ${req.session.views}`);
+  // console.log(`Views: ${req.session.views}`);
 
   res.json({ status: "Backend is running", clientUrl: process.env.CLIENT_URL });
 });
@@ -159,7 +159,7 @@ app.use(notfound);
 app.use(errorHanlder);
 
 app.listen(port, () => {
-  console.log("Server is listening on port", port);
+  // console.log("Server is listening on port", port);
 });
 
 module.exports = app;
