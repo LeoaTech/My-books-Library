@@ -41,6 +41,11 @@ router.post(
     let subscriptionData;
     let userData;
     let userId;
+    
+    // check if webhook event is from a connected account (client's connected account)
+    const connectedAccountId = event.account; //  account_id for connected account
+    // console.log(`Stripe Event: ${event.type}, Connected Account: ${connectedAccountId || 'Platform'}`);
+    
     // Handle the event
     switch (event.type) {
      
@@ -58,16 +63,29 @@ router.post(
 
         userId = session?.client_reference_id || metadata?.app_client_id;
         const invoiceId = session?.invoice;
-        invoice = await stripe.invoices.retrieve(invoiceId);
+        
+        // Get invoice from stripe account (connected or platform)
+        if (connectedAccountId && invoiceId) {
+          invoice = await stripe.invoices.retrieve(invoiceId, {
+            stripeAccount: connectedAccountId
+          });
+        } else if (invoiceId) {
+          invoice = await stripe.invoices.retrieve(invoiceId);
+        }
 
         if (session?.subscription) {
-          // Checkout Session:
-          const checkoutSession = await stripe.checkout.sessions.retrieve(
-            event?.data?.object?.id,
-            {
-              expand: ["subscription"],
-            }
-          );
+          const retrieveOptions = { expand: ["subscription"] };
+          
+          const checkoutSession = connectedAccountId
+            ? await stripe.checkout.sessions.retrieve(
+                event?.data?.object?.id,
+                retrieveOptions,
+                { stripeAccount: connectedAccountId }
+              )
+            : await stripe.checkout.sessions.retrieve(
+                event?.data?.object?.id,
+                retrieveOptions
+              );
 
           const subscription = checkoutSession?.subscription;
           const subscriptionItem =
@@ -82,9 +100,12 @@ router.post(
 
             const subscriptionId = session?.subscription;
 
-            const subscription = await stripe.subscriptions.retrieve(
-              subscriptionId
-            );
+            // get subscription from stripe account
+            const subscription = connectedAccountId
+              ? await stripe.subscriptions.retrieve(subscriptionId, {
+                  stripeAccount: connectedAccountId
+                })
+              : await stripe.subscriptions.retrieve(subscriptionId);
             userData = {
               name: session?.customer_details?.name || "",
               city: session?.customer_details?.address.city || "",
@@ -137,19 +158,40 @@ router.post(
             });
           } else {
             // USER TYPE - CUSTOMER
-            const dbPlanId = await db.query(
-              `SELECT plan_id,plan_name from membership_plan WHERE stripe_product_id=$1 `,
-              [subscriptionItem?.plan?.product]
-            );
-            if (dbPlanId.rows === 0) {
-              console.log("No plan exists for this product Id");
+            let dbPlanId;
+            
+
+            if (connectedAccountId) {
+              dbPlanId = await db.query(
+                `SELECT plan_id, plan_name FROM membership_plan 
+                 WHERE plan_details->>'stripe_account_id' = $1
+                 AND (
+                   plan_details->'monthly'->>'price_id' = $2 
+                   OR plan_details->'yearly'->>'price_id' = $2
+                 )
+                 LIMIT 1`,
+                [connectedAccountId, subscriptionItem?.plan?.id]
+              );
+            }
+            
+            // 
+            if (!dbPlanId || dbPlanId.rows.length === 0) {
+              dbPlanId = await db.query(
+                `SELECT plan_id, plan_name FROM membership_plan 
+                 WHERE stripe_product_id = $1`,
+                [subscriptionItem?.plan?.product]
+              );
+            }
+            
+            if (dbPlanId.rows.length === 0) {
+              console.log("No plan exists for this product Id or account");
               break;
             }
 
             const dbPlan = dbPlanId?.rows[0];
             // Update the customer's ID
             await db.query(
-              `UPDATE users SET stripe_customer_id =$1 and plan =$2 WHERE id=$3`,
+              `UPDATE users SET stripe_customer_id = $1, plan = $2 WHERE id = $3`,
               [customerId, dbPlan?.plan_name, dbUserId]
             );
 
@@ -171,22 +213,22 @@ router.post(
                 new Date(subscriptionItem?.current_period_end * 1000),
               ]
             );
+            
+            // console.log(`customer subscription created: ${subscription?.id} for user ${dbUserId}`);
           }
         }
         break;
 
       case "customer.subscription.created":
         subscription = event.data.object;
-        // status = subscription?.status;
-        // console.log(`Subscription status is ${subscription}.`);
-        break;
+       break;
 
       case "customer.subscription.updated":
         subscription = event?.data?.object;
         // console.log(subscription, "subscription");
-        userId = session?.client_reference_id || metadata?.app_client_id;
+        userId = subscription?.client_reference_id || subscription?.metadata?.app_client_id;
 
-        metadata = subscription.metadata;
+        metadata = subscription?.metadata;
 
         entityId = metadata?.entityId;
         subdomain = metadata?.subdomain;
@@ -205,35 +247,116 @@ router.post(
 
         status = subscription?.status;
 
-        // define and call a method to handle the subscription update.
-        // handleSubscriptionUpdated(subscription);
-
-        await db.query(
-          `UPDATE client_subscription 
-         SET 
-            stripe_price_id = $1,
-            stripe_product_id = $2,
-            status = $3,
-            current_period_end = TO_TIMESTAMP($4),
-            cancel_at_period_end = $5
-         WHERE stripe_subscription_id = $6`,
-          [
-            subscription.items.data[0].price.id,
-            subscription.items.data[0].price.product,
-            subscription.status,
-            subscription.items.data[0].current_period_end,
-            subscription.cancel_at_period_end,
-            subscription.id,
-          ]
+        const isClientSub = await db.query(
+          "SELECT id FROM client_subscription WHERE stripe_subscription_id = $1",
+          [subscription.id]
         );
+
+        if (isClientSub.rows.length > 0) {
+          await db.query(
+            `UPDATE client_subscription 
+           SET 
+              stripe_price_id = $1,
+              stripe_product_id = $2,
+              status = $3,
+              current_period_end = TO_TIMESTAMP($4),
+              cancel_at_period_end = $5
+           WHERE stripe_subscription_id = $6`,
+            [
+              subscription.items.data[0].price.id,
+              subscription.items.data[0].price.product,
+              subscription.status,
+              subscription.items.data[0].current_period_end,
+              subscription.cancel_at_period_end,
+              subscription.id,
+            ]
+          );
+        } else {
+          // Check if it is library customer subscription
+          const isLibrarySub = await db.query(
+            "SELECT id FROM subscriptions WHERE subscription_id = $1",
+            [subscription.id]
+          );
+
+          if (isLibrarySub.rows.length > 0) {
+            // Get the new price ID from the subscription
+            const newPriceId = subscription.items.data[0].price.id;
+            
+            let newPlanId = null;
+            if (connectedAccountId) {
+              const planLookup = await db.query(
+                `SELECT plan_id, plan_name FROM membership_plan 
+                 WHERE plan_details->>'stripe_account_id' = $1
+                 AND (
+                   plan_details->'monthly'->>'price_id' = $2 
+                   OR plan_details->'yearly'->>'price_id' = $2
+                 )
+                 LIMIT 1`,
+                [connectedAccountId, newPriceId]
+              );
+              
+              if (planLookup.rows.length > 0) {
+                newPlanId = planLookup.rows[0].plan_id;
+                const newPlanName = planLookup.rows[0].plan_name;
+                
+                // update the user's plan name
+                const userIdResult = await db.query(
+                  `SELECT user_id FROM subscriptions WHERE subscription_id = $1`,
+                  [subscription.id]
+                );
+                
+                if (userIdResult.rows.length > 0) {
+                  await db.query(
+                    `UPDATE users SET plan = $1 WHERE id = $2`,
+                    [newPlanName, userIdResult.rows[0].user_id]
+                  );
+                }
+              }
+            }
+            
+            // Update the subscription record
+            await db.query(
+              `UPDATE subscriptions 
+             SET 
+                stripe_price_id = $1,
+                status = $2,
+                current_period_end = TO_TIMESTAMP($3),
+                end_date = TO_TIMESTAMP($3),
+                auto_renew = $4
+                ${newPlanId ? ', plan_id = $6' : ''}
+             WHERE subscription_id = $5`,
+              newPlanId 
+                ? [
+                    newPriceId,
+                    subscription.status,
+                    subscription.items.data[0].current_period_end,
+                    !subscription.cancel_at_period_end,
+                    subscription.id,
+                    newPlanId
+                  ]
+                : [
+                    newPriceId,
+                    subscription.status,
+                    subscription.items.data[0].current_period_end,
+                    !subscription.cancel_at_period_end,
+                    subscription.id,
+                  ]
+            );
+            
+            // console.log(`customer subscription updated: ${subscription.id}`);
+          }
+        }
+
 
         if (
           subscription.cancel_at_period_end === true &&
           prevAttributes?.cancel_at_period_end === false
         ) {
-          const customer = await stripe.customers.retrieve(
-            subscription.customer
-          );
+          const customer = connectedAccountId
+            ? await stripe.customers.retrieve(subscription.customer, {
+                stripeAccount: connectedAccountId
+              })
+            : await stripe.customers.retrieve(subscription.customer);
           userData = {
             name: customer?.name || "",
             city: customer?.address.city || "",
@@ -289,9 +412,11 @@ router.post(
           const currentPriceId = subscription?.items?.data[0]?.price?.id;
 
           if (oldPriceId && oldPriceId !== currentPriceId) {
-            const customer = await stripe.customers.retrieve(
-              subscription.customer
-            );
+            const customer = connectedAccountId
+              ? await stripe.customers.retrieve(subscription.customer, {
+                  stripeAccount: connectedAccountId
+                })
+              : await stripe.customers.retrieve(subscription.customer);
             userData = {
               name: customer?.name || "",
               city: customer?.address.city || "",
@@ -299,6 +424,14 @@ router.post(
               phone: customer?.phone || "",
               subdomain,
             };
+
+
+            const currentPlanName =
+              subscription?.items?.data[0]?.price?.nickname ||
+              subscription?.metadata?.planName ||
+              "New Plan";
+
+              
             subscriptionData = {
               plan_name: currentPlanName,
               amount: (
@@ -309,10 +442,7 @@ router.post(
             };
             planName = subscription?.metadata?.planName;
 
-            const currentPlanName =
-              subscription?.items?.data[0]?.price?.nickname ||
-              subscription?.metadata?.planName ||
-              "New Plan";
+            
 
             // Send Email Alert
             await emailQueue.add("saas-subscription-updated", {
@@ -343,14 +473,39 @@ router.post(
         const subscriptionDeleted = event.data.object;
         // console.log(subscriptionDeleted, "Deleted subscription");
 
-        await db.query(
-          `UPDATE client_subscription SET 
-            status = $1,
-            updated_at = NOW()
-        WHERE stripe_subscription_id = $2
-    `,
-          ["canceled", subscriptionDeleted.id]
+        // Check if client subscription
+        const clientSubCheck = await db.query(
+          "SELECT id FROM client_subscription WHERE stripe_subscription_id = $1",
+          [subscriptionDeleted.id]
         );
+
+        if (clientSubCheck.rows.length > 0) {
+          await db.query(
+            `UPDATE client_subscription SET 
+              status = $1,
+              updated_at = NOW()
+          WHERE stripe_subscription_id = $2
+      `,
+            ["canceled", subscriptionDeleted.id]
+          );
+        } else {
+           // Check if it is library subscription
+           const libSubCheck = await db.query(
+            "SELECT id FROM subscriptions WHERE subscription_id = $1",
+            [subscriptionDeleted.id]
+          );
+          if (libSubCheck.rows.length > 0) {
+             await db.query(
+            `UPDATE subscriptions SET 
+              status = $1,
+              updated_at = NOW()
+          WHERE subscription_id = $2
+      `,
+            ["canceled", subscriptionDeleted.id]
+          );
+          }
+        }
+
 
         const getUser = await db.query(
           `SELECT id from users WHERE stripe_customer_id=$1`,
@@ -420,82 +575,123 @@ router.post(
           break;
         }
         const subResult = await db.query(
-          `SELECT id, user_id 
+          `SELECT id, user_id, 'client' as type
                      FROM client_subscription 
-                     WHERE stripe_subscription_id = $1`,
+                     WHERE stripe_subscription_id = $1
+           UNION ALL
+           SELECT id, user_id, 'customer' as type
+                     FROM subscriptions
+                     WHERE subscription_id = $1
+                     `,
           [subscriptionId]
         );
 
-        if (subResult?.rows?.length === 0) {
-          console.log(
-            `Subscription ${subscriptionId} not found. Creating it from invoice.paid event to handle race condition.`
-          );
-          const subscription = await stripe.subscriptions.retrieve(
-            subscriptionId
-          );
-          const userResult = await db.query(
-            "SELECT id FROM users WHERE stripe_customer_id = $1",
-            [customerId]
-          );
-          if (userResult?.rows?.length === 0) {
-            console.error(` User not found for customer_id: ${customerId}`);
-            break;
-          }
-          const userId = userResult?.rows[0]?.id;
+        let subscriptionRecord = subResult?.rows?.[0];
 
-          await db.query(
-            `INSERT INTO client_subscription (user_id, stripe_subscription_id, stripe_price_id, stripe_product_id, status, current_period_end, cancel_at_period_end, start_date,auto_renew)
-             VALUES ($1, $2, $3, $4, $5, TO_TIMESTAMP($6), $7,TO_TIMESTAMP($8),$9)
-                 ON CONFLICT (stripe_subscription_id) DO NOTHING`,
-            [
-              userId,
-              subscription.id,
-              subscription.items.data[0].price.id,
-              subscription.items.data[0].price.product,
-              subscription.status,
-              subscription.items.data[0].current_period_end,
-              subscription.cancel_at_period_end,
-              subscription.items.data[0].current_period_start,
-              true,
-            ]
-          );
+        if (!subscriptionRecord) {
           console.log(
-            `Subscription record ${subscriptionId} created from invoice webhook.`
+            `Subscription ${subscriptionId} not found in DB. Checking if we need to create it (Client vs Customer logic).`
           );
+          
+          const subscription = connectedAccountId
+            ? await stripe.subscriptions.retrieve(subscriptionId, {
+                stripeAccount: connectedAccountId
+              })
+            : await stripe.subscriptions.retrieve(subscriptionId);
+          
+           const userType = connectedAccountId ? 'customer' : (subscription.metadata?.user_type || 'client'); 
+           
+           if (userType === 'client') {
+                  const userResult = await db.query(
+                    "SELECT id FROM users WHERE stripe_customer_id = $1",
+                    [customerId]
+                  );
+                  if (userResult?.rows?.length === 0) {
+                    console.error(` User not found for customer_id: ${customerId}`);
+                    break;
+                  }
+                  const userId = userResult?.rows[0]?.id;
 
-          subRecord = await db.query(
-            "SELECT id, user_id FROM client_subscription WHERE stripe_subscription_id = $1",
-            [subscriptionId]
-          );
+                  await db.query(
+                    `INSERT INTO client_subscription (user_id, stripe_subscription_id, stripe_price_id, stripe_product_id, status, current_period_end, cancel_at_period_end, start_date,auto_renew)
+                    VALUES ($1, $2, $3, $4, $5, TO_TIMESTAMP($6), $7,TO_TIMESTAMP($8),$9)
+                        ON CONFLICT (stripe_subscription_id) DO NOTHING`,
+                    [
+                      userId,
+                      subscription.id,
+                      subscription.items.data[0].price.id,
+                      subscription.items.data[0].price.product,
+                      subscription.status,
+                      subscription.items.data[0].current_period_end,
+                      subscription.cancel_at_period_end,
+                      subscription.items.data[0].current_period_start,
+                      true,
+                    ]
+                  );
+                 const retrySub = await db.query(
+                    "SELECT id, user_id, 'client' as type FROM client_subscription WHERE stripe_subscription_id = $1",
+                    [subscriptionId]
+                 );
+                 subscriptionRecord = retrySub.rows[0];
+
+           } else {
+               console.log("customer subscription missing in DB for invoice.paid");
+               break;
+           }
         }
+
         if (
           invoice.billing_reason === "subscription_create" ||
           invoice.billing_reason === "subscription_cycle" ||
           invoice.billing_reason === "subscription_update"
         ) {
-          const { id: clientSubscriptionId, user_id: userId } =
-            subResult?.rows[0];
-
-          // --- INSERT into client_transactions ---
-          await db.query(
-            `INSERT INTO client_transactions (
-                user_id, client_subscription_id, stripe_subscription_id, stripe_invoice_id,
-                stripe_charge_id, amount_paid, status, billing_reason, invoice_pdf
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-            ON CONFLICT (stripe_invoice_id) DO NOTHING`, // This prevents duplicates
-            [
-              userId,
-              clientSubscriptionId,
-              subscriptionId,
-              invoice.id,
-              invoice.charge,
-              invoice.amount_paid,
-              "paid",
-              invoice.billing_reason,
-              invoice.invoice_pdf,
-            ]
-          );
-          console.log(`Transaction record created for invoice ${invoice.id}`);
+          if (!subscriptionRecord) break;
+          
+          const { id: dbSubscriptionId, user_id: userId, type } = subscriptionRecord;
+          
+          if (type === 'client') {
+            // --- INSERT into client_transactions ---
+            await db.query(
+                `INSERT INTO client_transactions (
+                    user_id, client_subscription_id, stripe_subscription_id, stripe_invoice_id,
+                    stripe_charge_id, amount_paid, status, billing_reason, invoice_pdf
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                ON CONFLICT (stripe_invoice_id) DO NOTHING`,
+                [
+                userId,
+                dbSubscriptionId, // client_subscription_id
+                subscriptionId,
+                invoice.id,
+                invoice.charge,
+                invoice.amount_paid,
+                "paid",
+                invoice.billing_reason,
+                invoice.invoice_pdf,
+                ]
+            );
+             console.log(`Client Transaction record created for invoice ${invoice.id}`);
+          } else {
+              // --- INSERT into subscription_transactions (Library Customer) ---
+               await db.query(
+                `INSERT INTO subscription_transactions (
+                    user_id, subscription_id, stripe_subscription_id, stripe_invoice_id,
+                    stripe_charge_id, amount_paid, status, billing_reason, invoice_pdf
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                ON CONFLICT (stripe_invoice_id) DO NOTHING`,
+                [
+                userId,
+                dbSubscriptionId, // subscriptions table id
+                subscriptionId,
+                invoice.id,
+                invoice.charge,
+                invoice.amount_paid,
+                "paid",
+                invoice.billing_reason,
+                invoice.invoice_pdf,
+                ]
+            );
+            console.log(`Library Customer Transaction record created for invoice ${invoice.id}`);
+          }
         }
         break;
       }
@@ -505,13 +701,17 @@ router.post(
         const invoiceSucceed = event?.data?.object;
         // console.log(invoiceSucceed, "Invoice Payment succeeded Webhook");
         if (invoiceSucceed.billing_reason === "subscription_cycle") {
-          const subscription = await stripe.subscriptions.retrieve(
-            invoiceSucceed.subscription
-          );
+          const subscription = connectedAccountId
+            ? await stripe.subscriptions.retrieve(invoiceSucceed.subscription, {
+                stripeAccount: connectedAccountId
+              })
+            : await stripe.subscriptions.retrieve(invoiceSucceed.subscription);
 
-          const customer = await stripe.customers.retrieve(
-            invoiceSucceed.customer
-          );
+          const customer = connectedAccountId
+            ? await stripe.customers.retrieve(invoiceSucceed.customer, {
+                stripeAccount: connectedAccountId
+              })
+            : await stripe.customers.retrieve(invoiceSucceed.customer);
           userId = invoiceSucceed?.client_reference_id || invoiceSucceed?.metadata?.app_client_id;
 
           const priceAmount =
