@@ -7,6 +7,7 @@ import Loader from "../../components/_user/Loader/Loader";
 import { BASE_URL } from "../../utils/baseAPIURL";
 import { useFetchCurrentPlan } from "../../hooks/current_plan/useFetchCurrentPlan";
 import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-toastify";
 
 const PopularPlanType = {
     NO: 0,
@@ -53,6 +54,34 @@ export const Pricing = () => {
     let sub_domain = auth?.subdomain || subdomain
     // console.log(sub_domain);
 
+
+
+    const handleCreateCheckoutSession = async (priceId, planName) => {
+        let stripeAccountID = pricingPlans?.plans[0]?.plan_details?.stripe_account_id;
+        const checkoutPlanToastId = toast.loading('Redirecting to Stripe Checkout Page...');
+
+        try {
+            const response = await fetch(`${BASE_URL}/create-checkout-session`, {
+                method: 'POST',
+                credentials: "include",
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ priceId, planName, userType: "customer", stripeAccountID }),
+            });
+
+            const session = await response.json();
+            // Redirect the user to the Stripe Checkout page
+            window.location.href = session.url;
+
+        } catch (error) {
+            console.error("Error creating checkout session:", error);
+            toast.update(checkoutPlanToastId, {
+                render: `Error: ${error.message}` || "Failed to create checkout session for new subscription",
+                type: 'error',
+                isLoading: false,
+                autoClose: 1000,
+            });
+        }
+    }
 
 
 
@@ -139,7 +168,9 @@ export const Pricing = () => {
                                                     return;
                                                 }
 
-
+                                                else {
+                                                    handleCreateCheckoutSession(finalPriceId, pricing.plan_name)
+                                                }
                                             }
                                             }
                                             disabled={isCurrentPlan}
