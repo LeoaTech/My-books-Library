@@ -54,7 +54,7 @@ export const Pricing = () => {
     let sub_domain = auth?.subdomain || subdomain
     // console.log(sub_domain);
 
-
+    // Subscribe for first time
 
     const handleCreateCheckoutSession = async (priceId, planName) => {
         let stripeAccountID = pricingPlans?.plans[0]?.plan_details?.stripe_account_id;
@@ -72,6 +72,7 @@ export const Pricing = () => {
             // Redirect the user to the Stripe Checkout page
             window.location.href = session.url;
 
+
         } catch (error) {
             console.error("Error creating checkout session:", error);
             toast.update(checkoutPlanToastId, {
@@ -82,6 +83,50 @@ export const Pricing = () => {
             });
         }
     }
+
+    // Change plan
+    const handleChangePlan = async (newPriceId, planName) => {
+        let stripeAccountID = pricingPlans?.plans[0]?.plan_details?.stripe_account_id;
+
+        if (isChangingPlan) return;
+        const changePlanToastId = toast.loading('Updating Plan...');
+
+        setIsChangingPlan(true);
+        try {
+            const response = await fetch(`${BASE_URL}/change-subscription`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: "include",
+                body: JSON.stringify({ newPriceId: newPriceId, planName, userId: auth?.userId || auth?.id, userType: "customer", stripeAccountID })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to change plan.');
+            }
+            // console.log(response, "Plan Changed Successfully");
+            queryClient.invalidateQueries(['current-plan'])
+            window.location.reload();
+            toast.update(changePlanToastId, {
+                render: "Plan Changed Successfully. Please refresh the page to see changes",
+                type: 'success',
+                isLoading: false,
+                autoClose: 2000,
+            });
+        } catch (error) {
+            console.error('Failed to change plan:', error);
+            // alert('There was an error changing your plan.');
+            toast.update(changePlanToastId, {
+                render: `Error: ${error.message}` || "Failed to cchange plan",
+                type: 'error',
+                isLoading: false,
+                autoClose: 1000,
+            });
+        } finally {
+            setIsChangingPlan(false);
+        }
+    };
 
 
 
@@ -167,7 +212,9 @@ export const Pricing = () => {
                                                 if (isCurrentPlan) {
                                                     return;
                                                 }
-
+                                                if (activeSubscription) {
+                                                    handleChangePlan(finalPriceId, pricing.plan_name);
+                                                }
                                                 else {
                                                     handleCreateCheckoutSession(finalPriceId, pricing.plan_name)
                                                 }
