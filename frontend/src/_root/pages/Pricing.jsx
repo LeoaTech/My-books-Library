@@ -4,6 +4,9 @@ import { HiCheckCircle } from "react-icons/hi";
 import { useAuthContext } from "../../hooks/useAuthContext";
 import { Link, useParams } from "react-router-dom";
 import Loader from "../../components/_user/Loader/Loader";
+import { BASE_URL } from "../../utils/baseAPIURL";
+import { useFetchCurrentPlan } from "../../hooks/current_plan/useFetchCurrentPlan";
+import { useQueryClient } from "@tanstack/react-query";
 
 const PopularPlanType = {
     NO: 0,
@@ -13,13 +16,22 @@ const PopularPlanType = {
 export const Pricing = () => {
     const { auth } = useAuthContext();
     const { subdomain } = useParams();
+    const queryClient = useQueryClient();
+    const [isChangingPlan, setIsChangingPlan] = useState(false);
+
 
     const { data: pricingPlans, isLoading } = useFetchPricingPlans()
+
+    const { data: currentPlan } = useFetchCurrentPlan(auth);
+
+    // console.log(currentPlan, "Current Plan");
+    const activeSubscription = currentPlan?.isActive;
+    const subscriptionExpiredAt = `${new Date(currentPlan?.subscription?.currentPeriodEnd).toDateString()} at ${new Date(currentPlan?.subscription?.currentPeriodEnd).toLocaleTimeString()}`;
+
+    const isCancelledAtPeriodEnd = currentPlan?.subscription?.cancelAtPeriodEnd
+
     const [isYearly, setIsYearly] = useState(false);
     const handleToggle = () => setIsYearly(!isYearly);
-
-    console.log(pricingPlans, "Plans");
-    console.log(auth, "auth");
 
 
     // Switch plan Interval
@@ -40,6 +52,9 @@ export const Pricing = () => {
 
     let sub_domain = auth?.subdomain || subdomain
     // console.log(sub_domain);
+
+
+
 
     if (isLoading) {
         return (
@@ -79,6 +94,8 @@ export const Pricing = () => {
 
             <ToggleSwitch />
 
+
+
             <div className='grid md:grid-cols-2 lg:grid-cols-3 gap-8'>
                 {pricingPlans?.plans?.map((pricing) => {
                     const currentPricing = isYearly
@@ -88,19 +105,11 @@ export const Pricing = () => {
                     const displayCredits = isYearly ? pricing?.plan_details?.yearly?.credits_allocated : pricing?.plan_details?.monthly?.credits_allocated;
                     const displayFeatures = pricing?.plan_details?.features;
 
-                    if (!currentPricing) return null;
-                    const userId = auth?.id;
-                    const userName = auth?.name;
-                    const userEmail = auth?.email;
-                    const baseUrl = isYearly ? pricing?.plan_details?.yearly?.payment_link : pricing?.plan_details?.monthly?.payment_link;
-                    let finalPaymentUrl = `${baseUrl}?client_reference_id=${userId}`;
+                    const finalPriceId = isYearly ? pricing?.plan_details?.yearly?.price_id : pricing?.plan_details?.monthly?.price_id;
+                    const isCurrentPlan = currentPlan?.isActive ? currentPlan?.subscription?.stripePriceId == finalPriceId : null;
 
-                    if (userEmail) {
-                        finalPaymentUrl += `&prefilled_email=${encodeURIComponent(userEmail)}`;
-                    }
-                    if (userName) {
-                        finalPaymentUrl += `&prefilled_name=${encodeURIComponent(userName)}`;
-                    }
+                    if (!currentPricing) return null;
+
                     return (
                         <li key={pricing.plan_id}
                             className={`${pricing.popular === PopularPlanType.YES ? "bg-purple-300" : "bg-purple-50"}  relative overflow-hidden rounded-lg border border-black shadow-md text-left`
@@ -123,12 +132,21 @@ export const Pricing = () => {
                                         {displayCredits} Credits
                                     </p>
                                     {auth?.accessToken ?
-                                        <a
-                                            href={finalPaymentUrl}
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                if (isCurrentPlan) {
+                                                    return;
+                                                }
+
+
+                                            }
+                                            }
+                                            disabled={isCurrentPlan}
                                             className="mt-5 inline-flex cursor-pointer rounded-full bg-slate-500 px-8 py-2 font-sans text-sm text-white shadow-sm transition hover:translate-y-1 hover:shadow-md hover:shadow-slate-200"
                                         >
-                                            Buy Now
-                                        </a> :
+                                            {currentPlan?.subscription?.stripePriceId === finalPriceId ? "Subscribed" : activeSubscription ? "Change Plan" : "Buy Now"}
+                                        </button> :
                                         <Link to={sub_domain ? `/${sub_domain}/signin` : "/signin"}
                                             className="mt-5 inline-flex cursor-pointer rounded-full bg-slate-500 px-8 py-2 font-sans text-sm text-white shadow-sm transition hover:translate-y-1 hover:shadow-md hover:shadow-slate-200"
                                         >
