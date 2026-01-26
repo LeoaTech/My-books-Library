@@ -178,6 +178,48 @@ export const Pricing = () => {
         }
     };
 
+    // Resume Subscription
+    const handleResumeSubscription = async () => {
+        let stripeAccountID = pricingPlans?.plans[0]?.plan_details?.stripe_account_id;
+
+        if (isResuming) return;
+        const resumePlanToastId = toast.loading('Resuming Subscription...');
+        setIsResuming(true);
+        try {
+            const response = await fetch(`${BASE_URL}/resume-subscription`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: "include",
+                body: JSON.stringify({ userType: "customer", stripeAccountID })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to resume subscription.');
+            }
+
+            queryClient.invalidateQueries(['current-plan']);
+            toast.update(resumePlanToastId, {
+                render: "Subscription resumed successfully!",
+                type: 'success',
+                isLoading: false,
+                autoClose: 2000,
+            });
+            window.location.reload();
+        } catch (error) {
+            console.error('Failed to resume subscription:', error);
+            toast.update(resumePlanToastId, {
+                render: `Error: ${error.message}` || "Failed to resume subscription",
+                type: 'error',
+                isLoading: false,
+                autoClose: 1000,
+            });
+        } finally {
+            setIsResuming(false);
+        }
+    };
+
+
+
     if (isLoading) {
         return (
             <Loader />
@@ -324,6 +366,7 @@ export const Pricing = () => {
                 <div className="mb-2 flex justify-end">
                     {isCancelledAtPeriodEnd ? (
                         <button
+                            onClick={handleResumeSubscription}
                             disabled={isResuming}
                             className="px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-full font-medium transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:hover:shadow-md"
                         >
