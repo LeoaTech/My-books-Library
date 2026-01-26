@@ -8,6 +8,8 @@ import { BASE_URL } from "../../utils/baseAPIURL";
 import { useFetchCurrentPlan } from "../../hooks/current_plan/useFetchCurrentPlan";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
+import Banner from "../../components/main/Banner";
+import ConfirmationModal from "../../components/common/ConfirmationModal";
 
 const PopularPlanType = {
     NO: 0,
@@ -19,19 +21,20 @@ export const Pricing = () => {
     const { subdomain } = useParams();
     const queryClient = useQueryClient();
     const [isChangingPlan, setIsChangingPlan] = useState(false);
-
+    const [isCanceling, setIsCanceling] = useState(false);
+    const [isResuming, setIsResuming] = useState(false);
+    const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+    const [isYearly, setIsYearly] = useState(false);
 
     const { data: pricingPlans, isLoading } = useFetchPricingPlans()
 
     const { data: currentPlan } = useFetchCurrentPlan(auth);
 
-    // console.log(currentPlan, "Current Plan");
     const activeSubscription = currentPlan?.isActive;
     const subscriptionExpiredAt = `${new Date(currentPlan?.subscription?.currentPeriodEnd).toDateString()} at ${new Date(currentPlan?.subscription?.currentPeriodEnd).toLocaleTimeString()}`;
 
     const isCancelledAtPeriodEnd = currentPlan?.subscription?.cancelAtPeriodEnd
 
-    const [isYearly, setIsYearly] = useState(false);
     const handleToggle = () => setIsYearly(!isYearly);
 
 
@@ -129,6 +132,51 @@ export const Pricing = () => {
     };
 
 
+    const handleCancelSubscription = () => {
+        setIsCancelModalOpen(true);
+    };
+
+    const confirmCancellation = async () => {
+        let stripeAccountID = pricingPlans?.plans[0]?.plan_details?.stripe_account_id;
+
+        if (isCanceling) return;
+        const cancelPlanToastId = toast.loading('Initiate Cancel Subscription Request...');
+
+        setIsCanceling(true);
+        try {
+            const response = await fetch(`${BASE_URL}/cancel-subscription`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: "include",
+                body: JSON.stringify({ userType: "customer", stripeAccountID })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to cancel subscription.');
+            }
+
+            queryClient.invalidateQueries(['current-plan']);
+            toast.update(cancelPlanToastId, {
+                render: "Subscription cancellation scheduled.",
+                type: 'success',
+                isLoading: false,
+                autoClose: 2000,
+            });
+            setIsCancelModalOpen(false);
+            window.location.reload();
+        } catch (error) {
+            console.error('Failed to cancel subscription:', error);
+            toast.update(cancelPlanToastId, {
+                render: `Error: ${error.message}` || "Request Failed to cancel subscription plan",
+                type: 'error',
+                isLoading: false,
+                autoClose: 1000,
+            });
+            setIsCancelModalOpen(false);
+        } finally {
+            setIsCanceling(false);
+        }
+    };
 
     if (isLoading) {
         return (
@@ -165,11 +213,9 @@ export const Pricing = () => {
     }
     return (
         <section id='pricing' className='container py-24 px-20 sm:py-32'>
-
+            {activeSubscription && isCancelledAtPeriodEnd && <Banner date={subscriptionExpiredAt} planName={currentPlan?.subscription?.planName} />
+            }
             <ToggleSwitch />
-
-
-
             <div className='grid md:grid-cols-2 lg:grid-cols-3 gap-8'>
                 {pricingPlans?.plans?.map((pricing) => {
                     const currentPricing = isYearly
@@ -272,8 +318,42 @@ export const Pricing = () => {
                     )
                 })}
             </div>
+            {/* Current Subscription Management */}
+            {activeSubscription && (
+
+                <div className="mb-2 flex justify-end">
+                    {isCancelledAtPeriodEnd ? (
+                        <button
+                            disabled={isResuming}
+                            className="px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-full font-medium transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:hover:shadow-md"
+                        >
+                            {isResuming ? "Resuming..." : "Resume Subscription"}
+                        </button>
+                    ) : (
+                        <button
+                            onClick={handleCancelSubscription}
+                            disabled={isCanceling}
+                            className="px-6 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-full font-medium transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:hover:shadow-md"
+                        >
+                            {isCanceling ? "Canceling..." : "Cancel Subscription"}
+                        </button>
+                    )}
+                </div>
+
+            )}
 
 
+
+            <ConfirmationModal
+                isOpen={isCancelModalOpen}
+                onClose={() => setIsCancelModalOpen(false)}
+                onConfirm={confirmCancellation}
+                title="Cancel Subscription"
+                message="Are you sure you want to cancel your subscription? You will lose membership access at the end of the current billing period."
+                confirmText="Yes, Cancel Subscription"
+                cancelText="Keep Subscription"
+                isProcessing={isCanceling}
+            />
 
         </section>
 
