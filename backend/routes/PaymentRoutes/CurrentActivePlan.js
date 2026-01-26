@@ -50,7 +50,7 @@ router.get("/", async (req, res) => {
         status,
         current_period_end,
         stripe_price_id,
-        false as cancel_at_period_end,
+        cancel_at_period_end,
         'customer' as user_type,
         plan_id
        FROM subscriptions
