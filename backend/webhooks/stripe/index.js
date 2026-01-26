@@ -199,18 +199,17 @@ router.post(
             await db.query(
               `INSERT INTO subscriptions(
             user_id, plan_id,stripe_price_id,
-            subscription_id, current_period_end, latest_invoice_id,
-            status,start_date, end_date) VALUES ($1, $2, $3, $4, $5, $6, $7,$8,$9)`,
+            subscription_id, current_period_end,
+            status,start_date, cancel_at_period_end) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
               [
                 dbUserId,
                 dbPlan.plan_id,
                 subscription?.plan?.id,
                 subscription?.id,
                 new Date(subscriptionItem?.current_period_end * 1000),
-                subscription?.latest_invoice,
                 subscription?.status,
                 new Date(subscriptionItem?.current_period_start * 1000),
-                new Date(subscriptionItem?.current_period_end * 1000),
+                subscription.cancel_at_period_end,
               ]
             );
             
@@ -221,7 +220,7 @@ router.post(
 
       case "customer.subscription.created":
         subscription = event.data.object;
-       break;
+        break;
 
       case "customer.subscription.updated":
         subscription = event?.data?.object;
@@ -321,15 +320,16 @@ router.post(
                 stripe_price_id = $1,
                 status = $2,
                 current_period_end = TO_TIMESTAMP($3),
-                end_date = TO_TIMESTAMP($3),
-                auto_renew = $4
-                ${newPlanId ? ', plan_id = $6' : ''}
-             WHERE subscription_id = $5`,
+                cancel_at_period_end = $4,
+                auto_renew = $5
+                ${newPlanId ? ', plan_id = $7' : ''}
+             WHERE subscription_id = $6`,
               newPlanId 
                 ? [
                     newPriceId,
                     subscription.status,
                     subscription.items.data[0].current_period_end,
+                    subscription.cancel_at_period_end,
                     !subscription.cancel_at_period_end,
                     subscription.id,
                     newPlanId
@@ -338,6 +338,7 @@ router.post(
                     newPriceId,
                     subscription.status,
                     subscription.items.data[0].current_period_end,
+                    subscription.cancel_at_period_end,
                     !subscription.cancel_at_period_end,
                     subscription.id,
                   ]
