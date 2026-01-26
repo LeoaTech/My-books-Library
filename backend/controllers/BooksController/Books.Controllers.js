@@ -407,7 +407,8 @@ const DeleteBook = asyncHandler(async (req, res) => {
 const UpdateBook = asyncHandler(async (req, res) => {
   const { book } = req.body;
   // console.log(req.body, "Update Form");
-  const { userId, entityId } = req.user;
+  const userId = req.user?.user_id || req.user?.userId;
+  const entityId = req.user?.entityId || req.user?.entity_id;
   const {
     title,
     member_price,
