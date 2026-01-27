@@ -1,12 +1,11 @@
 const { pool } = require("../../config/dbConfig");
 const SYSTEM_DEFAULTS = require("../../config/SystemDefaultTemplates");
-const {connection}= require("../../config/redisConfig");
-
+const { connection } = require("../../config/redisConfig");
 
 const fetchTemplates = async (req, res) => {
-  const { entityId } = req.user;
-
   try {
+    const entityId = req?.user?.entityId || req?.user?.entity_id;
+
     const query = `
       SELECT * FROM notification_templates 
       WHERE entity_id = $1
@@ -48,10 +47,11 @@ const fetchTemplates = async (req, res) => {
 };
 
 const UpdateTemplate = async (req, res) => {
-  const { entityId } = req.user;
   const { event, channel, subject, body, is_active } = req.body;
-  
+
   try {
+    const entityId = req?.user?.entityId || req?.user?.entity_id;
+
     const query = `
       INSERT INTO notification_templates (entity_id, channel, event, subject, body, is_active, updated_at)
       VALUES ($1, $2, $3, $4, $5, $6, NOW())

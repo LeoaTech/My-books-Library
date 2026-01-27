@@ -135,7 +135,7 @@ const SYSTEM_DEFAULTS = {
   "subscription-updated-email": {
     subject: "Subscription Updated : {{subscription_id}}",
     body: "Hi {{customer_name}}, \n\n Thanks for Subscribing again. Your Subscription for ID {{subscription_id}} updated successfully. Enjoy Your Reading!",
-    variables: ["customer_name", "booking_title", "booking_id", "address"],
+    variables: ["customer_name",  "plan_name", "subscription_id"],
     channel: "email",
   },
   "subscription-updated-push": {
@@ -143,6 +143,24 @@ const SYSTEM_DEFAULTS = {
     body: "Hi {{customer_name}}, \n\n Thanks for Subscribing again. Your Subscription for ID {{subscription_id}} updated successfully. Enjoy Your Reading!",
     variables: ["customer_name", "plan_name", "subscription_id"],
     channel: "push",
+  },
+  "booking-due-reminder-email": {
+    subject: "Reminder: Return Due for {{book_title}}",
+    body: "Hi {{customer_name}},\n\nThis is a friendly reminder that your booking for Book \n\n {{book_title}} is due for return on {{due_date}}.\n\nPlease return it on time to avoid any late fees.\n\nHappy Reading!\n{{library_name}}",
+    variables: ["customer_name", "book_title", "due_date", "library_name"],
+    channel: "email",
+  },
+  "booking-due-reminder-push": {
+    subject: "Return Reminder: {{book_title}}",
+    body: "Hi {{customer_name}}, your booking for Book:  '{{book_title}}' is due on {{due_date}}. Please return it expecting.",
+    variables: ["customer_name", "book_title", "due_date"],
+    channel: "push",
+  },
+  "fine-payment-reminder-email": {
+    subject: "Action Required: Pending Fine Payment",
+    body: "Hi {{customer_name}},\n\nYou have pending late return fines for the following books:\n\n{{books_list}}\n\nTotal Fine: {{total_fine}}\n\nPlease pay the fine to avoid account restrictions.\n\nRegards,\n{{library_name}}",
+    variables: ["customer_name", "books_list", "total_fine", "library_name"],
+    channel: "email",
   },
 };
 

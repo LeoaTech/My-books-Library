@@ -7,19 +7,47 @@ const router = express.Router();
 
 router.use(checkAuth);
 router.post("/", async (req, res) => {
-  const { userId, entityId } = req.user; 
-  const { newPriceId, planName } = req.body; 
-  console.log(req.body, "Body");
-  if (!newPriceId) {
-    return res.status(400).json({ error: "newPriceId is required." });
-  }
-  try {
-    const subResult = await db.query(
-      `SELECT stripe_subscription_id FROM client_subscription WHERE user_id = $1 AND status = 'active'`,
-      [userId]
-    );
+  const userId = req.user?.user_id || req.user?.userId;
+  const entityId = req.user?.entityId || req.user?.entity_id;
+  const { newPriceId, planName } = req.body;
+  // console.log(req.body, "Body");
 
-    const subscriptionId = subResult.rows[0]?.stripe_subscription_id;
+  const userType = req.body?.userType || "client";
+  const stripeAccountID = req?.body?.stripeAccountID || null;
+
+  if (!newPriceId) {
+    return res.status(400).json({ error: "New PriceId is required." });
+  }
+
+  try {
+    let subscriptionId;
+    let stripeAccountId = null;
+
+    if (userType === "customer") {
+      // Library customer - get subscription_id from subscriptions table
+      const subResult = await db.query(
+        `SELECT subscription_id FROM subscriptions WHERE user_id = $1 AND status = 'active'`,
+        [userId],
+      );
+
+      subscriptionId = subResult.rows[0]?.subscription_id;
+      stripeAccountId = stripeAccountID;
+
+      if (!stripeAccountId) {
+        return res.status(400).json({
+          error:
+            "Stripe account ID is required for library customer subscriptions.",
+        });
+      }
+    } else {
+      // saas client - get stripe_subscription_id from client_subscription table
+      const subResult = await db.query(
+        `SELECT stripe_subscription_id FROM client_subscription WHERE user_id = $1 AND status = 'active'`,
+        [userId],
+      );
+
+      subscriptionId = subResult?.rows?.[0]?.stripe_subscription_id;
+    }
 
     if (!subscriptionId) {
       return res
@@ -27,37 +55,46 @@ router.post("/", async (req, res) => {
         .json({ error: "No active subscription found to change." });
     }
 
-    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-    console.log(subscription, "Subscription retrieved");
+    // get subscription from the Stripe account (connected or platform) based on userType
+    const subscription = stripeAccountId
+      ? await stripe.subscriptions.retrieve(subscriptionId, {
+          stripeAccount: stripeAccountId,
+        })
+      : await stripe.subscriptions.retrieve(subscriptionId);
+
 
     const currentItemId = subscription.items.data[0].id;
 
-    const updatedSubscription = await stripe.subscriptions.update(
-      subscriptionId,
-      {
-        items: [
-          {
-            id: currentItemId,
-            price: newPriceId,
-          },
-        ],
-        metadata: {
-          entityId,
-          user_type: "client",
-          app_client_id: userId,
-          planName: planName,
+    // Update subscription on the Stripe account (connected or platform) based on userType
+    const updateOptions = {
+      items: [
+        {
+          id: currentItemId,
+          price: newPriceId,
         },
-        proration_behavior: "create_prorations", 
-        cancel_at_period_end: false,
-      }
-    );
+      ],
+      metadata: {
+        entityId,
+        user_type: userType || "client",
+        app_client_id: userId,
+        planName: planName,
+      },
+      proration_behavior: "create_prorations",
+      cancel_at_period_end: false,
+    };
 
-    console.log(updatedSubscription, "Changed Plan Successfully");
+    const updatedSubscription = stripeAccountId
+      ? await stripe.subscriptions.update(subscriptionId, updateOptions, {
+          stripeAccount: stripeAccountId,
+        })
+      : await stripe.subscriptions.update(subscriptionId, updateOptions);
+
+    // console.log(updatedSubscription, "Changed Plan Successfully");
 
     res.json({ message: "Subscription plan changed successfully." });
   } catch (error) {
     console.error("Stripe plan change failed:", error);
-    res.status(500).json({ error: "Could not change subscription plan." });
+    res.status(500).json({ error: "Failed to change subscription plan." });
   }
 });
 

@@ -13,6 +13,9 @@ export default {
         "100%": { transform: "translateX(calc(-250px * 5))" },
       },
     },
+    animation: {
+      ["infinite-slider"]: "infiniteSlider 40s linear infinite",
+    },
   },
   plugins: [],
 };

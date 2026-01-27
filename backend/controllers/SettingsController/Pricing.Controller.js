@@ -14,55 +14,44 @@ const stripe = require("stripe")(
 const LIBRARY_URL = process.env.CLIENT_URL || "http://localhost:5173";
 
 // Create a Stripe Product price & Payment Link
-const createStripePriceAndPaymentLink = async (
+const createStripePriceId = async (
   stripe,
   price,
   duration,
   credits,
   stripeProductId,
-  subdomain
+  stripe_account_id
 ) => {
   const priceInCents = convertPriceToCents(price);
   const { interval, interval_count } = getStripeInterval(duration);
   const durationLabel = duration === 30 ? "monthly" : "yearly";
 
   // 1. Create Stripe Price
-  const stripePrice = await stripe.prices.create({
-    unit_amount: priceInCents,
-    currency: "pkr",
-    recurring: {
-      interval: interval,
-      interval_count: interval_count,
-    },
-    product: stripeProductId,
-    metadata: {
-      duration_days: duration,
-      credits_allocated: credits,
-      billing_period: durationLabel,
-    },
-  });
-  const stripePriceId = stripePrice.id;
-  console.log(`Stripe ${durationLabel} Price Created: ${stripePriceId}`);
-
-  // 2. Create Payment Link
-  const paymentLink = await stripe.paymentLinks.create({
-    line_items: [{ price: stripePriceId, quantity: 1 }],
-    after_completion: {
-      type: "redirect",
-      redirect: {
-        url: `${LIBRARY_URL}/${subdomain}/success?session_id={CHECKOUT_SESSION_ID}`,
+  const stripePrice = await stripe.prices.create(
+    {
+      unit_amount: priceInCents,
+      currency: "pkr",
+      recurring: {
+        interval: interval,
+        interval_count: interval_count,
+      },
+      product: stripeProductId,
+      metadata: {
+        user_type: "customer",
+        duration_days: duration,
+        credits_allocated: credits,
+        billing_period: durationLabel,
       },
     },
-    metadata: {
-      product_id: stripeProductId,
-      price_id: stripePriceId,
-      billing_period: durationLabel,
-    },
-  });
+    {
+      stripeAccount: stripe_account_id, //https://docs.stripe.com/connect/authentication
+    }
+  );
+  const stripePriceId = stripePrice.id;
+  // console.log(`Stripe ${durationLabel} Price Created: ${stripePriceId}`);
 
   return {
     price_id: stripePriceId,
-    payment_link: paymentLink.url,
     price_value: price,
     duration_days: duration,
     credits_allocated: credits,
@@ -89,98 +78,7 @@ const FetchPricingPlans = asyncHandler(async (req, res) => {
   }
 });
 
-/* Create New Single Pricing Plan*/
 
-const CreatePlan = asyncHandler(async (req, res) => {
-  const entityId = req?.user?.entityId || req?.user?.entity_id;
-
-  if (!entityId) {
-    return res.status(403).json("Invalid Request, No Library ID provided");
-  }
-
-  if (!req.body) {
-    return res.status(400).json("Invalid Pricing Details");
-  }
-
-  const getSubdomain = await db.query(
-    "SELECT subdomain FROM entities WHERE id = $1",
-    [entityId]
-  );
-
-  const subdomain = getSubdomain?.rows[0]?.subdomain;
-
-  let stripeProductId = null;
-  let stripePriceId = null;
-  let stripePaymentLink = null;
-
-  try {
-    const { plan_name, price, duration, credits_allocated, features } =
-      req.body;
-
-    // Create Stripe Product
-    const product = await stripe.products.create({
-      name: plan_name,
-      description: `Credits: ${credits_allocated}. Features: ${features.join(
-        ", "
-      )}`,
-      metadata: {
-        entityId: entityId,
-        credits_allocated: credits_allocated,
-      },
-    });
-    stripeProductId = product.id;
-    console.log(`Stripe Product Created: ${stripeProductId}`);
-
-    // Create Stripe Price
-    const priceInCents = convertPriceToCents(price);
-    const { interval, interval_count } = getStripeInterval(duration);
-
-    const stripePrice = await stripe.prices.create({
-      unit_amount: priceInCents,
-      currency: "pkr",
-      recurring: {
-        interval: interval,
-        interval_count: interval_count,
-      },
-      product: stripeProductId,
-      metadata: {
-        duration_days: duration,
-      },
-    });
-    stripePriceId = stripePrice.id;
-    console.log(`Stripe Price Created: ${stripePriceId}`);
-
-    // Create Payment Link
-    const paymentLink = await stripe.paymentLinks.create({
-      line_items: [{ price: stripePriceId, quantity: 1 }],
-      after_completion: {
-        type: "redirect",
-        redirect: {
-          url: `http://localhost:5173/${subdomain}/success?session_id={CHECKOUT_SESSION_ID}`,
-        },
-      },
-    });
-    stripePaymentLink = paymentLink.url;
-    console.log(`Stripe Payment Link Created: ${stripePaymentLink}`);
-
-    const jsonFeatures = JSON.stringify(features);
-    const createPricinguery = await db.query(
-      `INSERT INTO membership_plan (plan_name, price, duration, credits_allocated, features,entity_id) VALUES ($1,$2,$3, $4,$5, $6) RETURNING plan_id,plan_name`,
-      [plan_name, price, duration, credits_allocated, jsonFeatures, entityId]
-    );
-
-    res.status(200).json({
-      pricing: createPricinguery?.rows[0],
-      message: "Pricing plan Saved Successfully ",
-    });
-  } catch (error) {
-    console.log(error, "Error creating new pricing plan");
-    res.status(500).json({
-      error,
-      message: error.message || "Error Creating Pricing",
-    });
-  }
-});
 
 /* Created a Dual Pricing Plan */
 const CreateDualPlan = asyncHandler(async (req, res) => {
@@ -201,7 +99,7 @@ const CreateDualPlan = asyncHandler(async (req, res) => {
   );
 
   const subdomain = getSubdomain?.rows[0]?.subdomain;
-  // console.log(subdomain, "Subdomain found");
+  console.log(req.body, "Create dual Plan Payload");
 
   let stripeProductId = null;
 
@@ -215,38 +113,44 @@ const CreateDualPlan = asyncHandler(async (req, res) => {
       monthly_credits_allocated,
       yearly_credits_allocated,
       features,
+      stripe_account_id,
     } = req.body;
 
     // Create Stripe Product
-    const product = await stripe.products.create({
-      name: plan_name,
-      description: `Features: ${features.join(", ")}`,
-      metadata: {
-        entityId: entityId,
-        subdomain: subdomain,
+    const product = await stripe.products.create(
+      {
+        name: plan_name,
+        description: `Features: ${features.join(", ")}`,
+        metadata: {
+          entityId: entityId,
+          subdomain: subdomain,
+        },
       },
-    });
+      {
+        stripeAccount: stripe_account_id, //https://docs.stripe.com/connect/authentication
+      }
+    );
     stripeProductId = product.id;
     console.log(`Stripe Product Created: ${stripeProductId}`);
 
-    // Create Monthly price and payment Link
-    const monthlyData = await createStripePriceAndPaymentLink(
+    // Create Monthly price
+    const monthlyData = await createStripePriceId(
       stripe,
       monthly_price,
       monthly_duration, // 30 days in a month
       monthly_credits_allocated,
       stripeProductId,
-      subdomain
+      stripe_account_id
     );
 
-    //Create Yearly Price and  Payment Link
-    const yearlyData = await createStripePriceAndPaymentLink(
+    //Create Yearly Price
+    const yearlyData = await createStripePriceId(
       stripe,
       yearly_price,
       yearly_duration, // 365 days in a year
       yearly_credits_allocated,
       stripeProductId,
-      subdomain
+      stripe_account_id
     );
 
     const planDetails = {
@@ -254,6 +158,7 @@ const CreateDualPlan = asyncHandler(async (req, res) => {
       monthly: monthlyData,
       yearly: yearlyData,
       features: features,
+      stripe_account_id,
     };
 
     const jsonPlanDetails = JSON.stringify(planDetails);
@@ -271,7 +176,7 @@ const CreateDualPlan = asyncHandler(async (req, res) => {
       message: "Pricing plan Saved Successfully ",
     });
   } catch (error) {
-    console.log(error, "Error creating new pricing plan");
+    // console.log(error, "Error creating new pricing plan");
     res.status(500).json({
       error,
       message: error.message || "Error Creating Pricing",
@@ -280,8 +185,6 @@ const CreateDualPlan = asyncHandler(async (req, res) => {
 });
 
 const UpdatePlan = asyncHandler(async (req, res) => {
-  // console.log(req.body, req.params);
-
   const entityId = req?.user?.entityId || req?.user?.entity_id;
 
   if (!entityId) {
@@ -300,28 +203,112 @@ const UpdatePlan = asyncHandler(async (req, res) => {
     }
     const { plan_id } = req.params;
 
-    const { plan_name, price, duration, credits_allocated, features } =
-      req.body;
-
-    const jsonFeatures = JSON.stringify(features);
-    const updatePricingQuery = await db.query(
-      `UPDATE membership_plan SET plan_name=$1, price=$2, duration =$3, credits_allocated=$4, features=$5 WHERE entity_id=$6 AND plan_id=$7 RETURNING plan_id,plan_name`,
-      [
-        plan_name,
-        price,
-        duration,
-        credits_allocated,
-        jsonFeatures,
-        entityId,
-        plan_id,
-      ]
+    const existingPlanQuery = await db.query(
+      "SELECT plan_details, stripe_product_id FROM membership_plan WHERE entity_id=$1 AND plan_id=$2",
+      [entityId, plan_id]
     );
 
-    // console.log(updatePricingQuery?.rows[0], "Pricing Plan Updated");
+    if (existingPlanQuery.rowCount === 0) {
+      return res.status(404).json({ message: "Plan not found" });
+    }
+
+    const currentPlanDetails = existingPlanQuery.rows[0].plan_details;
+    const stripeAccountId = currentPlanDetails.stripe_account_id;
+
+    const {
+      plan_name,
+      features,
+      isMonthlyPriceChanged,
+      monthlyUpdate,
+      isYearlyPriceChanged,
+      yearlyUpdate,
+    } = req.body;
+
+    // 1. Update Stripe Product Details (Name, Features & Metadata )
+    if (existingPlanQuery.rows[0].stripe_product_id) {
+      await stripe.products.update(
+        existingPlanQuery.rows[0].stripe_product_id,
+        {
+          name: plan_name,
+          description: `Features: ${features.join(", ")}`,
+        },
+        {
+          stripeAccount: stripeAccountId,
+        }
+      );
+    }
+
+    let newMonthlyData = currentPlanDetails.monthly;
+    let newYearlyData = currentPlanDetails.yearly;
+
+    //  Monthly Price Change
+    if (isMonthlyPriceChanged && monthlyUpdate) {
+      // Archive old price
+      if (monthlyUpdate.monthly_old_price_id) {
+        try {
+          await stripe.prices.update(
+            monthlyUpdate.monthly_old_price_id,
+            { active: false },
+            { stripeAccount: stripeAccountId }
+          );
+        } catch (err) {
+          console.warn("Failed to archive old monthly price:", err.message);
+        }
+      }
+
+      // then Create new price
+      newMonthlyData = await createStripePriceId(
+        stripe,
+        monthlyUpdate.monthly_price,
+        30, // monthly duration
+        monthlyUpdate.monthly_credits_allocated,
+        existingPlanQuery.rows[0].stripe_product_id,
+        stripeAccountId
+      );
+    }
+
+    // Yearly Price Change
+    if (isYearlyPriceChanged && yearlyUpdate) {
+      if (yearlyUpdate.yearly_old_price_id) {
+        try {
+          await stripe.prices.update(
+            yearlyUpdate.yearly_old_price_id,
+            { active: false },
+            { stripeAccount: stripeAccountId }
+          );
+        } catch (err) {
+          console.warn("Failed to archive old yearly price:", err.message);
+        }
+      }
+
+      newYearlyData = await createStripePriceId(
+        stripe,
+        yearlyUpdate.yearly_price,
+        365, // yearly duration
+        yearlyUpdate.yearly_credits_allocated,
+        existingPlanQuery.rows[0].stripe_product_id,
+        stripeAccountId
+      );
+    }
+
+    const updatedPlanDetails = {
+      ...currentPlanDetails,
+      monthly: newMonthlyData,
+      yearly: newYearlyData,
+      features: features,
+    };
+
+    const jsonPlanDetails = JSON.stringify(updatedPlanDetails);
+
+    // Update DB
+    const updatePricingQuery = await db.query(
+      `UPDATE membership_plan SET plan_name=$1, plan_details=$2 WHERE entity_id=$3 AND plan_id=$4 RETURNING *`,
+      [plan_name, jsonPlanDetails, entityId, plan_id]
+    );
 
     res.status(200).json({
       pricing: updatePricingQuery?.rows[0],
-      message: "Pricing Plan Updated Successfully ",
+      message: "Pricing Plan Updated Successfully",
     });
   } catch (error) {
     console.log(error, "Error Updating pricing Plans");
@@ -332,8 +319,8 @@ const UpdatePlan = asyncHandler(async (req, res) => {
   }
 });
 
+/* Delete Stripe product/Pricing plan  */
 const DeletePlan = asyncHandler(async (req, res) => {
-  // console.log(req.params);
 
   const entityId = req?.user?.entityId || req?.user?.entity_id;
 
@@ -354,7 +341,9 @@ const DeletePlan = asyncHandler(async (req, res) => {
 
     const stripeProductId = ProductId.rows[0]?.stripe_product_id;
     if (!stripeProductId) {
-      return res.status(400).json({ message: "Missing! Stripe Product ID not exists" });
+      return res
+        .status(400)
+        .json({ message: "Missing! Stripe Product ID not exists" });
     } else {
       try {
         // Delete the Product from Stripe
@@ -366,21 +355,24 @@ const DeletePlan = asyncHandler(async (req, res) => {
           stripeError.type === "StripeInvalidRequestError" ||
           stripeError.code === "resource_missing"
         ) {
-          console.warn(
-            `Stripe prevented deletion of Product ${stripeProductId}. Plan is likely in use.`
-          );
-
-          return res.status(409).json({
-            message:
-              "Cannot delete plan. It has active subscriptions, payment links, or historical data on Stripe. Please contact support to archive the product instead.",
-            details: stripeError.message,
-          });
+          if (stripeError.code === "resource_missing") {
+             console.log("Product already deleted from Stripe");
+          } else {
+             console.log("Product has linked resources, archiving instead...");
+             try {
+                await stripe.products.update(stripeProductId, { active: false });
+                console.log(`Stripe Product Archived: ${stripeProductId}`);
+             } catch (archiveError) {
+                console.error(`Failed to archive product: ${archiveError.message}. Please Contact Support`);
+                throw archiveError; 
+             }
+          }
+        } else {
+             console.error(`Unhandled Stripe Error during deletion: ${stripeError}`);
+             throw stripeError;
         }
-        console.error(`Unhandled Stripe Error during deletion: ${stripeError}`);
-        throw stripeError;
       }
     }
-
 
     const deletePricingQuery = await db.query(
       `DELETE FROM membership_plan WHERE entity_id=$1 AND plan_id=$2 RETURNING plan_id`,
@@ -403,7 +395,6 @@ const DeletePlan = asyncHandler(async (req, res) => {
 
 module.exports = {
   FetchPricingPlans,
-  CreatePlan,
   DeletePlan,
   UpdatePlan,
   CreateDualPlan,

@@ -17,28 +17,20 @@ export const bookSchema = z.object({
   category: selectOptionSchema.transform((val) => val?.value),
   isbn: z.string().min(8, { message: "Please Enter book ISBN number" }),
   isAvailable: z.boolean().default(false),
-  vendor_id: z.unknown().optional(),
-  // branch_id: null || z.string(),
-  // branch_id: z.string().nullable().optional(),
-  branch_id: z.unknown(),
-  cover_img_url:
-    z.unknown() ||
-    z
+  vendor_id: z.string().optional().nullable().or(z.literal('')),
+  branch_id: z.string().min(1, { message: "Please select a branch" }),
+  cover_img_url: z
       .array(z.string())
       .max(5, { message: "Maximum 5 images allowed" })
       .optional(),
-  discount_percentage: z.string(),
+  discount_percentage: z.string().optional(),
   summary: z.string().optional(),
   publish_year: z.string().optional(),
-  publisher: selectOptionSchema.transform((val) => val?.value) || z.unknown(),
-  credit:
-    z.coerce
+  publisher: selectOptionSchema.transform((val) => val?.value),
+  credit: z.coerce
       .number()
-      .min(1, { message: "Please add a valid credits for books" }) ||
-    z.unknown(),
-  author: selectOptionSchema.transform((val) => val?.value) || z.unknown(),
-  quantity:
-    z.coerce.number().min(1, { message: "Please add a valid quantity" }) ||
-    z.unknown(),
+      .min(1, { message: "Please add a valid credits for books" }),
+  author: selectOptionSchema.transform((val) => val?.value),
+  quantity: z.coerce.number().min(0, { message: "Please add a valid quantity" }),
   edition: z.string().optional(),
 });

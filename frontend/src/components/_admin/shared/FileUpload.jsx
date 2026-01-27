@@ -119,8 +119,6 @@ export default function FileUpload({ imagesList, setImagesList }) {
                 <div className="space-y-3">
                     <h3 className="font-semibold text-[#2c3745] dark:text-white">Selected Media:</h3>
                     {imagesList?.map((file, idx) => {
-                        console.log(file, "File");
-
                         const icon = getFileIcon(
                             file?.type || (file?.secure_url && 'image/') || ''
                         );

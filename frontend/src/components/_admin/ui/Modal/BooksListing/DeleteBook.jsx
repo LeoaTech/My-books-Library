@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { RxCross1 } from "react-icons/rx";
+import { toast } from "react-toastify";
 import { useSaveBook } from "../../../../../hooks/books/useSaveBook";
 
 const DeleteBook = ({ book, close }) => {
@@ -9,12 +10,14 @@ const DeleteBook = ({ book, close }) => {
   /* Delete Book Mutation */
   const { mutateAsync: deleteBookMutation } = useMutation({
     mutationFn: deleteBook,
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries(["books"]);
+      toast.success(data?.message || "Book deleted successfully");
       close();
     },
     onError: (err) => {
       // console.log(err,"Error deleting Book")
+      toast.error(err?.message || "Failed to delete book");
       close();
     }
   });
@@ -29,7 +32,7 @@ const DeleteBook = ({ book, close }) => {
               height: 18,
               width: 23,
               cursor: "pointer",
-              color: "#FFF",  
+              color: "#FFF",
               strokeWidth: 2,
             }}
             onClick={close}

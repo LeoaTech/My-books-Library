@@ -11,7 +11,6 @@ const CategoryCreatableSelect = ({
     newStyles
  }) => {
 
-    console.log(categoriesData, "Inside the component");
 
     const categoryOptions = useMemo(() =>
         categoriesData?.categories?.map(category => ({

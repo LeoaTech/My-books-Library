@@ -23,7 +23,6 @@ const up = (pgm) => {
     },
     stripe_price_id: { type: "TEXT", notNull: false },
     stripe_product_id: { type: "TEXT", notNull: false },
-        // CHANGED: Renamed for clarity and consistency.
     stripe_subscription_id: {
       type: "TEXT",
       notNull: true,
@@ -36,6 +35,7 @@ const up = (pgm) => {
     cancel_at_period_end: {
       type: "boolean",
     },
+
     status: {
       type: "TEXT",
       notNull: true, //active, cancelled,

@@ -4,6 +4,12 @@ import { HiCheckCircle } from "react-icons/hi";
 import { useAuthContext } from "../../hooks/useAuthContext";
 import { Link, useParams } from "react-router-dom";
 import Loader from "../../components/_user/Loader/Loader";
+import { BASE_URL } from "../../utils/baseAPIURL";
+import { useFetchCurrentPlan } from "../../hooks/current_plan/useFetchCurrentPlan";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-toastify";
+import Banner from "../../components/main/Banner";
+import ConfirmationModal from "../../components/common/ConfirmationModal";
 
 const PopularPlanType = {
     NO: 0,
@@ -13,13 +19,23 @@ const PopularPlanType = {
 export const Pricing = () => {
     const { auth } = useAuthContext();
     const { subdomain } = useParams();
+    const queryClient = useQueryClient();
+    const [isChangingPlan, setIsChangingPlan] = useState(false);
+    const [isCanceling, setIsCanceling] = useState(false);
+    const [isResuming, setIsResuming] = useState(false);
+    const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+    const [isYearly, setIsYearly] = useState(false);
 
     const { data: pricingPlans, isLoading } = useFetchPricingPlans()
-    const [isYearly, setIsYearly] = useState(false);
-    const handleToggle = () => setIsYearly(!isYearly);
 
-    console.log(pricingPlans, "Plans");
-    console.log(auth, "auth");
+    const { data: currentPlan } = useFetchCurrentPlan(auth);
+
+    const activeSubscription = currentPlan?.isActive;
+    const subscriptionExpiredAt = `${new Date(currentPlan?.subscription?.currentPeriodEnd).toDateString()} at ${new Date(currentPlan?.subscription?.currentPeriodEnd).toLocaleTimeString()}`;
+
+    const isCancelledAtPeriodEnd = currentPlan?.subscription?.cancelAtPeriodEnd
+
+    const handleToggle = () => setIsYearly(!isYearly);
 
 
     // Switch plan Interval
@@ -40,6 +56,169 @@ export const Pricing = () => {
 
     let sub_domain = auth?.subdomain || subdomain
     // console.log(sub_domain);
+
+    // Subscribe for first time
+
+    const handleCreateCheckoutSession = async (priceId, planName) => {
+        let stripeAccountID = pricingPlans?.plans[0]?.plan_details?.stripe_account_id;
+        const checkoutPlanToastId = toast.loading('Redirecting to Stripe Checkout Page...');
+
+        try {
+            const response = await fetch(`${BASE_URL}/create-checkout-session`, {
+                method: 'POST',
+                credentials: "include",
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ priceId, planName, userType: "customer", stripeAccountID }),
+            });
+
+            const session = await response.json();
+            // Redirect the user to the Stripe Checkout page
+            window.location.href = session.url;
+
+
+        } catch (error) {
+            console.error("Error creating checkout session:", error);
+            toast.update(checkoutPlanToastId, {
+                render: `Error: ${error.message}` || "Failed to create checkout session for new subscription",
+                type: 'error',
+                isLoading: false,
+                autoClose: 1000,
+            });
+        }
+    }
+
+    // Change plan
+    const handleChangePlan = async (newPriceId, planName) => {
+        let stripeAccountID = pricingPlans?.plans[0]?.plan_details?.stripe_account_id;
+
+        if (isChangingPlan) return;
+        const changePlanToastId = toast.loading('Updating Plan...');
+
+        setIsChangingPlan(true);
+        try {
+            const response = await fetch(`${BASE_URL}/change-subscription`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: "include",
+                body: JSON.stringify({ newPriceId: newPriceId, planName, userId: auth?.userId || auth?.id, userType: "customer", stripeAccountID })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to change plan.');
+            }
+            // console.log(response, "Plan Changed Successfully");
+            queryClient.invalidateQueries(['current-plan'])
+            window.location.reload();
+            toast.update(changePlanToastId, {
+                render: "Plan Changed Successfully. Please refresh the page to see changes",
+                type: 'success',
+                isLoading: false,
+                autoClose: 2000,
+            });
+        } catch (error) {
+            console.error('Failed to change plan:', error);
+            // alert('There was an error changing your plan.');
+            toast.update(changePlanToastId, {
+                render: `Error: ${error.message}` || "Failed to cchange plan",
+                type: 'error',
+                isLoading: false,
+                autoClose: 1000,
+            });
+        } finally {
+            setIsChangingPlan(false);
+        }
+    };
+
+
+    const handleCancelSubscription = () => {
+        setIsCancelModalOpen(true);
+    };
+
+    const confirmCancellation = async () => {
+        let stripeAccountID = pricingPlans?.plans[0]?.plan_details?.stripe_account_id;
+
+        if (isCanceling) return;
+        const cancelPlanToastId = toast.loading('Initiate Cancel Subscription Request...');
+
+        setIsCanceling(true);
+        try {
+            const response = await fetch(`${BASE_URL}/cancel-subscription`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: "include",
+                body: JSON.stringify({ userType: "customer", stripeAccountID })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to cancel subscription.');
+            }
+
+            queryClient.invalidateQueries(['current-plan']);
+            toast.update(cancelPlanToastId, {
+                render: "Subscription cancellation scheduled.",
+                type: 'success',
+                isLoading: false,
+                autoClose: 2000,
+            });
+            setIsCancelModalOpen(false);
+            window.location.reload();
+        } catch (error) {
+            console.error('Failed to cancel subscription:', error);
+            toast.update(cancelPlanToastId, {
+                render: `Error: ${error.message}` || "Request Failed to cancel subscription plan",
+                type: 'error',
+                isLoading: false,
+                autoClose: 1000,
+            });
+            setIsCancelModalOpen(false);
+        } finally {
+            setIsCanceling(false);
+        }
+    };
+
+    // Resume Subscription
+    const handleResumeSubscription = async () => {
+        let stripeAccountID = pricingPlans?.plans[0]?.plan_details?.stripe_account_id;
+
+        if (isResuming) return;
+        const resumePlanToastId = toast.loading('Resuming Subscription...');
+        setIsResuming(true);
+        try {
+            const response = await fetch(`${BASE_URL}/resume-subscription`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: "include",
+                body: JSON.stringify({ userType: "customer", stripeAccountID })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to resume subscription.');
+            }
+
+            queryClient.invalidateQueries(['current-plan']);
+            toast.update(resumePlanToastId, {
+                render: "Subscription resumed successfully!",
+                type: 'success',
+                isLoading: false,
+                autoClose: 2000,
+            });
+            window.location.reload();
+        } catch (error) {
+            console.error('Failed to resume subscription:', error);
+            toast.update(resumePlanToastId, {
+                render: `Error: ${error.message}` || "Failed to resume subscription",
+                type: 'error',
+                isLoading: false,
+                autoClose: 1000,
+            });
+        } finally {
+            setIsResuming(false);
+        }
+    };
+
+
 
     if (isLoading) {
         return (
@@ -76,9 +255,9 @@ export const Pricing = () => {
     }
     return (
         <section id='pricing' className='container py-24 px-20 sm:py-32'>
-
+            {activeSubscription && isCancelledAtPeriodEnd && <Banner date={subscriptionExpiredAt} planName={currentPlan?.subscription?.planName} />
+            }
             <ToggleSwitch />
-
             <div className='grid md:grid-cols-2 lg:grid-cols-3 gap-8'>
                 {pricingPlans?.plans?.map((pricing) => {
                     const currentPricing = isYearly
@@ -88,19 +267,11 @@ export const Pricing = () => {
                     const displayCredits = isYearly ? pricing?.plan_details?.yearly?.credits_allocated : pricing?.plan_details?.monthly?.credits_allocated;
                     const displayFeatures = pricing?.plan_details?.features;
 
-                    if (!currentPricing) return null;
-                    const userId = auth?.id;
-                    const userName = auth?.name;
-                    const userEmail = auth?.email;
-                    const baseUrl = isYearly ? pricing?.plan_details?.yearly?.payment_link : pricing?.plan_details?.monthly?.payment_link;
-                    let finalPaymentUrl = `${baseUrl}?client_reference_id=${userId}`;
+                    const finalPriceId = isYearly ? pricing?.plan_details?.yearly?.price_id : pricing?.plan_details?.monthly?.price_id;
+                    const isCurrentPlan = currentPlan?.isActive ? currentPlan?.subscription?.stripePriceId == finalPriceId : null;
 
-                    if (userEmail) {
-                        finalPaymentUrl += `&prefilled_email=${encodeURIComponent(userEmail)}`;
-                    }
-                    if (userName) {
-                        finalPaymentUrl += `&prefilled_name=${encodeURIComponent(userName)}`;
-                    }
+                    if (!currentPricing) return null;
+
                     return (
                         <li key={pricing.plan_id}
                             className={`${pricing.popular === PopularPlanType.YES ? "bg-purple-300" : "bg-purple-50"}  relative overflow-hidden rounded-lg border border-black shadow-md text-left`
@@ -123,12 +294,25 @@ export const Pricing = () => {
                                         {displayCredits} Credits
                                     </p>
                                     {auth?.accessToken ?
-                                        <a
-                                            href={finalPaymentUrl}
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                if (isCurrentPlan) {
+                                                    return;
+                                                }
+                                                if (activeSubscription) {
+                                                    handleChangePlan(finalPriceId, pricing.plan_name);
+                                                }
+                                                else {
+                                                    handleCreateCheckoutSession(finalPriceId, pricing.plan_name)
+                                                }
+                                            }
+                                            }
+                                            disabled={isCurrentPlan}
                                             className="mt-5 inline-flex cursor-pointer rounded-full bg-slate-500 px-8 py-2 font-sans text-sm text-white shadow-sm transition hover:translate-y-1 hover:shadow-md hover:shadow-slate-200"
                                         >
-                                            Buy Now
-                                        </a> :
+                                            {currentPlan?.subscription?.stripePriceId === finalPriceId ? "Subscribed" : activeSubscription ? "Change Plan" : "Buy Now"}
+                                        </button> :
                                         <Link to={sub_domain ? `/${sub_domain}/signin` : "/signin"}
                                             className="mt-5 inline-flex cursor-pointer rounded-full bg-slate-500 px-8 py-2 font-sans text-sm text-white shadow-sm transition hover:translate-y-1 hover:shadow-md hover:shadow-slate-200"
                                         >
@@ -176,8 +360,43 @@ export const Pricing = () => {
                     )
                 })}
             </div>
+            {/* Current Subscription Management */}
+            {activeSubscription && (
+
+                <div className="mb-2 flex justify-end">
+                    {isCancelledAtPeriodEnd ? (
+                        <button
+                            onClick={handleResumeSubscription}
+                            disabled={isResuming}
+                            className="px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-full font-medium transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:hover:shadow-md"
+                        >
+                            {isResuming ? "Resuming..." : "Resume Subscription"}
+                        </button>
+                    ) : (
+                        <button
+                            onClick={handleCancelSubscription}
+                            disabled={isCanceling}
+                            className="px-6 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-full font-medium transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:hover:shadow-md"
+                        >
+                            {isCanceling ? "Canceling..." : "Cancel Subscription"}
+                        </button>
+                    )}
+                </div>
+
+            )}
 
 
+
+            <ConfirmationModal
+                isOpen={isCancelModalOpen}
+                onClose={() => setIsCancelModalOpen(false)}
+                onConfirm={confirmCancellation}
+                title="Cancel Subscription"
+                message="Are you sure you want to cancel your subscription? You will lose membership access at the end of the current billing period."
+                confirmText="Yes, Cancel Subscription"
+                cancelText="Keep Subscription"
+                isProcessing={isCanceling}
+            />
 
         </section>
 

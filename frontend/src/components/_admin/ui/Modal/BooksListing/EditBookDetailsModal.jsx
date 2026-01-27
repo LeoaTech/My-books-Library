@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, Controller } from "react-hook-form";
@@ -34,8 +34,6 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
 
   const { error, message, updateBook } = useSaveBook();
   const [imagesList, setImagesList] = useState([]);
-  console.log(bookValue, "ID");
-
   const { data: bookDetail, isPending: isBookLoading, error: isBookError } = useQuery({
     queryFn: () => FetchBookById(bookValue),
     queryKey: ["books", { bookValue }],
@@ -123,7 +121,6 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
       });
       return newAuthor.data;
     } catch (error) {
-      // console.log(error, "Failed to create author");
       toast.update(toastId, {
         render: `Error: ${error.message}`,
         type: 'error',
@@ -137,12 +134,10 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
   /* Create New Category   */
   const handleCreateCategory = useCallback(
     async (inputValue) => {
-      // console.log(inputValue, "Value");
       const toastId = toast.loading('Creating new category...');
 
       try {
         const newCategory = await addCategory(inputValue);
-        // console.log(newCategory, "API response");
         toast.update(toastId, {
           render: 'Category created successfully!',
           type: 'success',
@@ -168,12 +163,10 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
 
   const handleCreateCovers = useCallback(
     async (inputValue) => {
-      // console.log(inputValue, "cover value");
       const toastId = toast.loading('Creating new cover...');
 
       try {
         const newCovers = await addCover(inputValue);
-        // console.log(newCovers, "API response");
         toast.update(toastId, {
           render: 'Cover created successfully!',
           type: 'success',
@@ -198,12 +191,10 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
   /* Create New Condition type for book   */
   const handleCreateConditions = useCallback(
     async (inputValue) => {
-      // console.log(inputValue, "condition value");
       const toastId = toast.loading('Creating new condition...');
 
       try {
         const newCondition = await addConditionType(inputValue);
-        // console.log(newCondition, "API response");
         toast.update(toastId, {
           render: 'Condition created successfully!',
           type: 'success',
@@ -248,9 +239,8 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
     [addPublisherMutation]
   );
 
-  // console.log(bookDetail, "Edit book details");
   const bookDetails = bookValue?.title ? bookValue : bookDetail?.book
-  console.log(bookDetails, "Book Details");
+  const toastId = useRef(null);
 
   const {
     register,
@@ -284,9 +274,9 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
         available: bookDetails?.available || false,
         member_price: bookDetails?.member_price || "",
         purchase_price: bookDetails?.purchase_price || "",
-        vendor_id: bookDetails?.vendor_id || null,
-        branch_id: bookDetails?.branch_id || null,
-        cover_img_url: bookDetails?.cover_img_url || [],
+        vendor_id: bookDetails?.vendor_id ? String(bookDetails.vendor_id) : null,
+        branch_id: bookDetails?.branch_id ? String(bookDetails.branch_id) : "",
+        cover_img_url: bookDetails?.cover_img_url?.map((img) => String(img) || String(img?.secure_url)) || [],
         discount_percentage: bookDetails?.discount_percentage || '',
         summary: bookDetails?.summary || '',
         publish_year: bookDetails?.publish_year || '',
@@ -341,18 +331,42 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
   // Mutation to Update Book Details
   const { mutateAsync: updateBookMutation } = useMutation({
     mutationFn: updateBook,
-    onSuccess: () => {
-      queryClient.invalidateQueries(["books"]); // invalidate books query to refetch
+    onSuccess: (data) => {
+      if (toastId.current) {
+        toast.update(toastId.current, {
+          render: data?.message || "Book updated successfully",
+          type: 'success',
+          isLoading: false,
+          autoClose: 2000,
+        });
+      } else {
+        toast.success(data?.message || "Book updated successfully");
+      }
+      queryClient.invalidateQueries(["books"]);
+
+
       close();
     },
+    onError: (error) => {
+      if (toastId.current) {
+        toast.update(toastId.current, {
+          render: error.message || "Failed to update book",
+          type: 'error',
+          isLoading: false,
+          autoClose: 1000,
+        });
+      } else {
+        toast.error(error.message || "Failed to update book");
+      }
+    }
   });
-  // console.log(errors, "Errors", isValid);
+  console.log(errors, "Errors", isValid);
 
   const onSubmit = useCallback(async (updateData) => {
     try {
       const booksForm = {
         ...updateData,
-        bookId: bookValue.id,
+        bookId: bookValue?.id,
         available: updateData?.isAvailable,
         cover_img_url:
           imagesList?.length > 0
@@ -361,10 +375,20 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
         imageUpdated: imagesList?.length > 0 ? true : false,
       };
 
-      console.log(booksForm, "Form Edit");
+      toastId.current = toast.loading('Updating book details...');
+
       await updateBookMutation(booksForm);
     } catch (error) {
-      console.log(error, "Error updating Form");
+      if (toastId.current) {
+        toast.update(toastId.current, {
+          render: error?.message || "Failed to update book",
+          type: 'error',
+          isLoading: false,
+          autoClose: 1000,
+        });
+      } else {
+        toast.error(error?.message || "Failed to update book");
+      }
 
     }
   }, [updateBookMutation, imagesList, bookValue]);
@@ -447,7 +471,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                   <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap:9">
                     <div className="w-full xl:w-1/2">
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
-                        Title
+                        Title <span className="text-red-600">*</span>
                       </label>
                       <input
                         autoFocus
@@ -464,9 +488,99 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                       )}
                     </div>
 
+                    <div className="mb-4.5 w-full xl:w-1/2">
+                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
+                        ISBN <span className="text-red-600">*</span>
+                      </label>
+                      <input
+                        name="isbn"
+                        type="text"
+                        placeholder="Enter ISBN "
+                        {...register("isbn")}
+                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                      />
+                      {errors?.isbn?.message && (
+                        <p className="format-message error">
+                          {errors.isbn.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Second Row Fields */}
+                  <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap:9">
                     <div className="w-full xl:w-1/2">
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
-                        Author
+                        Publisher <span className="text-red-600">*</span>
+                      </label>
+
+                      <Controller
+                        control={control}
+                        className="bg-white dark:bg-slate-800"
+                        name="publisher"
+                        render={({ field }) => (
+                          <CreatableSelect
+                            {...field}
+                            options={publisherOptions}
+                            isClearable
+                            isDisabled={isPendingPublishers}
+                            isLoading={isPendingPublishers}
+                            styles={selectStyles}
+                            onChange={async (newValue, actionMeta) => {
+                              if (actionMeta.action === "create-option") {
+                                await onPublisherCreate(newValue.label);
+                              } else {
+                                field.onChange(newValue);
+                              }
+                            }}
+                            value={field.value}
+                          />
+                        )}
+                      />
+
+                      {errors?.publisher?.message && (
+                        <p className="format-message error">
+                          {errors.publisher.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="w-full xl:w-1/2">
+                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
+                        Publish Year
+                      </label>
+                      <input
+                        type="text"
+                        name="publish_year"
+                        placeholder="Add Publish Year"
+                        {...register("publish_year")}
+                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                      />
+
+                      {errors?.publish_year?.message && (
+                        <p className="format-message error">
+                          {errors.publish_year.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+
+                  {/* Third Row fields */}
+                  <div className="mt-2 mb-4.5 flex flex-col gap-2 md:flex-row md:gap:9">
+
+                    <CategoryCreatableSelect
+                      control={control}
+                      errors={errors}
+                      isPendingCategories={isPendingCategories}
+                      categoriesData={categoriesData}
+                      handleCreateCategory={handleCreateCategory}
+                      newStyles={selectStyles}
+                    />
+
+                    <div className="w-full xl:w-1/2">
+                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
+                        Author <span className="text-red-600">*</span>
                       </label>
 
                       <Controller
@@ -499,18 +613,43 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                         </p>
                       )}
                     </div>
+
                   </div>
 
-                  {/* Second Row Fields */}
+
+                  {/* Fourth Row Fields */}
+                  <div className="mt-2 mb-4.5 flex flex-col gap-2 md:flex-row md:gap:9">
+
+
+                    <ConditionsCreatableSelect
+                      control={control}
+                      errors={errors}
+                      isPendingConditions={isPendingConditions}
+                      conditionsData={conditionsData}
+                      handleCreateConditions={handleCreateConditions}
+                      newStyles={selectStyles}
+                    />
+
+                    <CoversCreatableSelect
+                      control={control}
+                      errors={errors}
+                      isPendingCovers={isPendingCovers}
+                      coversData={coversData}
+                      handleCreateCovers={handleCreateCovers}
+                      newStyles={selectStyles}
+                    />
+                  </div>
+
+                  {/* Fifth Row */}
                   <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap:9">
                     <div className="w-full xl:w-1/2" autoFocus>
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
-                        Rental Price
+                        Member Price
                       </label>
                       <input
                         type="text"
                         name="member_price"
-                        placeholder="Add Rent Price"
+                        placeholder="Add Member Price"
                         {...register("member_price")}
                         className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                       />
@@ -541,159 +680,8 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                     </div>
                   </div>
 
-                  {/* Third Row fields */}
-                  <div className="mt-2 mb-4.5 flex flex-col gap-2 md:flex-row md:gap:9">
-
-
-                    <ConditionsCreatableSelect
-                      control={control}
-                      errors={errors}
-                      isPendingConditions={isPendingConditions}
-                      conditionsData={conditionsData}
-                      handleCreateConditions={handleCreateConditions}
-                      newStyles={selectStyles}
-                    />
-
-                    <CoversCreatableSelect
-                      control={control}
-                      errors={errors}
-                      isPendingCovers={isPendingCovers}
-                      coversData={coversData}
-                      handleCreateCovers={handleCreateCovers}
-                      newStyles={selectStyles}
-                    />
-                  </div>
-
-                  {/* Fourth Row Fields */}
-                  <div className="mt-2 mb-4.5 flex flex-col gap-2 md:flex-row md:gap:9">
-
-                    <CategoryCreatableSelect
-                      control={control}
-                      errors={errors}
-                      isPendingCategories={isPendingCategories}
-                      categoriesData={categoriesData}
-                      handleCreateCategory={handleCreateCategory}
-                      newStyles={selectStyles}
-                    />
-                    <div className="mb-4.5 w-full xl:w-1/2">
-                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
-                        ISBN <span className="text-meta-1">*</span>
-                      </label>
-                      <input
-                        name="isbn"
-                        type="text"
-                        placeholder="Enter ISBN "
-                        {...register("isbn")}
-                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
-                      />
-                      {errors?.isbn?.message && (
-                        <p className="format-message error">
-                          {errors.isbn.message}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Fifth Row */}
-                  <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap:9">
-                    <div className="w-full xl:w-1/2">
-                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
-                        Publisher
-                      </label>
-
-                      <Controller
-                        control={control}
-                        className="bg-white dark:bg-slate-800"
-                        name="publisher"
-                        render={({ field }) => (
-                          <CreatableSelect
-                            {...field}
-                            options={publisherOptions}
-                            isClearable
-                            isDisabled={isPendingPublishers}
-                            isLoading={isPendingPublishers}
-                            styles={selectStyles}
-                            onChange={async (newValue, actionMeta) => {
-                              // Use actionMeta.action to check if the change is a creation
-                              if (actionMeta.action === "create-option") {
-                                await onPublisherCreate(newValue.label); // Pass the label of the new option
-                              } else {
-                                field.onChange(newValue); // Regular option selected
-                              }
-                            }}
-                            value={field.value}
-                          />
-                        )}
-                      />
-
-                      {errors?.author?.message && (
-                        <p className="format-message error">
-                          {errors.author.message}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="w-full xl:w-1/2">
-                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
-                        Publish Year
-                      </label>
-                      <input
-                        type="text"
-                        name="publish_year"
-                        placeholder="Add Publish Year"
-                        {...register("publish_year")}
-                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
-                      />
-
-                      {errors?.publish_year?.message && (
-                        <p className="format-message error">
-                          {errors.publish_year.message}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
                   {/* Sixth Row */}
                   <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap:9">
-                    <div className="w-full xl:w-1/2" autoFocus>
-                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
-                        Discount Percentage
-                      </label>
-                      <input
-                        type="text"
-                        name="discount_percentage"
-                        placeholder="Add discount_percentage"
-                        {...register("discount_percentage")}
-                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
-                      />
-                      {errors?.discount_percentage?.message && (
-                        <p className="format-message error">
-                          {errors.discount_percentage.message}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="w-full xl:w-1/2">
-                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
-                        Credits
-                      </label>
-                      <input
-                        type="number"
-                        name="credit"
-                        placeholder="Add Credits"
-                        {...register("credit")}
-                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
-                      />
-                      {errors?.credit?.message && (
-                        <p className="format-message error">
-                          {errors.credit.message}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-
-                  <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
                     <div className="w-full xl:w-1/2" autoFocus>
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
                         Discount Percentage
@@ -720,7 +708,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                         type="number"
                         name="credit"
                         placeholder="Add Credits"
-                        {...register("credit", { required: true })}
+                        {...register("credit")}
                         className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
                       />
                       {errors?.credit?.message && (
@@ -730,7 +718,10 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
                       )}
                     </div>
                   </div>
-                  <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
+
+
+
+                  <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap:9">
                     <div className="w-full xl:w-1/2" autoFocus>
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
                         Edition
@@ -821,7 +812,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
 
                     <div className="w-full xl:w-1/2">
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
-                        Branch
+                        Branch <span className="text-red-600">*</span>
                       </label>
                       <div className="relative z-20 bg-transparent dark:bg-form-input">
                         <select

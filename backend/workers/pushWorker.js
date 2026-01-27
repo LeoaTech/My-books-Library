@@ -116,6 +116,15 @@ const worker = new Worker(
           });
           break;
 
+        case "booking-due-reminder-push":
+          content = await getNotificationContent({
+            entityId: variables?.entityId || data?.entityId,
+            channel: "push",
+            event: "booking-due-reminder-push",
+            variables: { ...variables, book_title: data?.book_title, due_date: data?.due_date },
+          });
+          break;
+
         default:
           throw new Error(`Unknown job name: ${name}`);
       }

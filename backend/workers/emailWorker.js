@@ -108,6 +108,35 @@ const worker = new Worker(
             variables: { ...variables, book_title: data?.book_title },
           });
           break;
+        case "booking-due-reminder-email":
+          const bookItems = data?.books?.map(b => `- ${b.title} (due Date: ${b.due_date})`).join('\n') || '';
+
+          content = await getNotificationContent({
+            entityId: variables?.entityId || data?.entityId,
+            channel: "email",
+            event: "booking-due-reminder-email",
+            variables: { 
+              ...variables, 
+              book_title: data?.book_title, 
+              due_date: data?.due_date,
+              books: data?.books 
+            },
+          });
+          break;
+        case "fine-payment-reminder-email":
+            const booksList = data?.books?.map(b => `- ${b.title} (Fine: ${b.fine})`).join('\n') || '';
+            
+            content = await getNotificationContent({
+              entityId: variables?.entityId || data?.entityId,
+              channel: "email",
+              event: "fine-payment-reminder-email",
+              variables: { 
+                ...variables,
+                books_list: booksList,
+                total_fine: data?.total_fine
+              },
+            });
+            break;
         default:
           throw new Error(`Unknown job name: ${name}`);
       }

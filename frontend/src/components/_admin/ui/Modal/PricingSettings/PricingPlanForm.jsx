@@ -6,9 +6,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import LoadingSpinner from '../../../Loader/LoadingSpinner.jsx';
 import { usePricingApi } from '../../../../../hooks/settings/usePricingApi.js';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useFetchUserPaymentMethod } from '../../../../../hooks/users/useFetchPaymentMethodDetails.jsx';
 
 
-const DualPricingPlanForm = ({ setOpenModal, plan }) => {
+const DualPricingPlanForm = ({ entityId, setOpenModal, plan }) => {
 
   const [newFeature, setNewFeature] = useState('');
   const queryClient = useQueryClient();
@@ -32,6 +33,10 @@ const DualPricingPlanForm = ({ setOpenModal, plan }) => {
   });
 
   const { createPlan, updatePlan, isLoading, deletePlan } = usePricingApi();
+
+  const { data: fetchAccountStatus, isLoading: isLoadingStripeAccountStatus, refetch } = useFetchUserPaymentMethod(entityId);
+
+
 
   // Mutation to Create New Plan
   const { mutateAsync: createPlanMutation } = useMutation({
@@ -106,6 +111,7 @@ const DualPricingPlanForm = ({ setOpenModal, plan }) => {
       features,
       monthly_duration: 30,
       yearly_duration: 365,
+      stripe_account_id: fetchAccountStatus?.account_id
     };
     console.log(apiData, "Create dual plan");
 
@@ -131,12 +137,9 @@ const DualPricingPlanForm = ({ setOpenModal, plan }) => {
           monthly_credits_allocated: data.monthly_credits_allocated,
           monthly_duration: 30,
           monthly_old_price_id: plan.plan_details.monthly.price_id,
-          monthly_old_payment_link_id: plan.plan_details.monthly.payment_link_id,
         } : {
           price_id: plan.plan_details.monthly.price_id,
           price_value: plan.plan_details.monthly.price_value,
-          payment_link: plan.plan_details.monthly.payment_link,
-          payment_link_id: plan.plan_details.monthly.payment_link_id,
           duration_days: plan.plan_details.monthly.duration_days,
           credits_allocated: plan.plan_details.monthly.credits_allocated
         },
@@ -147,12 +150,9 @@ const DualPricingPlanForm = ({ setOpenModal, plan }) => {
           yearly_duration: 365,
           isChanged: true,
           yearly_old_price_id: plan?.plan_details?.yearly?.price_id,
-          yearly_old_payment_link_id: plan.plan_details.yearly?.payment_link_id,
         } : {
           price_id: plan.plan_details.yearly.price_id,
           price_value: plan.plan_details.yearly.price_value,
-          payment_link: plan.plan_details.yearly.payment_link,
-          payment_link_id: plan.plan_details.yearly.payment_link_id,
           duration_days: plan.plan_details.yearly.duration_days,
           credits_allocated: plan.plan_details.yearly.credits_allocated
         },
@@ -329,39 +329,27 @@ const DualPricingPlanForm = ({ setOpenModal, plan }) => {
                   </div>
                 </div>
 
-                <button type="submit" disabled={isLoading || !isDirty}
+
+                <button type="submit" disabled={!entityId || isLoading || !isDirty}
                   className="w-full mt-4  bg-[#758aae] text-white active:bg-[#80CAEE] 
             font-medium rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 px-2 py-2 md:px-3 "
                 >
                   {isLoading ? <LoadingSpinner /> : plan ? "Update Plan" : 'Create Plan'}
                 </button>
 
-
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-  );
-}
-
-export default DualPricingPlanForm
-
-{/* {plan && (
-                  <>
-                    <p className="mt-8"> Delete Plan:</p>
+                {plan && (
+                  <div className="mt-8 border-t border-gray-200 dark:border-gray-700 pt-6">
+                    <p className="mb-3 text-red-500 font-medium text-sm">Danger Zone</p>
                     <button
                       type="button"
                       onClick={() => handleDeletePlan(plan.plan_id)}
-                      className="w-full mt-20 flex justify-center items-center bg-[#ab1414] text-white active:bg-[#da1e2d] 
+                      className="w-full flex justify-center items-center bg-[#ab1414] text-white active:bg-[#da1e2d] 
             font-medium rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 px-2 py-2 md:px-3 "
 
                     >
                       <svg
-                        className="fill-current"
-                        width="22"
+                        className="fill-current mr-2"
+                        width="20"
                         height="20"
                         viewBox="0 0 18 18"
                         fill="none"
@@ -386,5 +374,18 @@ export default DualPricingPlanForm
                       </svg>
                       {isLoading ? <LoadingSpinner /> : "Delete Plan"}
                     </button>
-                  </>
-                )} */}
+                  </div>
+                )}
+
+
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  );
+}
+
+export default DualPricingPlanForm

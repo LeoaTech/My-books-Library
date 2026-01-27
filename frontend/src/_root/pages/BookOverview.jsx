@@ -1,14 +1,21 @@
-import React, { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import Loader from "../../components/_user/Loader/Loader";
 import { FaStar } from "react-icons/fa";
 import RelatedBookCard from "../../components/_user/Book/RelatedBookCard";
 import BookDetailsTable from "../../components/_user/Book/BookDetailsTable";
 import ReviewCard from "../../components/_user/Reviews/ReviewCard";
+import { useAuthContext } from "../../hooks/useAuthContext";
+
+
+const AddToWishListButton = lazy(() => import("../../components/_user/Wishlist/WishlistButton"));
 
 const BookOverview = () => {
   const [showLoader, setShowLoader] = useState(true);
   const [detailsActive, setDetailsActive] = useState(true);
   const [reviewsActive, setReviewsActive] = useState(false);
+  const { auth } = useAuthContext();
+
+  console.log(auth);
 
   const handleDetailsActive = () => {
     setDetailsActive(true);
@@ -38,6 +45,7 @@ const BookOverview = () => {
     price: 70.0,
     description:
       "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit.",
+    quantity: 10,
     reviews: [
       {
         img: "https://componentland.com/images/Ju6-1negUEjTnBKw_ZP4r.png",
@@ -87,6 +95,7 @@ const BookOverview = () => {
   }, []);
 
   if (showLoader) return <Loader />;
+  const isOutOfStock = book.quantity === 1 || book.quantity === 0;
 
   return (
     <section className="mt-4 overflow-hidden">
@@ -102,26 +111,10 @@ const BookOverview = () => {
               <h2 className="relative text-md font-semibold tracking-widest text-purple-900 title-font">
                 {book.author}
                 <div className="absolute right-0 sm:bottom-4 sm:relative bottom-24">
-                  <button
-                    type="button"
-                    className="absolute right-0 w-12 h-12 text-white rounded-full top-1"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={2}
-                      stroke="currentColor"
-                      className={`w-3/4 p-2 bg-black rounded-full bg-opacity-60 h-3/4`}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d={`M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 
-                      2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z`}
-                      />
-                    </svg>
-                  </button>
+                  {auth?.id && <Suspense fallback={<Loader />}>
+                    <AddToWishListButton bookId={book.id} stock_quantity={book.quantity} />
+                  </Suspense>}
+
                 </div>
               </h2>
               <h1 className="mb-1 text-3xl font-medium text-black title-font">
@@ -165,11 +158,13 @@ const BookOverview = () => {
                   {book.price}
                 </span>
                 <div className="text-white flex ml-auto gap-4 font-extrabold">
-                  <button className="w-20 bg-purple-900 rounded p-2">
-                    Borrow
+                  <button className={`${isOutOfStock ? "w-2/3" : "w-20"} ${isOutOfStock ? "bg-gray-400" : "bg-purple-900"} rounded p-2`}>
+                    {isOutOfStock ? "Out of Stock" : "Borrow"}
                   </button>
-                  <button className="w-20 bg-purple-900 rounded p-2">
-                    Buy
+                  <button
+                    disabled={isOutOfStock}
+                    className={`${isOutOfStock ? "w-2/3" : "w-20"} ${isOutOfStock ? "bg-gray-400" : "bg-purple-900"} rounded p-2`}>
+                    {isOutOfStock ? "Out of Stock" : "Buy"}
                   </button>
                 </div>
               </div>
@@ -181,17 +176,15 @@ const BookOverview = () => {
                 <div className="border-b">
                   <a
                     onClick={handleDetailsActive}
-                    className={`text-black cursor-pointer font-extrabold ${
-                      detailsActive ? "border-b-4 border-red-500" : ""
-                    }`}
+                    className={`text-black cursor-pointer font-extrabold ${detailsActive ? "border-b-4 border-red-500" : ""
+                      }`}
                   >
                     More Details
                   </a>
                   <a
                     onClick={handleReviewsActive}
-                    className={`text-black cursor-pointer font-extrabold mx-8 ${
-                      reviewsActive ? "border-b-4 border-red-500" : ""
-                    }`}
+                    className={`text-black cursor-pointer font-extrabold mx-8 ${reviewsActive ? "border-b-4 border-red-500" : ""
+                      }`}
                   >
                     Recent Reviews
                   </a>

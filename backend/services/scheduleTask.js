@@ -1,18 +1,17 @@
 const corn = require("node-cron");
-const { checkOverdueStatusAndFine } = require("./automateProcess.js");
-
-
+const { checkOverdueStatusAndFine, checkUpcomingDueDates, checkFineReminders } = require("./automateProcess.js");
 // Run at midnight
 corn.schedule("0 0 * * *", async () => {
-    console.log('Running daily check for overdue books and add fine for late returns...');
+    console.log('Running daily check for upcoming due date and overdue books to add fine for late returns...');
     try {
         await checkOverdueStatusAndFine();
-        console.log('Overdue process completed successfully.');
+        await checkUpcomingDueDates();
+        await checkFineReminders();
+        console.log('Booking due date and overdue process completed successfully.');
     } catch (error) {
-        console.error('Error during overdue process:', error);
+        console.error('Error during booking process:', error);
     }
 }, {
-    timezone: "Asia/Karachi", //  local timezone
+    timezone: "Asia/Karachi", 
 });
-
 

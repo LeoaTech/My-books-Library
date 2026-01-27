@@ -147,7 +147,7 @@ const RegisterUser = asyncHandler(async (req, res) => {
     // console.log(subdomain, "subdomain Created");
 
     //validate the subdomain for each entity_id is unique
-    const uniqueSubdomain = await checkSubdomain(client, subdomain);
+    const uniqueSubdomain = await checkSubdomain( subdomain);
 
     // Step 1: Create an Entity
     const entityData = {

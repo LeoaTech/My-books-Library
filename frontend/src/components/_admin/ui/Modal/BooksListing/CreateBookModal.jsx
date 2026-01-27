@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, Controller } from "react-hook-form";
 import { useSaveBook } from "../../../../../hooks/books/useSaveBook";
-import { useMutation,  useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useFetchAuthors } from "../../../../../hooks/books/useFetchAuthors";
 import { useAuthor } from "../../../../../hooks/books/useSaveAuthor";
 import {
@@ -35,6 +35,8 @@ import { useBookSearch } from '../../../../../api/useBookSearch';
 import LoadingSpinner from "../../../Loader/LoadingSpinner";
 import { useBookSearchByIsbn } from "../../../../../api/useBookSearchByIsbn";
 
+let bookSaveToastId;
+
 const CreateBookModal = ({ setShowModal }) => {
   const { auth } = useAuthContext();
   const queryClient = useQueryClient();
@@ -63,9 +65,9 @@ const CreateBookModal = ({ setShowModal }) => {
       cover: null,
       condition: "",
       isbn: "",
-      isAvailable: false,
-      vendor_id: null,
-      branch_id: null,
+      isAvailable: true,
+      vendor_id: "",
+      branch_id: "",
       cover_img_url: [],
       discount_percentage: "",
       summary: "",
@@ -193,7 +195,6 @@ const CreateBookModal = ({ setShowModal }) => {
           description: "",
         };
         const newAuthor = await addAuthorMutation(authorForm);
-        // console.log(newAuthor, "New Author");
 
         toast.update(toastId, {
           render: 'Author created successfully!',
@@ -220,12 +221,10 @@ const CreateBookModal = ({ setShowModal }) => {
   /* Create New Category   */
   const handleCreateCategory = useCallback(
     async (inputValue) => {
-      // console.log(inputValue, "Value");
       const toastId = toast.loading('Creating new category...');
 
       try {
         const newCategory = await addCategory(inputValue);
-        // console.log(newCategory, "API response");
         toast.update(toastId, {
           render: 'Category created successfully!',
           type: 'success',
@@ -251,11 +250,9 @@ const CreateBookModal = ({ setShowModal }) => {
 
   const handleCreateCovers = useCallback(
     async (inputValue) => {
-      // console.log(inputValue, "cover value");
       const toastId = toast.loading('Creating new covers...');
       try {
         const newCovers = await addCover(inputValue);
-        // console.log(newCovers, "API response");
         toast.update(toastId, {
           render: 'Cover type created successfully!',
           type: 'success',
@@ -280,12 +277,10 @@ const CreateBookModal = ({ setShowModal }) => {
   /* Create New Condition type for book   */
   const handleCreateConditions = useCallback(
     async (inputValue) => {
-      // console.log(inputValue, "condition value");
       const toastId = toast.loading('Creating new condition...');
 
       try {
         const newCondition = await addConditionType(inputValue);
-        // console.log(newCondition, "API response");
         toast.update(toastId, {
           render: 'Condition type created successfully!',
           type: 'success',
@@ -336,15 +331,24 @@ const CreateBookModal = ({ setShowModal }) => {
     mutationFn: addBook,
     onSuccess: (data) => {
       reset();
-      // console.log(data);
-      toast.success(message);
+      toast.update(bookSaveToastId, {
+        render: data.message || "Book added successfully",
+        type: 'success',
+        isLoading: false,
+        autoClose: 2000,
+      });
       setShowModal(false);
     },
     onSettled: () => {
-      queryClient.invalidateQueries(["books"]); // invalidate books query to refetch
+      queryClient.invalidateQueries(["books"]);
     },
-    onError: () => {
-      toast.error(message || "Failed to add book")
+    onError: (error) => {
+      toast.update(bookSaveToastId, {
+        render: `Error: ${error.message}` || "Failed to add book",
+        type: 'error',
+        isLoading: false,
+        autoClose: 1000,
+      });
     }
   });
 
@@ -354,8 +358,6 @@ const CreateBookModal = ({ setShowModal }) => {
   const selectedCategory = watch("category");
   const selectedCover = watch("cover");
   const selectedPublisher = watch("publisher");
-
-  // console.log(errors, "Is Book Added Form Valid");
 
 
   const findOrCreateAndSet = useCallback(
@@ -398,8 +400,6 @@ const CreateBookModal = ({ setShowModal }) => {
   });
 
 
-  console.log(searchIsbnData, "ISBN Book Search Data");
-
   const handleSearch = () => {
     setBookSearchResults([]);
     setSelectedBook(null);
@@ -418,9 +418,7 @@ const CreateBookModal = ({ setShowModal }) => {
     }
   }, [searchData]);
 
-  // console.log(bookSearchResults, "Search by Title Results", selectedBook);
 
-  // Use a separate effect to handle the ISBN search results when they arrive
   useEffect(() => {
     if (searchIsbnData?.items?.length > 0) {
       // Since ISBN search should be exact, we can directly select the first result
@@ -437,7 +435,6 @@ const CreateBookModal = ({ setShowModal }) => {
       const authorName = selectedBook?.authors?.[0];
       const publisherName = selectedBook?.publisher;
       const categoryName = selectedBook?.categories && selectedBook?.categories?.length > 0 ? selectedBook?.categories[0] : null;
-      // console.log(selectedBook, "API Book Data")
 
       const imageUrl = [
         selectedBook.imageLinks?.thumbnail ||
@@ -527,9 +524,19 @@ const CreateBookModal = ({ setShowModal }) => {
     }
   }, [setValue, selectedBook, addAuthorMutation, addCategoryMutation, findOrCreateAndSet, addPublisherMutation]);
 
+  //By Default Main Branch is selected for a New Book
+  useEffect(() => {
+    if (branchesData?.branches?.length > 0) {
+      const mainBranch = branchesData.branches[0];
+      const currentBranchId = watch("branch_id");
+      if (!currentBranchId) {
+        setValue("branch_id", String(mainBranch.id), { shouldValidate: true, shouldDirty: true });
+      }
+    }
+  }, [branchesData, setValue, watch]);
+
   /* Save Book Details Form function */
   const onSubmit = async (data) => {
-    // console.log(data);
     // Create new book
     const booksForm = {
       ...data,
@@ -539,14 +546,14 @@ const CreateBookModal = ({ setShowModal }) => {
       cover_img_url: [...imagesList],
       publisher: selectedPublisher?.value,
       condition: selectedCondition?.value,
-      vendor_id: data?.vendor_id == "" ? null : data?.vendor_id,
+      vendor_id: data?.vendor_id || null,
+      branch_id: data?.branch_id,
       role_id: auth?.roleId,
       added_by: auth?.role_name,
     };
+    bookSaveToastId = toast.loading('Saving new book...');
 
-    // console.log(booksForm, "Form Details of Book");
-
-    await addBookMutation(booksForm); 
+    await addBookMutation(booksForm);
 
 
 
@@ -597,7 +604,6 @@ const CreateBookModal = ({ setShowModal }) => {
       </div>
     );
   }
-  // console.log(errors, "Form Error", isValid);
 
   return (
     <div className="fixed left-0 top-0  inset-0 bg-[#64748B] bg-opacity-75 transition-opacity dark:bg-slate-400 dark:bg-opacity-75 lg:left-[18rem]">
@@ -666,8 +672,7 @@ const CreateBookModal = ({ setShowModal }) => {
                     {/* Search by Title */}
                     <div className="w-full xl:w-1/2">
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
-                        Title
-                        <span className="text-red-600">*</span>
+                        Title <span className="text-red-600">*</span>
                       </label>
                       <div className="flex gap-2 relative">
 
@@ -1026,9 +1031,9 @@ const CreateBookModal = ({ setShowModal }) => {
                         <select
                           className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:text-neutral-100 dark:focus:text-neutral-100 dark:focus:border-[#3C50E0]"
                           name="vendor_id"
-                          {...register("vendor_id", { required: true })}
+                          {...register("vendor_id")}
                         >
-                          <option disabled>Select</option>
+                          <option value="" disabled>Select Vendor</option>
 
                           {vendorsData?.vendors &&
                             vendorsData?.vendors?.map((vendor) => (
@@ -1065,7 +1070,7 @@ const CreateBookModal = ({ setShowModal }) => {
                     </div>}
                     <div className="w-full xl:w-1/2">
                       <label className="mb-2.5 block text-[#0284c7] dark:text-white">
-                        Branch
+                        Branch <span className="text-red-600">*</span>
                       </label>
                       <div className="relative z-20 bg-transparent dark:bg-form-input">
                         <select
@@ -1073,7 +1078,7 @@ const CreateBookModal = ({ setShowModal }) => {
                           name="branch_id"
                           {...register("branch_id", { required: true })}
                         >
-                          <option disabled>Select</option>
+                          <option value="" disabled>Select Branch</option>
                           {branchesData?.branches &&
                             branchesData?.branches?.map((branch) => (
                               <option key={branch?.id} value={branch?.id}>

@@ -12,7 +12,6 @@ const ConditionsCreatableSelect = ({
 }) => {
 
 
-    console.log(conditionsData, "Inside the component");
 
     const conditionOptions = useMemo(() =>
         conditionsData?.conditions?.map(condition => ({

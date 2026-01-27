@@ -7,6 +7,8 @@ const {
   getLibraryUsers,
   CreateUser,
   registerDeviceToken,
+  updateUserProfile,
+  userDetails,
 } = require("../controllers/userController/UserController");
 const { checkAuth } = require("../middleware/authMiddleware");
 const router = express.Router();
@@ -20,6 +22,7 @@ router.post("/update-devicetoken",  registerDeviceToken);
 // Get a particular Library User
 router.get("/", getLibraryUsers);
 
+
 router.post("/create-new", CreateUser);
 // Delete a User Profile
 router.delete("/:user_id", DeleteUser);
@@ -28,5 +31,11 @@ router.get("/user", getUserProfile);
 /* Protect these Route For Admins Only */
 //Update Role of a User
 router.put("/:user_id/role", UpdateRoles);
+
+// Get a User Profile
+router.get("/:user_id", userDetails);
+
+// Update User Profile
+router.put("/profile", updateUserProfile);
 
 module.exports = router;

@@ -33,6 +33,7 @@ const pricingRoutes = require("./routes/SettingsRoutes/Pricing/PricingRoutes.js"
 // Client Checkout session routes
 const stripeCheckout = require("./routes/PaymentRoutes/StripeCheckout.js");
 const cancelSubscription = require("./routes/PaymentRoutes/CancelSubscriptionRoute.js"); //active Free Plan
+const resumeSubscription = require("./routes/PaymentRoutes/ResumeSubscriptionRoute.js");
 const changeSubscription = require("./routes/PaymentRoutes/ChangeSubscriptionRoute.js"); //active School Plan
 const currentPlan = require("./routes/PaymentRoutes/CurrentActivePlan.js");
 const dashboardRoute = require("./routes/dashboardRoutes/DashboardRoutes.js");
@@ -46,6 +47,7 @@ const webhooks = require("./webhooks/stripe/index.js"); //Stripe webhook
 
 
 const notificationRoute = require("./routes/NotificationRoutes/NotificationRoutes.js");
+const libraryRoutes = require("./routes/LibraryRoutes");
 
 // Cron Job
 require("./services/scheduleTask.js"); //Add Due Date Fine
@@ -99,7 +101,7 @@ app.use(passport.session());
 
 app.get("/", (req, res) => {
   req.session.views = (req.session.views || 0) + 1;
-  console.log(`Views: ${req.session.views}`);
+  // console.log(`Views: ${req.session.views}`);
 
   res.json({ status: "Backend is running", clientUrl: process.env.CLIENT_URL });
 });
@@ -132,6 +134,7 @@ app.use("/api/pricing", pricingRoutes);
 app.use("/api/dashboard", dashboardRoute);
 app.use("/api/create-checkout-session", stripeCheckout);
 app.use("/api/cancel-subscription", cancelSubscription);
+app.use("/api/resume-subscription", resumeSubscription);
 app.use("/api/change-subscription", changeSubscription);
 app.use("/api/current-plan", currentPlan);
 
@@ -139,6 +142,8 @@ app.use("/api/current-plan", currentPlan);
 app.use("/api/library/:entityId/stripe/status", stripeStatus);
 app.use("/api/library/:entityId/stripe/onboarding-complete", stripeOnboarding);
 app.use("/api/library/:entityId/stripe/connect", stripeConnect);
+
+app.use("/api/library", libraryRoutes);
 
 // Stripe Oauth Flow for Connecting Existing Accounts
 app.use(stripeRouter);
@@ -156,7 +161,7 @@ app.use(notfound);
 app.use(errorHanlder);
 
 app.listen(port, () => {
-  console.log("Server is listening on port", port);
+  // console.log("Server is listening on port", port);
 });
 
 module.exports = app;

@@ -5,9 +5,7 @@ const RoleService = require("../services/role.services");
 /* Authorized Role Id of User */
 
 const checkRole = async (req, res, next) => {
-  // console.log(req.user, "Check User's info");
 
-  // TODO: Get also user Library's ID
   const userRoleId = req.user?.roleId || req?.user?.role_id;
   const entityId = req.user?.entityId || req?.user?.entity_id;
 
@@ -25,7 +23,7 @@ const checkRole = async (req, res, next) => {
         .status(403)
         .json({ message: "Forbidden - Not Permitted to Access" });
     }
-    console.log("Role is Verified");
+    // console.log("Role is Verified");
 
     next();
   } catch (error) {
@@ -38,9 +36,7 @@ const checkRole = async (req, res, next) => {
 
 /* Verifying Role Permissions */
 const checkPermissions = (requiredPermissions) => {
-  return async (req, res, next) => {
-    console.log(req.user, "Check User Role");
-    
+  return async (req, res, next) => {    
     const userRoleId = req.user?.roleId || req?.user?.role_id;
     if (!userRoleId) {
       return res.status(403).json({ error: "Role not found",message:"Role ID not Found"  });
@@ -49,17 +45,13 @@ const checkPermissions = (requiredPermissions) => {
     try {
       // Get permissions for the current role id
       const userPermissions = await RoleService?.getRolePermissions(userRoleId);
-      // console.log(userPermissions, "User permissions Available");
-      // console.log(requiredPermissions, "Required permissions");
-
+    
       if (!userPermissions || !userPermissions?.includes(requiredPermissions)) {
-        // console.log("Not enough permissions");
         return res
           .status(403)
           .json({ message: "Forbidden - Insufficient permissions" });
       }
 
-      // console.log("verified permissions");
       next();
     } catch (error) {
       console.error("Error checking permissions:", error);

@@ -197,7 +197,7 @@ passport.use(
           // Generate a subdomain
           const subdomain = generateSubdomain(profile.displayName);
 
-          const uniqueSubdomain = await checkSubdomain(client, subdomain);
+          const uniqueSubdomain = await checkSubdomain(subdomain);
 
 
           const entityData = {
