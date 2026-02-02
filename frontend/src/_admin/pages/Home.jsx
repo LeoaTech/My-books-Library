@@ -34,8 +34,8 @@ const DashboardPage = () => {
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
         <CardBooks books={data?.popularBooks} />
         <CardBookings booking={data?.bookingSummary} />
-        <CardOverdue />
-        <CardUsers />
+        <CardOverdue overdue={data?.totalOverdueBooks} />
+        <CardUsers users={data?.totalUsers} />
       </div>
 
       <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2 2xl:gap-7.5 mb-8">
