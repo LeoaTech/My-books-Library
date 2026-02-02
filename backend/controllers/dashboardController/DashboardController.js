@@ -14,12 +14,17 @@ const getDashboardMetrics = async (req, res) => {
     const booksByAuthorsSummary = await booksAuthors(db, entityId);
     const BooksCategorySummary = await booksCategories(db, entityId);
 
+    const totalUserCount = await totalUsers(db, entityId);
+    const overdueBooksCount = await totalOverdueBooks(db, entityId);
+
     res.status(200).json({
       popularBooks: popularBooks.books,
       bookingSummary: bookingSummary?.bookings,
       recentlyAddedBooks: recentlyAddedBooks.recentBooks,
       booksByAuthorsSummary: booksByAuthorsSummary?.booksAuthors,
       booksCategorySummary: BooksCategorySummary?.bookCategories,
+      totalUsers: totalUserCount?.users?.count || 0,
+      totalOverdueBooks: overdueBooksCount?.overdueBooks?.count || 0,
     });
   } catch (error) {
     res.status(500).json({ message: "Error getting dashboard metrics" });
@@ -71,6 +76,19 @@ async function totalUsers(db, entityId) {
     return { users: getUsersCount?.rows[0] };
   } catch (error) {
     return { error: error, users: [] };
+  }
+}
+
+async function totalOverdueBooks(db, entityId) {
+  try {
+    const getOverdueBooksCount = await db.query(
+      `SELECT COUNT(*) FROM bookings
+          WHERE entity_id = $1 AND return_date IS NULL AND return_due < CURRENT_TIMESTAMP`,
+      [entityId]
+    );
+    return { overdueBooks: getOverdueBooksCount?.rows[0] };
+  } catch (error) {
+    return { error: error, overdueBooks: [] };
   }
 }
 
@@ -206,4 +224,4 @@ LIMIT 20`,
     return { error, booksAuthors: [] };
   }
 }
-module.exports ={totalBooks,totalUsers, getDashboardMetrics};
+module.exports ={totalBooks,totalUsers, totalOverdueBooks, getDashboardMetrics};
