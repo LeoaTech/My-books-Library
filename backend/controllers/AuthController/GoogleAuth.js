@@ -39,7 +39,7 @@ passport.use(
       const action = state.action || "login"; // Default to login if no action
 
       try {
-        // console.log("State ", state); //profile, "USER PROFILE",
+        console.log("user Profile ", profile); //profile, "USER PROFILE",
         await client.query("BEGIN");
 
         if (!profile.email || !profile.displayName) {

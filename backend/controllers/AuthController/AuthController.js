@@ -275,7 +275,7 @@ const LoginUser = asyncHandler(async (req, res) => {
         e.name AS entity_name, e.subdomain,
         b.name AS branch_name,
         r.name AS role_name,
-        u.name, u.password,u.plan,u.email
+        u.name,u.country, u.password,u.plan,u.email
       FROM user_entity_roles uer
       JOIN entities e ON uer.entity_id = e.id
       JOIN branches b ON uer.branch_id = b.id
@@ -367,6 +367,7 @@ const LoginUser = asyncHandler(async (req, res) => {
           authSource: "email",
           plan: ownerAssociation?.plan,
           subdomain: ownerAssociation?.subdomain,
+          country:ownerAssociation?.country ||""
         },
         message: "Login Successfully",
         redirect: `${process.env.CLIENT_URL}/${ownerAssociation?.subdomain}`,
@@ -523,7 +524,7 @@ const SigninUser = asyncHandler(async (req, res) => {
         e.name AS entity_name, e.subdomain,
         b.name AS branch_name,
         r.name AS role_name,
-        u.email,u.password,u.plan, u.name
+        u.email,u.password,u.plan,u.country, u.name
       FROM user_entity_roles uer
       JOIN entities e ON uer.entity_id = e.id
       JOIN branches b ON uer.branch_id = b.id
@@ -596,6 +597,7 @@ const SigninUser = asyncHandler(async (req, res) => {
             entityName: user.entity_name,
             authSource: "email",
             subdomain: user?.subdomain,
+            country: user?.country,
           },
           message: "Login Successfully",
           redirect: `${process.env.CLIENT_URL}/${user.subdomain}`,
@@ -672,7 +674,7 @@ const RefreshToken = async (req, res) => {
         e.name AS entity_name, e.subdomain,
         b.name AS branch_name,
         r.name AS role_name,
-        u.email, u.name,u.plan
+        u.email,u.country, u.name,u.plan
       FROM user_entity_roles uer
       JOIN entities e ON uer.entity_id = e.id
       JOIN branches b ON uer.branch_id = b.id
@@ -723,6 +725,7 @@ const RefreshToken = async (req, res) => {
             entityId: user.entity_id,
             entityName: user.entity_name,
             subdomain: user.subdomain,
+            country:user?.country ||"",
           },
           message: "Token Refreshed Successfully",
         });
