@@ -21,6 +21,9 @@ router.get("/", async (req, res) => {
     let connected = false;
     const paymentMethods = entity?.user_details?.stripe;
 
+    let currency = null;
+    let country = null;
+
     if (paymentMethods?.stripe_account_id) {
       const account = await stripe.accounts.retrieve(
         paymentMethods?.stripe_account_id
@@ -31,12 +34,17 @@ router.get("/", async (req, res) => {
         account?.charges_enabled ||
         paymentMethods?.onboarding_complete ||
         false;
+      
+      currency = account?.default_currency;
+      country = account?.country;
     }
 
     return res.status(200).json({
       connected,
       account_id: paymentMethods?.stripe_account_id,
       status,
+      currency,
+      country,
     });
   } catch (error) {
     console.error("Status check error:", error);
