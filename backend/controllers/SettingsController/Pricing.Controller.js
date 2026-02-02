@@ -8,7 +8,7 @@ const {
 require("dotenv").config();
 
 const stripe = require("stripe")(
-  process.env.STRIPE_SECRET_KEY, // Test Key
+  process.env.STRIPE_SECRET_KEY // Test Key
 );
 
 const LIBRARY_URL = process.env.CLIENT_URL || "http://localhost:5173";
@@ -21,7 +21,7 @@ const createStripePriceId = async (
   credits,
   stripeProductId,
   stripe_account_id,
-  currency = "pkr",
+  currency = "pkr"
 ) => {
   const priceInCents = convertPriceToCents(price);
   const { interval, interval_count } = getStripeInterval(duration);
@@ -46,7 +46,7 @@ const createStripePriceId = async (
     },
     {
       stripeAccount: stripe_account_id, //https://docs.stripe.com/connect/authentication
-    },
+    }
   );
   const stripePriceId = stripePrice.id;
   // console.log(`Stripe ${durationLabel} Price Created: ${stripePriceId}`);
@@ -80,6 +80,8 @@ const FetchPricingPlans = asyncHandler(async (req, res) => {
   }
 });
 
+
+
 /* Created a Dual Pricing Plan */
 const CreateDualPlan = asyncHandler(async (req, res) => {
   const entityId = req?.user?.entityId || req?.user?.entity_id;
@@ -95,7 +97,7 @@ const CreateDualPlan = asyncHandler(async (req, res) => {
   // Get the Subdomain for the Entity ID to generate a redirect after payment Link
   const getSubdomain = await db.query(
     "SELECT subdomain FROM entities WHERE id = $1",
-    [entityId],
+    [entityId]
   );
 
   const subdomain = getSubdomain?.rows[0]?.subdomain;
@@ -129,7 +131,7 @@ const CreateDualPlan = asyncHandler(async (req, res) => {
       },
       {
         stripeAccount: stripe_account_id, //https://docs.stripe.com/connect/authentication
-      },
+      }
     );
     stripeProductId = product.id;
     console.log(`Stripe Product Created: ${stripeProductId}`);
@@ -142,7 +144,7 @@ const CreateDualPlan = asyncHandler(async (req, res) => {
       monthly_credits_allocated,
       stripeProductId,
       stripe_account_id,
-      currency,
+      currency
     );
 
     //Create Yearly Price
@@ -153,7 +155,7 @@ const CreateDualPlan = asyncHandler(async (req, res) => {
       yearly_credits_allocated,
       stripeProductId,
       stripe_account_id,
-      currency,
+      currency
     );
 
     const planDetails = {
@@ -169,7 +171,7 @@ const CreateDualPlan = asyncHandler(async (req, res) => {
     // Now add the Product ,Prices and Plan Name in db
     const createPricinguery = await db.query(
       `INSERT INTO membership_plan (plan_name, plan_details, stripe_product_id,entity_id) VALUES ($1,$2,$3, $4) RETURNING plan_id,plan_name, stripe_product_id, plan_details`,
-      [plan_name, jsonPlanDetails, stripeProductId, entityId],
+      [plan_name, jsonPlanDetails, stripeProductId, entityId]
     );
 
     // console.log(createPricinguery?.rows[0], "Pricing plan Saved");
@@ -208,7 +210,7 @@ const UpdatePlan = asyncHandler(async (req, res) => {
 
     const existingPlanQuery = await db.query(
       "SELECT plan_details, stripe_product_id FROM membership_plan WHERE entity_id=$1 AND plan_id=$2",
-      [entityId, plan_id],
+      [entityId, plan_id]
     );
 
     if (existingPlanQuery.rowCount === 0) {
@@ -237,7 +239,7 @@ const UpdatePlan = asyncHandler(async (req, res) => {
         },
         {
           stripeAccount: stripeAccountId,
-        },
+        }
       );
     }
 
@@ -252,7 +254,7 @@ const UpdatePlan = asyncHandler(async (req, res) => {
           await stripe.prices.update(
             monthlyUpdate.monthly_old_price_id,
             { active: false },
-            { stripeAccount: stripeAccountId },
+            { stripeAccount: stripeAccountId }
           );
         } catch (err) {
           console.warn("Failed to archive old monthly price:", err.message);
@@ -266,7 +268,7 @@ const UpdatePlan = asyncHandler(async (req, res) => {
         30, // monthly duration
         monthlyUpdate.monthly_credits_allocated,
         existingPlanQuery.rows[0].stripe_product_id,
-        stripeAccountId,
+        stripeAccountId
       );
     }
 
@@ -277,7 +279,7 @@ const UpdatePlan = asyncHandler(async (req, res) => {
           await stripe.prices.update(
             yearlyUpdate.yearly_old_price_id,
             { active: false },
-            { stripeAccount: stripeAccountId },
+            { stripeAccount: stripeAccountId }
           );
         } catch (err) {
           console.warn("Failed to archive old yearly price:", err.message);
@@ -290,7 +292,7 @@ const UpdatePlan = asyncHandler(async (req, res) => {
         365, // yearly duration
         yearlyUpdate.yearly_credits_allocated,
         existingPlanQuery.rows[0].stripe_product_id,
-        stripeAccountId,
+        stripeAccountId
       );
     }
 
@@ -306,7 +308,7 @@ const UpdatePlan = asyncHandler(async (req, res) => {
     // Update DB
     const updatePricingQuery = await db.query(
       `UPDATE membership_plan SET plan_name=$1, plan_details=$2 WHERE entity_id=$3 AND plan_id=$4 RETURNING *`,
-      [plan_name, jsonPlanDetails, entityId, plan_id],
+      [plan_name, jsonPlanDetails, entityId, plan_id]
     );
 
     res.status(200).json({
@@ -324,6 +326,7 @@ const UpdatePlan = asyncHandler(async (req, res) => {
 
 /* Delete Stripe product/Pricing plan  */
 const DeletePlan = asyncHandler(async (req, res) => {
+
   const entityId = req?.user?.entityId || req?.user?.entity_id;
 
   if (!entityId) {
@@ -338,7 +341,7 @@ const DeletePlan = asyncHandler(async (req, res) => {
     // Get the Stripe Product ID that needs to delete
     const ProductId = await db.query(
       `SELECT stripe_product_id from membership_plan WHERE plan_id =$1 AND entity_id=$2 `,
-      [plan_id, entityId],
+      [plan_id, entityId]
     );
 
     const stripeProductId = ProductId.rows[0]?.stripe_product_id;
@@ -358,31 +361,27 @@ const DeletePlan = asyncHandler(async (req, res) => {
           stripeError.code === "resource_missing"
         ) {
           if (stripeError.code === "resource_missing") {
-            console.log("Product already deleted from Stripe");
+             console.log("Product already deleted from Stripe");
           } else {
-            console.log("Product has linked resources, archiving instead...");
-            try {
-              await stripe.products.update(stripeProductId, { active: false });
-              console.log(`Stripe Product Archived: ${stripeProductId}`);
-            } catch (archiveError) {
-              console.error(
-                `Failed to archive product: ${archiveError.message}. Please Contact Support`,
-              );
-              throw archiveError;
-            }
+             console.log("Product has linked resources, archiving instead...");
+             try {
+                await stripe.products.update(stripeProductId, { active: false });
+                console.log(`Stripe Product Archived: ${stripeProductId}`);
+             } catch (archiveError) {
+                console.error(`Failed to archive product: ${archiveError.message}. Please Contact Support`);
+                throw archiveError; 
+             }
           }
         } else {
-          console.error(
-            `Unhandled Stripe Error during deletion: ${stripeError}`,
-          );
-          throw stripeError;
+             console.error(`Unhandled Stripe Error during deletion: ${stripeError}`);
+             throw stripeError;
         }
       }
     }
 
     const deletePricingQuery = await db.query(
       `DELETE FROM membership_plan WHERE entity_id=$1 AND plan_id=$2 RETURNING plan_id`,
-      [entityId, plan_id],
+      [entityId, plan_id]
     );
 
     // console.log(deletePricingQuery?.rows[0], "Pricing Plan Deleted");
@@ -399,9 +398,65 @@ const DeletePlan = asyncHandler(async (req, res) => {
   }
 });
 
+/* Update Sorting Order of Plans */
+const UpdateSortingOrder = asyncHandler(async (req, res) => {
+  const entityId = req?.user?.entityId || req?.user?.entity_id;
+
+  if (!entityId) {
+    return res.status(403).json("Invalid Request, No Library ID provided");
+  }
+
+  if (!req.body.sortData || !Array.isArray(req.body.sortData)) {
+    return res.status(400).json({ message: "Invalid sort data" });
+  }
+
+  try {
+    const { sortData } = req.body; 
+
+    // Update each plan's sorting_number in plan_details JSON
+    for (const item of sortData) {
+      const { plan_id, sorting_number } = item;
+
+      // Fetch current plan_details
+      const planQuery = await db.query(
+        "SELECT plan_details FROM membership_plan WHERE plan_id = $1 AND entity_id = $2",
+        [plan_id, entityId]
+      );
+
+      if (planQuery.rowCount === 0) {
+        continue; 
+      }
+
+      const currentDetails = planQuery.rows[0].plan_details;
+      // add sorting number for plan id 
+      const updatedDetails = {
+        ...currentDetails,
+        sorting_number: sorting_number,
+      };
+
+      // Update the sorting order in plan_details in DB
+      await db.query(
+        "UPDATE membership_plan SET plan_details = $1 WHERE plan_id = $2 AND entity_id = $3",
+        [JSON.stringify(updatedDetails), plan_id, entityId]
+      );
+    }
+
+    res.status(200).json({
+      message: "Pricing plan order updated successfully",
+    });
+  } catch (error) {
+    console.log(error, "Error updating pricing plan order");
+    res.status(500).json({
+      error,
+      message: error.message || "Error updating pricing plan order",
+    });
+  }
+});
+
 module.exports = {
   FetchPricingPlans,
   DeletePlan,
   UpdatePlan,
   CreateDualPlan,
+  UpdateSortingOrder,
 };
