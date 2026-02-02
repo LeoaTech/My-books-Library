@@ -131,5 +131,35 @@ export const usePricingApi = () => {
     }
   };
 
-  return { createPlan, error, isLoading, updatePlan, deletePlan };
+  const updatePlanOrder = async (sortData) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`${BASE_URL}/pricing/update-order`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ sortData }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        setIsLoading(false);
+        setError(result?.message || "Failed to update plan order");
+        toast.error(result?.message || "Failed to update plan order");
+        return;
+      }
+
+      setIsLoading(false);
+      setError(null);
+    } catch (err) {
+      setIsLoading(false);
+      setError(err.message);
+      toast.error("Error updating plan order");
+    }
+  };
+
+  return { createPlan, error, isLoading, updatePlan, deletePlan, updatePlanOrder };
 };
