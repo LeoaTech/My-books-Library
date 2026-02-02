@@ -1,8 +1,14 @@
-const CardUsers = () => {
+import { useAuthContext } from "../../../../hooks/useAuthContext";
+
+const CardUsers = ({ users }) => {
+
+  const { auth } = useAuthContext();
+
+  const userType = auth?.plan === "school" ? "Students" : "Users"
   return (
     <div className="rounded-lg border border-[#E2E8F0] bg-white py-6 px-7.5 shadow-default dark:border-[#2E3A47] dark:bg-[#24303F]">
       <div className="flex h-11.5 w-8.5 items-center justify-center rounded-full">
-      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#EFF2F7] dark:bg-[#313D4A]">
+        <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#EFF2F7] dark:bg-[#313D4A]">
           <svg
             className="fill-[#3C50E0] dark:fill-white"
             width="22"
@@ -30,9 +36,9 @@ const CardUsers = () => {
       <div className="mt-2 ml-4 flex items-center justify-between">
         <div>
           <h4 className="text-xl font-bold text-black dark:text-white">
-            0
+            {users}
           </h4>
-          <span className="text-sm font-medium opacity-40">Total Students</span>
+          <span className="text-sm font-medium opacity-40">Total {userType}</span>
         </div>
       </div>
     </div>
