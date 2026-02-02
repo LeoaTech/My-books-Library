@@ -10,7 +10,6 @@ const useRefreshToken = () => {
         withCredentials: true,
       });
 
-
       // console.log(response?.data, "Refresh Token called");
 
       setAuth((prev) => {
@@ -31,13 +30,14 @@ const useRefreshToken = () => {
           subdomain: response?.data?.user?.subdomain,
           authSource: localStorage.getItem("auth-source") || false,
           auth: true,
+          country: response?.data?.user?.country || "",
         };
       });
 
       return response?.data?.accessToken;
     } catch (error) {
       // console.log(error, "Refresh token errors");
-      if ( error.response?.status === 401) {
+      if (error.response?.status === 401) {
         // Refresh token expired or invalid error
         throw new Error("Session expired, please log in again");
       }
