@@ -120,9 +120,9 @@ const Navbar = () => {
             )}
 
             {/* Redirect to subdomain */}
-            {['owner',"admin", "vendor"]?.includes(auth?.role_name) && (
+            {['owner', "admin", "vendor"]?.includes(auth?.role_name) && (
 
-              <Link to={!subdomain ? `/${sub_domain}` : "/dashboard"} className="hover:text-purple-300">
+              <Link to={!subdomain ? `/${sub_domain}` : `/${sub_domain}/dashboard`} className="hover:text-purple-300">
                 {subdomain ? "Dashboard" : auth?.entityName?.toUpperCase()}
               </Link>
 

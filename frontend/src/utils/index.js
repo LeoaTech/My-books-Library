@@ -46,20 +46,20 @@ const MyLibrary = lazy(() => import("../_admin/pages/MyLibrary"));
 const routes = [
   {
     title: "Home",
-    path: "/dashboard/",
+    path: "",
     icon: HomeIcon,
     component: Dashboard,
   },
   {
     title: "Listings",
     image: BookIcon,
-    path: "/dashboard/listings",
+    path: "listings",
     component: Listings,
   },
   // {
   //   title: "Orders",
   //   image: OrderIcon,
-  //   path: "/dashboard/orders",
+  //   path: "orders",
   //   component: Orders,
   // },
   // {
@@ -69,13 +69,13 @@ const routes = [
   //     {
   //       title: "Shippings",
   //       image: ShippingIcon,
-  //       path: "/dashboard/shipping",
+  //       path: "shipping",
   //       component: Shipping,
   //     },
   //     {
   //       title: "Returns",
   //       image: ReturnsIcon,
-  //       path: "/dashboard/returns",
+  //       path: "returns",
   //       component: Returns,
   //     },
   //   ],
@@ -83,12 +83,12 @@ const routes = [
   // {
   //   title: "QC",
   //   image: QCIcon,
-  //   path: "/dashboard/qc",
+  //   path: "qc",
   //   component: QC,
   // },
   {
     title: "Bookings",
-    path: "/dashboard/bookings",
+    path: "bookings",
     icon: MdCalendarMonth,
     component: Bookings,
   },
@@ -99,19 +99,19 @@ const routes = [
       {
         title: "Customer Settings",
         icon: GrSettingsOption,
-        path: "/dashboard/customersettings",
+        path: "customersettings",
         component: CustomerSettings,
       },
       {
         title: "Pricing Plan Settings",
         icon: IoSettingsSharp,
-        path: "/dashboard/pricingsettings",
+        path: "pricingsettings",
         component: PricingSettings,
       },
       {
         title: "Manage Data",
         icon: MdOutlineCheckCircleOutline,
-        path: "/dashboard/managedata",
+        path: "managedata",
         component: ManageSettings,
       },
     ],
@@ -125,12 +125,12 @@ export const roleRoutes = [
     subRoutes: [
       {
         title: "Users",
-        path: "/dashboard/users",
+        path: "users",
         component: Users,
       },
       {
         title: "Roles and Permissions",
-        path: "/dashboard/roles-permissions",
+        path: "roles-permissions",
         component: Permissions,
       },
     ],
@@ -143,17 +143,17 @@ export const accountRoutes = [
     subRoutes: [
       {
         title: "Profile",
-        path: "/dashboard/profile",
+        path: "profile",
         component: Profile,
       },
       {
         title: "Notifications",
-        path: "/dashboard/notifications",
+        path: "notifications",
         component: NotificationsPage,
       },
       {
         title: "My Library",
-        path: "/dashboard/mylibrary",
+        path: "mylibrary",
         component: MyLibrary,
       },
     ],
