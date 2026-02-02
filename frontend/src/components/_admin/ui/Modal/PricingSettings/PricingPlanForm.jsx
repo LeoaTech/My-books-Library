@@ -7,6 +7,8 @@ import LoadingSpinner from '../../../Loader/LoadingSpinner.jsx';
 import { usePricingApi } from '../../../../../hooks/settings/usePricingApi.js';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useFetchUserPaymentMethod } from '../../../../../hooks/users/useFetchPaymentMethodDetails.jsx';
+import { useAuthContext } from '../../../../../hooks/useAuthContext.js';
+import { getCurrencyCode } from '../../../../../utils/currencyUtils.js';
 
 
 const DualPricingPlanForm = ({ entityId, setOpenModal, plan }) => {
@@ -17,27 +19,32 @@ const DualPricingPlanForm = ({ entityId, setOpenModal, plan }) => {
 
   console.log(plan, "Edit");
 
-  const schema = z.object({
+  const { createPlan, updatePlan, isLoading, deletePlan } = usePricingApi();
+
+  const { data: fetchAccountStatus, isLoading: isLoadingStripeAccountStatus, refetch } = useFetchUserPaymentMethod(entityId);
+  const { auth } = useAuthContext();
+
+  console.log(fetchAccountStatus, "fetchAccountStatus");
+
+  // Library currency: Library Country -> Stripe Default Country -> PKR
+  const currencyCode = getCurrencyCode(auth?.country) || fetchAccountStatus?.currency || 'pkr';
+  const currencyLabel = currencyCode.toUpperCase();
+
+
+  const schema = useMemo(() => z.object({
     plan_name: z.string().min(1, { message: 'Plan Name is required' }),
     monthly_price: z.coerce.number()
       .min(PKR_MINIMUM_CHARGE, {
-        message: `Monthly Price must be at least ₨${PKR_MINIMUM_CHARGE}.00.`
+        message: `Monthly Price must be at least ${PKR_MINIMUM_CHARGE} ${currencyLabel}.`
       }),
     yearly_price: z.coerce.number()
       .min(PKR_MINIMUM_CHARGE, {
-        message: `Yearly Price must be at least ₨${PKR_MINIMUM_CHARGE}.00.`
+        message: `Yearly Price must be at least ${PKR_MINIMUM_CHARGE} ${currencyLabel}.`
       }),
     monthly_credits_allocated: z.coerce.number().min(0, { message: 'Monthly Credits are required' }),
     yearly_credits_allocated: z.coerce.number().min(0, { message: 'Yearly Credits are required' }),
     features: z.array(z.string().min(1, { message: 'Feature cannot be empty' })).min(1, { message: 'At least one feature is required' }),
-  });
-
-  const { createPlan, updatePlan, isLoading, deletePlan } = usePricingApi();
-
-  const { data: fetchAccountStatus, isLoading: isLoadingStripeAccountStatus, refetch } = useFetchUserPaymentMethod(entityId);
-
-
-
+  }), [currencyLabel]);
   // Mutation to Create New Plan
   const { mutateAsync: createPlanMutation } = useMutation({
     mutationFn: createPlan,
@@ -111,7 +118,8 @@ const DualPricingPlanForm = ({ entityId, setOpenModal, plan }) => {
       features,
       monthly_duration: 30,
       yearly_duration: 365,
-      stripe_account_id: fetchAccountStatus?.account_id
+      stripe_account_id: fetchAccountStatus?.account_id,
+      currency: currencyCode
     };
     console.log(apiData, "Create dual plan");
 
@@ -218,7 +226,7 @@ const DualPricingPlanForm = ({ entityId, setOpenModal, plan }) => {
                 <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
                   <div className="w-full">
                     <label htmlFor="monthly_price" className="mb-2.5 block text-[#0284c7] dark:text-white">
-                      Monthly Price (in PKR) <span className="text-red-600">*</span>
+                      Monthly Price (in {currencyLabel}) <span className="text-red-600">*</span>
                     </label>
                     <input id="monthly_price" type="number" {...register('monthly_price', { valueAsNumber: true })}
                       className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
@@ -227,7 +235,7 @@ const DualPricingPlanForm = ({ entityId, setOpenModal, plan }) => {
                   </div>
                   <div className="w-full">
                     <label htmlFor="yearly_price" className="mb-2.5 block text-[#0284c7] dark:text-white">
-                      Yearly Price (in PKR) <span className="text-red-600">*</span>
+                      Yearly Price (in {currencyLabel}) <span className="text-red-600">*</span>
                     </label>
                     <input id="yearly_price" type="number" {...register('yearly_price', { valueAsNumber: true })}
                       className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
