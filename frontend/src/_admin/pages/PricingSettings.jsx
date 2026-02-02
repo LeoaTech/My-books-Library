@@ -1,10 +1,13 @@
-import { lazy, Suspense, useState } from 'react'
+import { lazy, Suspense, useState, useEffect } from 'react'
 import { HiPlus } from 'react-icons/hi'
 import Loader from '../../components/_admin/Loader/Loader'
 import { useFetchPricingPlans } from '../../hooks/settings/useFetchPricing';
 import { useAuthContext } from '../../hooks/useAuthContext';
 import { useFetchUserPaymentMethod } from '../../hooks/users/useFetchPaymentMethodDetails';
+import { usePricingApi } from '../../hooks/settings/usePricingApi';
 import { Link } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
+import { arrayMove } from '@dnd-kit/sortable';
 const PricingPlanCard = lazy(() => import('../../components/_admin/Settings/PricingPlans/PricingPlanCard'));
 const PricingPlanForm = lazy(() => import('../../components/_admin/ui/Modal/PricingSettings/PricingPlanForm'));
 
@@ -15,14 +18,47 @@ const PricingSettings = () => {
     const [values, setValues] = useState(null);
     const { auth } = useAuthContext();
     const entityId = auth?.entityId;
+    const [localPlans, setLocalPlans] = useState([]);
+    const { updatePlanOrder } = usePricingApi();
+    const queryClient = useQueryClient();
 
     const { data: stripeStatus, isLoading: isStripeLoading } = useFetchUserPaymentMethod(entityId);
 
+    useEffect(() => {
+        if (pricingPlans?.plans) {
+            setLocalPlans(pricingPlans.plans);
+        }
+    }, [pricingPlans]);
+
     // Edit a Plan Details
     const editPlanDetails = (planId) => {
-        const activePlan = pricingPlans.plans?.find((plan) => plan?.plan_id == planId);
+        const activePlan = localPlans?.find((plan) => plan?.plan_id == planId);
         setValues(activePlan);
         setEditPlan(!editPlan);
+    };
+
+    // Handle drag and drop of pricing cards
+    const handleDragEnd = async (event) => {
+        const { active, over } = event;
+
+        if (!over || active.id === over.id) return;
+
+        const oldIndex = localPlans.findIndex((plan) => plan.plan_id === active.id);
+        const newIndex = localPlans.findIndex((plan) => plan.plan_id === over.id);
+
+        const items = arrayMove(localPlans, oldIndex, newIndex);
+
+        setLocalPlans(items);
+
+        const sortData = items.map((plan, index) => ({
+            plan_id: plan.plan_id,
+            sorting_number: index,
+        }));
+
+        // update pricing card order in database
+        await updatePlanOrder(sortData);
+
+        queryClient.invalidateQueries(["pricing"]);
     };
 
     if (isLoading || isStripeLoading) {
@@ -69,7 +105,13 @@ const PricingSettings = () => {
                     )}
                 </div>
 
-                <PricingPlanCard isStripeConnected={isStripeConnected} plans={pricingPlans.plans} handleEditPlan={editPlanDetails} />
+                <PricingPlanCard
+                    isStripeConnected={isStripeConnected}
+                    plans={localPlans}
+                    handleEditPlan={editPlanDetails}
+                    stripeStatus={stripeStatus}
+                    onReorder={handleDragEnd}
+                />
 
                 {/* Add New Plan Details */}
                 {showModal && <Suspense fallback={<Loader />}>
