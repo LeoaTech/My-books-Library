@@ -1,4 +1,4 @@
-const CardOverdue = () => {
+const CardOverdue = ({ overdue }) => {
   return (
     <div className="rounded-lg border border-[#E2E8F0] bg-white py-6 px-7.5 shadow-default dark:border-[#2E3A47] dark:bg-[#24303F]">
       <div className="flex h-11.5 w-8.5 items-center justify-center rounded-full">
@@ -25,8 +25,8 @@ const CardOverdue = () => {
 
       <div className="mt-2 ml-4 flex items-center justify-between">
         <div>
-          <h4 className="text-xl font-bold text-black dark:text-white">0</h4>
-          <span className="text-sm font-medium opacity-40">Total Overdue Book</span>
+          <h4 className="text-xl font-bold text-black dark:text-white">{overdue}</h4>
+          <span className="text-sm font-medium opacity-40">Total Overdue Books</span>
         </div>
       </div>
     </div>
