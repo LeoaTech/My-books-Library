@@ -1,11 +1,14 @@
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useState, useEffect, useMemo } from "react";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "react-toastify";
 import { useAuthContext } from "../../../hooks/useAuthContext";
 import { BASE_URL } from "../../../utils/baseAPIURL";
-import { FiUser, FiMail, FiPhone, FiMapPin, FiLock } from "react-icons/fi";
+import { FiUser, FiMail, FiPhone, FiMapPin, FiLock, FiKey } from "react-icons/fi";
+import { countryList } from "../../../utils/currencyUtils";
+import Select from "react-select";
+import { countryCustomSelectStyles } from "../shared/CreatableSelectCustomStyles";
 
 const profileSchema = z.object({
     name: z.string().min(1, "Name is required"),
@@ -25,12 +28,31 @@ const ProfileUpdateForm = () => {
     const { auth, dispatch } = useAuthContext();
     const [loading, setLoading] = useState(false);
 
+
+    const [theme, setTheme] = useState(document.body.classList.contains("dark") ? "dark" : "light");
+
+    useEffect(() => {
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName === "class") {
+                    const isDark = document.body.classList.contains("dark");
+                    setTheme(isDark ? "dark" : "light");
+                }
+            });
+        });
+        observer.observe(document.body, { attributes: true });
+        return () => observer.disconnect();
+    }, []);
+
+    const selectStyles = useMemo(() => countryCustomSelectStyles(theme), [theme]);
+
     const {
         register,
         handleSubmit,
         setValue,
         reset,
         formState: { errors },
+        control,
     } = useForm({
         resolver: zodResolver(profileSchema),
         defaultValues: {
@@ -72,7 +94,7 @@ const ProfileUpdateForm = () => {
             }
         };
         fetchUserData();
-    }, [auth?.accessToken,auth?.id, reset]);
+    }, [auth?.accessToken, auth?.id, reset]);
 
 
     const onSubmit = async (data) => {
@@ -193,11 +215,20 @@ const ProfileUpdateForm = () => {
                     {/* Country */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Country</label>
-                        <input
-                            type="text"
-                            {...register("country")}
-                            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                            placeholder="Country"
+                        <Controller
+                            name="country"
+                            control={control}
+                            render={({ field: { onChange, value, ref } }) => (
+                                <Select
+                                    inputRef={ref}
+                                    styles={selectStyles}
+                                    options={countryList.map(c => ({ value: c, label: c }))}
+                                    value={countryList.map(c => ({ value: c, label: c })).find(c => c.value === value)}
+                                    onChange={val => onChange(val?.value)}
+                                    placeholder="Select Country"
+                                    classNamePrefix="react-select"
+                                />
+                            )}
                         />
                     </div>
                 </div>
@@ -209,7 +240,7 @@ const ProfileUpdateForm = () => {
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">New Password</label>
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                {/* <FiLock className="text-gray-400" /> */}
+                                <FiKey className="text-gray-400" />
                             </div>
                             <input
                                 type="password"
