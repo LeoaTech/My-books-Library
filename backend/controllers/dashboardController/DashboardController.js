@@ -4,17 +4,14 @@ const getDashboardMetrics = async (req, res) => {
   const user = req.user;
 
   const entityId = user?.entityId || user?.entity_id;
-
-  // console.log(req.user, "Req User");
-
+  const userId = user?.userId || user?.user_id;
   try {
     const popularBooks = await totalBooks(db, entityId);
     const bookingSummary = await totalBookings(db, entityId);
     const recentlyAddedBooks = await recentlyAddedBook(db, entityId);
     const booksByAuthorsSummary = await booksAuthors(db, entityId);
     const BooksCategorySummary = await booksCategories(db, entityId);
-
-    const totalUserCount = await totalUsers(db, entityId);
+    const totalUserCount = await totalUsers(db, entityId, userId);
     const overdueBooksCount = await totalOverdueBooks(db, entityId);
 
     res.status(200).json({
@@ -45,7 +42,7 @@ async function totalBooks(db, entityId) {
     const getBooksList = await db.query(
       `SELECT COUNT(*) FROM books
           WHERE branch_id = ANY ($1)`,
-      [branchIds]
+      [branchIds],
     );
     return { books: getBooksList?.rows[0] };
   } catch (error) {
@@ -58,7 +55,7 @@ async function totalBookings(db, entityId) {
     const getBookingsList = await db.query(
       `SELECT COUNT(*) FROM bookings
           WHERE entity_id = $1`,
-      [entityId]
+      [entityId],
     );
     return { bookings: getBookingsList?.rows[0] };
   } catch (error) {
@@ -66,12 +63,12 @@ async function totalBookings(db, entityId) {
   }
 }
 
-async function totalUsers(db, entityId) {
+async function totalUsers(db, entityId, userId) {
   try {
     const getUsersCount = await db.query(
       `SELECT COUNT(*) FROM user_entity_roles 
-          WHERE entity_id = $1`,
-      [entityId]
+          WHERE entity_id = $1 AND user_id != $2`,
+      [entityId, userId],
     );
     return { users: getUsersCount?.rows[0] };
   } catch (error) {
@@ -84,14 +81,13 @@ async function totalOverdueBooks(db, entityId) {
     const getOverdueBooksCount = await db.query(
       `SELECT COUNT(*) FROM bookings
           WHERE entity_id = $1 AND return_date IS NULL AND return_due < CURRENT_TIMESTAMP`,
-      [entityId]
+      [entityId],
     );
     return { overdueBooks: getOverdueBooksCount?.rows[0] };
   } catch (error) {
     return { error: error, overdueBooks: [] };
   }
 }
-
 
 // Get Recently Added Books
 async function recentlyAddedBook(db, entityId) {
@@ -123,7 +119,7 @@ WHERE
 ORDER BY 
   b.created_at DESC
 LIMIT 10`,
-      [branchIds]
+      [branchIds],
     );
 
     return { recentBooks: recentBooks?.rows };
@@ -150,7 +146,7 @@ async function booksCategories(db, entityId) {
       `SELECT
     c.name AS name,
     br.name AS branch_name,
-    COUNT(b.id) AS count
+    COUNT(b.id)::int AS count
 FROM
     public.books AS b
 JOIN
@@ -164,7 +160,7 @@ GROUP BY
 ORDER BY
     count DESC
 LIMIT 10`,
-      [branchIds]
+      [branchIds],
     );
 
     // console.log(getBooksList?.rows, "Books available");
@@ -176,9 +172,6 @@ LIMIT 10`,
     return { error, bookCategories: [] };
   }
 }
-
-
-
 
 // Get Books Count by Authors
 
@@ -211,8 +204,8 @@ GROUP BY
     a.name, br.name
 ORDER BY
     totalBooks DESC
-LIMIT 20`,
-      [branchIds]
+LIMIT 12`,
+      [branchIds],
     );
 
     // console.log(booksAuthorsCount?.rows, "Books available");
@@ -224,4 +217,10 @@ LIMIT 20`,
     return { error, booksAuthors: [] };
   }
 }
-module.exports ={totalBooks,totalUsers, totalOverdueBooks, getDashboardMetrics};
+
+module.exports = {
+  totalBooks,
+  totalUsers,
+  totalOverdueBooks,
+  getDashboardMetrics,
+};
