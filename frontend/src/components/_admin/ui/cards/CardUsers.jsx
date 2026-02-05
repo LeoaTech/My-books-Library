@@ -35,10 +35,10 @@ const CardUsers = ({ users }) => {
 
       <div className="mt-2 ml-4 flex items-center justify-between">
         <div>
-          <h4 className="text-xl font-bold text-black dark:text-white">
+          <h4 className="text-2xl font-bold text-black dark:text-white">
             {users}
           </h4>
-          <span className="text-sm font-medium opacity-40">Total {userType}</span>
+          <span className="text-md font-medium opacity-40">Total {userType}</span>
         </div>
       </div>
     </div>

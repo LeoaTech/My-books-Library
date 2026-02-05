@@ -15,8 +15,8 @@ const CardBooks = ({ books }) => {
 
       <div className=" mt-2 ml-4 flex items-center justify-between gap-3">
         <div>
-          <h4 className="text-xl font-bold text-black dark:text-white">{books?.count > 0 ? books?.count : 0 || 0}</h4>
-          <span className="text-sm font-medium opacity-40">Total Books</span>
+          <h4 className="text-2xl font-bold text-black dark:text-white">{books?.count > 0 ? books?.count : 0 || 0}</h4>
+          <span className="text-md font-medium opacity-40">Total Books</span>
         </div>
       </div>
     </div>
