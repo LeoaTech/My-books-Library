@@ -13,7 +13,9 @@ const FetchAllBranch = asyncHandler(async (req, res) => {
       message: "All Branches Found ",
     });
   } catch (error) {
-    console.log(error);
+    res
+      .status(500)
+      .json({ message: error.message || "Failed to fetch branches" });
   }
 });
 
@@ -30,12 +32,15 @@ const FetchEntityBranches = asyncHandler(async (req, res) => {
       message: "Branches fetched associate to the Library ",
     });
   } catch (error) {
-    console.log(error);
+    // console.log(error);
+    res
+      .status(500)
+      .json({ message: error.message || "Failed to fetch branches of a library" });
   }
 });
 
 const CreateNewBranch = asyncHandler(async (req, res) => {
-  console.log(req.body, "New Form");
+  // console.log(req.body, "New Form");
   const { branchData } = req.body;
 
   const client = await pool.connect();
@@ -118,7 +123,6 @@ const UpdateBranch = asyncHandler(async (req, res) => {
     client.release();
   }
 });
-
 
 module.exports = {
   FetchAllBranch,

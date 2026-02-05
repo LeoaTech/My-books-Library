@@ -18,14 +18,17 @@ const GetCategories = asyncHandler(async (req, res) => {
       message: "Books Categories Found ",
     });
   } catch (error) {
-    console.log(error);
+    // console.log(error);
+    res
+      .status(500)
+      .json({ message: error.message || "Failed to get categories" });
   }
 });
 
 /* Create New Category */
 
 const AddNewCategory = asyncHandler(async (req, res) => {
-  console.log(req.body, "Category Payload");
+  // console.log(req.body, "Category Payload");
 
   const entityId = req?.user?.entityId || req?.user?.entity_id;
 
@@ -41,17 +44,17 @@ const AddNewCategory = asyncHandler(async (req, res) => {
       [req.body.name, entityId]
     );
 
-    console.log(updateCategory?.rows[0], "Category Saved");
+    // console.log(updateCategory?.rows[0], "Category Saved");
 
     res.status(200).json({
       categories: updateCategory?.rows[0],
       message: "Category Saved Successfully ",
     });
   } catch (error) {
-    console.log(error, "Error creating new category");
+    // console.log(error, "Error creating new category");
     res.status(500).json({
       error,
-      message: error.message || "Error Creating Category",
+      message: error.message || "Error Saving new Category",
     });
   }
 });
@@ -78,14 +81,14 @@ const UpdateCategory = asyncHandler(async (req, res) => {
       [name, category_id]
     );
 
-    console.log(updateCategory?.rows[0], "Category Updated");
+    // console.log(updateCategory?.rows[0], "Category Updated");
 
     res.status(200).json({
       categories: updateCategory?.rows[0],
       message: "Category Updated Successfully ",
     });
   } catch (error) {
-    console.log(error, "Error Updating category");
+    // console.log(error, "Error Updating category");
     res.status(500).json({
       error,
       message: error.message || "Error Updating Category",

@@ -17,14 +17,15 @@ const FetchPublishers = asyncHandler(async (req, res) => {
       message: "Publishers Found ",
     });
   } catch (error) {
-    console.log(error);
+    res
+      .status(500)
+      .json({ message: error.message || "Failed to fetch publishers" });
   }
 });
 
 /* Create New Publisher */
 
 const AddNewPublisher = asyncHandler(async (req, res) => {
-  console.log(req.body);
 
   const entityId = req?.user?.entityId || req?.user?.entity_id;
 
@@ -40,17 +41,16 @@ const AddNewPublisher = asyncHandler(async (req, res) => {
 
     const createPublisherQuery = await db.query(
       `INSERT INTO publishers (name, links,description, entity_id) VALUES ($1, $2,$3, $4) RETURNING id,name`,
-      [name, links, description, entityId]
+      [name, links, description, entityId],
     );
 
-    console.log(createPublisherQuery?.rows[0], "Publishers Added ");
 
     res.status(200).json({
       publishers: createPublisherQuery?.rows[0],
       message: "Publishers Found ",
     });
   } catch (error) {
-    console.log(error, "Error creating new Publisher");
+    // console.log(error, "Error creating new Publisher");
     res.status(500).json({
       error,
       message: error.message || "Error Creating Publishers",
@@ -61,7 +61,6 @@ const AddNewPublisher = asyncHandler(async (req, res) => {
 /* Update Publisher Details */
 
 const UpdatePublisher = asyncHandler(async (req, res) => {
-  // console.log(req.body);
   try {
     if (!req.body.publishersForm) {
       return res.status(400).json("Invalid Publishers Details");
@@ -77,25 +76,21 @@ const UpdatePublisher = asyncHandler(async (req, res) => {
     const { publisher_id } = req.params;
     const createPublisherQuery = await db.query(
       `UPDATE publishers SET name=$1, links=$2, description=$3 Where id=$4`,
-      [name, links, description, publisher_id]
+      [name, links, description, publisher_id],
     );
 
-    console.log(createPublisherQuery?.rows[0], "Publisher Updated");
 
     res.status(200).json({
       publishers: createPublisherQuery?.rows[0],
       message: "Publisher Updated Successfully ",
     });
   } catch (error) {
-    console.log(error, "Error Updating publisher");
+    // console.log(error, "Error Updating publisher");
     res.status(500).json({
       error,
       message: error.message || "Error Updating Publisher",
     });
   }
 });
-
-
-
 
 module.exports = { FetchPublishers, AddNewPublisher, UpdatePublisher };

@@ -24,7 +24,10 @@ GROUP BY
       message: "All Role Permissions Found ",
     });
   } catch (error) {
-    console.log(error);
+    // console.log(error);
+    res
+      .status(500)
+      .json({ message: error.message || "Failed to fetch Roles Permissions" });
   }
 });
 
@@ -57,7 +60,10 @@ const FetchPermissionsByRole = asyncHandler(async (req, res) => {
       message: "All Role Permissions Found ",
     });
   } catch (error) {
-    console.log(error);
+    res
+      .status(500)
+      .json({ message: error.message || "Failed to fetch role permissions" });
+    // console.log(error);
   }
 });
 
@@ -80,13 +86,15 @@ const FetchPermissionsByRoleId = asyncHandler(async (req, res) => {
 
     const getAllPermissions = await db.query(permissionQuery, [roleId]);
 
-    // console.log(getAllPermissions?.rows, "Role Permissions found");
     res.status(200).json({
       permissions: getAllPermissions?.rows,
       message: "All Role Permissions Found ",
     });
   } catch (error) {
-    console.log(error);
+    // console.log(error);
+    res
+      .status(500)
+      .json({ message: error.message || "Failed to fetch role ID permission" });
   }
 });
 
@@ -95,7 +103,6 @@ const FetchPermissionsByRoleId = asyncHandler(async (req, res) => {
 const NewRolePermissions = asyncHandler(async (req, res) => {
   try {
     const permissionData = req.body;
-    console.log(permissionData);
     const { permissions } = permissionData;
     const { role_id, permission_id } = permissions;
 
@@ -110,14 +117,16 @@ const NewRolePermissions = asyncHandler(async (req, res) => {
 
     const saveNewRolePermissions = await db.query(addPermissionQuery);
 
-    console.log(saveNewRolePermissions?.rows[0]);
 
     res.status(200).json({
       message: "New Permission",
       result: saveNewRolePermissions?.rows[0],
     });
   } catch (error) {
-    console.log(error);
+    // console.log(error);
+    res
+      .status(500)
+      .json({ message: error.message || "Failed to add new permission for library" });
   }
 });
 
@@ -130,18 +139,20 @@ const DeleteRolePermission = asyncHandler(async (req, res) => {
     const permissionsArray = permission_id?.map((p) => Number(p));
 
     try {
-      const deletePermissions = await db.query(
+     await db.query(
         `DELETE FROM role_permissions WHERE permission_id = ANY($1) AND role_id = $2 RETURNING *`,
         [permissionsArray, role_id]
       );
-      // console.log(deletePermissions?.rows);
 
       res.status(200).json({ message: "Delete Permissions" });
-    } catch (err) {
-      console.log(err);
+    } catch (error) {
+      // console.log(err);
+      res
+      .status(500)
+      .json({ message: error.message || "Failed to delete permissions for role" });
     }
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     res.status(400).json({
       message: "Error:Permissions cannot be Deleted",
     });

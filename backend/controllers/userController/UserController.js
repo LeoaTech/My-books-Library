@@ -31,7 +31,6 @@ GROUP BY
 
   const userExists = await db.query(userQuery);
 
-  // console.log(userExists?.rows, "User Found");
   res.status(200).json({
     data: userExists?.rows,
     message: "All users routes are available",
@@ -40,7 +39,6 @@ GROUP BY
 
 // Get a Specific Entity or a Library users only
 const getLibraryUsers = asyncHandler(async (req, res) => {
-  // console.log(req.user, "Query user credentials");
 
   const entityId = req?.user?.entityId || req.user?.entity_id;
   // Get all user's belongs to a Library
@@ -99,7 +97,6 @@ GROUP BY
   u.id, u.email, u.role_id;`;
   const userExists = await db.query(getUserProfile, [userId]);
 
-  // console.log(userExists?.rows, "User Found");
   res.status(200).json({
     data: userExists?.rows[0],
     message: "All users routes are available",
@@ -109,7 +106,6 @@ GROUP BY
 // Get User Profile Details
 
 const userDetails = asyncHandler(async (req, res) => {
-  console.log(req.params, "User ID", req.query);
   const { user_id } = req.params;
   const getUserProfile = `SELECT
   u.id AS user_id,
@@ -125,7 +121,6 @@ WHERE
   u.id = $1`;
   const userExists = await db.query(getUserProfile, [user_id]);
 
-  console.log(userExists?.rows, "User Found");
   res.status(200).json({
     data: userExists?.rows[0],
     message: "All users routes are available",
@@ -234,7 +229,7 @@ const UpdateRoles = asyncHandler(async (req, res) => {
 
   const foundUserID = await db.query(
     `SELECT id from user_entity_roles where user_id= $1 and entity_id =$2`,
-    [userId, entityId]
+    [userId, entityId],
   );
   let user = foundUserID?.rows[0];
 
@@ -249,22 +244,22 @@ const UpdateRoles = asyncHandler(async (req, res) => {
     // Update user role in the library
     const updateQuery = await db.query(
       `UPDATE user_entity_roles SET role_id = $1 WHERE user_id = $2 and entity_id = $3 RETURNING *`,
-      [newRoleID, userId, entityId]
+      [newRoleID, userId, entityId],
     );
 
-    // console.log(updateQuery?.rows[0],"Updated Role");
     return res.status(201).json({ message: "Updated Role for ", userId });
   } catch (error) {
-    console.log(error, "User Role update Error in db");
+    // console.log(error, "User Role update Error in db");
+    res.status(500).json({
+      message: error.message || "Error Updating User Role",
+    });
   }
 });
 
 // Create a New User with a specific Role (From Admin Dashboard);
 const CreateUser = asyncHandler(async (req, res) => {
-  // console.log(req.body, "Payload");
   const client = await pool.connect();
 
-  // console.log(req.user, "User ");
   const { name, email, password } = req.body;
   if (!name || !email || !password) {
     res.status(400);
@@ -308,7 +303,7 @@ const CreateUser = asyncHandler(async (req, res) => {
     // Add the user Id's associated entity, role_id and branch_id in the user_entity_roles table
     const userRole = await client.query(
       "INSERT INTO user_entity_roles (user_id, entity_id, branch_id, role_id) VALUES ($1, $2, $3, $4) Returning *",
-      [userId, entityId, branchId, roleId]
+      [userId, entityId, branchId, roleId],
     );
     await client.query("COMMIT");
     res.status(200).json({
@@ -316,7 +311,6 @@ const CreateUser = asyncHandler(async (req, res) => {
       message: "Inside the User creation  API",
     });
   } catch (error) {
-    console.log(error);
     await client.query("ROLLBACK");
 
     return res
@@ -331,24 +325,24 @@ const CreateUser = asyncHandler(async (req, res) => {
 
 const DeleteUser = asyncHandler(async (req, res) => {
   const { user_id } = req.params;
-  console.log(req.params);
 
   try {
     const deleteUserQuery = await db.query(`DELETE FROM users WHERE id=$1`, [
       user_id,
     ]);
 
-    console.log(deleteUserQuery?.rowCount);
 
     res.status(200).json({ message: "Delete. user Successfully" });
   } catch (error) {
-    console.log(error);
+    // console.log(error);
+        res.status(500).json({
+      message: error.message || "Failed to delete user",
+    });
   }
 });
 
 // Register Device token to send push notifications
 const registerDeviceToken = asyncHandler(async (req, res) => {
-  // console.log(req.body, "payload from client");
 
   try {
     const { fcmToken, userId } = req.body;

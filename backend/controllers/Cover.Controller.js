@@ -18,14 +18,17 @@ const getBookCovers = asyncHandler(async (req, res) => {
       message: "Books Covers ",
     });
   } catch (error) {
-    console.log(error);
+    // console.log(error);
+    res
+      .status(500)
+      .json({ message: error.message || "Failed to fetch book cover types" });
   }
 });
 
 /* Add New Cover Type for  */
 
 const AddCoverType = asyncHandler(async (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
   const entityId = req?.user?.entityId || req?.user?.entity_id;
 
   if (!entityId) {
@@ -40,14 +43,14 @@ const AddCoverType = asyncHandler(async (req, res) => {
       [req.body.name, entityId]
     );
 
-    console.log(updateCoverQuery?.rows[0], "Cover Saved");
+    // console.log(updateCoverQuery?.rows[0], "Cover Saved");
 
     res.status(200).json({
       covers: updateCoverQuery?.rows[0],
       message: "New Cover Saved Successfully ",
     });
   } catch (error) {
-    console.log(error, "Error creating new cover");
+    // console.log(error, "Error creating new cover");
     res.status(500).json({
       error,
       message: error.message || "Error Creating cover",
@@ -77,14 +80,11 @@ const UpdateCover = asyncHandler(async (req, res) => {
       [name, cover_id]
     );
 
-    console.log(updateCoverQuery?.rows[0], "cover Updated");
-
     res.status(200).json({
       categories: updateCoverQuery?.rows[0],
       message: "cover Updated Successfully ",
     });
   } catch (error) {
-    console.log(error, "Error Updating Cover");
     res.status(500).json({
       error,
       message: error.message || "Error Updating cover",

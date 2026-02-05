@@ -13,8 +13,9 @@ const FetchAllOrders = asyncHandler(async (req, res) => {
       message: "All Orders Found ",
     });
   } catch (error) {
-    console.log(error, "Error fetching Orders");
-    res.status(500).json({ message: error.message });
+    res
+      .status(500)
+      .json({ message: error.message || "Failed to fetch orders" });
   }
 });
 
@@ -26,7 +27,9 @@ const FetchOrderById = asyncHandler(async (req, res) => {
       message: "Order by ID retrieved",
     });
   } catch (error) {
-    console.log(error);
+    res
+      .status(500)
+      .json({ message: error.message || "Failed to fetch order details" });
   }
 });
 
@@ -34,7 +37,6 @@ const FetchOrderById = asyncHandler(async (req, res) => {
 
 // ?TODO: Validate the Duplicate Entries of Order details
 const CreateNewOrder = asyncHandler(async (req, res) => {
-  // console.log(req.body);
   try {
     const { orderForm } = req.body;
 
@@ -84,19 +86,16 @@ const CreateNewOrder = asyncHandler(async (req, res) => {
         order_on,
       ]);
 
-      console.log(saveNewOrder?.rowCount, "1 Order Created");
       res.status(200).json({
         result: saveNewOrder?.rows[0],
         message: "Order Created Successfully",
       });
     } catch (error) {
-      // console.log(error);
       res
         .status(400)
         .json({ message: error.message || "Something went wrong " });
     }
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: error.message });
   }
 });
@@ -110,12 +109,10 @@ const DeleteOrder = asyncHandler(async (req, res) => {
 
     await db.query(deleteOrderQuery, [order_id]);
 
-    // console.log(deleteOrderdetails?.rowCount);
     res.status(200).json({
       message: "Deleted Order details successfully",
     });
   } catch (error) {
-    console.log(error, "Delete order details failed");
     res
       .status(500)
       .json({ message: "Error deleting Order Details", error: error });
@@ -127,7 +124,6 @@ const DeleteOrder = asyncHandler(async (req, res) => {
 const UpdateOrder = asyncHandler(async (req, res) => {
   try {
     const { orderForm } = req.body;
-    // console.log(orderForm);
 
     const {
       shipping_address,
@@ -158,19 +154,16 @@ const UpdateOrder = asyncHandler(async (req, res) => {
         id,
       ]);
 
-      console.log(updatedOrder?.rowCount, "1 Order updated");
       res.status(200).json({
         message: "Orders Updated ",
       });
     } catch (error) {
-      console.log(error, "DB Error Update Order failed");
       res.status(500).json({
         message: error.message || "DB Error: Failed to Update Orders",
         error: error,
       });
     }
   } catch (error) {
-    console.log(error, "Error updating order failed ");
     res
       .status(500)
       .json({ message: "Server Error: Something went wrong", error: error });

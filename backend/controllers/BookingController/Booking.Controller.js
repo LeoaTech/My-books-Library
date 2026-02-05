@@ -47,7 +47,7 @@ const getBookings = asyncHandler(async (req, res) => {
       message: "Bookings Data retrieved Successfully",
     });
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     return res.status(500).json({
       bookings: [],
       message: error.message || "Failed to get Bookings details",
@@ -58,7 +58,6 @@ const getBookings = asyncHandler(async (req, res) => {
 /* Create New Bookngs */
 
 const CreateBooking = asyncHandler(async (req, res) => {
-  console.log(req.body);
   const entityId = req?.user?.entityId || req.user?.entity_id;
   const userId = req?.user?.userId || req.user?.user_id;
 
@@ -107,7 +106,6 @@ const CreateBooking = asyncHandler(async (req, res) => {
     );
 
     const bookingData = createBookingQuery?.rows[0];
-    // console.log(bookingData, "Booking Data");
 
     if (createBookingQuery.rowCount > 0) {
       const userInfoQuery = `SELECT id,name,email,phone,address,city, 
@@ -133,7 +131,7 @@ const CreateBooking = asyncHandler(async (req, res) => {
       message: "New Booking Added ",
     });
   } catch (error) {
-    console.log(error, "Error creating new Booking");
+    // console.log(error, "Error creating new Booking");
     res.status(500).json({
       error: error,
       message: "Failed to Issue books ",
@@ -144,13 +142,11 @@ const CreateBooking = asyncHandler(async (req, res) => {
 /* Update Booking Details */
 
 const UpdateBooking = asyncHandler(async (req, res) => {
-  // console.log(req.body);
   const entityId = req?.user?.entityId || req.user?.entity_id;
   if (!entityId) {
     res.send(400).json({ message: "Invalid Request, No Library ID provided" });
   }
 
-  // console.log(req.params);
 
   try {
     const { bookingForm } = req.body;
@@ -209,7 +205,7 @@ const UpdateBooking = asyncHandler(async (req, res) => {
       message: "Booking details updated ",
     });
   } catch (error) {
-    console.log(error, "Error updating Booking details");
+    // console.log(error, "Error updating Booking details");
     res.status(500).json({
       error: error,
       message: "Failed to update booking details ",
@@ -240,7 +236,9 @@ const DeleteBooking = asyncHandler(async (req, res) => {
       res.status(204).json({ message: "Failed To Delete Booking" });
     }
   } catch (error) {
-    console.log(error);
+    res
+      .status(500)
+      .json({ message: error.message || "Failed to delete booking details" });
   }
 });
 

@@ -26,7 +26,7 @@ router.post(
           endpointSecret
         );
       } catch (err) {
-        console.log(`Webhook signature verification failed.`, err.message);
+        // console.log(`Webhook signature verification failed.`, err.message);
         return response.sendStatus(400);
       }
     }
@@ -184,7 +184,7 @@ router.post(
             }
             
             if (dbPlanId.rows.length === 0) {
-              console.log("No plan exists for this product Id or account");
+              // console.log("No plan exists for this product Id or account");
               break;
             }
 
@@ -238,7 +238,7 @@ router.post(
           !prevAttributes?.plan &&
           prevAttributes?.cancel_at_period_end === undefined
         ) {
-          console.log("No subscription changes detected.");
+          // console.log("No subscription changes detected.");
           break;
         }
 
@@ -464,9 +464,9 @@ router.post(
           }
         }
 
-        console.log(
-          `Subscription ${subscription.id} was updated in the database.`
-        );
+        // console.log(
+        //   `Subscription ${subscription.id} was updated in the database.`
+        // );
 
         break;
 
@@ -570,9 +570,9 @@ router.post(
 
         const subscriptionId = invoice.parent.subscription_details.subscription;
         if (!subscriptionId) {
-          console.log(
-            `Skipping invoice ${invoice.id} because no subscription exists.`
-          );
+          // console.log(
+          //   `Skipping invoice ${invoice.id} because no subscription exists.`
+          // );
           break;
         }
         const subResult = await db.query(
@@ -590,9 +590,9 @@ router.post(
         let subscriptionRecord = subResult?.rows?.[0];
 
         if (!subscriptionRecord) {
-          console.log(
-            `Subscription ${subscriptionId} not found in DB. Checking if we need to create it (Client vs Customer logic).`
-          );
+          // console.log(
+          //   `Subscription ${subscriptionId} not found in DB. Checking if we need to create it (Client vs Customer logic).`
+          // );
           
           const subscription = connectedAccountId
             ? await stripe.subscriptions.retrieve(subscriptionId, {
@@ -636,7 +636,7 @@ router.post(
                  subscriptionRecord = retrySub.rows[0];
 
            } else {
-               console.log("customer subscription missing in DB for invoice.paid");
+              //  console.log("customer subscription missing in DB for invoice.paid");
                break;
            }
         }
@@ -670,7 +670,7 @@ router.post(
                 invoice.invoice_pdf,
                 ]
             );
-             console.log(`Client Transaction record created for invoice ${invoice.id}`);
+            //  console.log(`Client Transaction record created for invoice ${invoice.id}`);
           } else {
               // --- INSERT into subscription_transactions (Library Customer) ---
                await db.query(
@@ -691,7 +691,7 @@ router.post(
                 invoice.invoice_pdf,
                 ]
             );
-            console.log(`Library Customer Transaction record created for invoice ${invoice.id}`);
+            // console.log(`Library Customer Transaction record created for invoice ${invoice.id}`);
           }
         }
         break;
@@ -756,7 +756,7 @@ router.post(
             subscriptionData,
           });
 
-          console.log(`Renewal email sent to ${customer.email}`);
+          // console.log(`Renewal email sent to ${customer.email}`);
         }
         break;
       }
@@ -772,7 +772,7 @@ router.post(
         break;
       }
       default:
-        console.log(`Unhandled event type ${event.type}.`);
+        console.log(`Unused event type ${event.type}.`);
     }
     response.send();
   }

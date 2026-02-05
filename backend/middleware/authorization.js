@@ -23,7 +23,6 @@ const checkRole = async (req, res, next) => {
         .status(403)
         .json({ message: "Forbidden - Not Permitted to Access" });
     }
-    // console.log("Role is Verified");
 
     next();
   } catch (error) {

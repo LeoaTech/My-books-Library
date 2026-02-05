@@ -18,7 +18,6 @@ router.get("/auth/google", (req, res, next) => {
   const action = req.query.action; // 'creatlle_lib' or 'join_lib'
   const subdomain = req.query.subdomain;
 
-  // console.log(action, subdomain);
 
   let stateObj = { action };
 
@@ -37,7 +36,6 @@ router.get("/auth/google", (req, res, next) => {
 
   // Encode state as base64 to safely pass JSON
   const state = Buffer.from(JSON.stringify(stateObj)).toString("base64");
-  console.log(state, "Auth route");
 
   passport.authenticate("google", {
     scope: ["email", "profile"],
@@ -80,7 +78,6 @@ router.get("/auth/logout", (req, res) => {
 // Google Login Failure Routes
 router.get("/auth/google/failure", (req, res) => {
   const errorMessage = req?.session?.messages?.[0] || "Authentication failed";
-  console.log("Authentication failed:", errorMessage);
 
   // Redirect to the client-side failure page with an error message
   res.redirect(
@@ -93,7 +90,6 @@ router.get("/auth/google/failure", (req, res) => {
 // Successful google login Route
 router.get("/auth/login/success", async (req, res) => {
   if (req.user) {
-    // console.log(req.user, "Google Success Signin");
 
     const result = await db.query(
       `
@@ -118,7 +114,6 @@ router.get("/auth/login/success", async (req, res) => {
       ]
     );
 
-    console.log(result.rows[0], "DB User data");
     if (result.rows.length === 0) {
       return res.status(401).json({ error: "Invalid User Credentials" });
     }

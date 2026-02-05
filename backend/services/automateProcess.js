@@ -46,9 +46,9 @@ async function checkOverdueStatusAndFine() {
     `;
 
     const result = await client.query(query);
-    console.log(
-      `Overdue fines applied to ${result.rowCount} bookings across all tenants.`
-    );
+    // console.log(
+    //   `Overdue fines applied to ${result.rowCount} bookings across all tenants.`
+    // );
   } catch (error) {
     console.error("Error applying overdue fines :", error);
   } finally {
@@ -86,13 +86,13 @@ async function checkUpcomingDueDates() {
     const result = await client.query(query);
 
     if (result.rowCount === 0) {
-      console.log("No bookings found with return due date in coming 2 days.");
+      // console.log("No bookings found with return due date in coming 2 days.");
       return;
     }
 
-    console.log(
-      `Found ${result.rowCount} booking items return due in 2 days. sending reminders...`
-    );
+    // console.log(
+    //   `Found ${result.rowCount} booking items return due in 2 days. sending reminders...`
+    // );
 
     const bookingsMap = new Map();
 
@@ -140,9 +140,9 @@ async function checkUpcomingDueDates() {
       });
     }
 
-    console.log(
-      `Reminder jobs added successfully for ${bookingsMap.size} bookings in queues.`
-    );
+    // console.log(
+    //   `Reminder jobs added successfully for ${bookingsMap.size} bookings in queues.`
+    // );
   } catch (error) {
     console.error("Error checking upcoming due dates:", error);
   } finally {
@@ -154,7 +154,7 @@ async function checkUpcomingDueDates() {
 async function checkFineReminders() {
   const client = await pool.connect();
   try {
-    console.log("Checking for Pending fine payment reminders...");
+    // console.log("Checking for Pending fine payment reminders...");
 
     const query = `
       SELECT 
@@ -193,12 +193,12 @@ async function checkFineReminders() {
     const result = await client.query(query);
 
     if (result.rowCount === 0) {
-      console.log("No fine reminders to send.");
+      // console.log("No fine reminders to send.");
       return;
     }
-    console.log(
-      `Pending ${result.rowCount} items for fine pament reminders. Sending reminders...`
-    );
+    // console.log(
+    //   `Pending ${result.rowCount} items for fine pament reminders. Sending reminders...`
+    // );
 
 
      const bookingsMap = new Map();
@@ -243,10 +243,10 @@ async function checkFineReminders() {
         await emailQueue.add("fine-payment-reminder-email", emailData);
     }
 
-    console.log(`Pending Fine reminders added for ${bookingsMap.size} bookings into the worker queue.`);
+    // console.log(`Pending Fine reminders added for ${bookingsMap.size} bookings into the worker queue.`);
 
   } catch (error) {
-    console.error("Error checking fine payment reminders:", error);
+    // console.error("Error checking fine payment reminders:", error);
   } finally {
     client.release();
   }

@@ -60,7 +60,6 @@ router.get("/", async (req, res) => {
       [userId],
     );
 
-    // console.log(subscriptionResult?.rows, "Subscription Result");
 
     if (subscriptionResult?.rows?.length > 0) {
       // User has an active subscription

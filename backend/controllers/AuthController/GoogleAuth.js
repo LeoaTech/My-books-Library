@@ -39,7 +39,7 @@ passport.use(
       const action = state.action || "login"; // Default to login if no action
 
       try {
-        console.log("user Profile ", profile); //profile, "USER PROFILE",
+        // console.log("user Profile ", profile); //profile, "USER PROFILE",
         await client.query("BEGIN");
 
         if (!profile.email || !profile.displayName) {
@@ -345,7 +345,7 @@ passport.use(
       } catch (err) {
         // Handle errors
         await client.query("ROLLBACK");
-        console.log(err, "Google login error");
+        // console.log(err, "Google login error");
         return done(err, null);
       } finally {
         client.release();
@@ -355,7 +355,7 @@ passport.use(
 );
 
 passport.serializeUser((user, done) => {
-  console.log("Serilaze user", user);
+  // console.log("Serilaze user", user);
 
   done(null, user); //store only user_id in the session
 });

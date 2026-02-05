@@ -49,7 +49,6 @@ const createStripePriceId = async (
     }
   );
   const stripePriceId = stripePrice.id;
-  // console.log(`Stripe ${durationLabel} Price Created: ${stripePriceId}`);
 
   return {
     price_id: stripePriceId,
@@ -76,7 +75,10 @@ const FetchPricingPlans = asyncHandler(async (req, res) => {
       message: "Pricing plans Retrieved Successfully! ",
     });
   } catch (error) {
-    console.log(error);
+    // console.log(error);
+    res
+      .status(500)
+      .json({ message: error.message || "Failed to fetch Library pricing plans" });
   }
 });
 
@@ -101,7 +103,6 @@ const CreateDualPlan = asyncHandler(async (req, res) => {
   );
 
   const subdomain = getSubdomain?.rows[0]?.subdomain;
-  console.log(req.body, "Create dual Plan Payload");
 
   let stripeProductId = null;
 
@@ -134,7 +135,6 @@ const CreateDualPlan = asyncHandler(async (req, res) => {
       }
     );
     stripeProductId = product.id;
-    console.log(`Stripe Product Created: ${stripeProductId}`);
 
     // Create Monthly price
     const monthlyData = await createStripePriceId(
@@ -174,14 +174,11 @@ const CreateDualPlan = asyncHandler(async (req, res) => {
       [plan_name, jsonPlanDetails, stripeProductId, entityId]
     );
 
-    // console.log(createPricinguery?.rows[0], "Pricing plan Saved");
-
     res.status(200).json({
       pricing: createPricinguery?.rows[0],
       message: "Pricing plan Saved Successfully ",
     });
   } catch (error) {
-    // console.log(error, "Error creating new pricing plan");
     res.status(500).json({
       error,
       message: error.message || "Error Creating Pricing",
@@ -316,7 +313,6 @@ const UpdatePlan = asyncHandler(async (req, res) => {
       message: "Pricing Plan Updated Successfully",
     });
   } catch (error) {
-    console.log(error, "Error Updating pricing Plans");
     res.status(500).json({
       error,
       message: error.message || "Error Updating Pricing Plan",
@@ -353,7 +349,6 @@ const DeletePlan = asyncHandler(async (req, res) => {
       try {
         // Delete the Product from Stripe
         await stripe.products.del(stripeProductId);
-        console.log(`Stripe Product Deleted: ${stripeProductId}`);
       } catch (stripeError) {
         // throw error if a product/price is linked to an active subscription or payment link.
         if (
@@ -361,19 +356,19 @@ const DeletePlan = asyncHandler(async (req, res) => {
           stripeError.code === "resource_missing"
         ) {
           if (stripeError.code === "resource_missing") {
-             console.log("Product already deleted from Stripe");
+            //  console.log("Product already deleted from Stripe");
           } else {
-             console.log("Product has linked resources, archiving instead...");
+            //  console.log("Product has linked resources, archiving instead...");
              try {
                 await stripe.products.update(stripeProductId, { active: false });
-                console.log(`Stripe Product Archived: ${stripeProductId}`);
+                // console.log(`Stripe Product Archived: ${stripeProductId}`);
              } catch (archiveError) {
-                console.error(`Failed to archive product: ${archiveError.message}. Please Contact Support`);
+                // console.error(`Failed to archive product: ${archiveError.message}. Please Contact Support`);
                 throw archiveError; 
              }
           }
         } else {
-             console.error(`Unhandled Stripe Error during deletion: ${stripeError}`);
+            //  console.error(`Unhandled Stripe Error during deletion: ${stripeError}`);
              throw stripeError;
         }
       }
@@ -390,7 +385,7 @@ const DeletePlan = asyncHandler(async (req, res) => {
       message: "Pricing Plan Deleted Successfully ",
     });
   } catch (error) {
-    console.log(error, "Error Deleting pricing plan");
+    // console.log(error, "Error Deleting pricing plan");
     res.status(500).json({
       error,
       message: error.message || "Error Deleting Pricing Plan",
@@ -445,7 +440,7 @@ const UpdateSortingOrder = asyncHandler(async (req, res) => {
       message: "Pricing plan order updated successfully",
     });
   } catch (error) {
-    console.log(error, "Error updating pricing plan order");
+    // console.log(error, "Error updating pricing plan order");
     res.status(500).json({
       error,
       message: error.message || "Error updating pricing plan order",

@@ -18,7 +18,7 @@ const getOrCreateId = async (client, tableName, value, entityId) => {
     const result = await client.query(query, [value, entityId]);
     return result.rows[0].id;
   } catch (error) {
-    console.log(error, "Error to Insert in DB or Get existing ID");
+    // console.log(error, "Error to Insert in DB or Get existing ID");
     return null;
   }
 };
@@ -36,7 +36,6 @@ async function getMainBranchId(client, entityId) {
     );
     return filteredMainBranch[0]?.id;
   } catch (error) {
-    console.log(error);
     return null;
   }
 }

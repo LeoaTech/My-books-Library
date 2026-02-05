@@ -8,7 +8,7 @@ const send_email = async (email, subject, message) => {
       text: message,
     });
   } catch (error) {
-    console.log(error);
+    console.log("Error sending email");
   }
 };
 

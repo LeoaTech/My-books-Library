@@ -8,7 +8,6 @@ const getRoles = async (entityId) => {
     const getAllPermissions = await db.query(permissionsQuery, [entityId]);
 
     const roles = getAllPermissions?.rows;
-    console.log(roles, "Roles");
     
     return roles.map((role) => role?.role_id); // Returning all role Ids
   } catch (error) {

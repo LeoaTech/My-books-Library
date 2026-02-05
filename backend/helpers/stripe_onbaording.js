@@ -1,5 +1,4 @@
 async function getEntityInfo(db, entityId) {
-  // console.log(entityId, "Inside getEntityInfo")
   try {
     const res = await db.query(
       `SELECT 
@@ -13,18 +12,16 @@ async function getEntityInfo(db, entityId) {
       [entityId, "owner"]
     );
 
-    // console.log(res.rows, "Library Stripe Info");
 
     return res?.rows[0];
   } catch (error) {
-    console.log(error, "error");
+    // console.log(error, "error");
     return null;
   }
 }
 
 // Update library's (entityId) Stripe info
 async function updateEntityStripeInfo(db, userId, stripeAccountId, info) {
-  // console.log(info, "stripe account info");
 
   const paymentMethod = {
     stripe: {

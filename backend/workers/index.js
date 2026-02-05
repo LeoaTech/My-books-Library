@@ -4,7 +4,7 @@ const { connection } = require("../config/redisConfig");
 const emailWorker = require("./emailWorker");
 const pushWorker = require("./pushWorker");
 const gracefulShutdown = async () => {
-  console.log("SIGTERM received. Closing workers...");
+  console.log("Closing workers...");
 
   await emailWorker.close();
   await pushWorker.close();

@@ -40,12 +40,9 @@ const refreshToken = (data) => {
 
 const RegisterUser = asyncHandler(async (req, res) => {
   const client = await pool.connect();
-  // console.log(req.body);
   try {
-    // Start a transaction
     await client.query("BEGIN");
 
-    // Extract data from request body
     if (!req.body.user) {
       res.status(400);
       throw Error("Invalid Form");
@@ -77,7 +74,7 @@ const RegisterUser = asyncHandler(async (req, res) => {
     // Check if user already exists
     let userResult = await client.query(
       "SELECT id,name,email,phone,address,city, country FROM users WHERE email = $1",
-      [email]
+      [email],
     );
     let userId;
 
@@ -128,7 +125,7 @@ const RegisterUser = asyncHandler(async (req, res) => {
       JOIN roles r ON uer.role_id = r.role_id
       WHERE uer.user_id = $1 AND r.name = 'owner'
       `,
-      [userId]
+      [userId],
     );
 
     /* user is already an owner of a Library */
@@ -144,10 +141,8 @@ const RegisterUser = asyncHandler(async (req, res) => {
     // Generate a subdomain from the Business name
     const subdomain = generateSubdomain(businessName);
 
-    // console.log(subdomain, "subdomain Created");
-
     //validate the subdomain for each entity_id is unique
-    const uniqueSubdomain = await checkSubdomain( subdomain);
+    const uniqueSubdomain = await checkSubdomain(subdomain);
 
     // Step 1: Create an Entity
     const entityData = {
@@ -164,10 +159,6 @@ const RegisterUser = asyncHandler(async (req, res) => {
       uniqueSubdomain,
     };
     const entity = await createEntity(client, entityData);
-    // console.log(entity.id, "New Entity Created");
-
-    // Step 2: Create a default branch as main branch
-
     const branchData = {
       businessName: businessName + "(main)",
       city,
@@ -181,7 +172,6 @@ const RegisterUser = asyncHandler(async (req, res) => {
 
     const roles = await createDefaultRoles(client, entity.id);
 
-    // Get the owner role_id from roles list
     let ownerRole = roles.find((role) => role.name == "owner");
     // Add default owner permissions
     const roleAdded = await addPermissions(client, ownerRole.role_id);
@@ -193,14 +183,12 @@ const RegisterUser = asyncHandler(async (req, res) => {
 
     let vendorId = await createDummyVendor(client, entity, vendorRole.role_id);
 
-    console.log(vendorId, "Dummy Vendor Created");
-
     // Step 4: Create new user associated branch_id, role_id, entity_id for user_id
 
     // check if user exists in DB
     const userRole = await client.query(
       "INSERT INTO user_entity_roles (user_id, entity_id, branch_id, role_id) VALUES ($1, $2, $3, $4)",
-      [userId, entity.id, branch.id, ownerRole.role_id]
+      [userId, entity.id, branch.id, ownerRole.role_id],
     );
 
     await client.query("COMMIT");
@@ -256,7 +244,7 @@ const LoginUser = asyncHandler(async (req, res) => {
     // Verify user
     const userResult = await pool.query(
       "SELECT id FROM users WHERE email = $1",
-      [email]
+      [email],
     );
     if (userResult.rows.length === 0) {
       return res.status(401).json({ error: "Invalid email or password" });
@@ -283,24 +271,18 @@ const LoginUser = asyncHandler(async (req, res) => {
       JOIN roles r ON uer.role_id = r.role_id
       WHERE uer.user_id = $1
       `,
-      [user.id]
+      [user.id],
     );
-
-    // console.log(associatedEntities, "Login");
 
     if (associatedEntities.rows.length == 0) {
       return res.status(401).json({ message: "Invalid User Credentials" });
       // throw new Error("Invalid Email Address");
     }
 
-    // console.log(associatedEntities.rows, "Association for email ID");
-
     // Check if it has a role of owner
     const ownerAssociation = associatedEntities.rows?.find(
-      (user) => user.role_name == "owner"
+      (user) => user.role_name == "owner",
     );
-
-    console.log(ownerAssociation, "Owner Association");
 
     // If the user credentials
     if (!ownerAssociation) {
@@ -316,7 +298,7 @@ const LoginUser = asyncHandler(async (req, res) => {
 
     const isValidPassword = await bcrypt.compare(
       password,
-      ownerAssociation.password
+      ownerAssociation.password,
     );
     if (!isValidPassword) {
       return res
@@ -338,7 +320,7 @@ const LoginUser = asyncHandler(async (req, res) => {
           UserInfo: user_info,
         },
         process.env.JWT_SECRET,
-        { expiresIn: "1m" }
+        { expiresIn: "1m" },
       );
 
       const refresh_token = refreshToken(user_info); //refresh token
@@ -367,15 +349,13 @@ const LoginUser = asyncHandler(async (req, res) => {
           authSource: "email",
           plan: ownerAssociation?.plan,
           subdomain: ownerAssociation?.subdomain,
-          country:ownerAssociation?.country ||""
+          country: ownerAssociation?.country || "",
         },
         message: "Login Successfully",
         redirect: `${process.env.CLIENT_URL}/${ownerAssociation?.subdomain}`,
       });
     }
   } catch (error) {
-    console.log(error, "Signin");
-
     return res.status(400).json({ error: "Invalid Credentials" });
   }
 });
@@ -410,7 +390,7 @@ const SignupUser = asyncHandler(async (req, res) => {
 
     const roleResult = await client.query(
       "SELECT role_id FROM roles WHERE entity_id = $1 and name=$2 ",
-      [entityId, "customer"]
+      [entityId, "customer"],
     );
 
     let role;
@@ -421,10 +401,9 @@ const SignupUser = asyncHandler(async (req, res) => {
     // check if user with email exists in DB
     const userExists = await db.query(
       "SELECT id,name,email,phone,city,country address FROM users Where email = $1",
-      [email]
+      [email],
     );
     let userData;
-    console.log("Step 4: ", userExists, "user Founded");
     let userId;
     if (userExists?.rowCount == 0) {
       // Create as a  New User
@@ -443,7 +422,6 @@ const SignupUser = asyncHandler(async (req, res) => {
       };
 
       const userResult = await createUser(client, userDetails);
-      // console.log(userResult, "Create User");
 
       userId = userResult.id;
       userData = {
@@ -470,12 +448,12 @@ const SignupUser = asyncHandler(async (req, res) => {
     // Add the user Id's associated entity, role_id and branch_id in the user_entity_roles table
     const userRole = await client.query(
       "INSERT INTO user_entity_roles (user_id, entity_id, branch_id, role_id) VALUES ($1, $2, $3, $4)",
-      [userId, entityId, branchId, role.role_id]
+      [userId, entityId, branchId, role.role_id],
     );
     await client.query("COMMIT");
 
     await emailQueue.add("send-welcome-email", {
-      to:  userData?.email || email,
+      to: userData?.email || email,
       entityId,
       userData,
     });
@@ -505,7 +483,7 @@ const SigninUser = asyncHandler(async (req, res) => {
   try {
     const userResult = await pool.query(
       "SELECT id FROM users WHERE email = $1",
-      [email]
+      [email],
     );
 
     if (userResult.rows.length === 0) {
@@ -532,7 +510,7 @@ const SigninUser = asyncHandler(async (req, res) => {
       JOIN users u ON uer.user_id = u.id
       WHERE uer.user_id = $1 AND uer.entity_id =$2
       `,
-        [userId, entityId]
+        [userId, entityId],
       );
       let user = associationResult?.rows[0]; //
       if (!user) {
@@ -552,7 +530,6 @@ const SigninUser = asyncHandler(async (req, res) => {
         // throw new Error("Invalid Password");
       }
       // Email and password match
-      // console.log(user, "Login");
 
       if (user && matchPassword) {
         const user_info = {
@@ -568,7 +545,7 @@ const SigninUser = asyncHandler(async (req, res) => {
             UserInfo: user_info,
           },
           process.env.JWT_SECRET,
-          { expiresIn: "1h" }
+          { expiresIn: "1h" },
         );
 
         const refresh_token = refreshToken(user_info); //refresh token
@@ -607,8 +584,6 @@ const SigninUser = asyncHandler(async (req, res) => {
       return res.status(400).json({ error: "Subdomain is not found" });
     }
   } catch (error) {
-    console.log(error, "Signin Failed");
-
     res.status(400).json({ error: "Invalid Credentials" });
   }
 });
@@ -640,7 +615,6 @@ const Logout = asyncHandler(async (req, res) => {
       res.send({ message: "Logged out" });
     }
   } catch (error) {
-    console.log(error);
     return res.json({ message: "Credentials not Found to Logout" });
   }
 });
@@ -666,7 +640,6 @@ const RefreshToken = async (req, res) => {
             message: "Forbidden Access.. Invalid Token ",
           });
         }
-        // console.log(decoded, "Decoded login cred");
 
         const result = await db.query(
           `SELECT 
@@ -682,10 +655,8 @@ const RefreshToken = async (req, res) => {
       JOIN users u ON uer.user_id = u.id
       WHERE uer.user_id = $1 AND uer.entity_id = $2
       `,
-          [decoded?.data?.userId, decoded?.data?.entityId]
+          [decoded?.data?.userId, decoded?.data?.entityId],
         );
-
-        // console.log(result.rows[0], "Refresh Result");
 
         if (result.rows.length === 0) {
           return res.status(401).json({ error: "Invalid refresh token" });
@@ -708,7 +679,7 @@ const RefreshToken = async (req, res) => {
             UserInfo: user_info,
           },
           process.env.JWT_SECRET,
-          { expiresIn: "5m" } //production for 1h
+          { expiresIn: "5m" }, //production for 1h
         );
 
         res.send({
@@ -725,14 +696,13 @@ const RefreshToken = async (req, res) => {
             entityId: user.entity_id,
             entityName: user.entity_name,
             subdomain: user.subdomain,
-            country:user?.country ||"",
+            country: user?.country || "",
           },
           message: "Token Refreshed Successfully",
         });
-      })
+      }),
     );
   } catch (error) {
-    console.log(error);
     return res
       .status(401)
       .json({ message: "UnAuthorized! Refresh Token is Invalid" });
@@ -755,7 +725,6 @@ const ForgetPassword = asyncHandler(async (req, res) => {
     ]);
 
     let userData = userExists?.rows[0];
-    // console.log(userExists?.rows[0], "User Found");
 
     if (userExists?.rowCount > 0) {
       // Send the Reset Password Email
@@ -773,7 +742,7 @@ const ForgetPassword = asyncHandler(async (req, res) => {
       try {
         const userUpdate = await db.query(
           `update users set reset_password_token =$1 where email= $2 Returning *`,
-          [resetToken, email]
+          [resetToken, email],
         );
 
         if (userUpdate?.rowCount > 0) {
@@ -786,26 +755,29 @@ const ForgetPassword = asyncHandler(async (req, res) => {
           
           (Link will expire in 5 minutes)`;
 
-          // console.log(data, "updated user");
-
           // send Password Reset Email
           try {
             await send_email(email, "Reset Password", RESET_EMAIL_TXT);
 
             res.status(200).json({ message: "Check your  email " });
           } catch (error) {
-            console.log(error, "mail not sent");
+            // console.log(error, "mail not sent");
+            res
+              .status(500)
+              .json({
+                message: error.message || "Failed to sent password reset email",
+              });
           }
         }
       } catch (e) {
-        console.log(e.message, "Token not updated");
+        // console.log(e.message, "Token not updated");
         res.status(401).json({ message: "Invalid Email Id" });
       }
     } else {
       return res.status(400).json({ message: "User not found" });
     }
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 });
@@ -819,7 +791,7 @@ const VerifyUserAuth = asyncHandler(async (req, res) => {
     // check if user exists with token and user_id
     const userExists = await db.query(
       "SELECT * FROM users Where id = $1 AND reset_password_token = $2 ",
-      [id, token]
+      [id, token],
     );
 
     const validateToken = jwt.verify(token, process.env.JWT_SECRET);
@@ -829,7 +801,7 @@ const VerifyUserAuth = asyncHandler(async (req, res) => {
     } else {
       const updateResetToken = await db.query(
         "UPDATE users set reset_password_token = $1 Where id = $2 ",
-        [token, id]
+        [token, id],
       );
 
       // console.log(updateResetToken?.rows[0]);
@@ -874,7 +846,7 @@ const ResetPassword = asyncHandler(async (req, res) => {
       try {
         const userUpdate = await db.query(
           `update users set password =$1 where id= $2 Returning *`,
-          [hashedPassword, id]
+          [hashedPassword, id],
         );
 
         // Password Updated Successfully
@@ -884,10 +856,13 @@ const ResetPassword = asyncHandler(async (req, res) => {
           try {
             await db.query(
               `update users set reset_password_token =$1 where id= $2 Returning *`,
-              ["", id]
+              ["", id],
             );
           } catch (err) {
             console.log(err);
+            res
+              .status(500)
+              .json({ message: err.message || "Failed to update password" });
           }
           res.status(201).json({ message: "Password updated Successfully" });
         } else {
@@ -904,7 +879,7 @@ const ResetPassword = asyncHandler(async (req, res) => {
       //   .json({ message: "Invalid Token, Please genrate new Link " });
     }
   } catch (error) {
-    console.log(error, "Token expired error");
+    // console.log(error, "Token expired error");
     // res.status(401).json({ message: "Invalid Email Id" });
     return res.redirect(`${process.env.CLIENT_URL}/expired-link`);
   }

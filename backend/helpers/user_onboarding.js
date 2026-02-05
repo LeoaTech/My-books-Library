@@ -34,14 +34,12 @@ async function addPermissions(client, roleId) {
     `Select permission_id from permissions WHERE is_default=$1`,[true]
   );
 
-  console.log(getAllPermissions.rowCount, "Get all permissions");
 
   if (getAllPermissions.rows.length > 0) {
     const values = getAllPermissions.rows
       .map((p) => `(${roleId}, ${p.permission_id})`)
       .join(",");
 
-    console.log(values, "Values");
 
     const addPermissionQuery = `
       INSERT INTO role_permissions (role_id, permission_id)
@@ -51,11 +49,9 @@ async function addPermissions(client, roleId) {
     `;
 
     const saveNewRolePermissions = await client.query(addPermissionQuery);
-    console.log(saveNewRolePermissions.rowCount);
 
     return saveNewRolePermissions?.rows || [];
   } else {
-    console.log("No Permissions founds");
     return [];
   }
 }
@@ -130,7 +126,6 @@ async function createRole(client, entityId, role_type) {
   `;
   const values = [entityId, role_type,true];
   const result = await client.query(query, values);
-  console.log(result.rows[0], "Roles table");
 
   return result.rows[0];
 }

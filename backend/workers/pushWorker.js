@@ -132,7 +132,7 @@ const worker = new Worker(
         await send_push_notification(tokens, content.subject, content.body);
       }
     } catch (error) {
-      console.log(error, "Eror from push worker");
+      // console.log(error, "Eror from push worker");
 
       if (
         error?.errorInfo?.code === "messaging/registration-token-not-registered"

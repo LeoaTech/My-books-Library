@@ -4,30 +4,29 @@ const defaultRoles = ["owner", "vendor", "customer"];
 
 //    Fetched Roles from DB that belongs to a specific entity
 const FetchRoles = asyncHandler(async (req, res) => {
-  // console.log(req.user, "User  Roles details");
 
   const entityId = req?.user?.entityId || req.user?.entity_id;
   try {
     const rolesQuery = `SELECT * FROM roles where entity_id =$1`;
     const getAllRoles = await db.query(rolesQuery, [entityId]);
 
-    console.log(getAllRoles?.rows, "Roles Found in DB");
     res.status(200).json({
       roles: getAllRoles?.rows,
       message: "All Roles Found ",
     });
   } catch (error) {
-    console.log(error);
+    // console.log(error);
+    res
+      .status(500)
+      .json({ message: error.message || "Failed to fetch roles" });
   }
 });
 
 // Create New Role
 
 const NewRole = asyncHandler(async (req, res) => {
-  // console.log(req.body);
 
   const roleData = req.body.roleForm;
-  // console.log(roleData)
   const { name, entityId } = roleData;
 
   if (!name) {
@@ -45,13 +44,12 @@ const NewRole = asyncHandler(async (req, res) => {
     const addRoleQuery = `INSERT INTO roles (name,entity_id,is_default) values ($1,$2,$3) Returning *`;
     const saveNewRole = await db.query(addRoleQuery, [lowerCaseName, entityId, false]);
 
-    // console.log(saveNewRole?.rows[0]);
 
     res
       .status(200)
       .json({ message: "New Role", newRole: saveNewRole?.rows[0] }); //saveNewRole?.rows[0]
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     res
       .status(500)
       .json({ message: error.message || "Failed to Create New Role" });
@@ -91,15 +89,12 @@ const UpdateRole = asyncHandler(async (req, res) => {
         role_id,
         entityId,
       ]);
-
-      // console.log(updateRole?.rows[0]);
-
       return res
         .status(200)
         .json({ message: "Update role", result: updateRole?.rows[0] });
     }
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     res
       .status(500)
       .json({ message: error.message || "Failed to update the Role" });
@@ -149,7 +144,7 @@ const DeleteRole = asyncHandler(async (req, res) => {
       res.status(200).json({ message: "Delete Role" });
     }
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     res.status(400).json({
       message: "Role cannot be Deleted, RoleId is assigned to a User",
     });

@@ -18,14 +18,17 @@ const GetBookCondition = asyncHandler(async (req, res) => {
       message: "Books Conditions ",
     });
   } catch (error) {
-    console.log(error);
+    // console.log(error);
+    res
+      .status(500)
+      .json({ message: error.message || "Failed to fetch books conditions" });
   }
 });
 
 /* Create New Condition */
 
 const CreateCondition = asyncHandler(async (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
 
   const entityId = req?.user?.entityId || req?.user?.entity_id;
 
@@ -41,14 +44,13 @@ const CreateCondition = asyncHandler(async (req, res) => {
       [req.body.name, entityId]
     );
 
-    console.log(updateCondition?.rows[0], "condition Saved");
 
     res.status(200).json({
       conditions: updateCondition?.rows[0],
       message: "condition Saved Successfully ",
     });
   } catch (error) {
-    console.log(error, "Error creating new condition");
+    // console.log(error, "Error creating new condition");
     res.status(500).json({
       error,
       message: error.message || "Error Creating condition",
@@ -78,14 +80,14 @@ const UpdateCondition = asyncHandler(async (req, res) => {
       [name, condition_id]
     );
 
-    console.log(updateCondition?.rows[0], "condition Updated");
+    // console.log(updateCondition?.rows[0], "condition Updated");
 
     res.status(200).json({
       categories: updateCondition?.rows[0],
       message: "condition Updated Successfully ",
     });
   } catch (error) {
-    console.log(error, "Error Updating conditions");
+    // console.log(error, "Error Updating conditions");
     res.status(500).json({
       error,
       message: error.message || "Error Updating condition",

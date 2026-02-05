@@ -17,15 +17,16 @@ const FetchSettings = asyncHandler(async (req, res) => {
       message: "Settings Found ",
     });
   } catch (error) {
-    console.log(error);
+    // console.log(error);
+    res.status(500).json({
+      message: error.message || "Failed to fetch library settings",
+    });
   }
 });
 
 /* Update Settings */
 
 const UpdateSettings = asyncHandler(async (req, res) => {
-  //   console.log(req.body, "Settings Form");
-
   const entityId = req?.user?.entityId || req?.user?.entity_id;
 
   if (!entityId) {
@@ -34,9 +35,8 @@ const UpdateSettings = asyncHandler(async (req, res) => {
 
   const checkSettingsExist = await db.query(
     `Select id from settings where entity_id =$1`,
-    [entityId]
+    [entityId],
   );
-  console.log(checkSettingsExist.rowCount, "If settings exists");
 
   try {
     if (!req.body) {
@@ -69,10 +69,8 @@ const UpdateSettings = asyncHandler(async (req, res) => {
           consecutive_renewals,
           late_returns_fine,
           entityId,
-        ]
+        ],
       );
-
-      // console.log(createNewSettingsQuery, "Create Settings");
     } else {
       const updateSettingsQuery = await db.query(
         `UPDATE settings SET 
@@ -94,16 +92,15 @@ const UpdateSettings = asyncHandler(async (req, res) => {
           late_returns_fine,
           checkSettingsExist?.rows[0]?.id,
           entityId,
-        ]
+        ],
       );
-      // console.log(updateSettingsQuery, "Updated settings");
     }
 
     res.status(200).json({
       message: "Settings Updated Successfully ",
     });
   } catch (error) {
-    console.log(error, "Error saving settings");
+    // console.log(error, "Error saving settings");
     res.status(500).json({
       error,
       message: error.message || "Error saving settings",
