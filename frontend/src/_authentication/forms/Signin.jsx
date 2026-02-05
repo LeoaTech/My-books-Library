@@ -5,8 +5,9 @@ import { useSignin } from "../../hooks/useSignin";
 import { useAuthContext } from "../../hooks/useAuthContext";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "react-toastify";
 import GoogleAuthLink from "./GoogleAuthLink";
+
+
 const schema = z.object({
   email: z.string().email(),
   password: z
@@ -14,9 +15,8 @@ const schema = z.object({
     .min(6, { message: "Password length must be at least 6 characters" }),
 });
 const Signin = () => {
-
   const navigate = useNavigate();
-  const { persist, setPersist, googleAuth } = useAuthContext();
+  const { persist, setPersist } = useAuthContext();
   const params = useParams()
   const togglePersist = () => {
     setPersist((prev) => !prev);
@@ -27,21 +27,12 @@ const Signin = () => {
     localStorage.setItem("persist", persist);
   }, [persist]);
 
-
-  const LoginSuccess = () => toast.success("Login Successfully!", {
-    hideProgressBar: false,
-    closeOnClick: false,
-    pauseOnHover: true,
-    draggable: true,
-    theme: "dark",
-  })
   const { isLoading, error, signin, message, login } = useSignin();
   // console.log(error, "sign in error state",  message, "Sign in message");
   const {
     register,
     handleSubmit,
-    reset,
-    formState: { errors, isSubmitSuccessful, isSubmitting },
+    formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(schema),
   });
@@ -53,30 +44,13 @@ const Signin = () => {
     if (params?.subdomain) {
       await login(email, password, params?.subdomain)
     } else {
-      // Sign in from app domai
+      // Sign in from saas app domain
       await signin(email, password);
     }
 
   };
 
   // console.log(error, "Error");
-
-
-  useEffect(() => {
-    if (isSubmitSuccessful) {
-
-      reset();
-      if (error == null) {
-        localStorage.setItem("auth-source", "email");
-        LoginSuccess()
-        // setTimeout(() => {
-        // navigate("/");
-        // navigate("/select-library");
-
-        // }, 3000);
-      }
-    }
-  }, [isSubmitSuccessful, navigate]);
 
 
   return (
