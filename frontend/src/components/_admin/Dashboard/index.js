@@ -48,9 +48,16 @@ export const mockCategories = [
 ];
 
 export const mockBookingData = [
-  { name: 'Sept', bookings: 120, color: '#3b82f6' },
+  { name: 'Jan', bookings: 120, color: '#3b82f6' },
   { name: 'Oct', bookings: 300, color: '#22c55e' },
   { name: 'Nov', bookings: 450, color: '#f97316' },
   { name: 'Dec', bookings: 600, color: '#ef4444' },
+];
+
+export const mockLocationData = [
+  { name: 'New York', bookings: 2400, color: '#8884d8' },
+  { name: 'London', bookings: 1398, color: '#82ca9d' },
+  { name: 'Paris', bookings: 9800, color: '#ffc658' },
+  { name: 'Tokyo', bookings: 3908, color: '#ff8042' },
 ];
 
