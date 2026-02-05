@@ -10,6 +10,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import Banner from "../../components/main/Banner";
 import ConfirmationModal from "../../components/common/ConfirmationModal";
+import { getCurrencyCode } from "../../utils/currencyUtils";
 
 const PopularPlanType = {
     NO: 0,
@@ -37,6 +38,10 @@ export const Pricing = () => {
 
     const handleToggle = () => setIsYearly(!isYearly);
 
+
+    // Get Currency Code based on User Location or by Default  Location
+
+    const currencyCode = getCurrencyCode(auth?.country) || "usd";
 
     // Switch plan Interval
     const ToggleSwitch = () => (
@@ -283,11 +288,27 @@ export const Pricing = () => {
                                         {pricing.plan_name}
                                     </h3>
                                     <p className="mt-2 font-sans text-xl font-bold leading-9 lg:text-2xl">
-                                        <span className="text-sm ">PKR</span>{currentPricing?.price_value?.toLocaleString()}
+                                        <span className="text-sm "> {new Intl.NumberFormat(window.navigator.language, {
+                                            style: "currency",
+                                            currency: currencyCode,
+                                            minimumFractionDigits: 0,
+                                        }).format(isYearly
+                                            ? Math.round(currentPricing?.price_value / 12).toLocaleString()
+                                            : currentPricing?.price_value?.toLocaleString())}</span>
+
                                         <span className="text-base font-semibold text-blue-500 dark:text-blue-300">
-                                            / {isYearly ? 'year' : 'month'}
+                                            / month
                                         </span>
                                     </p>
+                                    {isYearly && (
+                                        <p className="text-sm text-gray-500 mb-2">
+                                            Billed as  {new Intl.NumberFormat(window.navigator.language, {
+                                                style: "currency",
+                                                currency: currencyCode,
+                                                minimumFractionDigits: 0,
+                                            }).format(currentPricing?.price_value)}  per year
+                                        </p>
+                                    )}
 
 
                                     <p className="mt-5 mb-4 font-sans text-base lg:text-base lg:leading-6">
