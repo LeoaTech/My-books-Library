@@ -17,6 +17,7 @@ const getDashboardMetrics = async (req, res) => {
 
     const BooksCategorySummary = await booksCategories(db, entityId);
     const bookingsByCategory = await bookingsByCategories(db, entityId);
+    const bookingsByLocation = await bookingsByCity(db, entityId);
 
     res.status(200).json({
       popularBooks: popularBooks.books,
@@ -27,6 +28,7 @@ const getDashboardMetrics = async (req, res) => {
       totalOverdueBooks: overdueBooksCount?.overdueBooks?.count || 0,
       booksCategorySummary: BooksCategorySummary?.bookCategories,
       bookingsByCategory: bookingsByCategory?.data || [],
+      bookingsByLocation: bookingsByLocation?.data || [],
     });
   } catch (error) {
     res.status(500).json({ message: "Error getting dashboard metrics" });
@@ -237,6 +239,28 @@ async function bookingsByCategories(db, entityId) {
     return { data: result?.rows || [] };
   } catch (error) {
     // console.log(error, "Error getting bookings by categories");
+    return { error, data: [] };
+  }
+}
+
+// Get Bookings Count by Location (City)
+async function bookingsByCity(db, entityId) {
+  try {
+    const result = await db.query(
+      `SELECT 
+        COALESCE(shipping_city, 'Unknown') AS name,
+        COUNT(*)::int AS bookings
+      FROM bookings
+      WHERE entity_id = $1 AND shipping_city IS NOT NULL
+      GROUP BY shipping_city
+      ORDER BY bookings DESC
+      LIMIT 10`,
+      [entityId],
+    );
+
+    return { data: result?.rows || [] };
+  } catch (error) {
+    // console.log(error, "Error getting bookings by location");
     return { error, data: [] };
   }
 }
