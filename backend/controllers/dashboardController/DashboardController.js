@@ -18,6 +18,7 @@ const getDashboardMetrics = async (req, res) => {
     const BooksCategorySummary = await booksCategories(db, entityId);
     const bookingsByCategory = await bookingsByCategories(db, entityId);
     const bookingsByLocation = await bookingsByCity(db, entityId);
+    const monthlyBookingSummary = await bookingsByMonth(db, entityId);
 
     res.status(200).json({
       popularBooks: popularBooks.books,
@@ -29,6 +30,7 @@ const getDashboardMetrics = async (req, res) => {
       booksCategorySummary: BooksCategorySummary?.bookCategories,
       bookingsByCategory: bookingsByCategory?.data || [],
       bookingsByLocation: bookingsByLocation?.data || [],
+      monthlyBookingSummary: monthlyBookingSummary?.data || [],
     });
   } catch (error) {
     res.status(500).json({ message: "Error getting dashboard metrics" });
@@ -261,6 +263,64 @@ async function bookingsByCity(db, entityId) {
     return { data: result?.rows || [] };
   } catch (error) {
     // console.log(error, "Error getting bookings by location");
+    return { error, data: [] };
+  }
+}
+
+// Get Bookings Count by Month (Last 4 Months)
+async function bookingsByMonth(db, entityId) {
+  try {
+    const result = await db.query(
+      `SELECT 
+        TO_CHAR(DATE_TRUNC('month', borrow_date), 'Mon') AS name,
+        COUNT(*)::integer AS bookings,
+        EXTRACT(MONTH FROM borrow_date)::integer AS month_num
+      FROM bookings
+      WHERE entity_id = $1 
+        AND borrow_date >= DATE_TRUNC('month', CURRENT_DATE) - INTERVAL '3 months'
+      GROUP BY DATE_TRUNC('month', borrow_date), EXTRACT(MONTH FROM borrow_date)
+      ORDER BY DATE_TRUNC('month', borrow_date) ASC`,
+      [entityId],
+    );
+
+    const colors = ["#3b82f6", "#22c55e", "#f97316", "#ef4444"];
+    const monthNames = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    const currentDate = new Date();
+    const allMonths = [];
+
+    for (let i = 3; i >= 0; i--) {
+      const date = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth() - i,
+        1,
+      );
+      const monthName = monthNames[date.getMonth()];
+
+      const monthData = result?.rows.find((row) => row.name === monthName);
+
+      allMonths.push({
+        name: monthName,
+        bookings: monthData ? monthData.bookings : 0,
+        color: colors[(3 - i) % colors.length],
+      });
+    }
+
+    return { data: allMonths };
+  } catch (error) {
+    // console.log(error, "Error getting monthly booking summary");
     return { error, data: [] };
   }
 }
