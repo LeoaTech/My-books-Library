@@ -5,6 +5,8 @@ import { useFetchCurrentPlan } from '../hooks/current_plan/useFetchCurrentPlan';
 import { useQueryClient } from '@tanstack/react-query';
 import Navbar from "../components/_user/Navbar/Navbar"
 import Banner from '../components/main/Banner';
+import { toast } from 'react-toastify';
+import ConfirmationModal from '../components/common/ConfirmationModal';
 
 const content = {
     pricing: {
@@ -117,7 +119,8 @@ const Pricing = () => {
     const [isYearly, setIsYearly] = useState(false);
     const queryClient = useQueryClient();
     const [isChangingPlan, setIsChangingPlan] = useState(false);
-
+    const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+    const [isCanceling, setIsCanceling] = useState(false);
 
 
     const { auth } = useAuthContext()
@@ -127,10 +130,12 @@ const Pricing = () => {
     const subscriptionExpiredAt = `${new Date(currentPlan?.subscription?.currentPeriodEnd).toDateString()} at ${new Date(currentPlan?.subscription?.currentPeriodEnd).toLocaleTimeString()}`;
 
     const isCancelledAtPeriodEnd = currentPlan?.subscription?.cancelAtPeriodEnd
-    
-    
+
+
     // Activate PAID PLAN fisrt time create Subscription
     const handleCreateCheckoutSession = async (priceId, planName) => {
+        const checkoutToastId = toast.loading('Redirecting to Stripe Checkout Page...');
+
         try {
             const response = await fetch(`${BASE_URL}/create-checkout-session`, {
                 method: 'POST',
@@ -144,15 +149,23 @@ const Pricing = () => {
             window.location.href = session.url;
 
         } catch (error) {
-            console.error("Error creating checkout session:", error);
-            // Hide spinner and show an error message
+            // console.error("Error creating checkout session:", error);
+
+            toast.update(checkoutToastId, {
+                render: `Error: ${error.message}` || "Failed to create checkout session for new subscription",
+                type: 'error',
+                isLoading: false,
+                autoClose: 1000,
+            });
         }
     }
-    
+
     // Activate: Change PAID PLAN
     const handleChangePlan = async (newPriceId, planName) => {
         if (isChangingPlan) return;
         setIsChangingPlan(true);
+        const planChangeToastId = toast.loading('Updating Plan...');
+
         try {
             const response = await fetch(`${BASE_URL}/change-subscription`, {
                 method: 'POST',
@@ -166,25 +179,38 @@ const Pricing = () => {
             if (!response.ok) {
                 throw new Error('Failed to change plan.');
             }
-            console.log(response, "Plan Changed Successfully");
 
-            // console.log(`Your ${planName} plan has been activated!`);
             queryClient.invalidateQueries(['current-plan'])
-            console.log('Plan change initiated successfully! Your plan will update shortly.');
-            window.location.reload(); // Simple way to reflect the change
+            toast.update(planChangeToastId, {
+                render: "Plan Changed Successfully. Please refresh the page to see changes",
+                type: 'success',
+                isLoading: false,
+                autoClose: 2000,
+            });
+            window.location.reload();
+
         } catch (error) {
-            console.error('Failed to change plan:', error);
-            alert('There was an error changing your plan.');
+            toast.error('There was an error changing your plan.');
+            toast.update(planChangeToastId, {
+                render: `Error: ${error.message}` || "Failed to cchange plan",
+                type: 'error',
+                isLoading: false,
+                autoClose: 1000,
+            });
         } finally {
             setIsChangingPlan(false);
         }
     };
 
+    const handleCancelSubscription = () => {
+        setIsCancelModalOpen(true);
+    };
     // Activate: FREE PLAN OR Cancel A Subscription
-    const handleCancelSubscription = async () => {
-        if (!window.confirm("Are you sure you want to cancel your subscription?")) {
-            return;
-        }
+    const confirmCancellation = async () => {
+        if (isCanceling) return;
+        const cancelPlanToastId = toast.loading('Initiate Cancel Subscription Request...');
+
+        setIsCanceling(true);
         try {
             const response = await fetch(`${BASE_URL}/cancel-subscription`, {
                 method: 'POST',
@@ -195,16 +221,25 @@ const Pricing = () => {
             });
 
             if (!response.ok) {
-                throw new Error('Failed to activate plan.');
+                throw new Error('Failed to cancel Subscription.');
             }
-            console.log(response, "Cancelled Subscription");
-
             queryClient.invalidateQueries(['current-plan']);
-            console.log('Your subscription has been scheduled for cancellation.');
-            // window.location.reload(); // Refresh to show the new state
+            toast.update(cancelPlanToastId, {
+                render: "Subscription cancellation scheduled.",
+                type: 'success',
+                isLoading: false,
+                autoClose: 2000,
+            });
+            setIsCancelModalOpen(false);
+            window.location.reload();
         } catch (error) {
-            // alert('Failed to cancel subscription.');
-            console.log(error, "Cancel Subscription error")
+            toast.update(cancelPlanToastId, {
+                render: `Error: ${error.message}` || "Request Failed to cancel subscription plan",
+                type: 'error',
+                isLoading: false,
+                autoClose: 1000,
+            });
+            setIsCancelModalOpen(false);
         }
     };
 
@@ -345,6 +380,16 @@ const Pricing = () => {
                 </section>
             </main>
 
+            <ConfirmationModal
+                isOpen={isCancelModalOpen}
+                onClose={() => setIsCancelModalOpen(false)}
+                onConfirm={confirmCancellation}
+                title="Cancel Subscription"
+                message="Are you sure you want to cancel your subscription? You will lose membership access at the end of the current billing period."
+                confirmText="Yes, Cancel Subscription"
+                cancelText="Keep Subscription"
+                isProcessing={isCanceling}
+            />
         </div>
     );
 };
