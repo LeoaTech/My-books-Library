@@ -5,23 +5,26 @@ const getDashboardMetrics = async (req, res) => {
 
   const entityId = user?.entityId || user?.entity_id;
   const userId = user?.userId || user?.user_id;
+  // console.log(req.user, "Req User");
+
   try {
     const popularBooks = await totalBooks(db, entityId);
     const bookingSummary = await totalBookings(db, entityId);
     const recentlyAddedBooks = await recentlyAddedBook(db, entityId);
     const booksByAuthorsSummary = await booksAuthors(db, entityId);
-    const BooksCategorySummary = await booksCategories(db, entityId);
     const totalUserCount = await totalUsers(db, entityId, userId);
     const overdueBooksCount = await totalOverdueBooks(db, entityId);
+
+    const BooksCategorySummary = await booksCategories(db, entityId);
 
     res.status(200).json({
       popularBooks: popularBooks.books,
       bookingSummary: bookingSummary?.bookings,
       recentlyAddedBooks: recentlyAddedBooks.recentBooks,
       booksByAuthorsSummary: booksByAuthorsSummary?.booksAuthors,
-      booksCategorySummary: BooksCategorySummary?.bookCategories,
       totalUsers: totalUserCount?.users?.count || 0,
       totalOverdueBooks: overdueBooksCount?.overdueBooks?.count || 0,
+      booksCategorySummary: BooksCategorySummary?.bookCategories,
     });
   } catch (error) {
     res.status(500).json({ message: "Error getting dashboard metrics" });
@@ -32,7 +35,6 @@ async function totalBooks(db, entityId) {
   const getEntityBranches = `Select id from branches where entity_id = $1`;
   try {
     const getBranchIds = await db.query(getEntityBranches, [entityId]);
-    console.log(getBranchIds.rows, "Branches");
 
     if (getBranchIds.rowCount == 0) {
       return { books: [] };
@@ -94,7 +96,6 @@ async function recentlyAddedBook(db, entityId) {
   const getEntityBranches = `Select id from branches where entity_id = $1`;
   try {
     const getBranchIds = await db.query(getEntityBranches, [entityId]);
-    console.log(getBranchIds.rows, "Branches");
 
     if (getBranchIds.rowCount == 0) {
       return { recentBooks: [] };
@@ -128,58 +129,12 @@ LIMIT 10`,
   }
 }
 
-// Get Books count with Categories
-
-async function booksCategories(db, entityId) {
-  const getEntityBranches = `Select id from branches where entity_id = $1`;
-  try {
-    const getBranchIds = await db.query(getEntityBranches, [entityId]);
-    console.log(getBranchIds.rows, "Branches");
-
-    if (getBranchIds.rowCount == 0) {
-      return { booksCategories: [] };
-    }
-
-    let branchIds = getBranchIds.rows.map((branch) => branch.id);
-
-    const getBooksList = await db.query(
-      `SELECT
-    c.name AS name,
-    br.name AS branch_name,
-    COUNT(b.id)::int AS count
-FROM
-    public.books AS b
-JOIN
-    public.categories AS c ON b.category = c.id
-JOIN
-    public.branches AS br ON b.branch_id = br.id
-WHERE
-    b.branch_id = ANY ($1)
-GROUP BY
-    c.name, br.name
-ORDER BY
-    count DESC
-LIMIT 10`,
-      [branchIds],
-    );
-
-    // console.log(getBooksList?.rows, "Books available");
-    return {
-      bookCategories: getBooksList?.rows || [],
-    };
-  } catch (error) {
-    console.log(error, "Error getting books");
-    return { error, bookCategories: [] };
-  }
-}
-
 // Get Books Count by Authors
 
 async function booksAuthors(db, entityId) {
   const getEntityBranches = `Select id from branches where entity_id = $1`;
   try {
     const getBranchIds = await db.query(getEntityBranches, [entityId]);
-    console.log(getBranchIds.rows, "Branches");
 
     if (getBranchIds.rowCount == 0) {
       return { booksAuthors: [] };
@@ -208,13 +163,56 @@ LIMIT 12`,
       [branchIds],
     );
 
-    // console.log(booksAuthorsCount?.rows, "Books available");
     return {
       booksAuthors: booksAuthorsCount?.rows || [],
     };
   } catch (error) {
-    console.log(error, "Error getting books count for Authors");
+    // console.log(error, "Error getting books count for Authors");
     return { error, booksAuthors: [] };
+  }
+}
+
+// Get Books count with Categories
+
+async function booksCategories(db, entityId) {
+  const getEntityBranches = `Select id from branches where entity_id = $1`;
+  try {
+    const getBranchIds = await db.query(getEntityBranches, [entityId]);
+    // console.log(getBranchIds.rows, "Branches");
+
+    if (getBranchIds.rowCount == 0) {
+      return { booksCategories: [] };
+    }
+
+    let branchIds = getBranchIds.rows.map((branch) => branch.id);
+
+    const getBooksList = await db.query(
+      `SELECT
+    c.name AS name,
+    br.name AS branch_name,
+    COUNT(b.id)::int AS count
+FROM
+    public.books AS b
+JOIN
+    public.categories AS c ON b.category = c.id
+JOIN
+    public.branches AS br ON b.branch_id = br.id
+WHERE
+    b.branch_id = ANY ($1)
+GROUP BY
+    c.name, br.name
+ORDER BY
+    count DESC
+LIMIT 10`,
+      [branchIds],
+    );
+
+    return {
+      bookCategories: getBooksList?.rows || [],
+    };
+  } catch (error) {
+    // console.log(error, "Error getting books");
+    return { error, bookCategories: [] };
   }
 }
 
