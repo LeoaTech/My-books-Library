@@ -25,7 +25,6 @@ const DashboardPage = () => {
   // Call the dashboard API to display real-data
   const { data } = useFetchDashboardMetrics();
 
-  // console.log(data, "Dashboard data");
   if (!data) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900 text-lg font-medium text-gray-600 dark:text-gray-300">
