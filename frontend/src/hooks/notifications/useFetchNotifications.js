@@ -18,10 +18,8 @@ const fetchNotificationTemplates = async ({ signal }) => {
 
   } catch (err) {
     if (err.name === "AbortError") {
-      console.log("Request aborted");
       return null; 
     }
-    console.error("Error Fetching Templates:", err);
     throw err; 
   }
 };

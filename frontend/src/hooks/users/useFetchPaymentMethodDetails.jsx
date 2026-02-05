@@ -6,7 +6,6 @@ import { BASE_URL } from "../../utils/baseAPIURL";
 const fetchPaymentMethodDetails = async ({ signal, entityId }) =>
   await fetch(`${BASE_URL}/library/${entityId}/stripe/status`, { signal, credentials: "include" })
     .then((res) => {
-      console.log(res)
       if (!res.ok) {
         throw new Error("Couldn't fetch");
       } else {

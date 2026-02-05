@@ -34,7 +34,6 @@ export const AuthContextProvider = ({ children }) => {
   ); //Persist Auth State to refresh access token 
 
 
-  console.log(localStorage.getItem('auth-source'), " is Auth Source")
 
 
   // To get Google Signin User credentials
@@ -45,7 +44,6 @@ export const AuthContextProvider = ({ children }) => {
       });
 
       const data = response?.data?.user;
-      console.log(response, "login success", data);
       //   save the json token to local storage;
       if (response.status === 200) {
 
@@ -62,7 +60,6 @@ export const AuthContextProvider = ({ children }) => {
         }
       }
     } catch (error) {
-      console.log(error, "Error getting data");
       <Navigate to="/signin" replace />
 
     }

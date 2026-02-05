@@ -12,7 +12,7 @@ export const useResetPassword = () => {
       `${BASE_URL}/auth/reset-password/${id}/${token}`,
       {
         password: password,
-        confirm_password: confirm_password, // or just { email } if you're using ES6 shorthand
+        confirm_password: confirm_password, 
       },
       {
         headers: { "Content-Type": "application/json" },
@@ -21,7 +21,7 @@ export const useResetPassword = () => {
     if (res.status === 201) {
       setMessage(true);
     } else {
-      console.log("Failed to reset password");
+      // console.log("Failed to reset password");
     }
   };
 

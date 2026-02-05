@@ -41,11 +41,7 @@ export const useSignin = () => {
       body: JSON.stringify({ email, password }),
     });
 
-    // console.log(response, "Response");
-
     const result = await response.json(); //response?.data;
-    console.log(result, "Sign in result");
-
     setIsLoading(false);
 
     if (!response.ok) {
@@ -85,10 +81,7 @@ export const useSignin = () => {
       body: JSON.stringify({ email, password, subdomain }),
     });
 
-    // console.log(response, "Response");
-
     const result = await response.json(); //response?.data;
-    console.log(result, "Sign in result from library domain");
 
     setIsLoading(false);
 

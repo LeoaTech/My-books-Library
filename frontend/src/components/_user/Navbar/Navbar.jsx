@@ -53,7 +53,6 @@ const Navbar = () => {
   }
 
   let sub_domain = auth?.subdomain || subdomain
-  console.log(sub_domain);
 
   return (
     <header className="w-full fixed top-0 left-0 right-0 z-50">

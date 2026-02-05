@@ -20,10 +20,8 @@ const fetchLibraryDetails = async ({ signal, queryKey }) => {
 
     } catch (err) {
         if (err.name === "AbortError") {
-            console.log("Request aborted");
             return null;
         }
-        console.error("Error Fetching library details:", err);
         throw err;
     }
 };

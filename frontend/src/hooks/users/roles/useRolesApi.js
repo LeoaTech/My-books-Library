@@ -10,7 +10,6 @@ export const useRoles = () => {
   const newRole = async (newRole) => {
     setIsLoading(true);
     setError(null);
-    console.log("Form Reached");
 
     const response = await fetch(`${BASE_URL}/roles/create`, {
       method: "POST",
@@ -19,9 +18,7 @@ export const useRoles = () => {
       body: JSON.stringify({ roleForm: newRole }),
     });
 
-    console.log(response, "Roles Form Response");
     const result = await response.json(); //response?.data;
-    console.log(result, "Result");
   };
 
   /* Delete Role */
@@ -36,10 +33,8 @@ export const useRoles = () => {
       body: JSON.stringify({ entityId }),
     });
 
-    console.log(response, "Roles Form Response");
 
     const result = await response.json(); //response?.data;
-    console.log(result, "Result");
 
     if (response.status === 204) {
       setIsLoading(false);
@@ -54,7 +49,6 @@ export const useRoles = () => {
   const updateRole = async (roleData) => {
     setIsLoading(true);
     setError(null);
-    // console.log("Form Reached");
 
     const { name, role_id, entityId } = roleData;
 
@@ -67,9 +61,7 @@ export const useRoles = () => {
       body: JSON.stringify({ name, entityId }),
     });
 
-    console.log(response, "Roles Form Response");
     const result = await response.json(); //response?.data;
-    console.log(result, "Result");
   };
 
   return {

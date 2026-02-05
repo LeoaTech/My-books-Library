@@ -24,6 +24,7 @@ const BookingPieChart = ({ data }) => {
     );
   };
 
+
   return (
     <TableCard title="Booking Summary (Last 4 Months)">
       <div className="h-[300px] w-full">

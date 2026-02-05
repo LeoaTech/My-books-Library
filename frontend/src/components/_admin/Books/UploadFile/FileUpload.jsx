@@ -46,7 +46,6 @@ const UploadBookByFileHandler = ({ setUploadFileModal }) => {
 
         const formData = new FormData();
         formData.append('file', file);
-        console.log(formData, "Form Data");
         setMessage('Uploading...');
         setIsError(false);
         try {
@@ -63,7 +62,7 @@ const UploadBookByFileHandler = ({ setUploadFileModal }) => {
         } catch (error) {
             setIsError(true);
             setMessage(error || 'Error uploading file.');
-            console.error('Error uploading file:', error);
+            // console.error('Error uploading file:', error);
             setFile(null);
         }
     };

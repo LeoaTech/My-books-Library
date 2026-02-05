@@ -158,7 +158,6 @@ const AddNewBookModal = ({ setShowModal }) => {
           description: "",
         };
         const newAuthor = await addAuthorMutation(authorForm);
-        console.log(newAuthor, "New Author");
 
         toast.update(toastId, {
           render: 'Author created successfully!',
@@ -169,7 +168,7 @@ const AddNewBookModal = ({ setShowModal }) => {
         return newAuthor.data;
 
       } catch (error) {
-        console.error("Error creating author:", error);
+        // console.error("Error creating author:", error);
         toast.update(toastId, {
           render: `Error: ${error.message}`,
           type: 'error',
@@ -184,12 +183,10 @@ const AddNewBookModal = ({ setShowModal }) => {
   /* Create New Category   */
   const handleCreateCategory = useCallback(
     async (inputValue) => {
-      console.log(inputValue, "Value");
       const toastId = toast.loading('Creating new category...');
 
       try {
         const newCategory = await addCategory(inputValue);
-        console.log(newCategory, "API response");
         toast.update(toastId, {
           render: 'Category created successfully!',
           type: 'success',
@@ -205,7 +202,7 @@ const AddNewBookModal = ({ setShowModal }) => {
           isLoading: false,
           autoClose: 1000,
         });
-        console.error("Error creating category:", error);
+        // console.error("Error creating category:", error);
         return;
       }
     },
@@ -215,11 +212,9 @@ const AddNewBookModal = ({ setShowModal }) => {
 
   const handleCreateCovers = useCallback(
     async (inputValue) => {
-      console.log(inputValue, "cover value");
       const toastId = toast.loading('Creating new covers...');
       try {
         const newCovers = await addCover(inputValue);
-        console.log(newCovers, "API response");
         toast.update(toastId, {
           render: 'Cover type created successfully!',
           type: 'success',
@@ -229,7 +224,7 @@ const AddNewBookModal = ({ setShowModal }) => {
         await refetchCovers();
         return newCovers;
       } catch (error) {
-        console.error("Error creating cover:", error);
+        // console.error("Error creating cover:", error);
         toast.update(toastId, {
           render: `Error: ${error.message}`,
           type: 'error',
@@ -244,12 +239,10 @@ const AddNewBookModal = ({ setShowModal }) => {
   /* Create New Condition type for book   */
   const handleCreateConditions = useCallback(
     async (inputValue) => {
-      console.log(inputValue, "condition value");
       const toastId = toast.loading('Creating new condition...');
 
       try {
         const newCondition = await addConditionType(inputValue);
-        console.log(newCondition, "API response");
         toast.update(toastId, {
           render: 'Condition type created successfully!',
           type: 'success',
@@ -259,7 +252,7 @@ const AddNewBookModal = ({ setShowModal }) => {
         await refetchCondition();
         return newCondition;
       } catch (error) {
-        console.error("Error creating condition:", error);
+        // console.error("Error creating condition:", error);
         toast.update(toastId, {
           render: `Error: ${error.message}`,
           type: 'error',
@@ -300,12 +293,11 @@ const AddNewBookModal = ({ setShowModal }) => {
     mutationFn: addBook,
     onSuccess: (data) => {
       reset();
-      // console.log(data);
       toast.success(message);
       setShowModal(false);
     },
     onSettled: () => {
-      queryClient.invalidateQueries(["books"]); // invalidate books query to refetch
+      queryClient.invalidateQueries(["books"]);
     },
     onError: () => {
       toast.error(message || "Failed to add book")
@@ -319,21 +311,8 @@ const AddNewBookModal = ({ setShowModal }) => {
   const selectedPublisher = watch("publisher");
 
 
-  // console.log(selectedAuthor, "Selected Author",
-  //   selectedCategory, "Category",
-  //   selectedCondition, "Condition",
-  //   selectedCover,"Cover",
-  //   selectedPublisher,"publisher"
-  // );
-
-  // const createOption = (label) => ({
-  //   label,
-  //   value: label.toLowerCase().replace(/\W/g, ""),
-  // });
-
   /* Save Book Details Form function */
   const onSubmit = async (data) => {
-    // console.log(data);
     const booksForm = {
       ...data,
       author: selectedAuthor?.value,
@@ -346,8 +325,6 @@ const AddNewBookModal = ({ setShowModal }) => {
       role_id: auth?.roleId,
       added_by: auth?.role_name,
     };
-
-    // console.log(booksForm, "Form Details of Book");
 
     await addBookMutation(booksForm); //add book mutation
   };
@@ -396,7 +373,6 @@ const AddNewBookModal = ({ setShowModal }) => {
       </div>
     );
   }
-  // console.log(errors, "Form Error", isValid);
 
   return (
     <div className="fixed left-0 top-0  inset-0 bg-[#64748B] bg-opacity-75 transition-opacity dark:bg-slate-400 dark:bg-opacity-75 lg:left-[18rem]">
@@ -466,10 +442,7 @@ const AddNewBookModal = ({ setShowModal }) => {
                             styles={selectStyles}
                             onChange={async (newValue, actionMeta) => {
                               if (actionMeta.action === "create-option") {
-                                // const result = 
                                 await handleCreateAuthor(newValue.label);
-                                // {console.log(result)}
-                                // field.onChange(result);
                               } else {
                                 field.onChange(newValue);
                               }

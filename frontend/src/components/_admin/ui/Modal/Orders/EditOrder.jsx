@@ -23,7 +23,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useOrdersApi } from "../../../../../hooks/orders/useOrdersApi";
 import LoadingSpinner from "../../../Loader/LoadingSpinner";
 const EditOrder = ({ getOrderDetails, onClose }) => {
-  console.log(getOrderDetails);
   const queryClient = useQueryClient();
   const { updateOrder, error, isLoading } = useOrdersApi();
   const [editableItems, setEditableItems] = useState(getOrderDetails?.items || []);
@@ -77,10 +76,8 @@ const EditOrder = ({ getOrderDetails, onClose }) => {
     );
   };
 
-  // console.log(isValid, "Form valid");
-  // console.log(errors, "Form errors");
+ 
   const onSubmit = async (updateData) => {
-    console.log(updateData, "Form");
     const updateFormData = { ...updateData, items: editableItems, id: getOrderDetails?.id };
     await updateOrderMutation(updateFormData);
   };
@@ -89,16 +86,7 @@ const EditOrder = ({ getOrderDetails, onClose }) => {
 
   const isEditOrderShippingDetails = getOrderDetails?.order_status.toLowerCase() === "packed" || getOrderDetails?.order_status.toLowerCase() === "shipped";
 
-  useEffect(() => {
-    if (isSubmitSuccessful) {
-      if (error) {
-        console.log(error)
-      } else {
-        console.log("Updated Successfully");
 
-      }
-    }
-  }, [isSubmitSuccessful, error])
   return (
     <div className="fixed left-0 top-0  inset-0 bg-[#64748B] bg-opacity-75 transition-opacity dark:bg-slate-300 dark:bg-opacity-75 lg:left-[18rem]">
       <div className="relative p-5 rounded-md">

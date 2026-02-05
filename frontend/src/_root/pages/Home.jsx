@@ -38,7 +38,6 @@ const Home = () => {
   useEffect(() => {
     const handleAuth = async () => {
       const redirectUrl = await getUser();
-      console.log(redirectUrl, "URL")
       navigate(redirectUrl);
     };
 

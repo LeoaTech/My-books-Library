@@ -13,7 +13,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const { auth } = useAuthContext();
   let name = auth?.entityName;
 let role = auth?.role_name;
-console.log(auth, "auth");
 
   const { data: currentPlan, isLoading } = useFetchCurrentPlan(auth)
 
@@ -45,7 +44,6 @@ console.log(auth, "auth");
     });
 
   }, [currentPlan]);
-  // console.log(filteredRoutes, "Filtered Routes");
 
   const trigger = useRef(null);
   const sidebar = useRef(null);

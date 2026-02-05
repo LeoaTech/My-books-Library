@@ -15,8 +15,6 @@ const BookOverview = () => {
   const [reviewsActive, setReviewsActive] = useState(false);
   const { auth } = useAuthContext();
 
-  console.log(auth);
-
   const handleDetailsActive = () => {
     setDetailsActive(true);
     setReviewsActive(false);

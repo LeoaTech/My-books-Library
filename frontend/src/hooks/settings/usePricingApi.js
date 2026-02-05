@@ -12,7 +12,6 @@ export const usePricingApi = () => {
     setIsLoading(true);
     setError(null);
 
-    // console.log(plan, "PlanId");
     const response = await fetch(`${BASE_URL}/pricing/create`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -20,10 +19,8 @@ export const usePricingApi = () => {
       body: JSON.stringify(plan),
     });
 
-    // console.log(response, "Plans Form Response");
 
     const result = await response.json(); //response?.data;
-    // console.log(result, "Result");
 
     if (!response.ok) {
       setIsLoading(false);
@@ -52,7 +49,6 @@ export const usePricingApi = () => {
 
     setIsLoading(true);
     setError(null);
-    // console.log(plan, "PlanId");
     const response = await fetch(`${BASE_URL}/pricing/update/${plan.plan_id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -60,10 +56,8 @@ export const usePricingApi = () => {
       body: JSON.stringify(plan),
     });
 
-    // console.log(response, "Plans Update Response");
 
     const result = await response.json(); //response?.data;
-    // console.log(result, "Update Plan details Result");
 
     if (!response.ok) {
       setIsLoading(false);
@@ -96,17 +90,14 @@ export const usePricingApi = () => {
 
     setIsLoading(true);
     setError(null);
-    // console.log(planId, "Plan Delete");
     const response = await fetch(`${BASE_URL}/pricing/delete/${planId}`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
     });
 
-    // console.log(response, "Plan Delete Response");
 
     const result = await response.json();
-    // console.log(result, "Result");
 
     if (!response.ok) {
       toast.update(toastId, {
@@ -127,7 +118,6 @@ export const usePricingApi = () => {
       });
       const result = await response.json(); //response?.data;
       setIsLoading(false);
-      // console.log(result, "delete Result");
     }
   };
 

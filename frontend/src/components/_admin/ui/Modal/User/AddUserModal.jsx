@@ -51,7 +51,6 @@ const AddUserModal = ({ setOpenModal }) => {
   });
 
 
-  console.log(errors, "Errors")
   const onSubmit = async (data) => {
     try {
 
@@ -75,27 +74,24 @@ const AddUserModal = ({ setOpenModal }) => {
         body: JSON.stringify(payload),
       });
 
-      // console.log(response, "Add User API response");
 
       if (!response.ok) {
         throw new Error('Failed to create user');
       }
 
       const result = await response.json();
-      console.log('user created:', result);
       toast.success('user added successfully!');
       reset();
       queryClient.invalidateQueries("users")
       setOpenModal((prev) => !prev)
     } catch (error) {
-      console.error('Error creating user:', error);
+      // console.error('Error creating user:', error);
       toast.error('Failed to Create new User');
       reset();
       setOpenModal((prev) => !prev)
     }
   };
 
-  // console.log(data, isPending, error);
 
 
 

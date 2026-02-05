@@ -4,7 +4,6 @@ import { useBookingApi } from "../../../../../hooks/bookings/useBookingsApi";
 
 const DeleteBooking = ({ booking, close }) => {
 
-  console.log(booking);
   
   const queryClient = useQueryClient();
   const { deleteBooking, error, isLoading } = useBookingApi();
@@ -16,7 +15,7 @@ const DeleteBooking = ({ booking, close }) => {
       close();
     },
     onError: (err) => {
-      console.error("Error creating new booking:", err);
+      // console.error("Error creating new booking:", err);
       close();
     },
   });

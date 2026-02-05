@@ -19,7 +19,6 @@ export const usePermissions = () => {
     });
 
     const result = await response.json(); //response?.data;
-    // console.log(result, "Result");
   };
 
   /* Delete Permission */
@@ -36,7 +35,6 @@ export const usePermissions = () => {
     );
 
     const result = await response.json(); //response?.data;
-    // console.log(result, "Result");
 
     if (response.status === 204) {
       setIsLoading(false);
@@ -64,7 +62,6 @@ export const usePermissions = () => {
     });
 
     const result = await response.json(); //response?.data;
-    // console.log(result, "Result");
   };
 
   return {

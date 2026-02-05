@@ -23,9 +23,7 @@ const ConditionForm = ({
         },
     });
 
-    const onSubmit = async (data) => {
-        // console.log(data, "Condition");
-      
+    const onSubmit = async (data) => {      
        if(initialData){
          await saveCondition({...initialData,name:data?.name});
        }else{

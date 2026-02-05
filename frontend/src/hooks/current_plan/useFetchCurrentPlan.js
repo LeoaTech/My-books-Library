@@ -18,10 +18,8 @@ const fetchCurrentPlan = async ({ signal }) => {
 
   } catch (err) {
     if (err.name === "AbortError") {
-      console.log("Request aborted");
       return null; 
     }
-    console.error("Error Fetching Plan:", err);
     throw err; 
   }
 };

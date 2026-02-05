@@ -19,7 +19,6 @@ export const useOrdersApi = () => {
       id:order.id
     }
 
-    // console.log(order, "OrderId");
     const response = await fetch(`${BASE_URL}/orders/update/${order?.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -27,10 +26,8 @@ export const useOrdersApi = () => {
       body: JSON.stringify({ orderForm: updatedOrder }),
     });
 
-    console.log(response, "Orders Form Response");
 
     const result = await response.json(); //response?.data;
-    console.log(result, "Result");
 
     if (!response.ok) {
       setIsLoading(false)
@@ -48,17 +45,14 @@ export const useOrdersApi = () => {
     setIsLoading(true);
     setError(null);
 
-    // console.log(orderId, "OrderId");
     const response = await fetch(`${BASE_URL}/orders/delete/${orderId}`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
     });
 
-    console.log(response, "Delete Order Response");
 
     const result = await response.json(); //response?.data;
-    console.log(result, "Delete Order Result");
 
     if (response.status === 200) {
       setError(null)

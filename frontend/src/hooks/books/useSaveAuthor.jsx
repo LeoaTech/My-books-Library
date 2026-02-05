@@ -10,8 +10,6 @@ export const useAuthor = () => {
   const addAuthor = async (data) => {
     setIsLoading(true);
     setError(null);
-
-    // console.log(data, "Author name");
     
     try {
       const response = await fetch(`${BASE_URL}/authors/new`, {
@@ -22,13 +20,9 @@ export const useAuthor = () => {
       });
 
       const result = await response.json(); //response?.data;
-      console.log(result, "Author Save Result");
       return {success:true, data:result?.authors, message:result.message}
-      // setError(null);
-      // setMessage(result.message);
-      // return result;
+  
     } catch (error) {
-      console.log(error);
       setError(error.message);
     } finally {
       setIsLoading(false)
@@ -39,7 +33,6 @@ export const useAuthor = () => {
   const updateAuthor = async (data) => {
     setIsLoading(true);
     setError(null);
-    // console.log(data,"Update Author");
     
     try {
       const response = await fetch(`${BASE_URL}/authors/update/${data.id}`, {
@@ -50,12 +43,10 @@ export const useAuthor = () => {
       });
 
       const result = await response.json(); //response?.data;
-      // console.log(result, "Author updated Result");
       setError(null);
       setMessage(result.message);
       return result;
     } catch (error) {
-      console.log(error);
       setError(error.message);
     } finally {
       setIsLoading(false)
@@ -68,7 +59,6 @@ export const useAuthor = () => {
   const deleteAuthor = async (data) => {
     setIsLoading(true);
     setError(null);
-console.log(data);
 
     try {
       const response = await fetch(`${BASE_URL}/authors/remove/${data}`, {
@@ -79,12 +69,10 @@ console.log(data);
       });
 
       const result = await response.json(); //response?.data;
-      console.log(result, "Author deleted Result");
       setError(null);
       setMessage(result.message);
       return result;
     } catch (error) {
-      console.log(error);
       setError(error.message);
       setMessage(error.detail)
     } finally {

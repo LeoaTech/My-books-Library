@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
 const fetchBookDataByIsbn = async (isbn) => {
-  // console.log(isbn, "Book ISBN");
 
   if (!isbn) {
     return null;

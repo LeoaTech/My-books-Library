@@ -12,7 +12,6 @@ export const useConditionActions = () => {
     setIsLoading(true);
     setError(null);
 
-    console.log(data, "Condition name");
 
     try {
       const response = await fetch(`${BASE_URL}/conditions/new`, {
@@ -23,12 +22,10 @@ export const useConditionActions = () => {
       });
 
       const result = await response.json(); //response?.data;
-      console.log(result, "Condition Save Result");
       setError(null);
       setMessage(result.message);
       return result;
     } catch (error) {
-      console.log(error);
       setError(error.message);
     } finally {
       setIsLoading(false)
@@ -49,12 +46,10 @@ export const useConditionActions = () => {
       });
 
       const result = await response.json(); //response?.data;
-      // console.log(result, "Condition updated Result");
       setError(null);
       setMessage(result.message);
       return result;
     } catch (error) {
-      console.log(error);
       setError(error.message);
     } finally {
       setIsLoading(false)
@@ -76,12 +71,10 @@ export const useConditionActions = () => {
       });
 
       const result = await response.json(); //response?.data;
-      console.log(result, "Condition deleted Result");
       setError(null);
       setMessage(result.message);
       return result;
     } catch (error) {
-      console.log(error);
       setError(error.message);
     } finally {
       setIsLoading(false)
@@ -97,7 +90,6 @@ export const useConditionActions = () => {
 const fetchConditions = async ({ signal }) =>
   await fetch(`${BASE_URL}/conditions`, { signal, credentials: "include" })
     .then((res) => {
-      // console.log(res,"Conditions fetched")
       if (!res.ok) {
         throw new Error("Couldn't fetch Book condition types");
       } else {

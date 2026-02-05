@@ -9,7 +9,6 @@ import { useMutation } from "@tanstack/react-query";
 const useUpdateBooking = () => useMutation({
   mutationFn: async (data) => {
     // Call your API
-    console.log("Updating with: ", data);
     return data;
   }
 });
@@ -36,7 +35,6 @@ const bookingSchema = z.object({
 
 
 const EditBookingDetails = ({ close, bookingValue }) => {
-  console.log(bookingValue);
 
   const { register, handleSubmit, formState: { errors }, reset } = useForm({
     resolver: zodResolver(bookingSchema),

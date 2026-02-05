@@ -38,9 +38,6 @@ export const useSaveBook = () => {
   const updateBook = async (book) => {
     setIsLoading(true);
     setError(null);
-
-    // console.log(book, "Update Book");
-
     const response = await fetch(`${BASE_URL}/books/update/${book?.bookId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -48,8 +45,7 @@ export const useSaveBook = () => {
       body: JSON.stringify({ book: book }),
     });
 
-    const result = await response.json(); //response?.data;
-    console.log(result, "Update Book details Result");
+    const result = await response.json(); 
 
 
     if (response.ok) {
@@ -70,17 +66,14 @@ export const useSaveBook = () => {
     setIsLoading(true);
     setError(null);
 
-    console.log(bookId, "Book Delete");
     const response = await fetch(`${BASE_URL}/books/delete/${bookId}`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
     });
 
-    // console.log(response, "Book Delete Response");
     const result = await response.json(); //response?.data;
     setIsLoading(false)
-    console.log(result, "delete Result");
 
     if (response.ok) {
       setIsLoading(false);

@@ -48,10 +48,7 @@ function BranchManager() {
     };
 
     const handleEdit = (branch) => {
-        // console.log(branch, "Edit ");
         const editedBranch = branchesData?.branches?.find((aut) => aut.id == branch);
-        // console.log(branch, "Edit ", editedBranch);
-
         setEditData(editedBranch);
         setShowForm(true);
     };
@@ -69,8 +66,6 @@ function BranchManager() {
 
     const handleSubmit = (data) => {
         if (editData) {
-            // console.log(data, "updated form", editData.id, "edit branch id");
-
             updateMutation.mutate({ ...data, id: editData.id });
         } else {
             createMutation.mutate(data);
@@ -78,9 +73,6 @@ function BranchManager() {
     };
 
     const deleteBranchData = (data) => {
-
-        console.log(data, "Delete");
-
         deleteMutation.mutate(data);
     }
 

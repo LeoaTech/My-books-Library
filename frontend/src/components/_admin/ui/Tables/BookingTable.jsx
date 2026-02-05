@@ -36,20 +36,17 @@ const BookingTable = ({ hasPermission, searchQuery }) => {
   });
 
   const viewBookDetails = useCallback((booking) => {
-    console.log(booking);
 
     setModalState({ type: "view", data: booking });
   }, []);
 
   const editBookDetails = useCallback((booking) => {
-    console.log(booking, "Edit");
     setModalState({
       type: "edit", data: { booking }
     });
   }, []);
 
   const deleteBookDetails = useCallback((id) => {
-    console.log(id)
     setModalState({ type: "delete", data: { id } });
   }, []);
 

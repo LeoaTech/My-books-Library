@@ -23,9 +23,7 @@ const CoverForm = ({
         },
     });
 
-    const onSubmit = async (data) => {
-        // console.log(data, "cover");
-      
+    const onSubmit = async (data) => {      
        if(initialData){
          await saveCover({...initialData,name:data.name});
        }else{

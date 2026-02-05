@@ -51,9 +51,7 @@ function CoverManager() {
     };
 
     const handleEdit = (cover) => {
-        // console.log(cover, "Edit ");
         const editedData = coversData?.covers?.find((cat) => cat.id == cover);
-        // console.log(cover, "Edit ", editedData);
         setEditData(editedData);
         setShowForm(true);
     };
@@ -78,7 +76,6 @@ function CoverManager() {
     };
 
     const deleteCoverData = (data) => {
-        // console.log(data, "Delete");
         deleteMutation.mutate(data);
     }
 

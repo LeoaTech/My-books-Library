@@ -12,8 +12,6 @@ export const useCoverActions = () => {
     setIsLoading(true);
     setError(null);
 
-    // console.log(data, "Cover name");
-
     try {
       const response = await fetch(`${BASE_URL}/covers/new`, {
         method: "POST",
@@ -23,12 +21,10 @@ export const useCoverActions = () => {
       });
 
       const result = await response.json(); //response?.data;
-      console.log(result, "Cover Save Result");
       setError(null);
       setMessage(result.message);
       return result;
     } catch (error) {
-      console.log(error);
       setError(error.message);
     } finally {
       setIsLoading(false)
@@ -49,12 +45,10 @@ export const useCoverActions = () => {
       });
 
       const result = await response.json(); //response?.data;
-      // console.log(result, "Cover updated Result");
       setError(null);
       setMessage(result.message);
       return result;
     } catch (error) {
-      console.log(error);
       setError(error.message);
     } finally {
       setIsLoading(false)
@@ -76,12 +70,10 @@ export const useCoverActions = () => {
       });
 
       const result = await response.json(); //response?.data;
-      // console.log(result, "Cover deleted Result");
       setError(null);
       setMessage(result.message);
       return result;
     } catch (error) {
-      console.log(error);
       setError(error.message);
     } finally {
       setIsLoading(false)
@@ -96,7 +88,6 @@ export const useCoverActions = () => {
 const fetchCovers = async ({ signal }) =>
   await fetch(`${BASE_URL}/covers`, { signal, credentials: "include" })
     .then((res) => {
-      // console.log(res,"Covers fetched")
       if (!res.ok) {
         throw new Error("Couldn't fetch Types of COVERS for books");
       } else {

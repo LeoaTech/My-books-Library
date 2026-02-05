@@ -49,9 +49,7 @@ function PublisherManager() {
     };
 
     const handleEdit = (publisher) => {
-        // console.log(publisher, "Edit ");
         const editedPublisher = publishersData?.publishers?.find((aut) => aut.id == publisher);
-        // console.log(publisher, "Edit ", editedPublisher);
 
         setEditData(editedPublisher);
         setShowForm(true);
@@ -77,9 +75,6 @@ function PublisherManager() {
     };
 
     const deletePublisherData = (data) => {
-
-        // console.log(data, "Delete");
-
         deleteMutation.mutate(data);
     }
 

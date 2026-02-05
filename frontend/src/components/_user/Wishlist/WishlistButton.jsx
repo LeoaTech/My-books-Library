@@ -12,7 +12,6 @@ const AddToWishListButton = ({ bookId, stock_quantity }) => {
     const isInWishlist = wishlistItems?.some(w => w?.itemId == bookId);
     const isOutOfStock = stock_quantity === 1 || stock_quantity === 0;
 
-    // console.log(wishlistItems, "Wishlist Items");
 
     const addToWishlist = async (id) => {
         setWishlistItems((prev) => ([...prev, { itemId: id }]))

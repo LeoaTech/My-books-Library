@@ -50,13 +50,10 @@ const CustomerSettings = () => {
     const { data: settings, isLoading } = useFetchSettings();
 
     const mergeSettings = (dbSettings) => {
-        console.log('Step1: ', dbSettings);
         if (!dbSettings?.settings || dbSettings.settings.length === 0) {
-            console.log('No settings found, using dummySettings');
             return dummySettings;
         }
-        const dbSetting = dbSettings.settings[0]; // Single settings object
-        console.log('Step2: ', dbSetting['default_booking_duration']);
+        const dbSetting = dbSettings.settings[0];
         return dummySettings.map((defaultSetting) => ({
             ...defaultSetting,
             value: dbSetting[defaultSetting.dbKey] !== undefined
@@ -82,11 +79,9 @@ const CustomerSettings = () => {
     useEffect(() => {
         if (!isLoading && settings) {
             const mergedSettings = mergeSettings(settings);
-            console.log('Merged Settings: ', mergedSettings);
             reset({ settings: mergedSettings });
         }
     }, [settings, isLoading, reset]);
-    console.log(settings, "Settings");
 
     //  Save or Update Settings
     const onSubmit = async (data) => {
@@ -94,17 +89,13 @@ const CustomerSettings = () => {
         const toastId = toast.loading("Updating settings..")
 
         try {
-            // console.log('Saving settings to database:', data);
-            // Simulate API call
+
             const response = await fetch(`${BASE_URL}/settings/update`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: "include",
                 body: JSON.stringify(data),
             });
-
-
-            console.log(response, "Response");
 
             const settings = await response.json();
 
@@ -117,11 +108,8 @@ const CustomerSettings = () => {
                     autoClose: 2000,
                 });
             }
-
-            // console.log(settings, "Data Settings");
-
         } catch (error) {
-            console.error('Error saving settings:', error);
+            // console.error('Error saving settings:', error);
             toast.update(toastId, {
                 render: `Error: ${error || "Failed to Update settings"}`,
                 type: 'error',

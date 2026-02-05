@@ -17,14 +17,11 @@ const DualPricingPlanForm = ({ entityId, setOpenModal, plan }) => {
   const queryClient = useQueryClient();
   const PKR_MINIMUM_CHARGE = 150;
 
-  // console.log(plan, "Edit");
 
   const { createPlan, updatePlan, isLoading, deletePlan } = usePricingApi();
 
   const { data: fetchAccountStatus, isLoading: isLoadingStripeAccountStatus, refetch } = useFetchUserPaymentMethod(entityId);
   const { auth } = useAuthContext();
-
-  // console.log(fetchAccountStatus, "fetchAccountStatus");
 
   // Library currency: Library Country -> Stripe Default Country -> PKR
   const currencyCode = getCurrencyCode(auth?.country) || fetchAccountStatus?.currency || 'pkr';
@@ -112,7 +109,6 @@ const DualPricingPlanForm = ({ entityId, setOpenModal, plan }) => {
 
   // Create or Update a Plan
   const onSubmit = async (data) => {
-    console.log("Submitting new dual-price plan structure:", data);
     const apiData = {
       ...data,
       features,
@@ -121,7 +117,6 @@ const DualPricingPlanForm = ({ entityId, setOpenModal, plan }) => {
       stripe_account_id: fetchAccountStatus?.account_id,
       currency: currencyCode
     };
-    console.log(apiData, "Create dual plan");
 
     if (plan) {
       // Update Plan details (name or features) and prices
@@ -166,7 +161,6 @@ const DualPricingPlanForm = ({ entityId, setOpenModal, plan }) => {
         },
       };
 
-      console.log(updatedPayload, "Update dual plan API payload");
 
       await updatePlanMutation(updatedPayload);
     } else {

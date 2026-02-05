@@ -69,7 +69,7 @@ export const useLogout = () => {
 
     } else {
       LogoutFailed()
-      console.log("logout failed");
+      // console.log("logout failed");
     }
   };
   return { logout, signout };

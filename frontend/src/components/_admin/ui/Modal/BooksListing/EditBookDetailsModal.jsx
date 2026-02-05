@@ -147,7 +147,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
         await refetchCategory();
         return newCategory;
       } catch (error) {
-        console.error("Error creating category:", error);
+        // console.error("Error creating category:", error);
         toast.update(toastId, {
           render: `Error: ${error.message}`,
           type: 'error',
@@ -176,7 +176,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
         await refetchCovers();
         return newCovers;
       } catch (error) {
-        console.error("Error creating cover:", error);
+        // console.error("Error creating cover:", error);
         toast.update(toastId, {
           render: `Error: ${error.message}`,
           type: 'error',
@@ -204,7 +204,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
         await refetchCondition();
         return newCondition;
       } catch (error) {
-        console.error("Error creating condition:", error);
+        // console.error("Error creating condition:", error);
         toast.update(toastId, {
           render: `Error: ${error.message}`,
           type: 'error',
@@ -290,36 +290,7 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
     mode: "all",
   });
 
-  // useEffect(() => {
-  //   // console.log("Render component");
-
-  //   reset({
-  //     ...bookDetails,
-  //     author: {
-  //       label: bookDetails?.author_name,
-  //       value: bookDetails?.author,
-  //     },
-  //     publisher: {
-  //       label: bookDetails?.publisher_name,
-  //       value: bookDetails?.publisher,
-  //     },
-  //     cover: {
-  //       label: bookDetails?.cover_name,
-  //       value: bookDetails?.cover,
-  //     },
-  //     condition: {
-  //       label: bookDetails?.condition_name,
-  //       value: bookDetails?.condition,
-  //     },
-  //     category: {
-  //       label: bookDetails?.category_name,
-  //       value: bookDetails?.category,
-  //     },
-  //   });
-  // }, [reset, bookDetails]);
-
-  // update the existing cover_images url in the imagesList
-  useEffect(() => {
+useEffect(() => {
     if (bookDetails?.cover_img_url?.length > 0) {
       setImagesList(bookDetails?.cover_img_url);
     } else {
@@ -360,7 +331,6 @@ const EditBookDetailsModal = ({ close, bookValue }) => {
       }
     }
   });
-  console.log(errors, "Errors", isValid);
 
   const onSubmit = useCallback(async (updateData) => {
     try {

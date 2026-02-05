@@ -34,7 +34,7 @@ messaging.onBackgroundMessage((payload) => {
 });
 
 self.addEventListener("notificationclick", (event) => {
-  console.log(event, "Clicked the Notification");
+  // console.log(event, "Clicked the Notification");
 
   event.notification.close();
   const url = event.notification.data?.clickAction || "http://localhost:5173";

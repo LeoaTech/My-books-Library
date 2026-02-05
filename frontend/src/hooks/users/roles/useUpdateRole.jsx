@@ -10,7 +10,6 @@ export const useChangeUserRole = () => {
   const changeRole = async (roleData) => {
     setIsLoading(true);
     setError(null);
-    console.log("Form Reached", roleData);
 
     const { role_id, user_id } = roleData;
 
@@ -22,7 +21,6 @@ export const useChangeUserRole = () => {
     });
 
     const result = await response.json(); //response?.data;
-    console.log(result, "Role Updated");
   };
 
   // Delete Any User
@@ -30,7 +28,6 @@ export const useChangeUserRole = () => {
   const deleteUser = async (userData) => {
     setIsLoading(true);
     setError(null);
-    console.log("Form Reached", userData);
 
 
     const {user_id}  = userData;
@@ -42,7 +39,6 @@ export const useChangeUserRole = () => {
     });
 
     const result = await response.json(); //response?.data;
-    console.log(result, "User Deleted");
   };
 
   return { isLoading, error, message, changeRole, deleteUser };

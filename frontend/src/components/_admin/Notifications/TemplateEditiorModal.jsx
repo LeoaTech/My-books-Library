@@ -87,7 +87,6 @@ const TemplateEditorModal = ({ template, events, onClose, onSaveSuccess }) => {
   };
 
   const onSubmit = async (data) => {
-    console.log(data, "Saving data")
     try {
       const response = await fetch(`${BASE_URL}/notifications/template`, {
         method: "POST",

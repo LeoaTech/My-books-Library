@@ -23,9 +23,7 @@ const CategoryForm = ({
         },
     });
 
-    const onSubmit = async (data) => {
-        // console.log(data, "Category");
-      
+    const onSubmit = async (data) => {      
        if(initialData){
          await saveCategory({...initialData,name:data.name});
        }else{

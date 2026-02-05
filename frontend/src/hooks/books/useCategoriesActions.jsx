@@ -11,8 +11,6 @@ export const useCategoryActions = () => {
     setIsLoading(true);
     setError(null);
 
-    // console.log(data, "Category name");
-
     try {
       const response = await fetch(`${BASE_URL}/categories/new`, {
         method: "POST",
@@ -22,12 +20,10 @@ export const useCategoryActions = () => {
       });
 
       const result = await response.json(); //response?.data;
-      console.log(result, "Category Save Result");
       setError(null);
       setMessage(result.message);
       return result;
     } catch (error) {
-      console.log(error);
       setError(error.message);
     } finally {
       setIsLoading(false)
@@ -38,7 +34,6 @@ export const useCategoryActions = () => {
   const updateCategory = async (data) => {
     setIsLoading(true);
     setError(null);
-    // console.log(data, "update");
 
     try {
       const response = await fetch(`${BASE_URL}/categories/update/${data.id}`, {
@@ -49,12 +44,10 @@ export const useCategoryActions = () => {
       });
 
       const result = await response.json(); //response?.data;
-      // console.log(result, "Category updated Result");
       setError(null);
       setMessage(result.message);
       return result;
     } catch (error) {
-      console.log(error);
       setError(error.message);
     } finally {
       setIsLoading(false)
@@ -76,12 +69,10 @@ export const useCategoryActions = () => {
       });
 
       const result = await response.json(); //response?.data;
-      // console.log(result, "Category deleted Result");
       setError(null);
       setMessage(result.message);
       return result;
     } catch (error) {
-      console.log(error);
       setError(error.message);
     } finally {
       setIsLoading(false)

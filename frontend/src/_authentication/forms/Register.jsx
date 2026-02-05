@@ -65,7 +65,6 @@ const Register = () => {
 
     /* Submit the form */
     const onSubmit = async (data) => {
-        console.log(data);
         await registerUser(data);
 
     };

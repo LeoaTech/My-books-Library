@@ -29,7 +29,6 @@ function App() {
   }, [getUser, navigate, googleAuth]);
 
 
-  console.log("Auth in main app", auth);
   return (
     <>
       <Navbar />

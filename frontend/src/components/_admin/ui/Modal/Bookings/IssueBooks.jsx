@@ -169,8 +169,6 @@ const BookIssue = ({ mode, onClose, booking }) => {
   const { data: settings, isLoading: isLoadingSettings } = useFetchSettings();
   const bookingSettings = settings?.settings[0];
 
-  // console.log(booksData, "Books");
-
   RENEWAL_LIMIT = bookingSettings?.consecutive_renewals || 5;
   let FINE_FOR_LATE_RETURNS = bookingSettings?.late_returns_fine || 100;
 
@@ -246,9 +244,6 @@ const BookIssue = ({ mode, onClose, booking }) => {
     ...book,
   }));
 
-  console.log(globalRenewDate, "Renew dates");
-
-
   const returnAllChecked = watch("return_all");
   const globalReturnDate = watch("global_return_date");
 
@@ -276,15 +271,12 @@ const BookIssue = ({ mode, onClose, booking }) => {
   useEffect(() => {
     if (selectedUser && mode != "edit") {
       const userShippingDetails = students?.data?.find((user) => user.user_id === selectedUser);
-      console.log(userShippingDetails);
       setValue('shipping_address', userShippingDetails?.address);
       setValue('shipping_country', userShippingDetails?.country);
       setValue('shipping_city', userShippingDetails?.city);
       setValue('shipping_phone', userShippingDetails?.phone);
     }
   }, [selectedUser, mode, setValue, students?.data])
-
-  // console.log(bookItems, "Items");
 
   //  handle global date selection and update it all non-returned items
   const handleGlobalDateChange = (date, currentItems) => {
@@ -391,7 +383,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
       onClose();
     },
     onError: (err) => {
-      console.error("Error creating new booking:", err);
+      // console.error("Error creating new booking:", err);
       onClose();
     },
   });
@@ -406,15 +398,13 @@ const BookIssue = ({ mode, onClose, booking }) => {
       onClose();
     },
     onError: (err) => {
-      console.error("Error updating booking:", err);
+      // console.error("Error updating booking:", err);
       onClose();
     },
   });
 
-  // console.log(errors, "Form errors");
   const onSubmit = async (updateData) => {
 
-    console.log(updateData, "Form data");
     if (mode == "edit") {
       // Get Items List available in db to compare with new updated items list
       const originalItemsMap = new Map(booking?.items?.map(item => [item.id, item]));
@@ -435,7 +425,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
           if (newRenewalCount < RENEWAL_LIMIT) {
             newRenewalCount += 1;
           } else {
-            console.warn(`Renewal skipped for item ${item.id}: Renewal limit reached.`);
+            // console.warn(`Renewal skipped for item ${item.id}: Renewal limit reached.`);
           }
         }
 
@@ -460,7 +450,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
         else if (bookStatus === 'returned' && item.return_due && item.return_date) {
 
           if (isFineApplied) {
-            console.log("Is Fine already added for the book")
+            // console.log("Is Fine already added for the book")
           } else {
             const fineResult = calculateOverdueFine(item.return_due, item.return_date, FINE_FOR_LATE_RETURNS);
             if (fineResult.isOverdue) {
@@ -508,7 +498,6 @@ const BookIssue = ({ mode, onClose, booking }) => {
         renew_return_date: updateData.renew_all ? new Date(updateData.global_renew_date).toISOString() : null,
 
       };
-      console.log(finalUpdateData, "Final update Data");
 
       const bookingData = {
         ...finalUpdateData,
@@ -520,9 +509,6 @@ const BookIssue = ({ mode, onClose, booking }) => {
         ...updateData,
         status: "issued", // 'issued' for a new booking
       };
-
-      // console.log(bookingData, "Create");
-
       await createBookingMutation(bookingData);
     }
   };
@@ -532,10 +518,6 @@ const BookIssue = ({ mode, onClose, booking }) => {
     return null;
   };
 
-  // console.log(booksAvailableForRenew, "Renew items");
-  // console.log(bookItems, "ITems");
-
-  // console.log(booking, "Original Item");
 
 
 

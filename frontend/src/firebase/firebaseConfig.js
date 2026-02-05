@@ -27,15 +27,14 @@ export const requestForToken = async () => {
       vapidKey: VAPID_KEY,
     });
     if (currentToken) {
-      console.log("current token for client: ", currentToken);
       return currentToken;
     } else {
-      console.log(
-        "No registration token available. Request permission to generate one."
-      );
+      // console.log(
+      //   "No registration token available. Request permission to generate one."
+      // );
     }
   } catch (err) {
-    console.log("An error occurred while retrieving token. ", err);
+    // console.log("An error occurred while retrieving token. ", err);
   }
 };
 

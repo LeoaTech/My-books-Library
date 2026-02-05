@@ -32,7 +32,6 @@ const PublisherForm = ({
     });
 
     const onSubmit = async (data) => {
-        // console.log(data, "Publisher");
         // Form Payload
         const payload = {
             name: data.name,

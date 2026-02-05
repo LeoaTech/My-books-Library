@@ -13,7 +13,6 @@ export const useBranchActions = () => {
     setIsLoading(true);
     setError(null);
 
-    console.log(data, "Branch name");
 
     try {
       const response = await fetch(`${BASE_URL}/branches/new`, {
@@ -24,12 +23,10 @@ export const useBranchActions = () => {
       });
 
       const result = await response.json(); //response?.data;
-      console.log(result, "Branch Save Result");
       setError(null);
       setMessage(result.message);
       return result;
     } catch (error) {
-      console.log(error);
       setError(error.message);
     } finally {
       setIsLoading(false)
@@ -40,7 +37,6 @@ export const useBranchActions = () => {
   const updateBranch = async (data) => {
     setIsLoading(true);
     setError(null);
-    // console.log(data, "Updated Form");
 
     try {
       const response = await fetch(`${BASE_URL}/branches/update/${data.id}`, {
@@ -51,12 +47,10 @@ export const useBranchActions = () => {
       });
 
       const result = await response.json(); //response?.data;
-      // console.log(result, "Branch updated Result");
       setError(null);
       setMessage(result.message);
       return result;
     } catch (error) {
-      console.log(error);
       setError(error.message);
     } finally {
       setIsLoading(false)
@@ -78,7 +72,6 @@ export const useBranchActions = () => {
       });
 
       const result = await response.json(); //response?.data;
-      // console.log(result, "Branch deleted Result");
       setError(null);
       setMessage(result.message);
       toast.error(result.message, {
@@ -92,7 +85,6 @@ export const useBranchActions = () => {
       })
       return result;
     } catch (error) {
-      console.log(error);
       setError(error.message);
       setMessage(error.message);
       toast.error(error.message)
@@ -109,7 +101,6 @@ export const useBranchActions = () => {
 const fetchBranches = async ({ signal }) =>
   await fetch(`${BASE_URL}/branches`, { signal, credentials: "include" })
     .then((res) => {
-      // console.log(res, "branches fetched");
       if (!res.ok) {
         throw new Error("Couldn't fetch branches");
       } else {

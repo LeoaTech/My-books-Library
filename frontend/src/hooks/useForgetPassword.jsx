@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { BASE_URL } from "../utils/baseAPIURL";
-import axios from "axios";
 
 export const useForgetPassword = () => {
   // const [email, setEmail] = useState("");
@@ -23,7 +22,7 @@ export const useForgetPassword = () => {
       setError(false)
     } else {
       setError(true)
-      console.log("Invalid email");
+      // console.log("Invalid email");
     }
   };
   return { forgetPassword, message ,error};

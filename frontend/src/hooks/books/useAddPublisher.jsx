@@ -20,12 +20,11 @@ export const usePublisher = () => {
       });
 
       const result = await response.json(); //response?.data;
-      // console.log(result, "Result to Create a new publisher");
       setError(null);
       setMessage(result.message);
       return result;
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       setError(error.message);
     } finally {
       setIsLoading(false)
@@ -52,7 +51,7 @@ export const usePublisher = () => {
       setMessage(result.message);
       return result;
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       setError(error.message);
     } finally {
       setIsLoading(false)
@@ -79,7 +78,7 @@ export const usePublisher = () => {
       setMessage(result.message);
       return result;
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       setError(error.message);
     } finally {
       setIsLoading(false)

@@ -9,7 +9,6 @@ const StripeConnect = ({ entityId }) => {
     const [error, setError] = useState('');
 
     const { data: fetchPaymentStatus, isLoading, refetch } = useFetchUserPaymentMethod(entityId);
-    // console.log(fetchPaymentStatus, "Fetch  Status of Payment")
 
     const handleConnect = async () => {
         setLoading(true);
@@ -22,7 +21,6 @@ const StripeConnect = ({ entityId }) => {
             });
 
             const data = await res.json();
-            console.log("Response for Connect API", res)
 
             if (!res.ok) {
                 throw new Error(data.error || "Failed to initiate Stripe connection");
@@ -52,7 +50,6 @@ const StripeConnect = ({ entityId }) => {
             });
 
             const data = await res.json();
-            // console.log("res", res, "data", data);
 
             if (!res.ok) {
                 throw new Error(data.error || "Failed to get Stripe OAuth URL");

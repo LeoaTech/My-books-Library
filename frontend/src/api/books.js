@@ -5,9 +5,7 @@ export const fetchBooks = async ({ signal }) =>
   await axios
     .get(`${BASE_URL}/books`, { signal, withCredentials: true })
     .then((res) => {
-      console.log(res, "Books fetched");
 
-      console.log(res.data);
       if (res.status !== 200) {
         throw new Error("Couldn't fetch books");
       } else {
@@ -15,7 +13,7 @@ export const fetchBooks = async ({ signal }) =>
       }
     })
     .catch((err) => {
-      console.error("Fetch Books error:", err);
+      // console.error("Fetch Books error:", err);
 
       if (err.name === "AbortError") {
         return null;
@@ -31,9 +29,7 @@ export const fetchAvailableBooks = async ({ signal }) =>
   await axios
     .get(`${BASE_URL}/books/available`, { signal, withCredentials: true })
     .then((res) => {
-      console.log(res, "Available Books fetched");
 
-      console.log(res.data);
       if (res.status !== 200) {
         throw new Error("Couldn't fetch available books");
       } else {
@@ -41,7 +37,7 @@ export const fetchAvailableBooks = async ({ signal }) =>
       }
     })
     .catch((err) => {
-      console.error("Fetching Available Books error:", err);
+      // console.error("Fetching Available Books error:", err);
 
       if (err.name === "AbortError") {
         return null;
@@ -62,7 +58,6 @@ export const FetchBookById = async (bookId) => {
     const bookData = await response.data;
     return bookData;
   } catch (error) {
-    console.error("Error fetching books", error);
-    throw error;
+    return error;
   }
 };

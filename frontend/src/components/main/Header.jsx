@@ -23,10 +23,8 @@ const Header = () => {
   const onToggle = () => {
     setMenuOpen(!isMenuOpen);
   };
-  // console.log(auth?.subdomain || subdomain);
 
 
-  console.log(auth, "Current Auth");
 
 
   const handleSignout = () => {

@@ -79,7 +79,6 @@ const BookDetailsModal = ({ data, close }) => {
     )
   }
   const bookDetail = data?.title ? data : bookDetails.book;
-  // console.log(bookDetail, "View Book Details")
 
   return (
     <div className="fixed left-0 top-0  inset-0 bg-[#64748B] bg-opacity-75 transition-opacity dark:bg-slate-300 dark:bg-opacity-75 lg:left-[18rem]">

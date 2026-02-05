@@ -37,7 +37,6 @@ const AuthorsForm = ({
         const loadingText = initialData ? "Updating author" : "Creating new author";
         const toastId = toast.loading(loadingText)
         try {
-            console.log(data, "Author");
             // Form Payload
             const payload = {
                 name: data.name,
@@ -45,7 +44,6 @@ const AuthorsForm = ({
                 description: data.description,
             };
             const result = await saveAuthor(payload);
-            console.log(result);
 
             if (initialData) {
                 toast.update(toastId, {

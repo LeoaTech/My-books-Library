@@ -6,7 +6,6 @@ import { BASE_URL } from "../../utils/baseAPIURL";
 const fetchCategories = async ({ signal }) =>
   await fetch(`${BASE_URL}/categories`, { signal, credentials: "include" })
     .then((res) => {
-      // console.log(res, "categories fetched");
       if (!res.ok) {
         throw new Error("Couldn't fetch categories");
       } else {

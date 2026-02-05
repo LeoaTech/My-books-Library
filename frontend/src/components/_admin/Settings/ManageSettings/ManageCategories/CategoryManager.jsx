@@ -52,9 +52,7 @@ function CategoryManager() {
     };
 
     const handleEdit = (category) => {
-        // console.log(category, "Edit ");
         const editedData = categoriesData?.categories?.find((cat) => cat.id == category);
-        // console.log(category, "Edit ", editedData);
 
         setEditData(editedData);
         setShowForm(true);
@@ -80,7 +78,6 @@ function CategoryManager() {
     };
 
     const deleteCategoryData = (data) => {
-        // console.log(data, "Delete");
         deleteMutation.mutate(data);
     }
 

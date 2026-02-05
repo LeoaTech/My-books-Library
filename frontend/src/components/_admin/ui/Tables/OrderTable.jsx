@@ -24,7 +24,6 @@ const OrderTable = ({ filteredOrders }) => {
 
   const [getOrderDetails, setOrderDetails] = useState(null);
 
-  console.log(orderData?.orders);
 
   function onViewOrderDetails(orderId) {
     const result = orderData?.orders?.find((order) => order?.id === orderId);

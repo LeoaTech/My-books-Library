@@ -51,9 +51,7 @@ function ConditionManager() {
     };
 
     const handleEdit = (condition) => {
-        // console.log(condition, "Edit ");
         const editedData = conditionData?.conditions?.find((cat) => cat.id == condition);
-        // console.log(condition, "Edit ", editedData);
         setEditData(editedData);
         setShowForm(true);
     };
@@ -77,9 +75,6 @@ function ConditionManager() {
     };
 
     const deleteConditionData = (data) => {
-
-        console.log(data, "Delete");
-
         deleteMutation.mutate(data);
     }
 

@@ -6,7 +6,6 @@ import { BASE_URL } from "../../utils/baseAPIURL";
 const fetchPublishers = async ({ signal }) =>
   await fetch(`${BASE_URL}/publishers`, { signal, credentials: "include" })
     .then((res) => {
-        // console.log(res,"publishers fetched")
       if (!res.ok) {
         throw new Error("Couldn't fetch Publishers details");
       } else {

@@ -47,20 +47,11 @@ const UserTable = ({ users, searchTerm }) => {
     setValues(activeUser);
     setOpenModal(!openModal);
   };
-
-  // const deleteUserDetails = (userId) => {
-  //   const deleteUser = users?.find((user) => user?.user_id == userId);
-  //   setValues(deleteUser);
-  //   setOpenModal(!openModal);
-  // };
-
   const showUserDetails = (userId) => {
     setDetails(true);
     const activeUser = users?.find((user) => user?.user_id == userId);
     setValues(activeUser);
   };
-
-  console.log(users);
 
   return (
     <div className="rounded-lg border border-[#E2E8F0] bg-white px-5 pt-6 pb-2.5 shadow-default  max-w-full overflow-x-auto overflow-y-auto dark:border-[#2E3A47] dark:bg-[#24303F]  sm:px-7.5 xl:pb-1">

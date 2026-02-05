@@ -50,10 +50,7 @@ function AuthorManager() {
     };
 
     const handleEdit = (author) => {
-        // console.log(author, "Edit ");
         const editedAuthor = authorsData?.authors?.find((aut) => aut.id == author);
-        // console.log(author, "Edit ", editedAuthor);
-
         setEditData(editedAuthor);
         setShowForm(true);
     };
@@ -79,7 +76,6 @@ function AuthorManager() {
 
     const deleteAuthorData = (data) => {
 
-        // console.log(data, "Delete");
 
         deleteMutation.mutate(data);
     }

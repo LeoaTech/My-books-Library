@@ -35,8 +35,7 @@ const BranchForm = ({
     const onSubmit = async (data) => {
         const loadingText = initialData ? "Updating branch data.." : "Creating branch";
         const toastId = toast.loading(loadingText)
-        try {// console.log(data, "Branch");
-            // Form Payload
+        try {
             const payload = {
                 name: data.name,
                 address: data.address,

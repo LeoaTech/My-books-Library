@@ -17,9 +17,8 @@ const fetchTokenToBackend = async (fcmToken, userId) => {
     });
 
     if (!response.ok) throw new Error('Failed to save token');
-    console.log('Token saved to backend!');
   } catch (err) {
-    console.error('Save token error:', err);
+    // console.error('Save token error:', err);
   }
 };
 
