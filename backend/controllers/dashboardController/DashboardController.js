@@ -16,6 +16,7 @@ const getDashboardMetrics = async (req, res) => {
     const overdueBooksCount = await totalOverdueBooks(db, entityId);
 
     const BooksCategorySummary = await booksCategories(db, entityId);
+    const bookingsByCategory = await bookingsByCategories(db, entityId);
 
     res.status(200).json({
       popularBooks: popularBooks.books,
@@ -25,6 +26,7 @@ const getDashboardMetrics = async (req, res) => {
       totalUsers: totalUserCount?.users?.count || 0,
       totalOverdueBooks: overdueBooksCount?.overdueBooks?.count || 0,
       booksCategorySummary: BooksCategorySummary?.bookCategories,
+      bookingsByCategory: bookingsByCategory?.data || [],
     });
   } catch (error) {
     res.status(500).json({ message: "Error getting dashboard metrics" });
@@ -213,6 +215,29 @@ LIMIT 10`,
   } catch (error) {
     // console.log(error, "Error getting books");
     return { error, bookCategories: [] };
+  }
+}
+
+// Get Bookings Count by Categories
+async function bookingsByCategories(db, entityId) {
+  try {
+    const result = await db.query(
+      `SELECT 
+        item->>'category_name' AS name,
+        COUNT(DISTINCT b.id)::int AS bookings
+      FROM bookings b
+      JOIN LATERAL jsonb_array_elements(b.items) AS item ON true
+      WHERE b.entity_id = $1
+      GROUP BY item->>'category_name'
+      ORDER BY bookings DESC
+      LIMIT 10`,
+      [entityId],
+    );
+
+    return { data: result?.rows || [] };
+  } catch (error) {
+    // console.log(error, "Error getting bookings by categories");
+    return { error, data: [] };
   }
 }
 
