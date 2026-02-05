@@ -1,12 +1,15 @@
 
-import { useEffect } from "react"
-import { useForm } from "react-hook-form";
+import { useEffect, useMemo, useState } from "react"
+import { useForm, Controller } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import LoadingSpinner from "../../components/_admin/Loader/LoadingSpinner";
 import { useSignup } from "../../hooks/useSignup";
 import { useNavigate } from "react-router-dom";
 import GoogleAuthLink from "./GoogleAuthLink";
+import { countryList } from "../../utils/currencyUtils";
+import Select from "react-select";
+import { countryCustomSelectStyles } from "../../components/_admin/shared/CreatableSelectCustomStyles";
 
 const schema = z.object({
     fullName: z.string().min(3, { message: "Name is required" }),
@@ -30,8 +33,28 @@ const schema = z.object({
 });
 const Register = () => {
     const navigate = useNavigate();
+    
+       const [theme, setTheme] = useState(document.body.classList.contains("dark") ? "dark" : "light");
+    
+        useEffect(() => {
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.attributeName === "class") {
+                        const isDark = document.body.classList.contains("dark");
+                        setTheme(isDark ? "dark" : "light");
+                    }
+                });
+            });
+            observer.observe(document.body, { attributes: true });
+            return () => observer.disconnect();
+        }, []);
+    
+    
+    
+    const selectStyles = useMemo(() => countryCustomSelectStyles(theme), [theme]);
 
-    const { register, handleSubmit, reset, formState } = useForm({
+
+    const { register, handleSubmit, reset, formState, control } = useForm({
         mode: "all",
         resolver: zodResolver(schema),
     });
@@ -209,10 +232,20 @@ const Register = () => {
                                     </div>
                                     <div className="flex-1">
                                         <label className="block mb-1 text-gray-700">Country<span className="text-red-600">*</span></label>
-                                        <input
-                                            {...register("country", { required: true })}
-                                            placeholder="Country"
-                                            className="custom-input"
+                                        <Controller
+                                            name="country"
+                                            control={control}
+                                            render={({ field: { onChange, value, ref } }) => (
+                                                <Select
+                                                    inputRef={ref}
+                                                    styles={selectStyles}
+                                                    options={countryList.map(c => ({ value: c, label: c }))}
+                                                    value={countryList.map(c => ({ value: c, label: c })).find(c => c.value === value)}
+                                                    onChange={val => onChange(val?.value)}
+                                                    placeholder="Select Country"
+                                                    classNamePrefix="react-select"
+                                                />
+                                            )}
                                         />
                                         {errors?.country?.message && (
                                             <p className="format-message error">
