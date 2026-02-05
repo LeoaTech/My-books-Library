@@ -1,5 +1,5 @@
 import { useFetchDashboardMetrics } from "../../hooks/dashboard/fetchDashboardMetrics";
-import { mockRecentlyAddedBooks, mockAvailableAuthors, mockBookingData } from "../../components/_admin/Dashboard"
+import { mockRecentlyAddedBooks, mockAvailableAuthors, mockBookingData, mockLocationData } from "../../components/_admin/Dashboard"
 import { lazy, Suspense } from "react";
 import SkeletonTable from "../../components/Loader/SkeletonTable";
 import Loader from "../../components/_admin/Loader/Loader";
@@ -7,6 +7,7 @@ const RecentlyAddedBooks = lazy(() => import("../../components/_admin/Dashboard/
 const AuthorsTable = lazy(() => import("../../components/_admin/Dashboard/AuthorsTable"));
 const BookingsByCategoryChart = lazy(() => import("../../components/_admin/Dashboard/BookingsByCategoryChart"));
 const BookingAreaChart = lazy(() => import("../../components/_admin/Dashboard/BookingAreaChart"));
+const LocationDonutChart = lazy(() => import("../../components/_admin/Dashboard/LocationDonutChart"));
 
 const CardBooks = lazy(() => import("../../components/_admin/ui/cards/CardBooks"));
 const CardOverdue = lazy(() => import("../../components/_admin/ui/cards/CardOverdue"));
@@ -52,7 +53,10 @@ const DashboardPage = () => {
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2 2xl:gap-7.5">
         <Suspense fallback={<Loader />}>
           <BookingAreaChart data={data?.monthlyBookingSummary || mockBookingData} />
-        </Suspense>       
+        </Suspense>
+        <Suspense fallback={<Loader />}>
+          <LocationDonutChart data={data?.bookingsByLocation || mockLocationData} />
+        </Suspense>
       </div>
       <div className="mt-6">
         <Suspense fallback={<Loader />}>
