@@ -1,18 +1,26 @@
 import { useFetchDashboardMetrics } from "../../hooks/dashboard/fetchDashboardMetrics";
-import { mockRecentlyAddedBooks, mockAvailableAuthors, mockBookingData, mockLocationData } from "../../components/_admin/Dashboard"
+// Mock Data for tables and charts
+import { mockRecentlyAddedBooks, mockAvailableAuthors, mockBookingData, mockLocationData, mockCategories } from "../../components/_admin/Dashboard"
 import { lazy, Suspense } from "react";
 import SkeletonTable from "../../components/Loader/SkeletonTable";
 import Loader from "../../components/_admin/Loader/Loader";
+// Tables
 const RecentlyAddedBooks = lazy(() => import("../../components/_admin/Dashboard/RecentlyAddedBooks"));
 const AuthorsTable = lazy(() => import("../../components/_admin/Dashboard/AuthorsTable"));
+// Charts
 const BookingsByCategoryChart = lazy(() => import("../../components/_admin/Dashboard/BookingsByCategoryChart"));
 const BookingAreaChart = lazy(() => import("../../components/_admin/Dashboard/BookingAreaChart"));
 const LocationDonutChart = lazy(() => import("../../components/_admin/Dashboard/LocationDonutChart"));
+const BooksCategoryPieChart = lazy(() => import("../../components/_admin/Dashboard/BooksCategoryPieChart"));
 
+// Summary Cards
 const CardBooks = lazy(() => import("../../components/_admin/ui/cards/CardBooks"));
 const CardOverdue = lazy(() => import("../../components/_admin/ui/cards/CardOverdue"));
 const CardUsers = lazy(() => import("../../components/_admin/ui/cards/CardUsers"));
 const CardBookings = lazy(() => import("../../components/_admin/ui/cards/CardBookings"));
+
+
+
 const DashboardPage = () => {
   // Call the dashboard API to display real-data
   const { data } = useFetchDashboardMetrics();
@@ -56,6 +64,12 @@ const DashboardPage = () => {
         </Suspense>
         <Suspense fallback={<Loader />}>
           <LocationDonutChart data={data?.bookingsByLocation || mockLocationData} />
+        </Suspense>
+      </div>
+
+      <div className="mt-8">
+        <Suspense fallback={<Loader />}>
+          <BooksCategoryPieChart data={data?.booksCategorySummary || mockCategories} />
         </Suspense>
       </div>
       <div className="mt-6">
