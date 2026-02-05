@@ -19,8 +19,8 @@ const content = {
             {
                 name: "Free",
                 description: "Perfect for individuals and small teams getting started.",
-                monthlyPrice: "PKR 0",
-                yearlyPrice: "PKR 0",
+                monthlyPrice: "$0",
+                yearlyPrice: "$0",
                 // billedText: "Billed as $180 per year",
                 billingPeriod: "/ month",
                 popular: false,
@@ -34,12 +34,12 @@ const content = {
             {
                 name: "Pro",
                 description: "Ideal for growing businesses that need more power.",
-                monthlyPrice: "PKR 2,499",
+                monthlyPrice: "$269",
                 monthly_price_id: "price_1SJ4c7Cs7Tavj7Ojkc3GZ9li",
 
-                yearlyPrice: "$29,999",
+                yearlyPrice: "$2599",
                 yearly_price_id: "price_1SJ4eKCs7Tavj7Ojzfgpw9ip",
-                billedText: "Billed as $29,999 per year",
+                billedText: "Billed as $2599 per year",
                 billingPeriod: "/ month",
                 popular: true,
                 features: [
@@ -53,13 +53,13 @@ const content = {
             {
                 name: "School",
                 description: "For large institutes with custom requirements.",
-                dailyPrice: "PKR 100",
+                dailyPrice: "$100",
                 daily_price_id: "price_1SKuudCs7Tavj7OjkEKgu4P7",
-                monthlyPrice: "PKR 2,799",
+                monthlyPrice: "$279",
                 monthly_price_id: "price_1SKus6Cs7Tavj7Oj6Hp5TflC",
-                yearlyPrice: "$31,999",
+                yearlyPrice: "$1999",
                 yearly_price_id: "price_1SKutiCs7Tavj7Oj2vm0somu",
-                billedText: "Billed as $31,999 per year",
+                billedText: "Billed as $1999 per year",
                 billingPeriod: "/ month",
                 popular: false,
                 features: [
@@ -113,8 +113,6 @@ const CheckIcon = ({ className }) => (
 );
 
 
-
-// --- Main Pricing Page Component ---
 const Pricing = () => {
     const [isYearly, setIsYearly] = useState(false);
     const queryClient = useQueryClient();
@@ -126,10 +124,11 @@ const Pricing = () => {
     const { data: currentPlan } = useFetchCurrentPlan(auth);
 
     const activeSubscription = currentPlan?.isActive;
-    // const subscribedPlan = currentPlan?.isActive && currentPlan?.subscription?.stripePriceId;
     const subscriptionExpiredAt = `${new Date(currentPlan?.subscription?.currentPeriodEnd).toDateString()} at ${new Date(currentPlan?.subscription?.currentPeriodEnd).toLocaleTimeString()}`;
 
     const isCancelledAtPeriodEnd = currentPlan?.subscription?.cancelAtPeriodEnd
+    
+    
     // Activate PAID PLAN fisrt time create Subscription
     const handleCreateCheckoutSession = async (priceId, planName) => {
         try {
@@ -149,8 +148,8 @@ const Pricing = () => {
             // Hide spinner and show an error message
         }
     }
+    
     // Activate: Change PAID PLAN
-
     const handleChangePlan = async (newPriceId, planName) => {
         if (isChangingPlan) return;
         setIsChangingPlan(true);
@@ -259,7 +258,6 @@ const Pricing = () => {
                             {content.pricing.plans.map((plan, index) => {
                                 const finalPriceId = isYearly ? plan?.yearly_price_id : plan?.monthly_price_id;
                                 const isCurrentPlan = currentPlan?.isActive ? currentPlan?.subscription?.stripePriceId == finalPriceId : null;
-
                                 return (
                                     <div
                                         key={index}
@@ -280,15 +278,19 @@ const Pricing = () => {
                                             <div className="mb-8">
                                                 <div className="flex items-baseline gap-1">
                                                     <span className="text-4xl font-bold text-gray-900">
-                                                        {isYearly ? plan.yearlyPrice : plan.monthlyPrice}
+                                                        {isYearly
+                                                            ? (plan.yearlyPrice === "$0"
+                                                                ? "$0"
+                                                                : `$${Math.round(parseInt(plan.yearlyPrice.replace(/[^0-9]/g, '')) / 12).toLocaleString()}`)
+                                                            : plan.monthlyPrice}
                                                     </span>
                                                     {plan.billingPeriod && (
                                                         <span className="text-gray-500">{plan.billingPeriod}</span>
                                                     )}
                                                 </div>
-                                                {isYearly && plan.billedText && plan.monthlyPrice !== "Custom" && (
+                                                {isYearly && plan.monthlyPrice !== "$0" && plan.monthlyPrice !== "Custom" && (
                                                     <p className="text-sm text-gray-500 mt-1">
-                                                        {plan.billedText}
+                                                        Billed as {plan.yearlyPrice} per year
                                                     </p>
                                                 )}
                                             </div>
