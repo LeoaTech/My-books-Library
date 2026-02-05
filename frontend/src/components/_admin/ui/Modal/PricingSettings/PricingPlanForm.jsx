@@ -17,14 +17,14 @@ const DualPricingPlanForm = ({ entityId, setOpenModal, plan }) => {
   const queryClient = useQueryClient();
   const PKR_MINIMUM_CHARGE = 150;
 
-  console.log(plan, "Edit");
+  // console.log(plan, "Edit");
 
   const { createPlan, updatePlan, isLoading, deletePlan } = usePricingApi();
 
   const { data: fetchAccountStatus, isLoading: isLoadingStripeAccountStatus, refetch } = useFetchUserPaymentMethod(entityId);
   const { auth } = useAuthContext();
 
-  console.log(fetchAccountStatus, "fetchAccountStatus");
+  // console.log(fetchAccountStatus, "fetchAccountStatus");
 
   // Library currency: Library Country -> Stripe Default Country -> PKR
   const currencyCode = getCurrencyCode(auth?.country) || fetchAccountStatus?.currency || 'pkr';
