@@ -6,12 +6,7 @@ const BillingHistory = ({ transactions, currencyCode }) => {
         <div className="bg-white dark:bg-[#24303F] shadow-md rounded-lg p-6 border dark:border-[#2E3A47] mb-8">
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Billing History</h2>
-                <button className="px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors flex items-center gap-2">
-                    Filter
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="stroke-current">
-                        <path d="M3.33331 4H12.6666M5.33331 8H10.6666M7.33331 12H8.66665" strokeWidth="1.33333" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                </button>
+                
             </div>
 
             <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
