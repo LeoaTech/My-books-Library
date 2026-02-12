@@ -1,9 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'react-toastify';
-import { MdLibraryBooks } from 'react-icons/md';
+import { MdLibraryBooks, MdCloudUpload, MdDelete } from 'react-icons/md';
 import { useAuthContext } from '../../hooks/useAuthContext';
 import { BASE_URL } from '../../utils/baseAPIURL';
 import { useFetchLibraryDetails } from '../../hooks/myLibrary/useFetchLibrary';
@@ -19,6 +19,7 @@ const librarySchema = z.object({
     description: z.string().optional(),
     hasMultipleBranches: z.boolean().optional(),
     deliverIntercity: z.boolean().optional(),
+    library_logo: z.string().optional(),
 });
 
 const MyLibrary = () => {
@@ -27,13 +28,15 @@ const MyLibrary = () => {
 
     // Fetch Library Details by entity ID
     const { data: libraryDetails, isLoading, error, refetch } = useFetchLibraryDetails(entityId);
-    // console.log(libraryDetails, "Library data");
+
+    const [logoPreview, setLogoPreview] = useState(null);
 
     const {
         register,
         handleSubmit,
         reset,
         setValue,
+        watch,
         formState: { errors, isDirty, isSubmitting },
     } = useForm({
         resolver: zodResolver(librarySchema),
@@ -47,7 +50,8 @@ const MyLibrary = () => {
             country: libraryDetails?.country || '',
             description: libraryDetails?.description || '',
             deliverIntercity: false,
-            hasMultipleBranches: false
+            hasMultipleBranches: false,
+            library_logo: ''
         },
     });
 
@@ -63,12 +67,34 @@ const MyLibrary = () => {
                 country: libraryDetails?.country || '',
                 description: libraryDetails?.description || '',
                 deliverIntercity: libraryDetails?.deliver_inter_city || false,
-                hasMultipleBranches: libraryDetails?.multiple_branches || false
+                hasMultipleBranches: libraryDetails?.multiple_branches || false,
+                library_logo: libraryDetails?.library_logo?.secure_url || ''
             });
-
+            setLogoPreview(libraryDetails?.library_logo?.secure_url || null);
         }
 
     }, [libraryDetails, reset]);
+
+    const handleLogoChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                toast.error("File size should be less than 5MB");
+                return;
+            }
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setLogoPreview(reader.result);
+                setValue('library_logo', reader.result, { shouldDirty: true });
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleRemoveLogo = () => {
+        setLogoPreview(null);
+        setValue('library_logo', '', { shouldDirty: true });
+    };
 
     const onSubmit = async (data) => {
         if (!entityId) {
@@ -123,6 +149,44 @@ const MyLibrary = () => {
 
             <div className="bg-white dark:bg-[#24303F] shadow-md rounded-lg p-6 border dark:border-[#2E3A47]">
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+
+                    {/* Library Logo Upload */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Library Logo
+                        </label>
+                        <div className="flex items-center gap-4">
+                            <div className="relative w-24 h-24 border-2 border-solid border-gray-300 rounded-lg flex items-center justify-center overflow-hidden bg-gray-50 dark:bg-gray-700">
+                                {logoPreview ? (
+                                    <img src={logoPreview} alt="Logo Preview" className="w-full h-full object-cover" />
+                                ) : (
+                                    <MdCloudUpload className="text-gray-400 text-3xl" />
+                                )}
+                            </div>
+                            <div className="flex flex-col gap-2">
+                                <label className="cursor-pointer bg-blue-50 text-blue-600 px-4 py-2 rounded-md hover:bg-blue-100 transition-colors text-sm font-medium">
+                                    Upload Logo
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        className="hidden"
+                                        onChange={handleLogoChange}
+                                    />
+                                </label>
+                                {logoPreview && (
+                                    <button
+                                        type="button"
+                                        onClick={handleRemoveLogo}
+                                        className="flex items-center justify-center gap-1 text-red-500 text-sm hover:text-red-700"
+                                    >
+                                        <MdDelete /> Remove
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">Max size: 5MB.</p>
+                    </div>
+
                     {/* Library Name */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -183,7 +247,7 @@ const MyLibrary = () => {
                     {/* Phone */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            Phone 
+                            Phone
                         </label>
                         <input
                             type="text"
@@ -246,7 +310,7 @@ const MyLibrary = () => {
                         ></textarea>
                     </div>
 
-                        {/* Other details */}
+                    {/* Other details */}
                     <div className="flex flex-col  gap-6 mt-4">
                         <label className="flex items-center">
                             <input
