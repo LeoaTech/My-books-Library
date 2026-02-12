@@ -13,7 +13,6 @@ async function checkOverdueStatusAndFine() {
                 CASE 
                     WHEN 
                         (item->>'status') NOT IN ('returned', 'cancelled') 
-                        AND (item->>'is_fine_applied')::boolean IS DISTINCT FROM true
                         AND (item->>'return_due')::date < CURRENT_DATE
                     THEN
                         jsonb_set(
@@ -23,10 +22,14 @@ async function checkOverdueStatusAndFine() {
                             ),
                             '{overdue_fine}', 
                             to_jsonb(
-                                COALESCE(
-                                    (SELECT late_returns_fine FROM settings s WHERE s.entity_id = bookings.entity_id),
-                                    200
-                                )::numeric
+                                (
+                                    COALESCE(
+                                        (SELECT late_returns_fine FROM settings s WHERE s.entity_id = bookings.entity_id),
+                                        200
+                                    )::numeric
+                                    * 
+                                    (CURRENT_DATE - (item->>'return_due')::date)
+                                )
                             )
                         )
                     ELSE item
@@ -40,7 +43,6 @@ async function checkOverdueStatusAndFine() {
             FROM jsonb_array_elements(bookings.items) AS item
             WHERE 
                 (item->>'status') NOT IN ('returned', 'cancelled')
-                AND (item->>'is_fine_applied')::boolean IS DISTINCT FROM true
                 AND (item->>'return_due')::date < CURRENT_DATE
         );
     `;
