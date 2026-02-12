@@ -63,7 +63,51 @@ router.post(
 
         userId = session?.client_reference_id || metadata?.app_client_id;
         const invoiceId = session?.invoice;
-        
+
+        //  OverDue Fine Payment
+        if (metadata?.type === "fine") {
+          const { booking_id, user_id, book_title } = metadata;
+          const amountPaid = session?.amount_total / 100;
+          const paymentIntent = session?.payment_intent;
+
+          await db.query(
+            `INSERT INTO fine_transactions (
+                user_id, booking_id, stripe_session_id, stripe_payment_intent_id, amount_paid, status
+             ) VALUES ($1, $2, $3, $4, $5, 'paid')
+             ON CONFLICT (stripe_session_id) DO NOTHING`,
+            [user_id, booking_id, session.id, paymentIntent, amountPaid]
+          );
+
+          const bookingRes = await db.query("SELECT items FROM bookings WHERE id = $1", [booking_id]);
+          if (bookingRes.rows.length > 0) {
+            let items = bookingRes.rows[0].items;
+            
+             const updatedItems = items.map(item => {
+                if (item.title === book_title && parseFloat(item.overdue_fine) > 0) {
+                    
+                    const isReturned = item.status === 'returned';
+                    
+                    if (isReturned) {
+                       return { ...item, fine_paid: true, overdue_fine: 0 }; 
+                    } else {
+                       return { 
+                           ...item, 
+                           fine_paid: true, 
+                           overdue_fine: 0, 
+                           status: 'issued', 
+                           return_due: new Date().toISOString() 
+                       };
+                    }
+                }
+                return item;
+            });
+
+            await db.query("UPDATE bookings SET items = $1 WHERE id = $2", [JSON.stringify(updatedItems), booking_id]);
+          }
+          
+          break; 
+        }
+                
         // Get invoice from stripe account (connected or platform)
         if (connectedAccountId && invoiceId) {
           invoice = await stripe.invoices.retrieve(invoiceId, {
