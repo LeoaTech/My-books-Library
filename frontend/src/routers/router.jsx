@@ -33,8 +33,10 @@ import MyProfile from "../_root/pages/UserProfile/index";
 import AccountSettings from "../_root/pages/UserProfile/AccountSettings";
 import MyOrdersHistory from "../_root/pages/UserProfile/MyOrdersHistory";
 import Membership from "../_root/pages/UserProfile/Membership";
+import Transactions from "../_root/pages/UserProfile/Transactions";
 import PaymentSuccess from "../_admin/pages/PaymentSuccess";
 import Pricing from "../pages/pricing";
+import Bookings from "../_root/pages/UserProfile/Bookings";
 
 
 // import Billing from "../_root/pages/UserProfile/Billing";
@@ -107,6 +109,14 @@ const router = createBrowserRouter(
         <Route path="/:subdomain/membership" element={<Membership />}></Route>
         <Route path="/:subdomain/success" element={<PaymentSuccess />} />
         <Route path="/:subdomain/pricing" element={<Pricing />}></Route>
+        <Route path="/:subdomain/profile" element={<MyProfile />}></Route>
+        <Route path="/:subdomain/account" element={<AccountSettings />}></Route>
+        <Route path="/:subdomain/orders" element={<MyOrdersHistory />}></Route>
+        <Route path="/:subdomain/membership" element={<Membership />}></Route>
+        <Route path="/:subdomain/transactions" element={<Transactions />}></Route>
+
+        <Route path="/:subdomain/billing" element={<Membership />}></Route>
+        <Route path="/:subdomain/bookings" element={<Bookings />}></Route>
 
 
         {/* Protected Dashboard Routes */}
