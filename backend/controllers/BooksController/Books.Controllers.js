@@ -263,6 +263,19 @@ const CreateNewBook = asyncHandler(async (req, res) => {
     quantity,
   } = books;
 
+  // Check if book with same ISBN already exists in this library branch
+  const existingBook = await db.query(
+    "SELECT id FROM books WHERE isbn = $1 AND branch_id = $2",
+    [isbn, branch_id]
+  );
+
+  if (existingBook.rowCount > 0) {
+    return res.status(400).json({
+      message:
+        "A book with this ISBN already exists in this library branch. Please change the ISBN or update the existing book's quantity.",
+    });
+  }
+
   // Upload Images To Cloudinary
   let images = [...cover_img_url];
   let imagesUrlsJson;
@@ -432,6 +445,19 @@ const UpdateBook = asyncHandler(async (req, res) => {
     edition,
     quantity,
   } = book;
+
+  // Check unique ISBN for same branch
+  const existingBook = await db.query(
+    "SELECT id FROM books WHERE isbn = $1 AND branch_id = $2 AND id != $3",
+    [isbn, branch_id, bookId]
+  );
+
+  if (existingBook.rowCount > 0) {
+    return res.status(400).json({
+      message:
+        "Another book with this ISBN already exists in this library branch. Please change the ISBN.",
+    });
+  }
 
   const newStock = parseInt(quantity);
   // Get the Book Quantity
