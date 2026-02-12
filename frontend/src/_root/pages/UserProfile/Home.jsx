@@ -1,13 +1,14 @@
-import React from "react";
+import { useAuthContext } from "../../../hooks/useAuthContext";
 
 const Home = () => {
+  const { auth } = useAuthContext();
   return (
     <main
       id="dashboard-main"
       className="h-[calc(100vh-2rem)] overflow-auto px-4 py-10"
     >
       {/* <!-- Put your content inside of the <main/> tag --> */}
-      <h1 className="text-2xl font-black text-gray-800">Good Morning User!</h1>
+      <h1 className="text-2xl font-black text-gray-800">Good Morning {auth?.name?.toUpperCase() || 'User'}!</h1>
       <p className="mb-6 text-gray-600">
         Here's what requires your immediate attention.
       </p>

@@ -1,7 +1,11 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
+import { useAuthContext } from "../../../hooks/useAuthContext";
+import { MdFlipToBack } from "react-icons/md";
 
 const DashboardSB = () => {
+  const { subdomain } = useParams();
+  const { auth } = useAuthContext();
+
   return (
     <aside className="fixed z-50 md:relative">
       <input type="checkbox" className="peer hidden" id="sidebar-open" />
@@ -28,6 +32,17 @@ const DashboardSB = () => {
         aria-label="Sidebar Navigation"
         className="peer-checked:w-64 left-0 z-10 flex h-screen w-0 flex-col overflow-hidden bg-gray-700 text-white transition-all md:h-screen md:w-64 lg:w-72"
       >
+
+        <div>
+          <button className="focus:bg-slate-600 hover:bg-slate-600 flex w-full space-x-2 rounded-md px-10 py-4 text-gray-300 focus:outline-none">
+            <span>
+              <MdFlipToBack />
+            </span>
+            <Link to={subdomain ? `/${subdomain}` : "/"} className="inline-block cursor-pointer">
+              Back to Home
+            </Link>
+          </button>
+        </div>
         <div className="my-8 ml-6 flex cursor-pointer">
           <div>
             <img
@@ -36,8 +51,8 @@ const DashboardSB = () => {
             />
           </div>
           <div className="ml-3">
-            <p className="font-medium">Qurat</p>
-            <p className="text-sm text-gray-300">XYZ</p>
+            <p className="font-medium">{auth?.name}</p>
+            <p className="text-sm text-gray-300">{auth?.email}</p>
           </div>
         </div>
         <ul className="">
@@ -59,7 +74,7 @@ const DashboardSB = () => {
                   />
                 </svg>
               </span>
-              <Link to="/profile" className="inline-block cursor-pointer">
+              <Link to={subdomain ? `/${subdomain}/profile` : "/profile"} className="inline-block cursor-pointer">
                 Home
               </Link>
             </button>
@@ -82,7 +97,7 @@ const DashboardSB = () => {
                   />
                 </svg>
               </span>
-              <Link to="/orders" className="inline-block cursor-pointer">
+              <Link to={subdomain ? `/${subdomain}/orders` : "/orders"} className="inline-block cursor-pointer">
                 Orders
               </Link>
             </button>
@@ -105,7 +120,7 @@ const DashboardSB = () => {
                   />
                 </svg>
               </span>
-              <Link to="/wishlist" className="inline-block cursor-pointer">
+              <Link to={subdomain ? `/${subdomain}/wishlist` : "/wishlist"} className="inline-block cursor-pointer">
                 Wishlist
               </Link>
             </button>
@@ -137,7 +152,7 @@ const DashboardSB = () => {
                   <path fill="none" d="M0 0h36v36H0z" />
                 </svg>
               </span>
-              <Link to="/membership" className="inline-block cursor-pointer">
+              <Link to={subdomain ? `/${subdomain}/membership` : "/membership"} className="inline-block cursor-pointer">
                 Membership
               </Link>
             </button>
@@ -160,7 +175,7 @@ const DashboardSB = () => {
                   />
                 </svg>{" "}
               </span>
-              <Link to="/transactions" className="inline-block cursor-pointer">
+              <Link to={subdomain ? `/${subdomain}/transactions` : "/transactions"} className="inline-block cursor-pointer">
                 Transactions
               </Link>
             </button>
@@ -195,8 +210,32 @@ const DashboardSB = () => {
                   />
                 </svg>
               </span>
-              <Link to="/cards" className="inline-block cursor-pointer">
+              <Link to={subdomain ? `/${subdomain}/cards` : "/cards"} className="inline-block cursor-pointer">
                 Cards
+              </Link>
+            </button>
+          </li>
+          {/* Bookings */}
+          <li className="relative">
+            <button className="focus:bg-slate-600 hover:bg-slate-600 flex w-full space-x-2 rounded-md px-10 py-4 text-gray-300 focus:outline-none">
+              <span>
+
+                <svg
+                  className="fill-white"
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M19 4H18V3C18 2.45 17.55 2 17 2C16.45 2 16 2.45 16 3V4H8V3C8 2.45 7.55 2 7 2C6.45 2 6 2.45 6 3V4H5C3.89 4 3.01 4.9 3.01 6L3 20C3 21.1 3.89 22 5 22H19C20.1 22 21 21.1 21 20V6C21 4.9 20.1 4 19 4ZM19 20H5V10H19V20ZM19 8H5V6H19V8ZM9 14H7V12H9V14ZM13 14H11V12H13V14ZM17 14H15V12H17V14ZM9 18H7V16H9V18ZM13 18H11V16H13V18ZM17 18H15V16H17V18Z"
+                    fill=""
+                  />
+                </svg>
+              </span>
+              <Link to={subdomain ? `/${subdomain}/bookings` : "/bookings"} className="inline-block cursor-pointer">
+                Bookings
               </Link>
             </button>
           </li>
@@ -223,13 +262,16 @@ const DashboardSB = () => {
                   />
                 </svg>
               </span>
-              <Link to="/account" className="inline-block cursor-pointer">
+              <Link to={subdomain ? `/${subdomain}/account` : "/account"} className="inline-block cursor-pointer">
                 Settings
               </Link>
             </button>
           </li>
         </ul>
+
+
       </nav>
+
     </aside>
   );
 };
