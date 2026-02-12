@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useFetchPricingPlans } from "../../hooks/settings/useFetchPricing";
 import { HiCheckCircle } from "react-icons/hi";
 import { useAuthContext } from "../../hooks/useAuthContext";
@@ -28,8 +28,23 @@ export const Pricing = () => {
     const [isYearly, setIsYearly] = useState(false);
 
     const { data: pricingPlans, isLoading } = useFetchPricingPlans()
-
     const { data: currentPlan } = useFetchCurrentPlan(auth);
+
+    const priceId = currentPlan?.subscription?.stripePriceId;
+
+    useEffect(() => {
+        if (priceId && pricingPlans?.plans) {
+            const isYearlyPlan = pricingPlans.plans.some(plan => plan.plan_details?.yearly?.price_id === priceId);
+            const isMonthlyPlan = pricingPlans.plans.some(plan => plan.plan_details?.monthly?.price_id === priceId);
+
+            if (isYearlyPlan) {
+                setIsYearly(true);
+            } else if (isMonthlyPlan) {
+                setIsYearly(false);
+            }
+        }
+    }, [priceId, pricingPlans]);
+
 
     const activeSubscription = currentPlan?.isActive;
     const subscriptionExpiredAt = `${new Date(currentPlan?.subscription?.currentPeriodEnd).toDateString()} at ${new Date(currentPlan?.subscription?.currentPeriodEnd).toLocaleTimeString()}`;
