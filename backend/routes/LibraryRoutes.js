@@ -5,6 +5,7 @@ const {
   updateLibraryDetails,
   getTransactionHistory,
 } = require("../controllers/LibraryController");
+const { checkAuth } = require("../middleware/authMiddleware");
 
 // Get library details
 router.get("/:entityId", getLibraryDetails);
@@ -12,6 +13,8 @@ router.get("/:entityId", getLibraryDetails);
 // Update library details
 router.put("/:entityId", updateLibraryDetails);
 
+
+router.use(checkAuth);
 // Get transaction history
 router.get("/:entityId/transactions", getTransactionHistory);
 

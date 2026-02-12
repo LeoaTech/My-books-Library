@@ -100,29 +100,59 @@ const updateLibraryDetails = async (req, res) => {
 
 const getTransactionHistory = async (req, res) => {
   const { entityId } = req.params;
+  const userId = req.user?.userId|| req?.user?.user_id;
 
   try {
-    // Fetch transactions for the library (entity)
-    // We join with users to ensure we get transactions for the user associated with this entity
-    const result = await pool.query(
-      `SELECT ct.id, ct.amount_paid, ct.status, ct.invoice_pdf, ct.created_at, ct.stripe_invoice_id,
-              cs.stripe_price_id
-       FROM client_transactions ct
-       JOIN users u ON ct.user_id = u.id
-       JOIN user_entity_roles uer ON u.id = uer.user_id
-       LEFT JOIN client_subscription cs ON ct.client_subscription_id = cs.id
-       WHERE uer.entity_id = $1
-       ORDER BY ct.created_at DESC`,
-      [entityId]
+    const roleQuery = await pool.query(
+      `SELECT r.name 
+       FROM user_entity_roles uer
+       JOIN roles r ON uer.role_id = r.role_id
+       WHERE uer.user_id = $1 AND uer.entity_id = $2`,
+      [userId, entityId]
     );
 
+    if (roleQuery.rows.length === 0) {
+      return res
+        .status(403)
+        .json({ message: "User is not associated with this library" });
+    }
+
+    const roleName = roleQuery.rows[0].name.toLowerCase();
+    let query;
+    let params;
+
+    if (roleName === "owner" || roleName === "admin") {
+      // Client Transactions 
+     query = `
+        SELECT ct.id, ct.amount_paid, ct.status, ct.invoice_pdf, ct.created_at, ct.stripe_invoice_id,
+               cs.stripe_price_id
+        FROM client_transactions ct
+        LEFT JOIN client_subscription cs ON ct.client_subscription_id = cs.id
+        WHERE ct.user_id = $1
+        ORDER BY ct.created_at DESC
+      `;
+      params = [userId];
+    } else {
+      // Customer Subscription Transactions
+      query = `
+        SELECT st.id, st.amount_paid, st.status, st.invoice_pdf, st.created_at, st.stripe_invoice_id,
+               s.stripe_price_id
+        FROM subscription_transactions st
+        JOIN subscriptions s ON st.subscription_id = s.id
+        JOIN membership_plan mp ON s.plan_id = mp.plan_id
+        WHERE st.user_id = $1 AND mp.entity_id = $2
+        ORDER BY st.created_at DESC
+      `;
+      params = [userId, entityId];
+    }
+
+    const result = await pool.query(query, params);
     res.status(200).json(result.rows);
   } catch (error) {
     console.error("Error fetching transaction history:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
-
 module.exports = {
   getLibraryDetails,
   updateLibraryDetails,
