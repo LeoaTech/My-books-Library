@@ -41,8 +41,10 @@ const stripeStatus = require("./routes/PG_Onboarding/StripeStatus.js");
 const stripeConnect = require("./routes/PG_Onboarding/StripeConnect.js");
 const stripeOnboarding = require("./routes/PG_Onboarding/StripeOnboarding.js");
 
+const fineCheckoutSession = require("./routes/PaymentRoutes/FineCheckout.js")
 const wishlistRoute = require("./routes/ProductWishlist/ProductWishlistRoute.js")
 const uploadBooksFromFile = require("./routes/booksRoutes/FileUploadBooks.js");
+
 const webhooks = require("./webhooks/stripe/index.js"); //Stripe webhook
 
 
@@ -137,6 +139,9 @@ app.use("/api/cancel-subscription", cancelSubscription);
 app.use("/api/resume-subscription", resumeSubscription);
 app.use("/api/change-subscription", changeSubscription);
 app.use("/api/current-plan", currentPlan);
+
+// Fine Payment Session
+app.use("/api/create-fine-checkout-session", fineCheckoutSession);
 
 /* Payment Method - Connect Stripe Account for Client Onboarding  */
 app.use("/api/library/:entityId/stripe/status", stripeStatus);
