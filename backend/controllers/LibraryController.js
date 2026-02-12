@@ -1,13 +1,14 @@
 const { pool } = require("../config/dbConfig");
 const { checkSubdomain } = require("../helpers/user_onboarding");
+const { uploadOne } = require("../helpers/books/CloudinaryUploadImages");
 
 const getLibraryDetails = async (req, res) => {
   const { entityId } = req.params;
 
   try {
     const result = await pool.query(
-      "SELECT id, name, subdomain, type_of_books, address, phone, city, country, description, deliver_inter_city,multiple_branches FROM entities WHERE id = $1",
-      [entityId]
+      "SELECT id, name, subdomain, type_of_books, address, phone, city, country, description, deliver_inter_city, multiple_branches, library_logo FROM entities WHERE id = $1",
+      [entityId],
     );
 
     if (result.rows.length === 0) {
@@ -34,18 +35,39 @@ const updateLibraryDetails = async (req, res) => {
     description,
     deliverIntercity,
     hasMultipleBranches,
+    library_logo,
   } = req.body;
-
 
   try {
     let uniqueSubdomain;
-    if(subdomain){
-      uniqueSubdomain = await checkSubdomain(subdomain)
+    if (subdomain) {
+      uniqueSubdomain = await checkSubdomain(subdomain);
     }
+
+    let logoUrl = undefined;
+    if (library_logo) {
+      // Check if it is a base64 string 
+      if (library_logo?.startsWith("data:image")) {
+        const matches = library_logo?.match(/^data:(.+);base64,/);
+        const mimeType = matches ? matches[1] : "image/jpeg";
+
+        const uploadResult = await uploadOne(
+          { base64: library_logo, type: mimeType },
+          { folder: "library_logos" },
+        );
+        logoUrl = uploadResult;
+      } else {
+        logoUrl = library_logo;
+      }
+    }
+
+
+   
+
     const result = await pool.query(
       `UPDATE entities 
-       SET name = $1, subdomain = $2, type_of_books = $3, address = $4, phone = $5, city = $6, country = $7, description = $8, deliver_inter_city = $9, multiple_branches = $10, updated_at = NOW()
-       WHERE id = $11 RETURNING *`,
+       SET name = $1, subdomain = $2, type_of_books = $3, address = $4, phone = $5, city = $6, country = $7, description = $8, deliver_inter_city = $9, multiple_branches = $10, library_logo = COALESCE($11, library_logo), updated_at = NOW()
+       WHERE id = $12 RETURNING *`,
       [
         name,
         uniqueSubdomain,
@@ -57,8 +79,9 @@ const updateLibraryDetails = async (req, res) => {
         description,
         deliverIntercity,
         hasMultipleBranches,
+        JSON.stringify(logoUrl),
         entityId,
-      ]
+      ],
     );
 
     if (result.rows.length === 0) {
