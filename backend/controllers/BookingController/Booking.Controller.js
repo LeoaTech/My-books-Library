@@ -26,7 +26,6 @@ const queryBooking = `SELECT
     u.email AS email,
     v.id AS vendor_id,
     v.name AS vendor_name
-    -- Add other vendor fields as needed
 FROM bookings b
 LEFT JOIN users u ON b.user_id = u.id
 LEFT JOIN vendors v ON b.vendor_id = v.id
@@ -55,6 +54,65 @@ const getBookings = asyncHandler(async (req, res) => {
   }
 });
 
+
+
+// Query Bookings By User ID and Library ID
+
+const queryBookingbyUserId = `SELECT 
+    b.id AS booking_id,
+    b.user_id,
+    b.vendor_id,
+    b.items,
+    b.borrow_date,
+    b.return_due,
+    b.return_date,
+    b.renew_return_date,
+    b.renewed,
+    b.booking_status,
+    b.shipping_address,
+    b.shipping_city,
+    b.shipping_country,
+    b.shipping_phone,
+    b.credits_used,
+    b.entity_id,
+    b.created_at,
+    b.updated_at,
+    u.id AS user_id,
+    u.name AS user_name,
+    u.email AS email,
+    v.id AS vendor_id,
+    v.name AS vendor_name
+FROM bookings b
+LEFT JOIN users u ON b.user_id = u.id
+LEFT JOIN vendors v ON b.vendor_id = v.id
+WHERE entity_id =$1 AND user_id =$2`;
+
+const getBookingsByUserId = asyncHandler(async (req, res) => {
+  const entityId = req?.user?.entityId || req.user?.entity_id;
+  const userId = req?.user?.userId || req.user?.user_id || req?.params?.user_id;
+
+  if (!entityId) {
+    res.send(400).json({ message: "Invalid Request, No Library ID provided" });
+  }
+    if (!userId) {
+    res.send(400).json({ message: "Invalid Request, No User ID provided" });
+  }
+
+  try {
+    const bookingsQueryResponse = await db.query(queryBookingbyUserId, [entityId, userId]);
+
+    res.status(200).json({
+      bookings: bookingsQueryResponse?.rows || [],
+      message: "Bookings Data retrieved Successfully",
+    });
+  } catch (error) {
+    // console.log(error);
+    return res.status(500).json({
+      bookings: [],
+      message: error.message || "Failed to get Bookings details",
+    });
+  }
+});
 /* Create New Bookngs */
 
 const CreateBooking = asyncHandler(async (req, res) => {
@@ -242,4 +300,4 @@ const DeleteBooking = asyncHandler(async (req, res) => {
   }
 });
 
-module.exports = { getBookings, CreateBooking, UpdateBooking, DeleteBooking };
+module.exports = { getBookings, CreateBooking, UpdateBooking, DeleteBooking,getBookingsByUserId };

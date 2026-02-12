@@ -3,7 +3,8 @@ const {
   getBookings,
   CreateBooking,
   UpdateBooking,
-  DeleteBooking
+  DeleteBooking,
+  getBookingsByUserId
 } = require("../../controllers/BookingController/Booking.Controller");
 const { checkAuth } = require("../../middleware/authMiddleware");
 const router = Router();
@@ -11,6 +12,9 @@ const router = Router();
 router.use(checkAuth);
 
 router.get("/", getBookings);
+
+// Get Bookings By User ID
+router.get("/user/:user_id", getBookingsByUserId);
 
 router.post("/create", CreateBooking);
 
