@@ -1,20 +1,28 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import SidebarLinkGroup from "./SidebarLinkGroup";
 import user from "../../../assets/user.svg";
-import Shipping from "../../../assets/shipment.svg";
+// import Shipping from "../../../assets/shipment.svg";
 import { AiOutlineLogout } from "react-icons/ai";
 import { useLogout } from "../../../hooks/useLogout";
 import { useAuthContext } from "../../../hooks/useAuthContext";
 import routes, { accountRoutes, roleRoutes } from "../../../utils";
 import { useFetchCurrentPlan } from "../../../hooks/current_plan/useFetchCurrentPlan";
+import { useFetchLibraryDetails } from "../../../hooks/myLibrary/useFetchLibrary";
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const { auth } = useAuthContext();
-  let name = auth?.entityName;
-let role = auth?.role_name;
+  const entityId = auth?.entityId;
 
-  const { data: currentPlan, isLoading } = useFetchCurrentPlan(auth)
+  // Fetch Library Details by entity ID
+  const { data: libraryDetails, isLoading, error, refetch } = useFetchLibraryDetails(entityId);
+
+  let name = auth?.entityName;
+  let role = auth?.role_name;
+
+  const { data: currentPlan } = useFetchCurrentPlan(auth)
+
+
 
   const location = useLocation();
   const { pathname } = location;
@@ -101,13 +109,15 @@ let role = auth?.role_name;
       <div className="flex items-center justify-between gap-2 pt-3 px-6 py-5.5 lg:py-5.5">
         <Link
           className="flex justify-center items-center gap-4"
-          to="/dashboard"
+          to="/"
         >
           <img
-            src="https://plus.unsplash.com/premium_photo-1661914978519-52a11fe159a7?w=400&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTN8fGxvZ298ZW58MHx8MHx8fDA%3D"
+            src={libraryDetails ? libraryDetails?.library_logo?.secure_url : "https://plus.unsplash.com/premium_photo-1661914978519-52a11fe159a7?w=400&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTN8fGxvZ298ZW58MHx8MHx8fDA%3D"}
             className="flex justify-center items-center h-12 w-12 rounded-full"
             alt="Logo"
           />
+
+
 
           <span className=" border-r-2 text-white dark:bg-blue-900"></span>
           <span className="font-bold text-lg "> {name || "Dashboard"}</span>
