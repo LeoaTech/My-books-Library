@@ -61,14 +61,13 @@ const DropdownUser = () => {
         <span className="h-12 w-12 rounded-full">
           <img
             src={UserIcon}
-            // src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?q=80&w=1760&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
             className="h-12 2-12 rounded-full"
             alt="User"
           />
         </span>
 
         <svg
-          className={`hidden fill-current sm:block ${dropdownOpen ? "rotate-180" : ""
+          className={`hidden fill-indigo-400 sm:block ${dropdownOpen ? "rotate-180" : ""
             }`}
           width="12"
           height="8"
