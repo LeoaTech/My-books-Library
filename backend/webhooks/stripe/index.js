@@ -4,7 +4,6 @@ const db = require("../../config/dbConfig.js");
 const stripe = require("../../config/stripe.js");
 const { emailQueue, pushQueue } = require("../../queues/index.js");
 
-const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
 
 const router = express.Router();
 
@@ -14,21 +13,29 @@ router.post(
   async (request, response) => {
     let event = request.body;
 
-    const endpointSecret = WEBHOOK_SECRET;
-
-    if (endpointSecret) {
-      // Get the signature sent by Stripe
-      const signature = request.headers["stripe-signature"];
-      try {
+    const signature = request.headers["stripe-signature"];
+    
+    // Platform Webhook Secret
+    try {
         event = Stripe.default.webhooks.constructEvent(
           request.body,
           signature,
-          endpointSecret
+          process.env.STRIPE_WEBHOOK_SECRET
         );
-      } catch (err) {
-        // console.log(`Webhook signature verification failed.`, err.message);
-        return response.sendStatus(400);
-      }
+    } catch (err) {
+        // Connect Account Webhook Secret
+        try {
+            event = Stripe.default.webhooks.constructEvent(
+              request.body,
+              signature,
+              process.env.STRIPE_CONNECT_WEBHOOK_SECRET
+            );
+        } catch (connectErr) {
+            console.log(`Webhook signature verification failed for both secrets.`);
+            console.log(`Platform Error: ${err.message}`);
+            console.log(`Connect Error: ${connectErr.message}`);
+            return response.sendStatus(400);
+        }
     }
     let subscription;
     let status;
