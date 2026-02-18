@@ -6,10 +6,25 @@ const getLibraryDetails = async (req, res) => {
   const { entityId } = req.params;
 
   try {
-    const result = await pool.query(
-      "SELECT id, name, subdomain, type_of_books, address, phone, city, country, description, deliver_inter_city, multiple_branches, library_logo FROM entities WHERE id = $1",
-      [entityId],
-    );
+    let query, params;
+
+    if (!isNaN(entityId)) {
+        // Fetch by ID
+        query = `SELECT e.id, e.name, e.subdomain, e.type_of_books, e.address, e.phone, e.city, e.country, e.description, e.deliver_inter_city, e.multiple_branches, e.library_logo, s.theme_config 
+       FROM entities e
+       LEFT JOIN settings s ON e.id = s.entity_id
+       WHERE e.id = $1`;
+       params = [entityId];
+    } else {
+        // Fetch by Subdomain
+        query = `SELECT e.id, e.name, e.subdomain, e.type_of_books, e.address, e.phone, e.city, e.country, e.description, e.deliver_inter_city, e.multiple_branches, e.library_logo, s.theme_config 
+       FROM entities e
+       LEFT JOIN settings s ON e.id = s.entity_id
+       WHERE e.subdomain = $1`;
+       params = [entityId];
+    }
+
+    const result = await pool.query(query, params);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ message: "Library data not found" });
