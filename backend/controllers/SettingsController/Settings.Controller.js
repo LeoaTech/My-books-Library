@@ -50,6 +50,7 @@ const UpdateSettings = asyncHandler(async (req, res) => {
       allow_borrow,
       consecutive_renewals,
       late_returns_fine,
+      theme_config
     } = req.body;
 
     if (checkSettingsExist.rowCount === 0) {
@@ -60,7 +61,8 @@ const UpdateSettings = asyncHandler(async (req, res) => {
     allow_borrow,
     consecutive_renewals,
     late_returns_fine,
-     entity_id) VALUES ($1,$2,$3, $4, $5,$6,$7)`,
+    theme_config,
+     entity_id) VALUES ($1,$2,$3, $4, $5,$6,$7,$8)`,
         [
           allow_select_booking_date,
           default_booking_duration,
@@ -68,6 +70,7 @@ const UpdateSettings = asyncHandler(async (req, res) => {
           allow_borrow,
           consecutive_renewals,
           late_returns_fine,
+          theme_config,
           entityId,
         ],
       );
@@ -79,10 +82,11 @@ const UpdateSettings = asyncHandler(async (req, res) => {
     allow_purchase =$3,
     allow_borrow =$4,
     consecutive_renewals =$5,
-    late_returns_fine =$6
+    late_returns_fine =$6,
+    theme_config = COALESCE($7, theme_config)
     Where 
-       id=$7 
-    AND entity_id=$8 RETURNING id`,
+       id=$8 
+    AND entity_id=$9 RETURNING id`,
         [
           allow_select_booking_date,
           default_booking_duration,
@@ -90,6 +94,7 @@ const UpdateSettings = asyncHandler(async (req, res) => {
           allow_borrow,
           consecutive_renewals,
           late_returns_fine,
+          theme_config,
           checkSettingsExist?.rows[0]?.id,
           entityId,
         ],
