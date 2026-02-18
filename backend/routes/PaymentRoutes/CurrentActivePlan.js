@@ -29,7 +29,7 @@ router.get("/", async (req, res) => {
 
   const userId = user?.user_id || user?.userId;
   const entityId = user?.entityId || user?.entity_id;
-
+  let userType;
   try {
     const subscriptionResult = await db.query(
       `SELECT 
@@ -59,15 +59,13 @@ router.get("/", async (req, res) => {
        LIMIT 1`,
       [userId],
     );
-
-
     if (subscriptionResult?.rows?.length > 0) {
       // User has an active subscription
       const currentSubscription = subscriptionResult?.rows[0];
-      const userType = currentSubscription?.user_type;
+      userType = currentSubscription?.user_type || "client";
 
       const isActive = ["active"].includes(currentSubscription?.status);
-      
+
       let planName;
 
       if (userType === "customer" && currentSubscription?.plan_id) {
@@ -100,7 +98,7 @@ router.get("/", async (req, res) => {
         },
       });
     } else {
-      // User does not have an active subscription
+      // User does not have any active subscription
       const totalBookCount = await totalBooks(db, entityId);
       const totalUsersCount = await totalUsers(db, entityId);
 
@@ -110,16 +108,16 @@ router.get("/", async (req, res) => {
           isActive: false,
           userType: null,
           subscription: null,
-          });
+        });
       } else {
         // saas client with Free Plan
         res.json({
-        isActive: false,
-        userType: null,
-        subscription: null,
-        booksCount: totalBookCount?.books || 0,
-        userCounts: totalUsersCount?.users || 0,
-      });
+          isActive: false,
+          userType: null,
+          subscription: null,
+          booksCount: totalBookCount?.books || 0,
+          userCounts: totalUsersCount?.users || 0,
+        });
       }
     }
   } catch (error) {
