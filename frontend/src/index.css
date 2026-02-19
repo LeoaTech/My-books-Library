@@ -4,9 +4,30 @@
 
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 
+:root {
+  /* Default values - will be overridden by ThemeContext */
+  --color-primary: #3b82f6;
+  --color-secondary: #93c5fd;
+  --color-background: #eff6ff;
+  --color-surface: #ffffff;
+  --color-text: #1e3a8a;
+  --color-border: #bfdbfe;
+  --color-page: #f0f9ff;
+}
+
+.dark {
+  --color-primary: #60a5fa;
+  --color-secondary: #1e40af;
+  --color-background: #0c1e35;
+  --color-surface: #1e293b;
+  --color-text: #e0f2fe;
+  --color-border: #1e40af;
+  --color-page: #0a1628;
+}
+
+
 body {
   font-family: "Inter", sans-serif;
-  /* color: #fff; */
   margin: 0;
   padding: 0;
   box-sizing: border-box;
