@@ -143,28 +143,32 @@ const MyLibrary = () => {
     return (
         <div className="p-6 max-w-4xl mx-auto">
             <div className="flex items-center gap-2 mb-6">
-                <MdLibraryBooks className="text-3xl text-gray-700 dark:text-gray-200" />
-                <h1 className="text-2xl font-bold text-gray-800 dark:text-white">My Library</h1>
+                <MdLibraryBooks className="text-3xl text-primary" />
+                <h1 className="text-2xl font-bold text-secondary dark:text-text">My Library</h1>
             </div>
 
-            <div className="bg-white dark:bg-[#24303F] shadow-md rounded-lg p-6 border dark:border-[#2E3A47]">
+
+            <div className="bg-surface shadow-md rounded-lg p-6 border border-border">
+
+
+
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 
                     {/* Library Logo Upload */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label className="block text-sm font-medium text-text mb-2">
                             Library Logo
                         </label>
                         <div className="flex items-center gap-4">
-                            <div className="relative w-24 h-24 border-2 border-solid border-gray-300 rounded-lg flex items-center justify-center overflow-hidden bg-gray-50 dark:bg-gray-700">
+                            <div className="relative w-24 h-24 border-2 border-solid border-border rounded-lg flex items-center justify-center overflow-hidden bg-background">
                                 {logoPreview ? (
                                     <img src={logoPreview} alt="Logo Preview" className="w-full h-full object-cover" />
                                 ) : (
-                                    <MdCloudUpload className="text-gray-400 text-3xl" />
+                                    <MdCloudUpload className="text-text/40 text-3xl" />
                                 )}
                             </div>
                             <div className="flex flex-col gap-2">
-                                <label className="cursor-pointer bg-blue-50 text-blue-600 px-4 py-2 rounded-md hover:bg-blue-100 transition-colors text-sm font-medium">
+                                <label className="cursor-pointer bg-primary/10 text-primary px-4 py-2 rounded-md hover:bg-primary/20 transition-colors text-sm font-medium">
                                     Upload Logo
                                     <input
                                         type="file"
@@ -184,18 +188,18 @@ const MyLibrary = () => {
                                 )}
                             </div>
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">Max size: 5MB.</p>
+                        <p className="text-xs text-text/60 mt-1">Max size: 5MB.</p>
                     </div>
 
                     {/* Library Name */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <label className="block text-sm font-medium text-text mb-1">
                             Library Name <span className="text-red-600">*</span>
                         </label>
                         <input
                             type="text"
                             {...register('name', { required: true })}
-                            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${errors.name ? 'border-red-500' : 'border-gray-300'
+                            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-background text-text ${errors.name ? 'border-red-500' : 'border-border'
                                 }`}
                             placeholder="e.g. City Library"
                         />
@@ -206,14 +210,14 @@ const MyLibrary = () => {
 
                     {/* Subdomain */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <label className="block text-sm font-medium text-text mb-1">
                             Subdomain <span className="text-red-600">*</span>
                         </label>
                         <div className="flex items-center">
                             <input
                                 type="text"
                                 {...register('subdomain', { required: true })}
-                                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${errors.subdomain ? 'border-red-500' : 'border-gray-300'
+                                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-background text-text ${errors.subdomain ? 'border-red-500' : 'border-border'
                                     }`}
                                 placeholder="my-library"
                             />
@@ -225,12 +229,12 @@ const MyLibrary = () => {
 
                     {/* Type of Books */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <label className="block text-sm font-medium text-text mb-1">
                             Book Types
                         </label>
                         <select
                             {...register("type_of_books")}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-background text-text"
 
                             defaultValue=""
                         >
@@ -246,13 +250,13 @@ const MyLibrary = () => {
 
                     {/* Phone */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <label className="block text-sm font-medium text-text mb-1">
                             Phone
                         </label>
                         <input
                             type="text"
                             {...register('phone')}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-background text-text"
                             placeholder="+1 234 567 890"
                         />
                     </div>
@@ -260,24 +264,24 @@ const MyLibrary = () => {
                     {/* City & Country */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            <label className="block text-sm font-medium text-text mb-1">
                                 City
                             </label>
                             <input
                                 type="text"
                                 {...register('city')}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-background text-text"
                                 placeholder="New York"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            <label className="block text-sm font-medium text-text mb-1">
                                 Country
                             </label>
                             <input
                                 type="text"
                                 {...register('country')}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-background text-text"
                                 placeholder="USA"
                             />
                         </div>
@@ -286,26 +290,26 @@ const MyLibrary = () => {
 
                     {/* Address */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <label className="block text-sm font-medium text-text mb-1">
                             Address
                         </label>
                         <textarea
                             {...register('address')}
                             rows="3"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-background text-text"
                             placeholder="123 Library St, Booktown"
                         ></textarea>
                     </div>
 
                     {/* Description */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <label className="block text-sm font-medium text-text mb-1">
                             Description
                         </label>
                         <textarea
                             {...register('description')}
                             rows="4"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-background text-text"
                             placeholder="Enter a brief description of your library..."
                         ></textarea>
                     </div>
@@ -316,17 +320,17 @@ const MyLibrary = () => {
                             <input
                                 {...register("deliverIntercity")}
                                 type="checkbox"
-                                className="mr-2"
+                                className="mr-2 accent-primary"
                             />
-                            <span className="text-gray-700">Enable Inter-city Delivery</span>
+                            <span className="text-text">Enable Inter-city Delivery</span>
                         </label>
                         <label className="flex items-center">
                             <input
                                 {...register("hasMultipleBranches")}
                                 type="checkbox"
-                                className="mr-2"
+                                className="mr-2 accent-primary"
                             />
-                            <span className="text-gray-700">Has Multiple Branches</span>
+                            <span className="text-text">Has Multiple Branches</span>
                         </label>
                     </div>
 
@@ -335,9 +339,9 @@ const MyLibrary = () => {
                         <button
                             type="submit"
                             disabled={!isDirty || isSubmitting}
-                            className={`flex items-center gap-2 bg-[#758aae] text-white px-6 py-2 rounded-md 
-                hover:bg-[#5b6e8c] focus:outline-none focus:ring-2 focus:ring-[#758aae] 
-                transition-colors duration-200 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            className={`flex items-center gap-2 bg-primary text-white px-6 py-2 rounded-md 
+                hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary 
+                transition-all duration-200 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
                             {isSubmitting ? 'Saving...' : 'Save Changes'}
                         </button>
