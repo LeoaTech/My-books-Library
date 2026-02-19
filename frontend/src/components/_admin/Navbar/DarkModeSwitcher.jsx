@@ -1,12 +1,12 @@
-import useColorMode from "../../../hooks/useColorMode";
+import { useTheme } from "../../../context/ThemeContext";
 
 const DarkModeSwitcher = () => {
-  const [colorMode, setColorMode] = useColorMode();
+  const { colorMode, setColorMode } = useTheme();
 
   return (
     <li>
       <label
-        className={`border p-3 border-blue-200 dark:border-gray-800 relative m-0 block h-7.5 w-14 rounded-full ${colorMode === "dark" ? "bg-[#5e676f]" : "bg-[#e6eff7e9]"
+        className={`border p-3 border-blue-200 dark:border-gray-800 relative m-0 block h-7.5 w-14 rounded-full ${colorMode === "dark" ? "bg-[#000]" : "bg-[#e6eff7e9]"
           }`}
       >
         <input
