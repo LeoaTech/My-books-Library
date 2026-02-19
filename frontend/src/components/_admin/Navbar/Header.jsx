@@ -7,8 +7,8 @@ import DarkModeSwitcher from "./DarkModeSwitcher";
 const Header = ({ sidebarOpen, setSidebarOpen }) => {
   return (
     // <header className="sticky top-0 left-0 z-999 flex w-full drop-shadow-1 dark:bg-[#24303F] dark:drop-shadow-none">
-    <header className="sticky top-0 left-0 z-70 flex w-full shadow-lg dark:bg-[#24303F] dark:drop-shadow-none bg-white">
-      <div className="flex flex-grow items-center justify-between py-4 px-4 shadow-2 md:px-6 2xl:px-11">
+    <header className="sticky top-0 z-40 flex w-full bg-page shadow border-b">
+      <div className="flex flex-grow items-center justify-between px-4 py-4 shadow-2 md:px-6 2xl:px-11">
         <div className="flex items-center gap-2 sm:gap-4 lg:hidden">
           {/* <!-- Hamburger Toggle BTN --> */}
           <button
@@ -17,7 +17,7 @@ const Header = ({ sidebarOpen, setSidebarOpen }) => {
               e.stopPropagation();
               setSidebarOpen(!sidebarOpen);
             }}
-            className="z-99999 block rounded-sm border border-[#E2E8F0] bg-neutral-100 p-1.5 shadow-sm dark:border-[#2E3A47] dark:bg-[#24303F] lg:hidden"
+            className="z-50 block rounded-sm border border-border bg-background p-1.5 shadow-sm lg:hidden"
           >
             {/* <span className="relative block h-5.5 w-5.5 cursor-pointer">
               <span className="du-block absolute right-0 h-full w-full">
@@ -52,7 +52,7 @@ const Header = ({ sidebarOpen, setSidebarOpen }) => {
             </span> */}
             <HiMenuAlt1
               style={{ background: "transparent", border: "none" }}
-              className="text-black dark:text-white"
+              className="text-text"
             />
           </button>
           {/* <!-- Hamburger Toggle BTN END--> */}
