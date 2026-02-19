@@ -3,28 +3,23 @@ import ReactDOM from "react-dom/client";
 import "./index.css";
 import { RouterProvider } from "react-router-dom";
 import router from "./routers/router.jsx";
+import { ThemeProvider } from "./context/ThemeContext.jsx";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthContextProvider } from "./context/_admin/AuthContext.jsx";
-import {
-  QueryClient,
-  QueryClientProvider,
-} from "@tanstack/react-query";
 import { ToastContainer } from "react-toastify";
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: false,
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
-    }
-  }
-});
+
+const queryClient = new QueryClient();
+// ... (existing imports)
+
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <Suspense fallback={<> </>}>
       <QueryClientProvider client={queryClient}>
         <AuthContextProvider>
-          <RouterProvider router={router} />
+          <ThemeProvider>
+            <RouterProvider router={router} />
+          </ThemeProvider>
         </AuthContextProvider>
       </QueryClientProvider>
     </Suspense>
