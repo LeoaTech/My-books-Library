@@ -7,6 +7,7 @@ import { isDirty, z } from 'zod';
 import { useFetchSettings } from '../../../hooks/settings/useFetchSettings';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
+import ThemeSelector from '../../ThemeSelector';
 
 
 const settingsSchema = z.object({
@@ -199,7 +200,14 @@ const CustomerSettings = () => {
                 </div>
             </form>
 
-          
+            {/* Theme Customization Section */}
+            <div className="mb-8 mt-10 border-b border-border pb-6">
+                <h2 className="text-lg font-semibold text-text mb-4">Theme Customization</h2>
+                <p className="text-sm text-text/70 mb-4">
+                    Select a color theme for your library. This will update the look of your admin dashboard and public library store.
+                </p>
+                <ThemeSelector />
+            </div>
         </div>
     );
 };
