@@ -122,9 +122,9 @@ const CustomerSettings = () => {
     return (
         <div className="w-full">
             <form onSubmit={handleSubmit(onSubmit)}>
-                <div className="overflow-x-auto mt-5 shadow-md bg-slate-100 dark:border-[#2E3A47] dark:bg-[#24303F]">
-                    <table className="min-w-full bg-white rounded-lg">
-                        <thead className="bg-gray-800 text-white dark:bg-gray-300 dark:text-black">
+                <div className="overflow-x-auto mt-5 shadow-md bg-surface text-text">
+                    <table className="min-w-full bg-surface rounded-lg">
+                        <thead className="bg-surface text-text ">
                             <tr>
                                 <th className="text-left py-3 px-4 uppercase font-semibold text-sm">
                                     Setting
@@ -137,10 +137,10 @@ const CustomerSettings = () => {
                         <tbody>
                             {getValues('settings').map((setting, index) => (
                                 <tr
-                                    className="hover:bg-blue-100 bg-slate-100 dark:border-[#2E3A47] dark:bg-[#24303F]"
+                                    className="hover:bg-border border-border bg-surface"
                                     key={setting.label}
                                 >
-                                    <td className="py-2 px-4 dark:text-white">{setting.label}</td>
+                                    <td className="py-2 px-4 text-text">{setting.label}</td>
                                     <td className="py-2 px-4">
                                         {setting.type === 'toggle' ? (
                                             <label className="inline-flex relative items-center cursor-pointer">
@@ -150,8 +150,8 @@ const CustomerSettings = () => {
                                                     {...register(`settings.${index}.value`)}
                                                 />
                                                 <div
-                                                    className="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-blue-400 peer-focus:ring-4 
-                          transition peer-checked:after:translate-x-full peer-checked:after:border-white 
+                                                    className="w-11 h-6 bg-text rounded-full peer peer-focus:ring-blue-400 peer-focus:ring-4 
+                          transition peer-checked:after:translate-x-full peer-checked:after:border-border 
                           after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white 
                           after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all
                           peer-checked:bg-blue-600"
@@ -161,7 +161,7 @@ const CustomerSettings = () => {
                                             <div>
                                                 <input
                                                     type="number"
-                                                    className={`px-4 py-2 border rounded-lg text-gray-500 focus:outline-none focus:border-blue-500 ${errors.settings?.[index]?.value
+                                                    className={`px-4 py-2 border bg-background rounded-lg text-text focus:outline-none focus:border-blue-500 ${errors.settings?.[index]?.value
                                                         ? 'border-red-500'
                                                         : ''
                                                         }`}
@@ -198,6 +198,8 @@ const CustomerSettings = () => {
                     </div>
                 </div>
             </form>
+
+          
         </div>
     );
 };
