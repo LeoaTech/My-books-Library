@@ -99,7 +99,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
 
   return (
     <aside
-      className={`absolute left-0 top-0 z-50 flex h-screen w-[18rem] flex-col overflow-y-hidden bg-slate-800 text-white duration-300 ease-linear lg:static lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
+      className={`absolute left-0 shadow-md top-0 z-50 flex h-screen w-[18rem] flex-col overflow-y-hidden bg-background text-text duration-300 ease-linear lg:static lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       id="sidebar"
       ref={sidebar}
@@ -109,18 +109,18 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
       <div className="flex items-center justify-between gap-2 pt-3 px-6 py-5.5 lg:py-5.5">
         <Link
           className="flex justify-center items-center gap-4"
-          to="/"
+        // to={`/${subdomain}`}
         >
           <img
-            src={libraryDetails ? libraryDetails?.library_logo?.secure_url : "https://plus.unsplash.com/premium_photo-1661914978519-52a11fe159a7?w=400&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTN8fGxvZ298ZW58MHx8MHx8fDA%3D"}
+            src={libraryDetails ? libraryDetails?.library_logo?.secure_url || "https://plus.unsplash.com/premium_photo-1661914978519-52a11fe159a7?w=400&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTN8fGxvZ298ZW58MHx8MHx8fDA%3D" : "https://plus.unsplash.com/premium_photo-1661914978519-52a11fe159a7?w=400&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTN8fGxvZ298ZW58MHx8MHx8fDA%3D"}
             className="flex justify-center items-center h-12 w-12 rounded-full"
-            alt="Logo"
+            alt={libraryDetails?.name || "Logo"}
           />
 
 
 
-          <span className=" border-r-2 text-white dark:bg-blue-900"></span>
-          <span className="font-bold text-lg "> {name || "Dashboard"}</span>
+          <span className=" border-r-2 border-border"></span>
+          <span className="font-bold text-lg text-text/50"> {name || "Dashboard"}</span>
 
         </Link>
 
@@ -166,12 +166,12 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                   {!route?.subRoutes ? (
                     <Link
                       to={route.path}
-                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-[#DEE4EE] duration-300 ease-in-out hover:bg-[#333A48] dark:hover:bg-[#313D4A] ${pathname === route.path ? "bg-[#333A48] dark:bg-[#313D4A]" : ""
+                      className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-text/90 duration-300 ease-in-out hover:bg-primary/10 hover:text-primary ${pathname === route.path ? "bg-primary/10 text-primary" : ""
                         }`}
                     >
                       {route.icon && <route.icon />}
                       {route.image && (
-                        <img src={route.image} alt={route.title} className="h-4 w-4" />
+                        <img src={route.image} alt={route.title} className={`h-4 w-4 text-text/90 hover:bg-primary/10 hover:text-primary ${pathname === route.path ? "text-primary" : ""}`} />
                       )}
                       {route.title}
                     </Link>
@@ -185,7 +185,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                           <button
                             type="button"
                             onClick={() => (sidebarExpanded ? handleClick() : setSidebarExpanded(true))}
-                            className={`group relative flex items-center w-full gap-2.5 rounded-sm py-2 px-4 font-medium text-[#DEE4EE] duration-300 ease-in-out hover:bg-[#333A48] dark:hover:bg-[#313D4A] ${route.subRoutes.some((r) => pathname === r.path) ? "bg-[#333A48] dark:bg-[#313D4A]" : ""
+                            className={`group relative flex items-center w-full gap-2.5 rounded-sm py-2 px-4 font-medium text-text/90 duration-300 ease-in-out hover:bg-primary/10 ${route.subRoutes.some((r) => pathname === r.path) ? "bg-primary/10 text-primary" : ""
                               }`}
                           >
                             {route.image ? <img src={route.image} alt={route.title} className="h-5 w-5" /> : <route.icon />}
@@ -210,12 +210,12 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
 
                           {/* Sub Routes */}
                           <div className={`overflow-hidden transition-all ${!open ? "hidden" : ""}`}>
-                            <ul className="text-[#AEB7C0] mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                            <ul className="text-text mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
                               {route.subRoutes.map((subRoute) => (
                                 <li key={subRoute.title}>
                                   <Link
                                     to={subRoute.path}
-                                    className={`group relative flex items-center gap-2.5 rounded-md px-4 py-1.5 font-medium duration-300 ease-in-out hover:text-white ${pathname === subRoute.path ? "text-white" : "text-[#8A99AF]"
+                                    className={`group relative flex items-center gap-2.5 rounded-md px-4 py-1.5 font-medium duration-300 ease-in-out hover:text-primary ${pathname === subRoute.path ? "text-primary" : "text-text/70"
                                       }`}
                                   >
                                     {subRoute.image ? (
@@ -246,7 +246,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
           {/* <!-- Roles And Permissions Menu */}
           {role === "owner" && (
             <div>
-              <h3 className="mb-4 ml-4 text-md font-semibold text-[#8A99AF] border-b">
+              <h3 className="mb-4 ml-4 text-md font-semibold text-text/50 border-b border-border">
                 Roles and Permissions
               </h3>
 
@@ -262,8 +262,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                           onClick={() =>
                             sidebarExpanded ? handleClick() : setSidebarExpanded(true)
                           }
-                          className={`group relative flex items-center w-full gap-2.5 rounded-sm py-2 px-4 font-medium text-[#DEE4EE] duration-300 ease-in-out hover:bg-[#333A48] dark:hover:bg-[#313D4A] ${route.subRoutes.some((r) => pathname === r.path)
-                            ? "bg-[#333A48] dark:bg-[#313D4A]"
+                          className={`group relative flex items-center w-full gap-2.5 rounded-sm py-2 px-4 font-medium text-text/90 duration-300 ease-in-out hover:bg-primary/10 ${route.subRoutes.some((r) => pathname === r.path)
+                            ? "bg-primary/10 text-primary"
                             : ""
                             }`}
                         >
@@ -291,14 +291,14 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                           className={`overflow-hidden transition-all ${!open ? "hidden" : ""
                             }`}
                         >
-                          <ul className="mt-4 flex flex-col gap-2.5 pl-6 text-[#AEB7C0]">
+                          <ul className="mt-4 flex flex-col gap-2.5 pl-6 text-text/70">
                             {route.subRoutes.map((subRoute) => (
-                              <li key={subRoute.title} className="hover:text-white">
+                              <li key={subRoute.title} className="hover:text-primary">
                                 <Link
                                   to={subRoute.path}
-                                  className={`group relative flex items-center gap-2.5 rounded-md px-4 py-1.5 font-medium duration-300 ease-in-out hover:text-white ${pathname === subRoute.path
-                                    ? "text-white"
-                                    : "text-[#8A99AF]"
+                                  className={`group relative flex items-center gap-2.5 rounded-md px-4 py-1.5 font-medium duration-300 ease-in-out hover:text-primary ${pathname === subRoute.path
+                                    ? "text-primary"
+                                    : "text-text/70"
                                     }`}
                                 >
                                   {subRoute.title}
@@ -317,7 +317,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
 
           {/* <!-- Others Group --> */}
           <div className="py-2 ">
-            <h3 className="mb-4 ml-4 text-md font-semibold text-[#8A99AF] border-b">
+            <h3 className="mb-4 ml-4 text-md font-semibold text-text/70 border-b border-border">
               Account
             </h3>
 
@@ -333,8 +333,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                         onClick={() =>
                           sidebarExpanded ? handleClick() : setSidebarExpanded(true)
                         }
-                        className={`group relative flex items-center w-full gap-2.5 rounded-sm py-2 px-4 font-medium text-[#DEE4EE] duration-300 ease-in-out hover:bg-[#333A48] dark:hover:bg-[#313D4A] ${route.subRoutes.some((r) => pathname === r.path)
-                          ? "bg-[#333A48] dark:bg-[#313D4A]"
+                        className={`group relative flex items-center w-full gap-2.5 rounded-sm py-2 px-4 font-medium text-text/90 duration-300 ease-in-out hover:bg-primary/10 ${route.subRoutes.some((r) => pathname === r.path)
+                          ? "bg-primary/10 text-primary"
                           : ""
                           }`}
                       >
@@ -361,14 +361,14 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                         className={`overflow-hidden transition-all ${!open ? "hidden" : ""
                           }`}
                       >
-                        <ul className="text-[#AEB7C0] mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                        <ul className="text-text/70 mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
                           {route.subRoutes.map((subRoute) => (
                             <li key={subRoute.title}>
                               <Link
                                 to={subRoute.path}
-                                className={`group relative flex items-center gap-2.5 rounded-md px-4 py-1.5 font-medium duration-300 ease-in-out hover:text-white ${pathname === subRoute.path
-                                  ? "text-white"
-                                  : "text-[#8A99AF]"
+                                className={`group relative flex items-center gap-2.5 rounded-md px-4 py-1.5 font-medium duration-300 ease-in-out hover:text-primary ${pathname === subRoute.path
+                                  ? "text-primary"
+                                  : "text-text/70"
                                   }`}
                               >
                                 {subRoute.image && (
@@ -386,12 +386,12 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
 
                         {/* Logout / Signout */}
                         <ul className="ml-4 mt-2 flex flex-col gap-1.5">
-                          <li className="hover:text-white">
+                          <li className="hover:text-primary">
                             <button
                               onClick={auth?.auth ? signout : logout}
-                              className="group relative flex items-center gap-2.5 rounded-md px-4 py-2 font-medium text-[#DEE4EE] duration-300 ease-in-out hover:text-white"
+                              className="group relative flex items-center gap-2.5 rounded-md px-4 py-2 font-medium text-text/90 duration-300 ease-in-out hover:text-primary"
                             >
-                              <AiOutlineLogout style={{ color: "#FFF" }} />
+                              <AiOutlineLogout className="text-current" />
                               {auth?.auth ? "Signout" : "Logout"}
                             </button>
                           </li>
