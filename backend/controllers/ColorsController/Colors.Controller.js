@@ -54,10 +54,50 @@ const getCustomColorSchemes = async (req, res) => {
         res.status(500).json({ message: "Internal server error." });
     }
 };
+// Update an existing custom color scheme
+const updateCustomColorScheme = async (req, res) => {
+    const { entityId, themeId } = req.params;
+    const { name, colors } = req.body;
+
+    if (!name || !colors || !colors.light || !colors.dark) {
+        return res.status(400).json({ message: "Theme name and color configurations for light and dark modes are required." });
+    }
+
+    const requiredColorKeys = ['primary', 'secondary', 'background', 'surface', 'text', 'border', 'page'];
+    for (const mode of ['light', 'dark']) {
+        for (const key of requiredColorKeys) {
+            if (!colors[mode][key] || !isValidHexColor(colors[mode][key])) {
+                return res.status(400).json({ message: `Invalid or missing color for ${mode} mode: ${key}. Must be a valid hex color.` });
+            }
+        }
+    }
+
+    try {
+        const result = await pool.query(
+            `UPDATE custom_color_schemes
+             SET name = $1, colors = $2, updated_at = current_timestamp
+             WHERE id = $3 AND entity_id = $4
+             RETURNING id, name, colors, updated_at`,
+            [name, colors, themeId, entityId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: "Custom theme not found or does not belong to this library." });
+        }
+
+        res.status(200).json({ message: "Custom color scheme updated successfully!", scheme: result.rows[0] });
+    } catch (error) {
+        if (error.code === '23505') {
+            return res.status(409).json({ message: "A theme with this name already exists for this library. Please choose a different color name." });
+        }
+        console.error("Error updating custom color scheme:", error);
+        res.status(500).json({ message: "Internal server error." });
+    }
+};
 
 
 module.exports = {
     addCustomColorScheme,
     getCustomColorSchemes,
-
+    updateCustomColorScheme
 };
