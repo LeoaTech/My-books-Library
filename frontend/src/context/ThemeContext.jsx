@@ -4,7 +4,7 @@ import { BASE_URL } from '../utils/baseAPIURL';
 const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
-    
+
     const [colorMode, setColorMode] = useState(() => {
         try {
             const item = window.localStorage.getItem('color-theme');
@@ -17,6 +17,7 @@ export const ThemeProvider = ({ children }) => {
     });
 
     const [themeConfig, setThemeConfig] = useState(null);
+    const [customThemes, setCustomThemes] = useState([]);
 
     // Persist colorMode and switch (dark) class
     useEffect(() => {
@@ -68,61 +69,76 @@ export const ThemeProvider = ({ children }) => {
     }, [themeConfig, colorMode]);
 
 
-
-    // Fetch Theme (color) for a Library
+    // Fetch if any existing theme config exists in settings and also fetch custom themes
     useEffect(() => {
-        const fetchTheme = async () => {
-            // 1. get subdomain from URL
+        const fetchThemes = async () => {
+            let currentLibraryId = null;
+
+            // Get library (entity) ID based on route (admin dashboard or subdomain)
             const pathSegments = window.location.pathname?.split('/')?.filter(Boolean);
-            let identifier = pathSegments?.length > 0 ? pathSegments[0] : null;
+            const isAdminRoute = pathSegments.includes('admin');
             const excludedRoutes = ['admin', 'signin', 'signup', 'auth', 'dashboard'];
 
-            // for admin route
-            const isAdminRoute = pathSegments.includes('admin');
-
             if (isAdminRoute) {
-                // For admin dashboard, get color theme for current library Id
                 try {
                     const authData = localStorage.getItem('user');
                     if (authData) {
                         const { entityId } = JSON.parse(authData);
                         if (entityId) {
-                            const response = await fetch(`${BASE_URL}/library/${entityId}`, {
-                                credentials: 'include'
-                            });
-                            if (response.ok) {
-                                const data = await response.json();
-                                if (data?.theme_config) {
-                                    setThemeConfig(data.theme_config);
-                                }
+                            currentLibraryId = entityId;
+                        }
+                    }
+                } catch (error) {
+                    console.error("error for user data:", error);
+                }
+            } else {
+                let identifier = pathSegments?.length > 0 ? pathSegments[0] : null;
+                if (identifier && !excludedRoutes.includes(identifier)) {
+                    // For customer frontend, fetch library details to get its ID
+                    try {
+                        const response = await fetch(`${BASE_URL}/library/${identifier}`);
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (data?.id) {
+                                currentLibraryId = data.id;
+                            }
+                            if (data?.theme_config) {
+                                setThemeConfig(data.theme_config);
                             }
                         }
+                    } catch (error) {
+                        console.error("Public theme fetch error:", error);
                     }
-                } catch (error) {
-                    console.error("Admin theme fetch error:", error);
                 }
-            } else if (identifier && !excludedRoutes.includes(identifier)) {
-                // For library customer-frontend pages, get theme by its subdomain ID
+            }
+
+            // fetch custom themes if a library ID is found
+            if (currentLibraryId) {
                 try {
-                    const response = await fetch(`${BASE_URL}/library/${identifier}`);
+                    const response = await fetch(`${BASE_URL}/colors/${currentLibraryId}`, {
+                        credentials: 'include'
+                    });
                     if (response.ok) {
-                        const data = await response.json();
-                        if (data?.theme_config) {
-                            setThemeConfig(data.theme_config);
-                        }
+                        const customThemesData = await response.json();
+                        const formattedCustomThemes = customThemesData.map(ct => ({
+                            name: ct.name,
+                            id: `custom-${ct.id}`,
+                            originalId: ct.id,
+                            colors: ct.colors
+                        }));
+                        setCustomThemes(formattedCustomThemes);
                     }
                 } catch (error) {
-                    console.error("Theme fetch error:", error);
+                    console.error("Error fetching custom themes:", error);
                 }
             }
         };
 
-        fetchTheme();
+        fetchThemes();
     }, []);
 
-
     return (
-        <ThemeContext.Provider value={{ themeConfig, setThemeConfig, colorMode, setColorMode }}>
+        <ThemeContext.Provider value={{ themeConfig, setThemeConfig, colorMode, setColorMode, customThemes, setCustomThemes }}>
             {children}
         </ThemeContext.Provider>
     );
