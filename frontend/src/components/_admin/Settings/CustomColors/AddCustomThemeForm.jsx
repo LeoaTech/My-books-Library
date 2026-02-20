@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { BASE_URL } from '../../../../utils/baseAPIURL';
 
@@ -13,7 +13,19 @@ const defaultColors = {
     page: '#f0f9ff',
 };
 
-const AddCustomThemeForm = ({ libraryId, onThemeAdded, onCancel }) => {
+const defaultDarkColors = {
+    primary: '#60a5fa',
+    secondary: '#1e40af',
+    background: '#0c1e35',
+    surface: '#1e293b',
+    text: '#e0f2fe',
+    border: '#1e40af',
+    page: '#0a1628',
+};
+   const colorKeys = [
+        'primary', 'secondary', 'background', 'surface', 'text', 'border', 'page'
+    ];
+const AddCustomThemeForm = ({ libraryId, isEditing, themeData, onThemeAdded, onThemeUpdated, onCancel }) => {
     const [themeName, setThemeName] = useState('');
     const [lightModeColors, setLightModeColors] = useState(defaultColors);
 
@@ -29,9 +41,7 @@ const AddCustomThemeForm = ({ libraryId, onThemeAdded, onCancel }) => {
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
 
-    const colorKeys = [
-        'primary', 'secondary', 'background', 'surface', 'text', 'border', 'page'
-    ];
+ 
 
     const handleColorChange = (mode, key, value) => {
         if (mode === 'light') {
@@ -46,6 +56,18 @@ const AddCustomThemeForm = ({ libraryId, onThemeAdded, onCancel }) => {
         });
     };
 
+    useEffect(() => {
+        if (isEditing && themeData) {
+            setThemeName(themeData.name);
+            setLightModeColors(themeData.colors.light);
+            setDarkModeColors(themeData.colors.dark);
+        } else {
+            setThemeName('');
+            setLightModeColors(defaultColors);
+            setDarkModeColors(defaultDarkColors);
+        }
+        setErrors({}); 
+    }, [isEditing, themeData]);
 
 
 
@@ -95,8 +117,13 @@ const AddCustomThemeForm = ({ libraryId, onThemeAdded, onCancel }) => {
         };
 
         try {
-            const response = await fetch(`${BASE_URL}/colors/${libraryId}`, {
-                method: 'POST',
+            const url = isEditing
+                ? `${BASE_URL}/colors/${libraryId}/${themeData.id}`
+                : `${BASE_URL}/colors/${libraryId}`;
+            const method = isEditing ? 'PUT' : 'POST';
+
+            const response = await fetch(url, {
+                method,
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -106,22 +133,20 @@ const AddCustomThemeForm = ({ libraryId, onThemeAdded, onCancel }) => {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to add custom theme.');
+                throw new Error(errorData.message || `Failed to ${isEditing ? 'update' : 'add'} custom theme.`);
             }
 
             const result = await response.json();
-            onThemeAdded(result.scheme);
+
+            if (isEditing) {
+                onThemeUpdated(result.scheme);
+            } else {
+                onThemeAdded(result.scheme);
+            }
+
             setThemeName('');
             setLightModeColors(defaultColors);
-            setDarkModeColors({
-                primary: '#60a5fa',
-                secondary: '#1e40af',
-                background: '#0c1e35',
-                surface: '#1e293b',
-                text: '#e0f2fe',
-                border: '#1e40af',
-                page: '#0a1628',
-            });
+            setDarkModeColors(defaultDarkColors);
             setErrors({});
         } catch (error) {
             console.error("Error saving custom theme:", error);
@@ -161,7 +186,7 @@ const AddCustomThemeForm = ({ libraryId, onThemeAdded, onCancel }) => {
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-50">
             <div className="bg-surface rounded-lg shadow-xl p-6 w-full max-w-2xl mx-auto my-auto">
                 <div className="flex justify-between items-center border-b pb-3 mb-4 dark:border-gray-700">
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Add Custom Theme</h3>
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">{isEditing ? 'Edit Custom Theme' : 'Add Custom Theme'}</h3>
                     <button onClick={onCancel} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
                         <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -226,7 +251,7 @@ const AddCustomThemeForm = ({ libraryId, onThemeAdded, onCancel }) => {
                             disabled={loading}
                             className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium bg-surface text-text hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {loading ? 'Saving...' : 'Save Custom Theme'}
+                            {loading ? 'Saving...' : isEditing ? 'Update Theme' : 'Save Custom Theme'}
                         </button>
                     </div>
                 </form>
