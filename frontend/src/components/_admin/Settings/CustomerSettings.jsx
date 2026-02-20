@@ -184,12 +184,12 @@ const CustomerSettings = () => {
                             ))}
                         </tbody>
                     </table>
-                    <div className="flex justify-end items-end my-6 mr-4">
+                    <div className="flex justify-end items-end my-6 mr-4 border-t border-border pt-4">
                         <button
                             type="submit"
                             disabled={isSubmitting || !isDirty}
-                            className={`flex items-center gap-2 bg-[#758aae] text-white px-4 py-2 rounded-md 
-                hover:bg-[#80CAEE] focus:outline-none focus:ring-2 focus:ring-[#758aae] 
+                            className={`flex items-center border-2 border-border gap-2 bg-background text-text px-4 py-2 rounded-md 
+                hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary 
                 transition-colors duration-200 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
                                 }`}
                             aria-label="save settings"
