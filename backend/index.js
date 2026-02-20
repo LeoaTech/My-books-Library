@@ -50,6 +50,8 @@ const webhooks = require("./webhooks/stripe/index.js"); //Stripe webhook
 
 const notificationRoute = require("./routes/NotificationRoutes/NotificationRoutes.js");
 const libraryRoutes = require("./routes/LibraryRoutes");
+const colorsRoutes = require("./routes/ColorsRoutes/ColorsRoutes.js");
+
 
 // Cron Job
 require("./services/scheduleTask.js"); //Add Due Date Fine
@@ -149,6 +151,9 @@ app.use("/api/library/:entityId/stripe/onboarding-complete", stripeOnboarding);
 app.use("/api/library/:entityId/stripe/connect", stripeConnect);
 
 app.use("/api/library", libraryRoutes);
+
+// Library Custom Color Schemes
+app.use('/api/colors', colorsRoutes);
 
 // Stripe Oauth Flow for Connecting Existing Accounts
 app.use(stripeRouter);
