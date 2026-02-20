@@ -54,6 +54,8 @@ const getCustomColorSchemes = async (req, res) => {
         res.status(500).json({ message: "Internal server error." });
     }
 };
+
+
 // Update an existing custom color scheme
 const updateCustomColorScheme = async (req, res) => {
     const { entityId, themeId } = req.params;
@@ -95,9 +97,30 @@ const updateCustomColorScheme = async (req, res) => {
     }
 };
 
+// Delete a custom color scheme
+const deleteCustomColorScheme = async (req, res) => {
+    const { entityId, themeId } = req.params;
+
+    try {
+        const result = await pool.query(
+            `DELETE FROM custom_color_schemes WHERE id = $1 AND entity_id = $2 RETURNING id`,
+            [themeId, entityId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: "Custom theme not found or does not belong to this library." });
+        }
+
+        res.status(200).json({ message: "Custom theme deleted successfully!", deletedId: result.rows[0].id });
+    } catch (error) {
+        console.error("Error deleting custom color scheme:", error);
+        res.status(500).json({ message: "Internal server error." });
+    }
+};
 
 module.exports = {
     addCustomColorScheme,
     getCustomColorSchemes,
-    updateCustomColorScheme
+    updateCustomColorScheme,
+    deleteCustomColorScheme
 };
