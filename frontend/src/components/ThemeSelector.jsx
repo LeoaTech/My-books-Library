@@ -4,6 +4,7 @@ import { useTheme } from '../context/ThemeContext';
 import { BASE_URL } from '../utils/baseAPIURL';
 import { toast } from 'react-toastify';
 import AddCustomThemeForm from './_admin/Settings/CustomColors/AddCustomThemeForm';
+import ConfirmationModal from './common/ConfirmationModal';
 import { useEffect } from 'react';
 import { useAuthContext } from "../hooks/useAuthContext";
 
@@ -16,6 +17,9 @@ const ThemeSelector = () => {
     // Edit color scheme data
     const [isEditing, setIsEditing] = useState(false);
     const [themeToEdit, setThemeToEdit] = useState(null);
+    // Delete color scheme data
+    const [themeToDelete, setThemeToDelete] = useState(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     useEffect(() => {
         const fetchLibraryId = async () => {
@@ -96,11 +100,11 @@ const ThemeSelector = () => {
     const handleNewThemeAdded = (newTheme) => {
         setCustomThemes(prevThemes => [...prevThemes, {
             name: newTheme.name,
-            id: `custom-${newTheme.id}`, 
+            id: `custom-${newTheme.id}`,
             originalId: newTheme.id,
             colors: newTheme.colors
         }]);
-        setShowAddForm(false); 
+        setShowAddForm(false);
         toast.success("Custom theme added successfully!");
     };
 
@@ -112,18 +116,18 @@ const ThemeSelector = () => {
                 : theme
         ));
         setShowAddForm(false);
-        setIsEditing(false); 
-        setThemeToEdit(null); 
+        setIsEditing(false);
+        setThemeToEdit(null);
         toast.success("Custom theme updated successfully!");
     };
 
 
     const handleEditTheme = (theme) => {
-        setShowAddForm(true); // Open the form
-        setIsEditing(true); // Set edit mode
+        setShowAddForm(true);
+        setIsEditing(true);
         setThemeToEdit({
             ...theme,
-            id: theme.originalId // Pass the original DB ID to the form
+            id: theme.originalId
         });
     };
 
@@ -132,6 +136,44 @@ const ThemeSelector = () => {
         setShowAddForm(false);
         setIsEditing(false);
         setThemeToEdit(null);
+    };
+
+    // Delete theme — open confirmation modal
+    const handleDeleteTheme = (theme) => {
+        setThemeToDelete(theme);
+    };
+
+    // Confirm deletion
+    const confirmDeleteTheme = async () => {
+        if (!themeToDelete) return;
+
+        const libraryId = auth?.entityId || currentLibraryId;
+        if (!libraryId || !themeToDelete.originalId) {
+            toast.error("Cannot delete theme: missing library or theme ID.");
+            return;
+        }
+
+        setIsDeleting(true);
+        try {
+            const response = await fetch(`${BASE_URL}/colors/${libraryId}/${themeToDelete.originalId}`, {
+                method: 'DELETE',
+                credentials: 'include',
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to delete theme.');
+            }
+
+            setCustomThemes(prevThemes => prevThemes.filter(t => t.originalId !== themeToDelete.originalId));
+            toast.success(`Theme "${themeToDelete.name}" deleted successfully!`);
+        } catch (error) {
+            console.error("Error deleting theme:", error);
+            toast.error(error.message || "Failed to delete theme. Please try again.");
+        } finally {
+            setIsDeleting(false);
+            setThemeToDelete(null);
+        }
     };
 
     return (
@@ -168,7 +210,7 @@ const ThemeSelector = () => {
                     <div className="flex flex-wrap gap-4">
                         {customThemes?.map((preset) => (
                             <div className='relative flex flex-col items-center gap-2' key={preset.id}>
-                                {/* Edit theme color */}
+                                {/* Edit & Delete theme color */}
                                 <div className="absolute -top-1 -right-1 flex gap-1 z-10">
                                     <button
                                         onClick={(e) => { e.stopPropagation(); handleEditTheme(preset); }}
@@ -180,7 +222,16 @@ const ThemeSelector = () => {
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                         </svg>
                                     </button>
-                                    
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); handleDeleteTheme(preset); }}
+                                        className="p-1 bg-red-100 dark:bg-red-900 rounded-full hover:bg-red-200 dark:hover:bg-red-800"
+                                        title={`Delete ${preset.name}`}
+                                        aria-label={`Delete ${preset.name} theme`}
+                                    >
+                                        <svg className="h-3 w-3 text-red-600 dark:text-red-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
                                 </div>
                                 <button
                                     onClick={() => handleThemeChange(preset)}
@@ -231,6 +282,18 @@ const ThemeSelector = () => {
                     <p className="text-red-500 mt-2">Cannot add themes without a valid library ID.</p>
                 )}
             </div>
+
+            {/* Delete Confirmation Modal */}
+            <ConfirmationModal
+                isOpen={!!themeToDelete}
+                onClose={() => setThemeToDelete(null)}
+                onConfirm={confirmDeleteTheme}
+                title="Delete Custom Theme"
+                message={`Are you sure you want to permanently delete the "${themeToDelete?.name}" theme? This action cannot be undone.`}
+                confirmText="Delete"
+                cancelText="Cancel"
+                isProcessing={isDeleting}
+            />
         </div>
 
     );

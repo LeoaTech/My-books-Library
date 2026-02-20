@@ -24,7 +24,7 @@ const ConfirmationModal = ({
                     <div className="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
                         <div className="bg-white dark:bg-gray-800 px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
                             <h5 className="ml-4 text-xs mb-2 font-semibold leading-6 text-red-900 dark:text-white" id="modal-title">
-                                Cancel Plan
+                                {title}
                             </h5>
                             <div className="sm:flex sm:items-start">
 
