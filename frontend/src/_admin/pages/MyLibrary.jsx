@@ -339,7 +339,7 @@ const MyLibrary = () => {
                         <button
                             type="submit"
                             disabled={!isDirty || isSubmitting}
-                            className={`flex items-center gap-2 bg-primary text-white px-6 py-2 rounded-md 
+                            className={`flex items-center gap-2 bg-primary text-text px-6 py-2 rounded-md 
                 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary 
                 transition-all duration-200 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
