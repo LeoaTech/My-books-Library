@@ -39,6 +39,25 @@ const addCustomColorScheme = async (req, res) => {
 };
 
 
+// Get all custom color schemes for a library
+const getCustomColorSchemes = async (req, res) => {
+    const { entityId } = req.params;
+
+    try {
+        const result = await pool.query(
+            `SELECT id, name, colors FROM custom_color_schemes WHERE entity_id = $1 ORDER BY created_at DESC`,
+            [entityId]
+        );
+        res.status(200).json(result.rows);
+    } catch (error) {
+        console.error("Error fetching custom color schemes:", error);
+        res.status(500).json({ message: "Internal server error." });
+    }
+};
+
+
 module.exports = {
-    addCustomColorScheme
+    addCustomColorScheme,
+    getCustomColorSchemes,
+
 };
