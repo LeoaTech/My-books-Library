@@ -151,18 +151,18 @@ const CustomerSettings = () => {
                                                     {...register(`settings.${index}.value`)}
                                                 />
                                                 <div
-                                                    className="w-11 h-6 bg-text rounded-full peer peer-focus:ring-blue-400 peer-focus:ring-4 
+                                                    className="w-11 h-6 bg-background border border-border rounded-full peer peer-focus:ring-secondary peer-focus:ring-4 
                           transition peer-checked:after:translate-x-full peer-checked:after:border-border 
-                          after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white 
-                          after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all
-                          peer-checked:bg-blue-600"
+                          after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-surface 
+                          after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all
+                          peer-checked:bg-primary"
                                                 ></div>
                                             </label>
                                         ) : (
                                             <div>
                                                 <input
                                                     type="number"
-                                                    className={`px-4 py-2 border bg-background rounded-lg text-text focus:outline-none focus:border-blue-500 ${errors.settings?.[index]?.value
+                                                    className={`px-4 py-2 border bg-background rounded-lg text-text focus:outline-none focus:border-border ${errors.settings?.[index]?.value
                                                         ? 'border-red-500'
                                                         : ''
                                                         }`}
@@ -184,7 +184,7 @@ const CustomerSettings = () => {
                             ))}
                         </tbody>
                     </table>
-                    <div className="flex justify-end items-end my-6 mr-4 border-t border-border pt-4">
+                    <div className="flex justify-end items-end sm:flex-col my-6 mr-4 border-t border-border pt-4">
                         <button
                             type="submit"
                             disabled={isSubmitting || !isDirty}
