@@ -22,32 +22,32 @@ const CategoryTable = ({data,onView, onEdit, onDelete}) => {
 
 
   return (
-    <div className="rounded-lg border border-[#E2E8F0] bg-white px-5 pt-6 pb-2.5 shadow-default  max-w-full overflow-x-auto overflow-y-auto dark:border-[#2E3A47] dark:bg-[#24303F]  sm:px-7.5 xl:pb-1">
+     <div className="rounded-lg border border-border bg-surface px-5 pt-6 pb-2.5 shadow-default max-w-full overflow-x-auto overflow-y-auto sm:px-7.5 xl:pb-1">
       <div className="max-w-full overflow-x-auto">
-        <table className="w-full table-auto">
-          <thead>
-            <tr className="bg-[#F7F9FC] text-left dark:bg-[#313D4A]">
-              <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
+        <table className="w-full table-auto divide-y divide-primary">
+          <thead className="bg-secondary">
+            <tr className="text-left ">
+              <th className="min-w-[220px] py-4 px-4 font-medium text-text xl:pl-11">
                 Category Name
               </th>
 
              
-              <th className="py-4 px-4 font-medium text-black dark:text-white">
+              <th className="py-4 px-4 font-medium text-text">
                 Actions
               </th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-border bg-background">
             {currentRows?.map((category) => (
-              <tr key={category?.id}>
-                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-11">
+              <tr key={category?.id} className="hover:bg-surface transition-colors">
+                <td className="border-b border-secondary py-5 px-4 pl-9  xl:pl-11">
                   <h5 className="font-medium text-gray-600 dark:text-gray-400">
                     {category.name}
                   </h5>
                 </td>
 
                
-                <td className="border-b border-[#eee] py-5 px-4 dark:border-[#2E3A47]">
+                <td className="border-b border-secondary py-5 px-4 ">
                   <div className="flex items-center space-x-3.5">
                     <div className="group relative m-2 flex justify-center">
 
