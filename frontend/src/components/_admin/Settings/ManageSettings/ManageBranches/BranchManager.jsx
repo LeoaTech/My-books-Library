@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import BranchTable from './BranchTable';
 import BranchForm from './BranchForm';
 import { useBranchActions, useFetchBranches } from '../../../../../hooks/books/useFetchBranches';
+import { RxCross1 } from 'react-icons/rx';
 
 
 function BranchManager() {
@@ -83,8 +84,7 @@ function BranchManager() {
             <div className="mb-4 flex justify-end items-center">
                 <button
                     onClick={handleCreate}
-                    className=" bg-[#758aae] text-white active:bg-[#80CAEE] 
-            font-medium rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 px-2 py-2 md:px-3 "
+                    className="rounded-md border-border gap-2 bg-background text-text px-4 py-2 text-sm font-semibold shadow-sm disabled:opacity-50  hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary"
                     type="button"
                 >
                     Create New Branch
@@ -105,8 +105,8 @@ function BranchManager() {
             )}
 
             {showForm && (
-                <div className="fixed inset-0 lg:left-[18rem] bg-black bg-opacity-50 flex items-center justify-center">
-                    <div className="bg-neutral-50 dark:border-[#2E3A47] dark:bg-[#24303F] p-6 rounded shadow-lg">
+                <div className="fixed inset-0 overflow-y-auto h-full w-full flex items-center justify-center bg-[#64748B] bg-opacity-75 transition-opacity z-50">
+                    <div className="bg-surface p-6 shadow-lg  rounded-md w-full mx-auto my-auto max-w-2xl">
 
                         <BranchForm
                             initialData={editData}
@@ -119,9 +119,20 @@ function BranchManager() {
 
             {/* Delete Branch */}
             {deleteModal && (
-                <div className="fixed inset-0 lg:left-[18rem] bg-black bg-opacity-50 flex items-center justify-center">
-                    <div className="bg-neutral-50 dark:border-[#2E3A47] dark:bg-[#24303F] p-6 rounded shadow-lg">
-
+                <div className="fixed inset-0 overflow-y-auto h-full w-full flex items-center justify-center bg-[#64748B] bg-opacity-75 transition-opacity z-50">
+                    <div className="bg-surface p-6 shadow-lg  rounded-md w-full mx-auto my-auto max-w-2xl">
+                        <div className="flex justify-end items-end ">
+                            <RxCross1
+                                style={{
+                                    height: 18,
+                                    width: 23,
+                                    cursor: "pointer",
+                                    color: "var(--color-text)",
+                                    strokeWidth: 2,
+                                }}
+                                onClick={() => setDeleteModal(false)}
+                            />
+                        </div>
 
 
                         <div className=" md:mx-20">
@@ -154,31 +165,42 @@ function BranchManager() {
                 </div>
             )}
             {viewData && (
-                <div className="fixed inset-0 lg:left-[18rem] bg-black bg-opacity-50 flex items-center justify-center">
-                    <div className="bg-neutral-50 dark:border-[#2E3A47] dark:bg-[#24303F] p-6 rounded shadow-lg">
-
+                <div className="fixed inset-0 overflow-y-auto h-full w-full flex items-center justify-center bg-[#64748B] bg-opacity-75 transition-opacity z-50">
+                    <div className="bg-surface p-6 shadow-lg  rounded-md w-full mx-auto my-auto max-w-2xl">
+                        <div className="flex justify-end items-end ">
+                            <RxCross1
+                                style={{
+                                    height: 18,
+                                    width: 23,
+                                    cursor: "pointer",
+                                    color: "var(--color-text)",
+                                    strokeWidth: 2,
+                                }}
+                                onClick={() => setViewData(false)}
+                            />
+                        </div>
                         <div className=" md:mx-20">
                             {/* Form Heading */}
-                            <div className="rounded-sm p-3 mb-8 bg-slate-100 border-b border-[#E2E8F0] py-4 px-6.5 dark:border-[#2E3A47]  dark:bg-[#2c3745]">
-                                <h3 className="font-bold text-[#313D4A] dark:text-white ">
+                            <div className="rounded-sm p-3 mb-8 bg-surface border-b border-border py-4 px-6.5 ">
+                                <h3 className="font-bold text-text ">
                                     View Branch
                                 </h3>
                             </div>
-                            <div className='p-2 border bg-slate-100 rounded-md shadow-sm'>
+                            <div className='p-2 border bg-background rounded-md shadow-sm'>
                                 <p
                                     className='py-4 px-2'
-                                ><strong className='text-gray-700 dark:text-neutral-400 px-2'>Name:</strong> {viewData.name}</p>
-                                <p className='py-4 px-2'><strong className='text-gray-700 dark:text-neutral-400 px-2'>Address:</strong> {viewData.address}</p>
-                                <p className='py-4 px-2'><strong className='text-gray-700 dark:text-neutral-400 px-2'>City:</strong> {viewData.city}</p>
-                                <p className='py-4 px-2'><strong className='text-gray-700 dark:text-neutral-400 px-2'>Country:</strong> {viewData.country}</p>
-                                <p className='py-4 px-2'><strong className='text-gray-700 dark:text-neutral-400 px-2'>Phone:</strong> {viewData.phone}</p>
+                                ><strong className='text-text px-2'>Name:</strong> {viewData.name}</p>
+                                <p className='py-4 px-2'><strong className='text-text px-2'>Address:</strong> {viewData.address}</p>
+                                <p className='py-4 px-2'><strong className='text-text px-2'>City:</strong> {viewData.city}</p>
+                                <p className='py-4 px-2'><strong className='text-text px-2'>Country:</strong> {viewData.country}</p>
+                                <p className='py-4 px-2'><strong className='text-text px-2'>Phone:</strong> {viewData.phone}</p>
 
 
                             </div>
                             <div className='flex justify-between gap-4'>
                                 <button
                                     onClick={() => setViewData(null)}
-                                    className="mt-4 bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600"
+                                    className="mt-4 bg-white text-text py-2 px-4 rounded hover:bg-background"
                                 >
                                     Close
                                 </button>

@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
+import { RxCross1 } from 'react-icons/rx';
 import { toast } from 'react-toastify';
 import { z } from 'zod';
 
@@ -71,83 +72,100 @@ const BranchForm = ({
 
     };
     return (
-        <div className=" md:mx-20">
-            {/* Form Heading */}
-            <div className="rounded-sm p-3 mb-8 bg-slate-100 border-b border-[#E2E8F0] py-4 px-6.5 dark:border-[#2E3A47]  dark:bg-[#2c3745]">
-                <h3 className="font-bold text-[#313D4A] dark:text-white ">
-                    {initialData ? 'Edit Branch' : 'Create Branch'}
-                </h3>
+        <>
+            <div className="flex justify-end items-end ">
+                <RxCross1
+                    style={{
+                        height: 18,
+                        width: 18,
+                        cursor: "pointer",
+                        color: "var(--color-text)",
+                        strokeWidth: 2,
+                    }}
+                    onClick={onCancel}
+                />
             </div>
-
-            {/* Form Fields */}
-            <form onSubmit={handleSubmit(onSubmit)}>
-                <div className="mb-1">
-                    <label htmlFor="address" className="mb-2.5 block text-[#0284c7] dark:text-white">
-                        Branch Name</label>
-                    <input
-                        id="name"
-                        {...register('name', { required: true })}
-                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
-                    />
-                    {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
-
+            <div className=" md:mx-20">
+                {/* Form Heading */}
+                <div className="rounded-sm p-3 mb-8 border-b border-border py-4 px-6.5 ">
+                    <h3 className="font-bold text-text">
+                        {initialData ? 'Edit Branch' : 'Create Branch'}
+                    </h3>
                 </div>
 
-                <div className="mb-1" >
-                    <label htmlFor="address" className="mb-2.5 block text-[#0284c7] dark:text-white">
-                        Address
-                    </label>
-                    <input
+                {/* Form Fields */}
+                <form onSubmit={handleSubmit(onSubmit)}>
+                    <div className="mb-1">
+                        <label htmlFor="address" className="mb-2.5 block text-text">
+                            Branch Name</label>
+                        <input
+                            id="name"
+                            {...register('name', { required: true })}
+                            className="w-full rounded-sm border-[1.5px] border-border bg-background py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-[#F5F7FD] "
+                        />
+                        {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
 
-                        id="address" {...register('address')}
-                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                    </div>
 
-                    />
-                    {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address.message}</p>}
-                </div>
+                    <div className="mb-1" >
+                        <label htmlFor="address" className="mb-2.5 block text-text">
+                            Address
+                        </label>
+                        <input
 
-                <div className="mb-1" >
-                    <label htmlFor="city" className="mb-2.5 block text-[#0284c7] dark:text-white">
-                        City
-                    </label>
-                    <input
+                            id="address" {...register('address')}
+                            className="w-full rounded-sm border-[1.5px] border-border bg-background py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-[#F5F7FD] "
 
-                        id="city" {...register('city')}
-                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                        />
+                        {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address.message}</p>}
+                    </div>
 
-                    />
-                    {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city.message}</p>}
-                </div>
+                    <div className="mb-1" >
+                        <label htmlFor="city" className="mb-2.5 block text-text">
+                            City
+                        </label>
+                        <input
 
-                <div className="mb-1">
-                    <label htmlFor="phone" className="mb-2.5 block text-[#0284c7] dark:text-white">
-                        Phone
-                    </label>
-                    <input id="phone" {...register('phone')}
-                        className="w-full mb-4 rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]" />
-                    {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>}
-                </div>
+                            id="city" {...register('city')}
+                            className="w-full rounded-sm border-[1.5px] border-border bg-background py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-[#F5F7FD] "
 
-                <div>
-                    <label htmlFor="country" className="mb-2.5 block text-[#0284c7] dark:text-white">
-                        Country
-                    </label>
-                    <input id="country" {...register('country')}
-                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                        />
+                        {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city.message}</p>}
+                    </div>
 
-                    />
-                    {errors.country && <p className="text-red-500 text-xs mt-1">{errors.country.message}</p>}
-                </div>
-                <div className="mt-4 px-4 py-3 sm:flex sm:flex-row-reverse gap-3 sm:px-6">
-                    <button type="submit" className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
-                        {isSubmitting ? "Saving" : "Save"}
-                    </button>
-                    <button type="button" onClick={onCancel} className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600">
-                        Cancel
-                    </button>
-                </div>
-            </form>
-        </div>
+                    <div className="mb-1">
+                        <label htmlFor="phone" className="mb-2.5 block text-text">
+                            Phone
+                        </label>
+                        <input id="phone" {...register('phone')}
+                            className="w-full mb-4 rounded-sm border-[1.5px] border-border bg-background py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-[#F5F7FD] " />
+                        {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>}
+                    </div>
+
+                    <div>
+                        <label htmlFor="country" className="mb-2.5 block text-text">
+                            Country
+                        </label>
+                        <input id="country" {...register('country')}
+                            className="w-full rounded-sm border-[1.5px] border-border bg-background py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-[#F5F7FD] "
+
+                        />
+                        {errors.country && <p className="text-red-500 text-xs mt-1">{errors.country.message}</p>}
+                    </div>
+                    <div className="mt-4 px-4 py-3 sm:flex sm:flex-row-reverse gap-3 sm:px-6">
+                        <button type="submit" className={`flex items-center border-2 border-border gap-2 bg-background text-text px-4 py-2 rounded-md 
+                hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary 
+                transition-colors duration-200 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                            }`}
+                        >
+                            {isSubmitting ? "Saving" : "Save"}
+                        </button>
+                        <button type="button" onClick={onCancel} className="bg-white text-text py-2 px-4 rounded hover:bg-background">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div></>
     );
 }
 
