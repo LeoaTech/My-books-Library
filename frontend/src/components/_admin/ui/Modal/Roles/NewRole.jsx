@@ -58,8 +58,8 @@ const NewRole = ({ entityId, setOpenRoleModal }) => {
 
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#64748B]/75 dark:bg-slate-300/75 lg:left-[18rem]">
-      <div className="relative w-[90%] max-w-md bg-neutral-50 dark:border-[#2E3A47] dark:bg-[#24303F] p-10 rounded-md shadow-lg">
+    <div className="fixed inset-0 overflow-y-auto h-full w-full flex items-center justify-center bg-[#64748B] bg-opacity-75 transition-opacity z-50">
+      <div className="relative p-5 rounded-md mx-auto my-auto w-[90%] max-w-md bg-surface ">
         {/* Modal Close Button */}
         <div className="absolute top-4 right-4">
           <RxCross1
@@ -67,7 +67,7 @@ const NewRole = ({ entityId, setOpenRoleModal }) => {
               height: 18,
               width: 23,
               cursor: "pointer",
-              color: "#FFF",
+              color: "var(--color-text)",
               strokeWidth: 2,
             }}
             onClick={() => setOpenRoleModal(prev => !prev)}
@@ -75,36 +75,40 @@ const NewRole = ({ entityId, setOpenRoleModal }) => {
         </div>
 
         <div className="flex flex-col justify-between items-center gap-5">
-          <h1 className="text-[17px] font-bold">New Role</h1>
+          <h1 className="text-lg font-bold">New Role</h1>
 
           <form onSubmit={handleSubmit(onSubmit)} className="w-full">
-            <label className="mb-2.5 block text-blue-500 dark:text-white">
+            <label className="mb-2.5 block text-text">
               Name <span className="text-red-500">*</span>
             </label>
             <input
               autoFocus
               type="text"
               placeholder="Role Name"
-              {...register("name", {required:true})}
-              className="w-full border-green-300 rounded-sm border-[1.5px] border-stroke bg-transparent py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
+              {...register("name", { required: true })}
+              className="w-full border-border rounded-sm border-[1.5px] border-stroke bg-background py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary"
             />
             {errors?.name?.message && (
               <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
             )}
 
-            <div className="mt-5 flex justify-end gap-4 p-5">
-              <button
-                className="rounded-md bg-[#FFBA00] px-4 py-2 text-sm font-semibold text-white shadow-sm disabled:opacity-50"
-                disabled={!isDirty || !z.isValid || isSubmitting}
-              >
-                Add Role
-              </button>
+            <div className="mt-5 flex flex-col-reverse md:flex-row justify-end gap-4 p-5">
+
               <button
                 type="button"
                 onClick={() => setOpenRoleModal(prev => !prev)}
-                className="rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                className="rounded-md bg-white px-6 py-2 text-md font-medium text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
               >
                 Close
+              </button>
+              <button
+                className={`flex justify-center items-center border-2 border-border gap-2 bg-background text-text px-3 py-2 rounded-md 
+                hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary 
+                transition-colors duration-200 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                disabled={!isDirty || !z.isValid || isSubmitting}
+              >
+                Add Role
               </button>
             </div>
 
