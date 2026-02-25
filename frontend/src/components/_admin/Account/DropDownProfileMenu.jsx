@@ -52,7 +52,7 @@ const DropdownUser = () => {
         to="#"
       >
         <span className="hidden text-right lg:block">
-          <span className="block text-sm font-medium text-black dark:text-white">
+          <span className="block text-sm font-medium text-text">
             {auth && auth?.name}
           </span>
           {/* <span className="block text-xs">Admin</span> */}
@@ -67,7 +67,7 @@ const DropdownUser = () => {
         </span>
 
         <svg
-          className={`hidden fill-indigo-400 sm:block ${dropdownOpen ? "rotate-180" : ""
+          className={`hidden fill-primary sm:block ${dropdownOpen ? "rotate-180" : ""
             }`}
           width="12"
           height="8"
@@ -89,14 +89,14 @@ const DropdownUser = () => {
         ref={dropdown}
         onFocus={() => setDropdownOpen(true)}
         onBlur={() => setDropdownOpen(false)}
-        className={`absolute right-0 pt-2 mt-4 flex w-[16rem] flex-col rounded-sm border border-[#E2E8F0] bg-white shadow-default dark:border-[#2E3A47] dark:bg-slate-800 dark:text-white ${dropdownOpen === true ? "block" : "hidden"
+        className={`absolute right-0 pt-2 mt-4 flex w-[16rem] text-text flex-col rounded-sm border border-border bg-surface shadow-default ${dropdownOpen === true ? "block" : "hidden"
           }`}
       >
-        <ul className="flex flex-col gap-5 border-b border-[#E2E8F0] px-6 py-5.5 dark:border-[#2E3A47]">
+        <ul className="flex flex-col gap-5 border-b border-secondary px-6 py-5.5 ">
           <li>
             <Link
               to="profile"
-              className="flex items-center gap-3.5 text-sm font-medium duration-300 ease-in-out hover:text-[#3C50E0] lg:text-base"
+              className="flex items-center gap-3.5 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
             >
               <svg
                 className="fill-current"
@@ -122,7 +122,7 @@ const DropdownUser = () => {
           <li>
             <Link
               to={`/${dynamicUrl}`}
-              className="flex items-center gap-3.5 mb-2 text-sm font-medium duration-300 ease-in-out hover:text-[#3C50E0] lg:text-base"
+              className="flex items-center gap-3.5 mb-2 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
             >
 
               <FiAnchor /> Your Library App
@@ -132,7 +132,7 @@ const DropdownUser = () => {
         {auth?.auth ? (
           <button
             onClick={signout}
-            className="flex items-center gap-3.5 py-4 px-6 text-sm font-medium duration-300 ease-in-out hover:text-[#3C50E0] lg:text-base"
+            className="flex items-center gap-3.5 py-4 px-6 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
           >
             <svg
               className="fill-current"
@@ -156,7 +156,7 @@ const DropdownUser = () => {
         ) : (
           <button
             onClick={logout}
-            className="flex items-center gap-3.5 py-4 px-6 text-sm font-medium duration-300 ease-in-out hover:text-[#3C50E0] lg:text-base"
+            className="flex items-center gap-3.5 py-4 px-6 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
           >
             <svg
               className="fill-current"
