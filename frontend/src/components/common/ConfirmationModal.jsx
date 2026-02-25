@@ -21,8 +21,8 @@ const ConfirmationModal = ({
                 <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
 
                     {/* Modal panel */}
-                    <div className="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
-                        <div className="bg-white dark:bg-gray-800 px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                    <div className="relative transform overflow-hidden rounded-lg bg-background text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+                        <div className="bg-background px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
                             <h5 className="ml-4 text-xs mb-2 font-semibold leading-6 text-red-900 dark:text-white" id="modal-title">
                                 {title}
                             </h5>
