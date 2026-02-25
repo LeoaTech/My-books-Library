@@ -12,18 +12,18 @@ const AuthorsTable = ({ authors }) => {
     return (
         <TableCard title="Poplular Authors">
             <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead className="bg-gray-50 dark:bg-gray-700">
-                        <tr className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                <table className="min-w-full divide-y divide-primary">
+                    <thead className="bg-secondary">
+                        <tr className="text-xs font-semibold uppercase tracking-wider text-text">
                             <th className="px-4 py-3 text-left">Author Name</th>
                             <th className="px-4 py-3 text-right">Available Books</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800">
-                        {authors.map((author) => (
-                            <tr key={author.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                                <td className="px-4 py-3 text-md font-medium text-gray-900 dark:text-gray-100">{author.name}</td>
-                                <td className="px-4 py-3 text-md text-right font-semibold text-orange-600 dark:text-orange-400">{author.totalbooks}</td>
+                    <tbody className="divide-y divide-border bg-background">
+                        {authors?.map((author) => (
+                            <tr key={author.id} className="hover:bg-surface transition-colors">
+                                <td className="px-4 py-3 text-md font-medium text-text">{author.name}</td>
+                                <td className="px-4 py-3 text-md text-right font-semibold text-text">{author.totalbooks}</td>
                             </tr>
                         ))}
                     </tbody>
