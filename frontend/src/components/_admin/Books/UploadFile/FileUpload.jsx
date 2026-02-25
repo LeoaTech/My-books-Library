@@ -72,7 +72,7 @@ const UploadBookByFileHandler = ({ setUploadFileModal }) => {
             <div className="w-full max-w-md">
                 <label
                     htmlFor="file-upload"
-                    className="block text-sm font-medium text-gray-700 mb-2"
+                    className="block text-sm font-medium text-text mb-2"
                 >
                     Select CSV or Excel File to Import
                 </label>
@@ -91,12 +91,12 @@ const UploadBookByFileHandler = ({ setUploadFileModal }) => {
                             strokeLinejoin="round"
                         />
                     </svg>
-                    <div className="flex text-sm text-gray-600">
+                    <div className="flex text-sm text-text">
                         <label
                             htmlFor="file-upload"
                             className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
                         >
-                            <span>Choose a file</span>
+                            <span className='p-1'>Choose a file</span>
                             <input
                                 id="file-upload"
                                 name="file-upload"
@@ -109,13 +109,15 @@ const UploadBookByFileHandler = ({ setUploadFileModal }) => {
                         </label>
                         <p className="pl-1">or drag and drop</p>
                     </div>
-                    <p className="text-xs text-gray-500">CSV, XLS, or XLSX up to {MAX_FILE_SIZE_MB}MB</p>                    </div>
+                    <p className="text-xs text-text">CSV, XLS, or XLSX up to {MAX_FILE_SIZE_MB}MB</p>                    </div>
                 </div>
             </div>
             {file && <div className="mt-4 text-sm text-gray-500">{file.name}</div>}
             <button
                 onClick={handleFileUpload}
-                className="mt-4 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="mt-4 flex items-center border-2 border-border gap-2 bg-background text-text px-5 py-2 rounded-md 
+                hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary 
+                transition-colors duration-200"
             >
                 Upload
             </button>
@@ -129,8 +131,8 @@ const UploadBookByFileHandler = ({ setUploadFileModal }) => {
 
 const ImportFileModal = ({ setUploadFileModal }) => {
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#64748B]/75 dark:bg-slate-300/75 lg:left-[18rem]">
-            <div className="relative w-[90%] max-w-md bg-neutral-50 dark:border-[#2E3A47] dark:bg-[#24303F] p-10 rounded-md shadow-lg">
+        <div className= "fixed inset-0 overflow-y-auto h-full w-full flex items-center justify-center bg-[#64748B] bg-opacity-75 transition-opacity z-50" >
+            <div className="relative w-[90%]  max-w-md bg-surface border-border p-10 rounded-md shadow-lg">
                 <div className="absolute top-4 right-4">
                     <RxCross1
                         style={{
@@ -144,18 +146,18 @@ const ImportFileModal = ({ setUploadFileModal }) => {
                     />
                 </div>
 
-                <div className="flex flex-col justify-between items-center gap-5">
-                    <div className="rounded-sm p-3 bg-slate-100 border-b border-[#E2E8F0] py-4 px-6.5 dark:border-[#2E3A47]  dark:bg-[#2c3745]">
-                        <h3 className="font-bold text-[#313D4A] dark:text-white">
+                <div className="flex flex-col bg-surface justify-between items-center gap-5">
+                    <div className="rounded-sm p-3 bg-surface border-b border-border py-4 px-6.5">
+                        <h3 className="font-bold text-text">
                             Import Books From a File
                         </h3>
                     </div>
-                    <div className="max-h-[600px] px-12 w-full overflow-hidden overflow-y-auto text-slate-800">
+                    <div className="max-h-[600px] px-12 w-full overflow-hidden overflow-y-auto text-text">
                         <UploadBookByFileHandler setUploadFileModal={setUploadFileModal} />
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
 export default ImportFileModal;
