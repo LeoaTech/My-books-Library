@@ -28,7 +28,7 @@ const DashboardPage = () => {
   if (!data) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900 text-lg font-medium text-gray-600 dark:text-gray-300">
-        <div className="p-8 rounded-xl bg-white dark:bg-gray-800 shadow-xl">
+        <div className="p-8 rounded-xl bg-background shadow-xl">
           Loading Library Metrics...
         </div>
       </div>
@@ -36,7 +36,7 @@ const DashboardPage = () => {
   }
 
   return (
-    <div className="p-4 sm:p-6 md:p-8 bg-gray-50 min-h-screen dark:bg-gray-900 transition-colors">
+    <div className="p-4 sm:p-6 md:p-8 bg-surface min-h-screen  transition-colors">
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
         <CardBooks books={data?.popularBooks} />
