@@ -21,7 +21,7 @@ const UserTable = ({ users, searchTerm }) => {
     return users?.filter((user) => {
       const lower = searchTerm?.toLowerCase();
       return (
-        user?.name?.toLowerCase()?.includes(lower)||
+        user?.name?.toLowerCase()?.includes(lower) ||
         user?.email?.toLowerCase()?.includes(lower) ||
         user?.role_name?.toLowerCase()?.includes(lower)
       );
@@ -54,52 +54,46 @@ const UserTable = ({ users, searchTerm }) => {
   };
 
   return (
-    <div className="rounded-lg border border-[#E2E8F0] bg-white px-5 pt-6 pb-2.5 shadow-default  max-w-full overflow-x-auto overflow-y-auto dark:border-[#2E3A47] dark:bg-[#24303F]  sm:px-7.5 xl:pb-1">
+    <div className="rounded-lg border border-border bg-background px-5 pt-6 pb-2.5 shadow-default max-w-full overflow-x-auto overflow-y-auto sm:px-7.5 xl:pb-1">
       <div className="max-w-full overflow-x-auto">
-        <table className="w-full table-auto">
+        <table className="w-full table-auto divide-y divide-primary">
           <thead>
-            <tr className="bg-[#F7F9FC] text-left dark:bg-[#313D4A]">
-              <th className="min-w-[220px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
+            <tr className="bg-secondary text-left">
+              <th className="min-w-[220px] py-4 px-4 font-medium text-text xl:pl-11">
                 Email
               </th>
 
-              <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
+              <th className="min-w-[120px] py-4 px-4 font-medium text-text">
                 Name
               </th>
-              <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
+              <th className="min-w-[150px] py-4 px-4 font-medium text-text">
                 Role
               </th>
-              <th className="py-4 px-4 font-medium text-black dark:text-white">
+              <th className="py-4 px-4 font-medium text-text">
                 Actions
               </th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-primary">
             {currentRows?.map((user) => (
               <tr key={user?.user_id}>
-                <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-11">
-                  <h5 className="font-medium text-gray-600 dark:text-gray-400">
+                <td className="border-b border-border py-5 px-4 pl-9 xl:pl-11">
+                  <h5 className="font-medium text-text">
                     {user.email}
                   </h5>
                 </td>
 
-                <td className="border-b border-[#eee] py-5 px-4 dark:border-[#2E3A47]">
-                  <p className="inline-flex rounded-full bg-[#219653] bg-opacity-10 py-1 px-3 text-sm font-medium text-[#2980de]">
+                <td className="border-b border-border py-5 px-4">
+                  <p className="inline-flex rounded-full bg-blue-50 bg-opacity-10 py-1 px-3 text-sm font-medium text-primary">
                     {user.name}
                   </p>
                 </td>
-                <td className="border-b border-[#eee] py-5 px-4 dark:border-[#2E3A47]">
-                  {/*  <span className="flex items-center gap-1">
-                    {user?.permissions?.map((per, index) => (
-                      
-                   ))}
-                  </span> */}
-
-                  <p className="inline-flex rounded-full bg-[#FF6766] bg-opacity-10 py-1 px-3 text-sm font-medium text-[#F0950C]">
+                <td className="border-b border-border py-5 px-4">
+                  <p className="inline-flex rounded-full bg-blue-100 bg-opacity-10 py-1 px-3 text-sm font-medium text-orange-400">
                     {user?.role_name}
                   </p>
                 </td>
-                <td className="border-b border-[#eee] py-5 px-4 dark:border-[#2E3A47]">
+                <td className="border-b border-border py-5 px-4">
                   <div className="flex items-center space-x-3.5">
                     <div className="group relative m-2 flex justify-center">
 
@@ -110,7 +104,7 @@ const UserTable = ({ users, searchTerm }) => {
                         </span>{" "}
                       </span>}
                       <button
-                        className="text-green-500 hover:text-[#F0950C] disabled:text-gray-400"
+                        className="bg-surface border-[1.2px] p-1 rounded-full flex justify-center items-center text-green-500 hover:text-[#F0950C] disabled:text-gray-400"
                         onClick={() => editUserDetails(user?.user_id)}
                         disabled={user.role_name == "owner"}
                       >
@@ -119,7 +113,7 @@ const UserTable = ({ users, searchTerm }) => {
                         <MdEdit />
                       </button></div>
                     <button
-                      className="text-orange-400 hover:text-orange-600"
+                      className="bg-surface p-1 border-[1.2px] rounded-full flex justify-center items-center text-orange-400 hover:text-orange-600"
                       onClick={() => showUserDetails(user?.user_id)}
                     >
                       <svg

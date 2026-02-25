@@ -97,9 +97,9 @@ const AddUserModal = ({ setOpenModal }) => {
 
   if (isPending) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#64748B]/75 dark:bg-slate-300/65 lg:left-[18rem]">
-        <div className="relative bg-neutral-50 dark:border-[#2E3A47] dark:bg-[#24303F] p-10 rounded-md shadow-lg ">
-          {/* Modal Close button */}
+      <div className="fixed inset-0 overflow-y-auto h-full w-full flex items-center justify-center bg-[#64748B] bg-opacity-75 transition-opacity z-50">
+      <div className="relative bg-background shadow-lg p-5 rounded-md w-full mx-auto my-auto max-w-2xl ">
+       {/* Modal Close button */}
           <div className="absolute top-4 right-4">
             <RxCross1
               style={{
@@ -130,9 +130,9 @@ const AddUserModal = ({ setOpenModal }) => {
 
   if (error) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#64748B]/75 dark:bg-slate-300/65 lg:left-[18rem]">
-        <div className="relative bg-neutral-50 dark:border-[#2E3A47] dark:bg-[#24303F] p-10 rounded-md shadow-lg ">
-          {/* Modal Close button */}
+       <div className="fixed inset-0 overflow-y-auto h-full w-full flex items-center justify-center bg-[#64748B] bg-opacity-75 transition-opacity z-50">
+      <div className="relative bg-background shadow-lg p-5 rounded-md w-full mx-auto my-auto max-w-2xl ">
+      {/* Modal Close button */}
           <div className="absolute top-4 right-4">
             <RxCross1
               style={{
@@ -158,8 +158,8 @@ const AddUserModal = ({ setOpenModal }) => {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#64748B]/75 dark:bg-slate-300/65 lg:left-[18rem]">
-      <div className="relative bg-neutral-50 dark:border-[#2E3A47] dark:bg-[#24303F] p-10 rounded-md shadow-lg ">
+    <div className="fixed inset-0 overflow-y-auto h-full w-full flex items-center justify-center bg-[#64748B] bg-opacity-75 transition-opacity z-50">
+      <div className="relative bg-surface shadow-lg p-5 rounded-md w-full mx-auto my-auto max-w-2xl ">
         {/* Modal Close button */}
         <div className="absolute top-4 right-4">
           <RxCross1
@@ -167,44 +167,42 @@ const AddUserModal = ({ setOpenModal }) => {
               height: 18,
               width: 23,
               cursor: "pointer",
-              color: "#FFF",
+              color: "var(--color-text)",
               strokeWidth: 2,
             }}
             onClick={() => setOpenModal(prev => !prev)}
           />
         </div>
 
-        <div className="flex flex-col justify-between items-center gap-5  overflow-hidden">
-          <h3 className="mb-5 font-bold text-[#313D4A] dark:text-white">
+        <div className="flex flex-col justify-start items-start gap-5  overflow-hidden">
+          <h3 className="mb-5 font-bold text-lg text-left text-text">
             Add New User
           </h3>
 
-          <div className="flex justify-between h-[500px] md:h-full overflow-hidden rounded-sm border-b border-[#E2E8F0] py-4 px-6.5 dark:border-[#2E3A47] ">
+          <div className="flex justify-between h-[500px] md:h-full overflow-hidden rounded-sm border-b border-border py-2 px-6.5">
             <div className="flex-1 overflow-y-auto p-5">
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
                 <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
 
                   <div className="w-full" autoFocus>
-                    <label htmlFor="name" className="mb-2.5 block text-[#0284c7] dark:text-white">
+                    <label htmlFor="name" className="mb-2.5 block text-text">
                       Full Name                        <span className="text-red-600">*</span>
 
                     </label>
                     <input
 
                       id="name" {...register('name')}
-                      className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
-
+                      className="w-full rounded-sm border-[1.5px] text-white border-border bg-background py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-[#F5F7FD] "
                     />
                     {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
                   </div>
 
                   <div className="w-full">
-                    <label htmlFor="email" className="mb-2.5 block text-[#0284c7] dark:text-white">
+                    <label htmlFor="email" className="mb-2.5 block text-text">
                       Email                        <span className="text-red-600">*</span>
 
                     </label>
-                    <input id="email" type="email" {...register('email')} className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
-                    />
+                    <input id="email" type="email" {...register('email')} className="w-full rounded-sm border-[1.5px] text-white border-border bg-background py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-[#F5F7FD] "                    />
                     {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
                   </div>
                 </div>
@@ -212,20 +210,19 @@ const AddUserModal = ({ setOpenModal }) => {
                 <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
 
                   <div className="w-full">
-                    <label htmlFor="password" className="mb-2.5 block text-[#0284c7] dark:text-white">
+                    <label htmlFor="password" className="mb-2.5 block text-text">
                       Password                        <span className="text-red-600">*</span>
 
                     </label>
-                    <input id="password" type="password" {...register('password')} className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
-                    />
+                    <input id="password" type="password" {...register('password')} className="w-full rounded-sm border-[1.5px] text-white border-border bg-background py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-[#F5F7FD] "                    />
                     {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
                   </div>
                   <div className="w-full">
-                    <label htmlFor="phone" className="mb-2.5 block text-[#0284c7] dark:text-white">
+                    <label htmlFor="phone" className="mb-2.5 block text-text">
                       Phone
                     </label>
                     <input id="phone" {...register('phone')}
-                      className="w-full mb-4 rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]" />
+                      className="w-full mb-4 rounded-sm border-[1.5px] text-text border-border bg-background py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-[#F5F7FD] " />
                     {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>}
                   </div>
                 </div>
@@ -233,48 +230,44 @@ const AddUserModal = ({ setOpenModal }) => {
                 <div>
                   <label htmlFor="address"
 
-                    className="mb-2.5 block text-[#0284c7] dark:text-white">
+                    className="mb-2.5 block text-text">
                     Address
                   </label>
-                  <textarea id="address" {...register('address')} className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
-                  />
+                  <textarea id="address" {...register('address')} className="w-full rounded-sm border-[1.5px] text-white border-border bg-background py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-[#F5F7FD] "                  />
                   {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address.message}</p>}
                 </div>
 
                 <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
 
                   <div>
-                    <label htmlFor="city" className="mb-2.5 block text-[#0284c7] dark:text-white">
+                    <label htmlFor="city" className="mb-2.5 block text-text">
                       City
                     </label>
                     <input id="city" {...register('city')}
-                      className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
-
+                      className="w-full rounded-sm border-[1.5px] text-white border-border bg-background py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-[#F5F7FD] "
                     />
                     {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city.message}</p>}
                   </div>
 
                   <div>
-                    <label htmlFor="country" className="mb-2.5 block text-[#0284c7] dark:text-white">
+                    <label htmlFor="country" className="mb-2.5 block text-text">
                       Country
                     </label>
                     <input id="country" {...register('country')}
-                      className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
-
+                      className="w-full rounded-sm border-[1.5px] text-white border-border bg-background py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-[#F5F7FD] "
                     />
                     {errors.country && <p className="text-red-500 text-xs mt-1">{errors.country.message}</p>}
                   </div>
                 </div>
 
                 <div className="w-full mb-10">
-                  <label className="mb-2.5 block text-[#259AE6] dark:text-white">
+                  <label className="mb-2.5 block text-text">
                     Roles                        <span className="text-red-600">*</span>
 
                   </label>
                   <div className="relative z-20 bg-transparent dark:bg-[#1d2a39]">
                     <select
-                      className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
-                      {...register("role_id")}
+                      className="relative z-20 w-full appearance-none rounded-sm border border-border text-text bg-background py-3 px-5 outline-none transition focus:border-primary active:border-primary "                      {...register("role_id")}
                     >
                       <option disabled value="">Select</option>
                       {data &&
@@ -310,9 +303,9 @@ const AddUserModal = ({ setOpenModal }) => {
                 </div>
 
 
-                <button type="submit" disabled={isSubmitting}
+                 <button type="submit" disabled={isSubmitting}
 
-                  className="w-full mt-4  bg-[#758aae] text-white active:bg-[#80CAEE] 
+                  className="w-full bg-primary text-text active:bg-secondary
             font-medium rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 px-2 py-2 md:px-3 "
                 >
                   {isSubmitting ? <LoadingSpinner /> : 'Create User'}

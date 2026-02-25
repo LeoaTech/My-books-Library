@@ -60,8 +60,8 @@ const UpdatRolesModal = ({ setOpenModal, userData }) => {
 
 
   if (isPending) {
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#64748B]/75 dark:bg-slate-300/65 lg:left-[18rem]">
-      <div className="relative w-[90%] max-w-md bg-neutral-50 dark:border-[#2E3A47] dark:bg-[#24303F] p-10 rounded-md shadow-lg">
+    <div className="fixed inset-0 overflow-y-auto h-full w-full flex items-center justify-center bg-[#64748B] bg-opacity-75 transition-opacity z-50">
+      <div className="relative bg-background shadow-lg p-5 rounded-md w-full mx-auto my-auto max-w-2xl ">
         {/* Modal Close Button */}
         <div className="absolute top-4 right-4">
           <RxCross1
@@ -90,8 +90,8 @@ const UpdatRolesModal = ({ setOpenModal, userData }) => {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#64748B]/75 dark:bg-slate-300/65 lg:left-[18rem]">
-      <div className="relative w-[90%] max-w-md bg-neutral-50 dark:border-[#2E3A47] dark:bg-[#24303F] p-10 rounded-md shadow-lg">
+    <div className="fixed inset-0 overflow-y-auto h-full w-full flex items-center justify-center bg-[#64748B] bg-opacity-75 transition-opacity z-50">
+      <div className="relative bg-surface shadow-lg p-5 rounded-md w-full mx-auto my-auto max-w-2xl ">
         {/* Modal Close Button */}
         <div className="absolute top-4 right-4">
           <RxCross1
@@ -99,7 +99,7 @@ const UpdatRolesModal = ({ setOpenModal, userData }) => {
               height: 18,
               width: 23,
               cursor: "pointer",
-              color: "#FFF",
+              color: "var(--color-text)",
               strokeWidth: 2,
             }}
             onClick={() => setOpenModal(prev => !prev)}
@@ -107,16 +107,16 @@ const UpdatRolesModal = ({ setOpenModal, userData }) => {
         </div>
 
         <div className="flex flex-col justify-between items-center gap-5">
-          <h3 className="mb-5 font-bold text-[#313D4A] dark:text-white">
+          <h3 className="mb-5 font-bold text-text">
             Update Roles
           </h3>
-          <div className="flex justify-between rounded-sm border-b border-[#E2E8F0] py-4 px-6.5 dark:border-[#2E3A47]">
+          <div className="flex justify-between rounded-sm border-b border-border py-4 px-6.5 ">
             <form onSubmit={handleSubmit(onSubmit)}>
               <div className="p-6.5 m-5.5 sm:overflow-auto">
                 {/* first Row fields */}
                 <div className="mb-4.5 flex flex-col  gap-6  mb-6">
                   <div className="w-full " autoFocus>
-                    <label className="mb-2.5 block text-[#259AE6] dark:text-white">
+                    <label className="mb-2.5 block text-text">
                       Email
                     </label>
                     <input
@@ -124,17 +124,17 @@ const UpdatRolesModal = ({ setOpenModal, userData }) => {
                       readOnly
                       placeholder="Enter your Email Address"
                       {...register("email")}
-                      className="w-full rounded-sm border-[1.5px] border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                      className="w-full rounded-sm border-[1.5px] border-border text-text bg-background py-3 px-5 font-medium outline-none transition focus:border-secondary active:border-secondary disabled:cursor-default disabled:bg-border "
                     />
                   </div>
 
                   <div className="w-full">
-                    <label className="mb-2.5 block text-[#259AE6] dark:text-white">
+                    <label className="mb-2.5 block text-text">
                       Roles
                     </label>
                     <div className="relative z-20 bg-transparent dark:bg-[#1d2a39]">
                       <select
-                        className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                        className="relative z-20 w-full appearance-none rounded-sm border border-border text-text bg-background py-3 px-5 outline-none transition focus:border-secondary active:border-secondary "
                         {...register("role_id")}
                       >
                         {data &&
@@ -169,17 +169,19 @@ const UpdatRolesModal = ({ setOpenModal, userData }) => {
                 </div>
 
                 {/* Submit or Close button */}
-                <div className="mt-20 bg-gray-50 dark:bg-[#24303F] px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                <div className="mt-10 px-4 py-3 sm:flex sm:flex-row-reverse md:gap-2 sm:px-6">
                   <button
                     type="submit"
                     disabled={!isDirty || isSubmitting || !isValid}
-                    className="inline-flex w-full justify-center rounded-md bg-[#FFBA00] px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-orange-500 sm:ml-3 sm:w-auto"
-                  >
+                    className={`flex w-full md:w-1/2 justify-center items-center border-2 border-border gap-2 bg-background text-text px-4 py-2 rounded-md 
+                hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary 
+                transition-colors duration-200 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}                  >
                     {isLoading ? <LoadingSpinner /> : "Update"}
                   </button>
                   <button
                     type="button"
-                    className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                    className="mt-3 flex w-full justify-center items-center rounded-md bg-white px-6 py-2 text-md font-medium text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
                     onClick={() => setOpenModal(false)}
                   >
                     Cancel

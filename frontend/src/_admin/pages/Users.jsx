@@ -28,11 +28,11 @@ const Users = () => {
 
   return (
     <div>
-      <h1 className="m-5 text-lg md:text-2xl text-[#8A99AF]">Users</h1>
+      <h1 className="m-5 text-lg md:text-2xl text-text">Users</h1>
       <div className="flex justify-end items-end mb-2">
         <button
         disabled={hasPermissionToAddUser}
-          className=" bg-[#758aae] text-white active:bg-[#80CAEE] 
+          className=" bg-surface text-text hover:bg-primary active:bg-secondary
             font-medium rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 px-2 py-2 md:px-3 "
           type="button"
           onClick={() => setShowModal(true)}
@@ -51,8 +51,8 @@ const Users = () => {
 
             <input
               type="text"
-              placeholder="Search a user by name,email and role"
-              className="ml-4 w-1/2  focus:outline-none px-4 py-2 text-sm border-b border-gray-300 bg-neutral-100 rounded-md dark:border-gray-600 dark:bg-[#1d2a39] dark:text-white"
+              placeholder="Search users by name,email and role"
+              className="ml-4 w-1/2  focus:outline-none px-4 py-2 text-sm border-b border-border bg-background rounded-md "
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             /></div>
