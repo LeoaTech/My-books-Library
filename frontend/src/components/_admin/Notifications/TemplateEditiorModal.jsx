@@ -119,15 +119,17 @@ const TemplateEditorModal = ({ template, events, onClose, onSaveSuccess }) => {
   const isEditing = !!template?.event;
 
   return (
-    <div className="fixed left-0 top-0 inset-0 bg-[#64748B] bg-opacity-75 transition-opacity dark:bg-slate-300 dark:bg-opacity-75 lg:left-[18rem]">
-      <div className="relative p-2 rounded-md">
+    <div className="fixed inset-0 overflow-y-auto h-full w-full flex items-center justify-center bg-[#64748B] bg-opacity-75 transition-opacity z-50">
+      {/* <div className="relative p-5 rounded-md mx-auto my-auto w-full max-w-2xl bg-surface "> */}
+      <div className="relative p-2 rounded-md w-full mx-auto my-auto max-w-3xl">
+
         <div className="flex justify-end p-5 md:p-10  ">
           <RxCross1
             style={{
               height: 18,
               width: 23,
               cursor: "pointer",
-              color: "#FFF",
+              color: "var(--color-text)",
               strokeWidth: 2,
             }}
             onClick={onClose}
@@ -135,14 +137,14 @@ const TemplateEditorModal = ({ template, events, onClose, onSaveSuccess }) => {
         </div>
 
         <div className=" md:mx-20">
-          <div className=" p-10 relative rounded-md border border-[#E2E8F0] bg-white shadow-lg dark:border-[#485360] dark:bg-[#24303F] md:px-8 md:py-8 ">
+          <div className=" p-10 relative rounded-md border border-border bg-surface shadow-lg md:px-8 md:py-8 ">
 
-            <div className="flex justify-between items-start mb-4 border-b pb-4">
+            <div className="flex justify-between items-start mb-4 border-b border-border pb-4">
               <div>
-                <h2 className="font-bold text-[#313D4A] dark:text-white">
+                <h2 className="font-bold text-text">
                   {isEditing ? "Edit Template" : "New Template"}
                 </h2>
-                <p className="text-sm text-gray-500 dark:text-gray-300">
+                <p className="text-sm text-primary">
                   Customize how your customers receive notifications.
                 </p>
               </div>
@@ -165,7 +167,7 @@ const TemplateEditorModal = ({ template, events, onClose, onSaveSuccess }) => {
                 </svg>
               </button> */}
             </div>
-            <div className="max-h-[550px] px-6 w-full overflow-hidden overflow-y-auto text-slate-800">
+            <div className="max-h-[550px] px-6 w-full overflow-hidden overflow-y-auto text-primary">
               <div className="p-6.5 m-5.5 sm:overflow-auto sm:p-2 sm:m-2">
 
                 <form
@@ -177,14 +179,14 @@ const TemplateEditorModal = ({ template, events, onClose, onSaveSuccess }) => {
 
                     <div className="my-2">
                       <label
-                        className="block text-sm font-semibold text-[#1c303e] mb-2 dark:text-white"
-                      >Notification Channel <span style={{ fontSize: '0.8em', marginLeft: "10px", color: 'gray' }}>
+                        className="block text-sm font-semibold text-text mb-2 "
+                      >Notification Channel <span style={{ fontSize: '0.8em', marginLeft: "10px", color: 'var(--color-secondary)' }}>
                           (Read-only)
                         </span></label>
                       <select
                         {...register("channel")}
                         disabled={isEditing}
-                        className="block w-full rounded-md border-[1.5px] dark:text-white  border-[#E2E8F0] bg-gray-300  dark:disabled:bg-gray-00 disabled:dark:text-gray-400 bg-transparent py-3 px-1 font-medium outline-none transition p-2.5 text-gray-900 placeholder-gray-400 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"                      >
+                        className="block w-full rounded-md border-[1.5px] text-text  border-border bg-background py-3 px-1 font-medium outline-none transition p-2.5 placeholder-gray-400 focus:ring-primary focus:border-primary sm:text-sm"                      >
                         <option value="email">Email</option>
                         <option value="push">Push Notification</option>
                         <option value="in-app">In-App Message</option>
@@ -192,13 +194,13 @@ const TemplateEditorModal = ({ template, events, onClose, onSaveSuccess }) => {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-semibold text-[#1c303e] mb-2 dark:text-white">Event Trigger For <span style={{ fontSize: '0.8em', marginLeft: "10px", color: 'gray' }}>
+                      <label className="block text-sm font-semibold text-text mb-2 ">Event Trigger For <span style={{ fontSize: '0.8em', marginLeft: "10px", color: 'var(--color-secondary)' }}>
                         (Read-only)
                       </span></label>
                       <select
                         {...register("event")}
                         disabled={isEditing}
-                        className="block w-full rounded-md border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent bg-gray-300  dark:disabled:bg-gray-00 disabled:dark:text-gray-400 py-3 px-2 font-medium outline-none transition p-2.5 text-gray-900 placeholder-gray-400 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"                      >
+                        className="block w-full rounded-md border-[1.5px]  border-border bg-background py-3 px-2 font-medium outline-none transition p-2.5 text-text placeholder-gray-400 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"                      >
                         <option value="">-- Select a Trigger --</option>
                         {filteredEvents.map((evt) => (
                           <option key={evt.key} value={evt.key}>
@@ -213,7 +215,7 @@ const TemplateEditorModal = ({ template, events, onClose, onSaveSuccess }) => {
 
 
                   <div>
-                    <label className="block text-sm font-semibold text-[#1c303e] mb-2 dark:text-white">
+                    <label className="block text-sm font-semibold text-text mb-2 ">
                       {selectedChannel === 'push' ? 'Title' : 'Subject Line'}
                     </label>
                     <input
@@ -227,7 +229,7 @@ const TemplateEditorModal = ({ template, events, onClose, onSaveSuccess }) => {
                           : "e.g., New Book Alert!"
                       }
                       onFocus={() => setActiveField("subject")}
-                      className="block w-full rounded-md border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 font-medium outline-none transition p-2.5 text-gray-900 placeholder-gray-400 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      className="block w-full rounded-md border-[1.5px]  border-border bg-background py-3 font-medium outline-none transition p-2.5 text-text placeholder-gray-400 focus:ring-primary focus:border-primary sm:text-sm"
                     />
                     {errors.subject && (
                       <p className="mt-1 text-sm text-red-600">
@@ -238,9 +240,9 @@ const TemplateEditorModal = ({ template, events, onClose, onSaveSuccess }) => {
 
 
                   {currentEventDef?.variables?.length > 0 && (
-                    <div className="bg-indigo-50 p-3 rounded-lg border border-indigo-100 dark:bg-blue-100">
+                    <div className="bg-surface p-3 rounded-lg border border-primary shadow-lg ">
                       <div className="flex justify-between items-center mb-2">
-                        <p className="text-xs font-bold text-indigo-400 dark:text-indigo-600 uppercase">
+                        <p className="text-xs  mb-2 font-bold text-text uppercase">
                           Insert Variable into {activeField === 'subject' ? 'Subject' : 'Body'}
                         </p>
                       </div>
@@ -250,7 +252,7 @@ const TemplateEditorModal = ({ template, events, onClose, onSaveSuccess }) => {
                             key={v.key}
                             type="button"
                             onMouseDown={(e) => { e.preventDefault(); insertVariable(v.key); }}
-                            className="px-3 py-1 bg-white border dark:bg-indigo-100 dark:text-indigo-900 border-indigo-200 dark:border-indigo-600 text-indigo-700 dark:hover:bg-indigo-400 dark:hover:text-white rounded-full text-xs font-medium hover:bg-indigo-100 hover:text-indigo-400 transition-colors"
+                            className="px-3 py-1 bg-background border border-border text-primary rounded-full text-xs font-medium hover:bg-secondary hover:text-text transition-colors"
                           >
                             + {v.label}
                           </button>
@@ -261,7 +263,7 @@ const TemplateEditorModal = ({ template, events, onClose, onSaveSuccess }) => {
 
 
                   <div>
-                    <label className="block text-sm font-semibold text-[#1c303e] mb-2 dark:text-white">
+                    <label className="block text-sm font-semibold text-text mb-2 ">
                       Message Body
                     </label>
                     <textarea
@@ -274,28 +276,31 @@ const TemplateEditorModal = ({ template, events, onClose, onSaveSuccess }) => {
                           ? "Dear {{name}},\n\nWe are writing to inform you..."
                           : "Hi {{name}}, your book is ready!"
                       }
-                      className="block w-full rounded-md border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-3 font-medium outline-none transition p-3 font-mono text-sm text-gray-900 placeholder-gray-400 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="block w-full rounded-md border-[1.5px]  border-border bg-background py-3 px-3 font-medium outline-none transition p-3 font-mono text-sm text-text placeholder-gray-400 focus:ring-primary focus:border-primary"
                     />
                     {errors.body && (
                       <p className="mt-1 text-sm text-red-600">{errors.body.message}</p>
                     )}
-                    <p className="mt-2 text-xs text-gray-500 dark:text-white">
+                    <p className="mt-2 text-xs text-secondary ">
                       Use the buttons above to insert dynamic variables.
                     </p>
                   </div>
 
-                  <div className="flex items-center justify-end pt-4 border-t border-gray-100 gap-3">
+                  <div className="flex items-center justify-end pt-4 border-t border-border gap-3">
                     <button
                       type="button"
                       onClick={onClose}
-                      className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-medium text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"                    >
+                      className="mt-3 flex w-full justify-center rounded-md bg-surface px-6 py-3 text-sm font-medium text-text shadow-sm ring-1 ring-inset ring-primary hover:bg-gray-50 sm:mt-0 sm:w-auto"                    >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="inline-flex w-full justify-center rounded-md bg-[#FFBA00] px-3 py-2 text-sm font-semibold text-white shadow-sm  sm:ml-3 sm:w-auto"
-
+                      className={`flex items-center border-2 border-border gap-2 bg-background text-text px-4 py-2 rounded-md 
+                hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary 
+                transition-colors duration-200 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
+                      aria-label="save template"
                     >
                       {isSubmitting ? (
                         <>
