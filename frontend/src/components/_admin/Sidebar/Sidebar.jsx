@@ -154,7 +154,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
           {/* <!-- Menu Group --> */}
 
           <div>
-            <h3 className="mb-4 ml-4 text-sm font-semibold text-[#8A99AF]">
+            <h3 className="mb-4 ml-4 text-sm font-semibold text-text">
               MENU
             </h3>
 
@@ -171,7 +171,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                     >
                       {route.icon && <route.icon />}
                       {route.image && (
-                        <img src={route.image} alt={route.title} className={`h-4 w-4 text-text/90 hover:bg-primary/10 hover:text-primary ${pathname === route.path ? "text-primary" : ""}`} />
+                        <img src={route.image} alt={route.title} className={`h-4 w-4 text-text hover:bg-primary/10 hover:text-primary ${pathname === route.path ? "text-primary" : ""}`} />
                       )}
                       {route.title}
                     </Link>
@@ -267,7 +267,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                             : ""
                             }`}
                         >
-                          <img src={user} alt="Users" className="h-6 w-6" />
+                          {route.icon && <route.icon />}
                           {route.title}
                           <svg
                             className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current transition-transform ${open ? "rotate-180" : ""
