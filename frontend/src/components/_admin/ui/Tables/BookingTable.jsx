@@ -120,7 +120,7 @@ const BookingTable = ({ hasPermission, searchQuery }) => {
               {hasPermission("EDIT") ? (
                 <button
                   onClick={() => editBookDetails(booking)}
-                  className="text-green-600 hover:text-green-800 transition-colors"
+                  className="text-text bg-secondary border-2 border-surface rounded-full w-6 h-6 flex p-1 justify-center items-center hover:bg-primary hover:text-text transition-colors"
                   aria-label={`Edit booking${booking?.boking_id}`}
                 >
                   <MdEdit size={20} />
@@ -129,7 +129,7 @@ const BookingTable = ({ hasPermission, searchQuery }) => {
                 <div className="relative group">
                   <button
                     disabled
-                    className="text-green-600/50 cursor-not-allowed"
+                    className="text-green-600/50  bg-surface rounded-full w-6 h-6 flex p-1 justify-center items-center cursor-not-allowed"
                     aria-label={`Edit booking${booking?.boking_id} (disabled)`}
                   >
                     <MdEdit size={20} />
@@ -146,7 +146,7 @@ const BookingTable = ({ hasPermission, searchQuery }) => {
               )}
               <button
                 onClick={() => viewBookDetails(booking)}
-                className="text-green-600 hover:text-green-800 transition-colors"
+                className="text-surface bg-primary border-2 border-border rounded-full w-6 h-6 flex p-1 justify-center items-center hover:text-background hover:bg-secondary hover:border-surface transition-colors"
                 aria-label={`View ${booking}`}
               >
                 <MdOutlineRemoveRedEye size={20} />
@@ -155,7 +155,7 @@ const BookingTable = ({ hasPermission, searchQuery }) => {
                 <button
                   disabled={booking.booking_status !== "returned"}
                   onClick={() => deleteBookDetails(booking?.booking_id)}
-                  className="text-red-500 hover:text-red-700 transition-colors disabled:text-gray-600 disabled:hover:text-gray-600"
+                  className="text-red-500 bg-secondary border-border rounded-full w-6 h-6 flex p-1 justify-center items-center hover:text-red-700 transition-colors disabled:text-gray-600 disabled:hover:text-gray-600"
                   aria-label={`Delete ${booking.booking_id}`}
                 >
                   <MdOutlineDeleteOutline size={20} />
@@ -216,15 +216,15 @@ const BookingTable = ({ hasPermission, searchQuery }) => {
   }
 
   return (
-    <div className="rounded-sm border border-[#E2E8F0] bg-neutral-100 shadow-default max-w-full overflow-x-auto dark:border-[#2E3A47] dark:bg-[#24303F]">
+    <div className="rounded-md p-3 border border-border bg-background shadow-default max-w-full overflow-x-auto ">
       <div className="max-w-full overflow-x-auto">
         {filteredData?.length > 0 ? (
-          <table className="w-full table-auto border-collapse">
-            <thead>
+          <table className="mt-2 w-full rounded-2xl table-auto divide-y divide-primary border-collapse">
+            <thead className="bg-secondary">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr
                   key={headerGroup.id}
-                  className="border-b bg-[#f7fcfc] text-center text-sm uppercase text-slate-700 dark:bg-[#222f3e] dark:text-white"
+                  className="border-b border-primary bg-secondary rounded-2xl text-center text-sm uppercase text-text"
                 >
                   {headerGroup.headers.map((header) => (
                     <th
@@ -241,13 +241,13 @@ const BookingTable = ({ hasPermission, searchQuery }) => {
                 </tr>
               ))}
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-border bg-background">
               {table.getRowModel().rows.map((row) => (
-                <tr key={row.id} className="border-b hover:bg-gray-50 dark:bg-[#23374d] dark:hover:bg-[#2b3a4a]">
+                <tr key={row.id} className="border-b hover:bg-surface hover:text-secondary">
                   {row.getVisibleCells().map((cell) => (
                     <td
                       key={cell.id}
-                      className="px-4 py-4 text-center text-sm text-slate-600 dark:text-white whitespace-normal"
+                      className="px-4 py-4 text-center text-sm text-text whitespace-normal"
                       style={{ width: cell.column.getSize() || "auto" }}
                     >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -258,7 +258,7 @@ const BookingTable = ({ hasPermission, searchQuery }) => {
             </tbody>
           </table>
         ) : (
-          <div className="flex justify-center items-center h-[400px] text-xl text-slate-600 dark:text-white">
+          <div className="flex justify-center items-center h-[400px] text-xl text-text">
             No bookings found. {hasPermission("CREATE") ? "Start by adding new bookings." : "Contact an administrator."}
           </div>
         )}
@@ -266,7 +266,7 @@ const BookingTable = ({ hasPermission, searchQuery }) => {
 
       {filteredData?.length > 0 && (
         <nav
-          className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 px-4 border-t border-[#E2E8F0] dark:border-[#2E3A47]"
+          className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 px-4 border-t border-border"
           aria-label="Table navigation"
         >
           <div className="flex items-center gap-2">
@@ -275,8 +275,8 @@ const BookingTable = ({ hasPermission, searchQuery }) => {
               disabled={!table.getCanPreviousPage()}
               className={`rounded px-4 py-2 text-sm font-medium border transition-colors
                 ${table.getCanPreviousPage()
-                  ? "text-slate-600 bg-white border-[#E2E8F0] hover:bg-slate-100 dark:text-white dark:bg-[#1d2a39] dark:border-[#2E3A47] hover:dark:bg-[#2b3a4a]"
-                  : "text-gray-400 bg-gray-100 border-gray-200 dark:bg-[#1d2a39] dark:text-gray-500 cursor-not-allowed"}`}
+                  ? "text-text bg-primary border-border hover:bg-surface"
+                  : "text-secondary bg-gray-100 border-border cursor-not-allowed"}`}
               aria-label="Previous page"
             >
               <MdOutlineKeyboardDoubleArrowLeft />
@@ -290,8 +290,8 @@ const BookingTable = ({ hasPermission, searchQuery }) => {
               disabled={!table.getCanNextPage()}
               className={`rounded px-4 py-2 text-sm font-medium border transition-colors
                 ${table.getCanNextPage()
-                  ? "text-slate-600 bg-white border-[#E2E8F0] hover:bg-slate-100 dark:text-white dark:bg-[#1d2a39] dark:border-[#2E3A47] hover:dark:bg-[#2b3a4a]"
-                  : "text-gray-400 bg-gray-100 border-gray-200 dark:bg-[#1d2a39] dark:text-gray-500 cursor-not-allowed"}`}
+                  ? "text-text bg-primary border-border hover:bg-surface"
+                  : "text-secondary bg-gray-100 border-border cursor-not-allowed"}`}
               aria-label="Next page"
             >
               <MdOutlineKeyboardDoubleArrowRight />
@@ -300,13 +300,13 @@ const BookingTable = ({ hasPermission, searchQuery }) => {
           <div className="flex items-center gap-2">
             <label
               htmlFor="pageSize"
-              className="text-sm text-slate-600 dark:text-white"
+              className="text-sm text-text"
             >
               Rows per page:
             </label>
             <select
               id="pageSize"
-              className="rounded border border-[#E2E8F0] bg-white px-3 py-2 text-sm text-slate-700 outline-none dark:border-[#2E3A47] dark:bg-[#1d2a39] dark:text-white"
+              className="rounded border border-border bg-secondary px-3 py-2 text-sm text-text outline-none "
               value={table.getState().pagination.pageSize}
               onChange={(e) => table.setPageSize(Number(e.target.value))}
               aria-label="Select rows per page"

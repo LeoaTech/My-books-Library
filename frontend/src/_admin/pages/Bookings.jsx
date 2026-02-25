@@ -68,7 +68,7 @@ const Bookings = () => {
   return (
     <div className="container mx-auto px-4">
       <div className="flex justify-between items-center py-5">
-        <h2 className="text-2xl md:text-3xl text-[#8A99AF] font-medium">
+        <h2 className="text-2xl md:text-3xl text-text font-medium">
           Bookings
         </h2>
       </div>
@@ -78,8 +78,8 @@ const Bookings = () => {
           <input
             type="text"
             placeholder="Search bookings by status and user name ..."
-            className="w-full sm:w-1/2 px-4 py-2 text-sm border-b border-gray-300 bg-neutral-100 rounded-md 
-              focus:outline-none focus:ring-2 focus:ring-[#758aae] dark:border-gray-600 dark:bg-[#1d2a39] dark:text-white"
+            className="w-full sm:w-1/2 px-4 py-2 text-sm border-b border-border bg-background rounded-md 
+              focus:outline-none focus:ring-2 focus:ring-primary "
             onChange={handleSearch}
             aria-label="Search booking"
           />
@@ -87,8 +87,8 @@ const Bookings = () => {
 
         {hasPermission("CREATE") ? (
         <button
-          className="flex items-center gap-2 bg-[#758aae] text-white px-4 py-2 rounded-md 
-              hover:bg-[#80CAEE] focus:outline-none focus:ring-2 focus:ring-[#758aae] 
+          className="flex items-center gap-2 bg-surface text-text px-4 py-2 rounded-md 
+              hover:bg-primary focus:outline-none focus:ring-2 focus:ring-primary 
               transition-colors duration-200"
           onClick={() => setShowModal(true)}
           aria-label="issue books"
@@ -98,7 +98,7 @@ const Bookings = () => {
         ) : (
           <div className="relative group">
             <button
-              className="flex items-center gap-2 bg-[#758aae]/50 text-white px-4 py-2 rounded-md 
+              className="flex items-center gap-2 bg-surface text-text px-4 py-2 rounded-md 
                 cursor-not-allowed"
               disabled
               aria-label="Add new booking (disabled)"
