@@ -5,6 +5,7 @@ import { useFetchRoles } from "../../../../../hooks/users/roles/useFetchRole";
 import { useRolesPermissions } from "../../../../../hooks/roles_permissions/useRolesPermissions";
 import { fetchPermissionsByRoleID } from "../../../../../hooks/roles_permissions/useFetchRolesPermissions";
 import { RxCross1 } from "react-icons/rx"
+import LoadingSpinner from "../../../Loader/LoadingSpinner";
 
 
 const RolesPermissionModal = ({ close }) => {
@@ -22,7 +23,7 @@ const RolesPermissionModal = ({ close }) => {
 
   const selectedRole = watch("role_id");
 
-  const { data } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryFn: () => fetchPermissionsByRoleID(selectedRole),
     queryKey: ["role-permissions", { selectedRole }],
     enabled: !!selectedRole,
@@ -38,14 +39,16 @@ const RolesPermissionModal = ({ close }) => {
     },
   });
 
+  console.log(data);
+  
 
 
   const onSubmit = async (data) => {
     await deleteRolePermissionMutation(data);
   };
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#64748B]/75 dark:bg-slate-300/65 lg:left-[18rem]">
-      <div className="relative w-[90%] max-w-md bg-neutral-50 dark:border-[#2E3A47] dark:bg-[#24303F] p-10 rounded-md shadow-lg">
+    <div className="fixed inset-0 overflow-y-auto h-full w-full flex items-center justify-center bg-[#64748B] bg-opacity-75 transition-opacity z-50">
+      <div className="relative p-5 bg-surface rounded-md mx-auto my-auto w-full max-w-2xl shadow-lg">
         {/* Modal Close Button */}
         <div className="absolute top-4 right-4">
           <RxCross1
@@ -53,7 +56,7 @@ const RolesPermissionModal = ({ close }) => {
               height: 18,
               width: 23,
               cursor: "pointer",
-              color: "#FFF",
+              color: "var(--color-text)",
               strokeWidth: 2,
             }}
             onClick={close}
@@ -61,30 +64,31 @@ const RolesPermissionModal = ({ close }) => {
         </div>
 
         <div className="flex flex-col justify-between items-center gap-5">
-          <h1 className="text-[17px] font-bold ">Permissions Details</h1>
+          <h1 className="text-lg font-bold ">Remove Permissions For A Role</h1>
 
           <form onSubmit={handleSubmit(onSubmit)} className="p-5">
             <div className="mt-2 mb-4.5 flex flex-col gap-2 md:flex-row md:gap:9">
               <div className="w-full ">
                 <label
-                  className="mb-2.5 block text-blue-500 dark:text-white"
+                  className="mb-2.5 block text-text"
                   htmlFor="role_id"
                 >
                   Role Name
                 </label>
-                <div className="relative z-20 bg-transparent dark:bg-form-input">
+                <div className="relative z-20 bg-background">
                   {allRoles && (
                     <select
                       autoFocus
-                      className="relative z-20 w-full appearance-none rounded-sm border border-[#abc6e8] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                      className="relative z-20 w-full appearance-none rounded-sm border border-border bg-background py-3 px-5 outline-none transition focus:border-primary active:border-primary "
                       name="role_name"
                       {...register("role_id")}
                     >
                       {" "}
-                      <option disabled>Select Role</option>
+                      <option value="">Select Role</option>
                       {allRoles?.roles?.map((role) => (
-                        <option key={role?.role_id} value={role?.role_id} disabled={role?.name =="owner"}>
-                          {role?.name}
+                        <option key={role?.role_id} value={role?.role_id}>
+                          {/*  disabled={role?.name == "owner"}> */}
+                          {role?.name?.toUpperCase()}
                         </option>
                       ))}
                     </select>
@@ -111,43 +115,48 @@ const RolesPermissionModal = ({ close }) => {
                 </div>
               </div>
             </div>
-            <label className="mt-2.5 mb-2.5 block text-blue-500 dark:text-white">
+            <label className="mt-2.5 mb-2.5 block text-text">
               Permissions
             </label>
-            {/* {data?.permissions && ( */}
-            <div className=" h-[270px] w-full mt-4 m-3 px-10 overflow-hidden overflow-y-auto ">
+
+            <div className="h-[250px] bg-background rounded-md shadow-2xl w-full mt-4 m-1 px-4 overflow-hidden overflow-y-auto">
+              {selectedRole && isLoading && <LoadingSpinner />}
               {data?.permissions ? (
-                <div className="flex flex-wrap overflow-hidden overflow-y-auto justify-between gap-9 xs:flex-col  ">
+                <div className="py-5 grid grid-cols-1 md:grid-cols-2 gap-6">
                   {data?.permissions &&
                     data?.permissions?.map((permission, index) => (
-                      <div key={index} className="flex justify-start gap-2">
+                      <div key={index} className="flex gap-2 items-center text-sm font-semibold">
                         <input
+                          className="h-4 w-4 border-border accent-primary"
                           type="checkbox"
                           name="permission_id"
-                          id="permission_id"
+                          id={`permission_id_${permission.permission_id}`}
                           value={permission.permission_id}
                           {...register("permission_id")}
                         />
-                        <span>{permission?.permission_name}</span>
+                        <label htmlFor={`permission_id_${permission.permission_id}`}>
+                          {permission?.permission_name}
+                        </label>
                       </div>
                     ))}
                 </div>
               ) : (
-                <p className="flex justify-center items-center text-blue-300">
-                  Please Select the Role ID to View Permissions{" "}
+                <p className="flex justify-center items-center text-text">
+                  Please Select the Role ID to View Permissions
                 </p>
               )}
+
+              {selectedRole && data?.permissions?.length == 0 ? `No Permissions Found for ${selectedRole} Role` : ""}
             </div>
-            <div className="mt-5 flex justify-end gap-5 p-5  ">
-              {" "}
-              <button
-                className="rounded-md bg-[#FFBA00] px-4 py-2 text-sm font-semibold text-white shadow-sm disabled:opacity-50"
-                disabled={!isDirty || isSubmitting}
-              >Remove Permissions</button>
+            <div className="mt-5 flex gap-2 px-2 py-5 xs:flex-col">
               <button
                 onClick={close}
-                className="rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                className="rounded-md w-full bg-white px-2 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
               >Close</button>
+              <button
+                className="rounded-md w-full border-border bg-background text-text px-2 py-2 text-sm font-semibold shadow-sm disabled:opacity-50  hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary"
+                disabled={!isDirty || isSubmitting}
+              >Remove Permissions</button>
             </div>
             {errors && (
               <span className="text-meta-1 text-sm">

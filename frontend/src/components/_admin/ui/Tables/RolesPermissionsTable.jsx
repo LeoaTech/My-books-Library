@@ -63,20 +63,20 @@ const filteredData = useMemo(() => {
   }
 
   return (
-    <div className="rounded-sm border border-[#E2E8F0] bg-white shadow-default p-8 border-b  dark:border-[#2E3A47] dark:bg-[#24303F]">
+    <div className="rounded-sm border border-border bg-background shadow-default p-8 border-b  ">
       <div className="max-w-full overflow-x-auto">
-        <table className="w-full table-auto">
+        <table className="w-full table-auto divide-y divide-primary">
           {/* Table Header displays permissions and All Roles */}
           {allRoles && (
             <thead>
-              <tr className="bg-[#F7F9FC] text-left dark:bg-[#313D4A]">
-                <th className="min-w-[250px] py-4 px-4 font-medium text-gray-600 dark:text-white xl:pl-11">
+              <tr className="bg-secondary text-left ">
+                <th className="min-w-[250px] py-4 px-3 font-medium text-text xl:pl-11">
                   Permissions
                 </th>
                 {allRoles?.roles?.map((role) => (
                   <th
                     key={role?.role_id}
-                    className="min-w-[170px] py-4 px-4 font-medium underline text-gray-800 dark:text-white xl:pl-11"
+                    className="min-w-[170px] py-4 px-3 font-semibold underline text-text text-sm xl:pl-11"
                   >
                     {role?.name?.toUpperCase()}
                   </th>
@@ -86,25 +86,25 @@ const filteredData = useMemo(() => {
           )}
 
           {/* Display permissions and role_id assigned to that permissions in Table data */}
-          <tbody>
+          <tbody className="divide-y divide-primary">
             {currentRows?.map((permission, index) => (
               <tr key={index}>
-                <td className="border-b border-[#eee] underline py-5 px-4 pl-5 font-semibold dark:border-[#2E3A47] xl:pl-11">
+                <td className="border-b border-primary py-5 px-2 text-sm pl-2 font-semibold  xl:pl-11">
                   {permission.permission_name}
                 </td>
                 {allRoles?.roles?.map((role, index) => (
                   <td
                     key={index}
-                    className="border-b border-[#eee] py-5 px-4 pl-5 dark:border-[#283a3e] xl:pl-11"
+                    className="border-b border-primary py-5 px-4 pl-5 xl:pl-11"
                   >
-                    <p className="inline-flex rounded-full bg-[#6a9f74] dark:bg-[#182131] bg-opacity-10 py-3 px-3 text-md font-medium text-[#3b63e8]">
+                    <p className="inline-flex rounded-full bg-surface  bg-opacity-10 py-3 px-3 text-md font-medium text-text">
                       {permission?.roles?.includes(role?.role_id) ? (
                         <AiOutlineCheck
-                          style={{ stroke: 10, color: "darkgreen" }}
+                          style={{ strokeWidth: 20, color: "green" }}
                         />
                       ) : (
                         <AiOutlineClose
-                          style={{ stroke: 12, color: "crimson" }}
+                          style={{ stroke: 22, color: "crimson" }}
                         />
                       )}
                     </p>
@@ -121,7 +121,7 @@ const filteredData = useMemo(() => {
         <button
           onClick={() => paginate(currentPage - 1)}
           disabled={currentPage === 1}
-          className="disabled:text-slate-300 dark:disabled:text-gray-600 text-blue-500"
+          className="disabled:text-slate-300 text-text"
         >
           <HiChevronDoubleLeft style={{ height: 18, width: 27 }} />
         </button>
@@ -133,9 +133,9 @@ const filteredData = useMemo(() => {
           <button
             onClick={() => paginate(currentPage + 1)}
             disabled={indexOfLastRow >= data?.permissions?.length}
-            className="disabled:text-slate-300 dark:disabled:text-gray-600 text-blue-500"
+            className="disabled:text-slate-300 text-text"
           >
-            <HiChevronDoubleRight style={{ height: 18, width: 27 }} />
+            <HiChevronDoubleRight style={{ height: 18, width: 27  }} />
           </button>
         )}
       </div>

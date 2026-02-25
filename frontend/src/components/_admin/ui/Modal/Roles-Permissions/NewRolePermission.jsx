@@ -43,8 +43,9 @@ const AddRolePermission = ({ setOpenModal }) => {
     await addRolePermissionMutation(permissionsForRole);
   };
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#64748B]/75 dark:bg-slate-300/65 lg:left-[18rem]">
-      <div className="relative w-[90%] max-w-md bg-neutral-50 dark:border-[#2E3A47] dark:bg-[#24303F] p-10 rounded-md shadow-lg">
+    <div className="fixed inset-0 overflow-y-auto h-full w-full flex items-center justify-center bg-[#64748B] bg-opacity-75 transition-opacity z-50">
+      <div className="relative p-5 bg-surface rounded-md  mx-auto my-auto w-full max-w-2xl shadow-lg">
+
         {/* Modal Close Button */}
         <div className="absolute top-4 right-4">
           <RxCross1
@@ -52,7 +53,7 @@ const AddRolePermission = ({ setOpenModal }) => {
               height: 18,
               width: 23,
               cursor: "pointer",
-              color: "#FFF",
+              color: "var(--color-text)",
               strokeWidth: 2,
             }}
             onClick={() => setOpenModal(prev => !prev)}
@@ -65,7 +66,7 @@ const AddRolePermission = ({ setOpenModal }) => {
             <div className="mt-2 mb-4.5 flex flex-col gap-2 md:flex-row md:gap:9">
               <div className="w-full ">
                 <label
-                  className="mb-2.5 block text-blue-500 dark:text-white"
+                  className="mb-2.5 block text-text"
                   htmlFor="role_id"
                 >
                   Role Name
@@ -75,12 +76,12 @@ const AddRolePermission = ({ setOpenModal }) => {
 
                     <select
                       autoFocus
-                      className="relative z-20 w-full appearance-none rounded-sm border border-[#abc6e8] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                      className="relative z-20 w-full appearance-none rounded-sm border border-border bg-background py-3 px-5 outline-none transition focus:border-primary active:border-primary "
                       name="role_name"
                       {...register("role_id")}
                     >
                       {" "}
-                      <option></option>
+                      <option value="">Select Role</option>
                       {allRoles?.roles?.map((role) => (
                         <option key={role?.role_id} value={role?.role_id}>
                           {role?.name}
@@ -110,45 +111,45 @@ const AddRolePermission = ({ setOpenModal }) => {
                 </div>
               </div>
             </div>
-            <label className="mt-2.5 mb-2.5 block text-blue-500 dark:text-white">
+            <label className="mt-2.5 mb-2.5 block text-text">
               Permissions
             </label>
-            <div className=" h-[270px] w-full mt-4 m-3 px-6 overflow-hidden overflow-y-auto ">
+            <div className="h-[250px] bg-background shadow-2xl w-full mt-4 m-3 px-4 overflow-hidden overflow-y-auto">
               {data?.permissions ? (
-                <div className="flex flex-wrap overflow-hidden overflow-y-auto justify-between gap-9 xs:flex-col ">
+                <div className="py-5 grid grid-cols-1 md:grid-cols-2 gap-6">
                   {data?.permissions &&
                     data?.permissions?.map((permission, index) => (
-                      <div key={index} className="flex justify-center items-center gap-4">
+                      <div key={index} className="flex gap-2 items-center text-sm font-semibold">
                         <input
-                          className="h-4 w-4 border-"
+                          className="h-4 w-4 border-border accent-primary"
                           type="checkbox"
                           name="permission_id"
-                          id="permission_id"
+                          id={`permission_id_${permission.permission_id}`} 
                           value={permission.permission_id}
                           {...register("permission_id")}
                         />
-                        <span>{permission?.permission_name}</span>
+                        <label htmlFor={`permission_id_${permission.permission_id}`}> 
+                          {permission?.permission_name}
+                        </label>
                       </div>
                     ))}
                 </div>
               ) : (
-                <p className="flex justify-center items-center text-blue-300">
+                <p className="flex justify-center items-center text-md text-text mt-5">
                   Please Select the Role ID to Assign New Permissions{" "}
                 </p>
               )}
             </div>
-            <div className="mt-5 flex justify-end p-5 gap-5  ">
-              {" "}
-              <button
-                className="rounded-md bg-[#FFBA00] px-4 py-2 text-sm font-semibold text-white shadow-sm disabled:opacity-50"
-
-                disabled={!isDirty || isSubmitting }
-              >Add Permissions</button>
+            <div className="mt-5 flex px-3 py-5 gap-5  ">
               <button
                 onClick={() => setOpenModal((prev) => !prev)}
-                className="rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                className="rounded-md bg-white w-full px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
               >Close</button>
-            </div>{" "}
+              <button
+                className="rounded-md w-full border-border bg-background text-text px-4 py-2 text-sm font-semibold shadow-sm disabled:opacity-50  hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary"
+                disabled={!isDirty || isSubmitting}
+              >Add Permissions</button>
+            </div>
             {errors && (
               <span className="text-meta-1 text-sm">
                 {errors?.root?.message}
