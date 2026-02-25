@@ -45,6 +45,8 @@ const CreateBookModal = ({ setShowModal }) => {
   const [bookSearchResults, setBookSearchResults] = useState([]);
   const [selectedBook, setSelectedBook] = useState(null);
   const theme = localStorage.getItem("color-theme")?.replace(/"/g, '') || "light";
+  console.log(theme, "theme");
+
   const selectStyles = useMemo(() => getCustomSelectStyles(theme), [theme]);
 
 
@@ -395,6 +397,9 @@ const CreateBookModal = ({ setShowModal }) => {
     enabled: false,
   });
 
+  console.log(searchData, "search  by title");
+
+
   const { data: searchIsbnData, refetch: refetchIsbn, isLoading: isIsbnSearchLoading } = useBookSearchByIsbn(debouncedIsbn, {
     enabled: false,
   });
@@ -606,32 +611,34 @@ const CreateBookModal = ({ setShowModal }) => {
   }
 
   return (
-    <div className="fixed left-0 top-0  inset-0 bg-[#64748B] bg-opacity-75 transition-opacity dark:bg-slate-400 dark:bg-opacity-75 lg:left-[18rem]">
-      <div className="relative p-5 rounded-md">
+    <div className="fixed inset-0 overflow-y-auto h-full w-full flex items-center justify-center bg-[#64748B] bg-opacity-75 transition-opacity z-50">
+      <div className="relative p-5 rounded-md w-full mx-auto my-auto max-w-5xl ">
         {/* Modal Close Button */}
-        <div className="flex justify-end p-5 md:p-10">
+        <div className="flex justify-center items-center p-5 md:p-10 ">
           <RxCross1
             style={{
               height: 18,
               width: 23,
               cursor: "pointer",
-              color: "#FFF !IMPORTANT",
+              color: "var(--color-text)",
               strokeWidth: 2,
             }}
             aria-disabled={isSubmitting}
             onClick={() => setShowModal(false)}
           />
         </div>
-        <div className=" md:mx-20">
-          <div className=" p-10 relative rounded-md border border-[#E2E8F0] bg-white shadow-lg dark:border-[#2E3A47] dark:bg-[#24303F] md:px-8 md:py-8 ">
-            <div className="rounded-sm p-3 bg-slate-100 border-b border-[#E2E8F0] py-4 px-6.5 dark:border-[#2E3A47]  dark:bg-[#2c3745]">
-              <h3 className="font-bold text-[#313D4A] dark:text-white">
+
+
+        <div className="md:mx-20 ">
+          <div className="p-10 relative rounded-md border border-border bg-surface shadow-lg  md:px-8 md:py-8 ">
+            <div className="flex justify-between items-center border-b pb-3 mb-4 ">
+              <h3 className="font-bold text-text">
                 Create New Book
               </h3>
             </div>
 
             {/* Book Details Form */}
-            <div className="max-h-[600px] px-12 w-full overflow-hidden overflow-y-auto text-slate-800">
+            <div className="max-h-[600px] px-12 w-full overflow-hidden overflow-y-auto text-text">
               <form onSubmit={handleSubmit(onSubmit)}>
                 <div className="p-6.5 m-5.5 sm:overflow-auto sm:p-2 sm:m-2">
                   {/* Display the matched book title results to select and populate the Form fields  */}
@@ -642,7 +649,7 @@ const CreateBookModal = ({ setShowModal }) => {
                         <ul>
                           {bookSearchResults?.map((book) => (
                             <li key={book?.id} className="flex justify-between items-center py-1 border-b last:border-0">
-                              <span className="text-sm text-slate-800 dark:text-white">
+                              <span className="text-sm text-text">
                                 {book?.volumeInfo?.title} by {book?.volumeInfo?.authors?.join(', ') || 'Unknown Author'}
                               </span>
                               <button
@@ -667,11 +674,11 @@ const CreateBookModal = ({ setShowModal }) => {
                   </div>
 
                   {/* first Row fields */}
-                  <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
+                  <div className="mt-4 mb-4.5 flex flex-col gap-2 md:flex-row md:gap-9">
 
                     {/* Search by Title */}
                     <div className="w-full xl:w-1/2">
-                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
+                      <label className="mb-2.5 block text-text">
                         Title <span className="text-red-600">*</span>
                       </label>
                       <div className="flex gap-2 relative">
@@ -682,7 +689,7 @@ const CreateBookModal = ({ setShowModal }) => {
                           name="title"
                           placeholder="Add Title"
                           {...register("title", { required: true })}
-                          className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 pl-5 pr-10 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                          className="w-full rounded-sm border-[1.5px] border-border text-text bg-background py-3 pl-5 pr-10 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-[#F5F7FD] "
                         />
                         <button
                           type="button"
@@ -719,9 +726,8 @@ const CreateBookModal = ({ setShowModal }) => {
 
                     {/* Search By ISBN */}
                     <div className="mb-4.5 w-full xl:w-1/2">
-                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
-                        ISBN
-                        <span className="text-red-600">*</span>
+                      <label className="mb-2.5 block text-text">
+                        ISBN <span className="text-red-600">*</span>
                       </label>
                       <div className="flex gap-2 relative">
 
@@ -730,7 +736,7 @@ const CreateBookModal = ({ setShowModal }) => {
                           type="text"
                           placeholder="Enter ISBN "
                           {...register("isbn", { required: true })}
-                          className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                          className="w-full rounded-sm border-[1.5px]  border-border text-text bg-background py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-[#F5F7FD]"
                         />
                         <button
                           type="button"
@@ -770,9 +776,9 @@ const CreateBookModal = ({ setShowModal }) => {
                   </div>
 
                   {/* Second Row Fields */}
-                  <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
+                  <div className="mt-4 mb-4.5 flex flex-col gap-2 md:flex-row md:gap-9">
                     <div className="w-full xl:w-1/2">
-                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
+                      <label className="mb-2.5 block text-text">
                         Publisher <span className="text-red-600">*</span>
                       </label>
 
@@ -793,7 +799,7 @@ const CreateBookModal = ({ setShowModal }) => {
                                 const newOption = { value: result.id, label: result.name }
                                 field.onChange(newOption)
                               } else {
-                                field.onChange(newValue); //select existing option
+                                field.onChange(newValue);
                               }
                             }}
                             value={field.value}
@@ -811,7 +817,7 @@ const CreateBookModal = ({ setShowModal }) => {
                     </div>
 
                     <div className="w-full xl:w-1/2">
-                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
+                      <label className="mb-2.5 block text-text">
                         Publish Year
                       </label>
                       <input
@@ -819,7 +825,7 @@ const CreateBookModal = ({ setShowModal }) => {
                         name="publish_year"
                         placeholder="Add Publish Year"
                         {...register("publish_year")}
-                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                        className="w-full rounded-sm border-[1.5px] border-border text-text bg-background py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-[#F5F7FD]"
                       />
 
                       {errors?.publish_year?.message && (
@@ -841,7 +847,7 @@ const CreateBookModal = ({ setShowModal }) => {
 
                     />
                     <div className="w-full xl:w-1/2">
-                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
+                      <label className="mb-2.5 block text-text">
                         Author <span className="text-red-600">*</span>
                       </label>
 
@@ -903,9 +909,9 @@ const CreateBookModal = ({ setShowModal }) => {
                   </div>
 
                   {/* Fifth Row */}
-                  <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
+                  <div className="mt-4 mb-4.5 flex flex-col gap-2 md:flex-row md:gap-9">
                     <div className="w-full xl:w-1/2" autoFocus>
-                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
+                      <label className="mb-2.5 block text-text">
                         Member Price
                       </label>
                       <input
@@ -913,7 +919,7 @@ const CreateBookModal = ({ setShowModal }) => {
                         name="member_price"
                         placeholder="Add Member Price"
                         {...register("member_price")}
-                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                        className="w-full rounded-sm border-[1.5px] border-border text-text bg-background py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-[#F5F7FD]"
                       />
                       {errors?.member_price?.message && (
                         <p className="format-message error">
@@ -923,7 +929,7 @@ const CreateBookModal = ({ setShowModal }) => {
                     </div>
 
                     <div className="w-full xl:w-1/2">
-                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
+                      <label className="mb-2.5 block text-text">
                         Purchase Price
                       </label>
                       <input
@@ -931,7 +937,7 @@ const CreateBookModal = ({ setShowModal }) => {
                         name="purchase_price"
                         placeholder="Add Purchase Price"
                         {...register("purchase_price")}
-                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                        className="w-full rounded-sm border-[1.5px] border-border text-text bg-background py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD]"
                       />
 
                       {errors?.purchase_price?.message && (
@@ -944,9 +950,9 @@ const CreateBookModal = ({ setShowModal }) => {
 
 
                   {/* Sixth Row */}
-                  <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
+                  <div className="mt-4 mb-4.5 flex flex-col gap-2 md:flex-row md:gap-9">
                     <div className="w-full xl:w-1/2" autoFocus>
-                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
+                      <label className="mb-2.5 block text-text">
                         Discount Percentage
                       </label>
                       <input
@@ -954,7 +960,7 @@ const CreateBookModal = ({ setShowModal }) => {
                         name="discount_percentage"
                         placeholder="Add discount_percentage"
                         {...register("discount_percentage")}
-                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                        className="w-full rounded-sm border-[1.5px] border-border text-text bg-background py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD]"
                       />
                       {errors?.discount_percentage?.message && (
                         <p className="format-message error">
@@ -964,7 +970,7 @@ const CreateBookModal = ({ setShowModal }) => {
                     </div>
 
                     <div className="w-full xl:w-1/2">
-                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
+                      <label className="mb-2.5 block text-text">
                         Credits <span className="text-red-600">*</span>
                       </label>
                       <input
@@ -972,7 +978,7 @@ const CreateBookModal = ({ setShowModal }) => {
                         name="credit"
                         placeholder="Add Credits"
                         {...register("credit", { required: true })}
-                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                        className="w-full rounded-sm border-[1.5px] border-border text-text bg-background py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD]"
                       />
                       {errors?.credit?.message && (
                         <p className="format-message error">
@@ -981,9 +987,9 @@ const CreateBookModal = ({ setShowModal }) => {
                       )}
                     </div>
                   </div>
-                  <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
+                  <div className="mt-4 mb-4.5 flex flex-col gap-2 md:flex-row md:gap-9">
                     <div className="w-full xl:w-1/2" autoFocus>
-                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
+                      <label className="mb-2.5 block text-text">
                         Edition
                       </label>
                       <input
@@ -991,7 +997,7 @@ const CreateBookModal = ({ setShowModal }) => {
                         name="edition"
                         placeholder="Add Book Edition"
                         {...register("edition")}
-                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                        className="w-full rounded-sm border-[1.5px] border-border text-text bg-background py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD]"
                       />
                       {errors?.edition?.message && (
                         <p className="format-message error">
@@ -1001,7 +1007,7 @@ const CreateBookModal = ({ setShowModal }) => {
                     </div>
 
                     <div className="w-full xl:w-1/2">
-                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
+                      <label className="mb-2.5 block text-text">
                         Total Available Items <span className="text-red-600">*</span>
                       </label>
                       <input
@@ -1010,7 +1016,7 @@ const CreateBookModal = ({ setShowModal }) => {
                         name="quantity"
                         placeholder="Add Quantity"
                         {...register("quantity", { required: true })}
-                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                        className="w-full rounded-sm border-[1.5px] border-border text-text bg-background py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD]"
                       />
                       {errors?.quantity?.message && (
                         <p className="format-message error">
@@ -1021,15 +1027,15 @@ const CreateBookModal = ({ setShowModal }) => {
                   </div>
                   {/* Seventh Row */}
 
-                  <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
+                  <div className="mt-4 mb-4.5 flex flex-col gap-2 md:flex-row md:gap-9">
                     {vendorsData?.vendors.length > 0 && <div className="w-full xl:w-1/2" autoFocus>
-                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
+                      <label className="mb-2.5 block text-text">
                         Vendor
                       </label>
 
-                      <div className="relative z-20 bg-transparent dark:bg-form-input">
+                      <div className="relative z-20 border-border text-text bg-background">
                         <select
-                          className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:text-neutral-100 dark:focus:text-neutral-100 dark:focus:border-[#3C50E0]"
+                          className="relative z-20 w-full appearance-none rounded-sm border border-border text-text bg-background py-3 px-5 outline-none transition focus:border-primary active:border-primary "
                           name="vendor_id"
                           {...register("vendor_id")}
                         >
@@ -1037,14 +1043,14 @@ const CreateBookModal = ({ setShowModal }) => {
 
                           {vendorsData?.vendors &&
                             vendorsData?.vendors?.map((vendor) => (
-                              <option key={vendor?.id} value={vendor?.id}>
+                              <option key={vendor?.id} value={vendor?.id} className="hover:bg-surface hover:text-secondary">
                                 {vendor?.name}
                               </option>
                             ))}{" "}
                         </select>
                         <span className="absolute top-1/2 right-4 z-30 -translate-y-1/2">
                           <svg
-                            className=" dark:text-white fill-current"
+                            className=" text-text fill-current"
                             width="24"
                             height="24"
                             viewBox="0 0 24 24"
@@ -1069,12 +1075,12 @@ const CreateBookModal = ({ setShowModal }) => {
                       )}
                     </div>}
                     <div className="w-full xl:w-1/2">
-                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
+                      <label className="mb-2.5 block text-text">
                         Branch <span className="text-red-600">*</span>
                       </label>
-                      <div className="relative z-20 bg-transparent dark:bg-form-input">
+                      <div className="relative z-20 border-border text-text bg-background">
                         <select
-                          className="relative z-20 w-full appearance-none rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:text-neutral-100 dark:focus:text-neutral-100 dark:focus:border-[#3C50E0]"
+                          className="relative z-20 w-full appearance-none rounded-sm border border-border text-text bg-background py-3 px-5 outline-none transition focus:border-primary active:border-primary "
                           name="branch_id"
                           {...register("branch_id", { required: true })}
                         >
@@ -1116,9 +1122,9 @@ const CreateBookModal = ({ setShowModal }) => {
                   </div>
 
                   {/* Eighth Row */}
-                  <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
+                  <div className="mt-4 mb-4.5 flex flex-col gap-2 md:flex-row md:gap-9">
                     <div className="w-full ">
-                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
+                      <label className="mb-2.5 block text-text">
                         Summary
                       </label>
                       <textarea
@@ -1127,7 +1133,7 @@ const CreateBookModal = ({ setShowModal }) => {
                         rows={4}
                         placeholder="Add a summary"
                         {...register("summary")}
-                        className="w-full rounded-sm border-[1.5px] border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:text-neutral-50 dark:focus:border-[#3C50E0]"
+                        className="w-full rounded-sm border-[1.5px] border-border text-text bg-background py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] "
                       />
                       {errors?.summary?.message && (
                         <p className="format-message error">
@@ -1138,9 +1144,29 @@ const CreateBookModal = ({ setShowModal }) => {
                   </div>
 
                   {/* Ninth Row */}
-                  <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
+                  <div className="block">
+                    <div className="mt-4 sm:mt-0">
+                      <div className="mt-4">
+                        <label className="inline-flex items-center">
+                          <input
+                            type="checkbox"
+                            name="isAvailable"
+                            {...register("isAvailable")}
+                            className="rounded accent-primary bg-background border-border h-4 w-4 p-5 ml-2 focus:border-border focus:bg-seconday text-text focus:ring-1 focus:ring-offset-2 focus:ring-primary"
+                          />
+                          <span className="ml-2 text-text">
+                            Available (In Stock){" "}
+                          </span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+
+                  {/* Tenth Row */}
+                  <div className="mt-4  border-t-2 border-border mb-4.5 flex flex-col gap-2 md:flex-row md:gap-9">
                     <div className="w-full xl:w-1/2">
-                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
+                      <label className="mb-2.5 block text-text">
                         Add Cover Images
                       </label>
                       <FileUpload
@@ -1150,28 +1176,19 @@ const CreateBookModal = ({ setShowModal }) => {
                     </div>
                   </div>
 
-                  {/* Tenth Row */}
-
-                  <div className="block">
-                    <div className="mt-4 sm:mt-0">
-                      <div className="mt-4">
-                        <label className="inline-flex items-center">
-                          <input
-                            type="checkbox"
-                            name="isAvailable"
-                            {...register("isAvailable")}
-                            className="rounded bg-gray-200 border-transparent h-4 w-4 p-5 ml-2 focus:border-transparent focus:bg-gray-200 text-gray-700 focus:ring-1 focus:ring-offset-2 focus:ring-gray-500"
-                          />
-                          <span className="ml-2  text-[#0284c7] dark:text-white">
-                            Available{" "}
-                          </span>
-                        </label>
-                      </div>
-                    </div>
-                  </div>
 
                   {/* Form Submissions Buttons */}
-                  <div className=" px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                  <div className="px-4 py-3 flex justify-end items-end mt-10 gap-2 sm:px-6">
+
+                    <button
+                      disabled={isSubmitting}
+                      type="button"
+                      className="flex items-center justify-center gap-2 border-2 rounded-lg bg-white px-4 py-2  font-medium text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50  "
+                      onClick={() => setShowModal(false)}
+                    >
+                      Cancel
+                    </button>
+
                     <button
                       disabled={
                         !isDirty ||
@@ -1180,17 +1197,11 @@ const CreateBookModal = ({ setShowModal }) => {
                         imagesList?.length > 5
                       }
                       type="submit"
-                      className="inline-flex w-full justify-center rounded-md bg-[#FFBA00] px-3 py-2 text-sm font-semibold text-white shadow-sm  sm:ml-3 sm:w-auto"
-                    >
+                      className={`flex items-center border-2 border-border gap-2 bg-background text-text px-4 py-2 rounded-md 
+                hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary 
+                transition-colors duration-200 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}                    >
                       {isSubmitting ? "Submitting" : "Submit"}
-                    </button>
-                    <button
-                      disabled={isSubmitting}
-                      type="button"
-                      className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
-                      onClick={() => setShowModal(false)}
-                    >
-                      Cancel
                     </button>
                     {errors && (
                       <span className="text-[#DC3545] text-sm">

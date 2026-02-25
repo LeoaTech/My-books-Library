@@ -23,7 +23,7 @@ const ConditionsCreatableSelect = ({
 
     return (
         <div className="w-full xl:w-1/2">
-            <label className="mb-2.5 block text-[#0284c7] dark:text-white">
+            <label className="mb-2.5 block text-text">
                 Condition <span className="text-red-600">*</span>
             </label>
             <Controller
