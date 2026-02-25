@@ -83,11 +83,11 @@ const SortableItem = ({
       style={style}
       {...attributes}
       {...listeners}
-      className={`bg-neutral-50 dark:bg-[#24303F] border border-[#E2E8F0] dark:border-[#2E3A47] rounded-md shadow-sm p-6 transition-shadow ${isDragging ? 'shadow-lg ring-2 ring-blue-400' : ''
+      className={`bg-background border border-border rounded-md shadow-sm p-6 transition-shadow ${isDragging ? 'shadow-lg ring-2 ring-primary' : ''
         }`}
     >
       <div className="flex justify-between items-start mb-4">
-        <h3 className="text-lg font-bold text-[#313D4A] dark:text-white mb-4">
+        <h3 className="text-lg font-bold text-text mb-4">
           {plan.plan_name}
         </h3>
 
@@ -99,7 +99,7 @@ const SortableItem = ({
               e.stopPropagation();
               toggleActionMenu(plan.plan_id);
             }}
-            className="text-[#758aae] hover:text-[#0284c7] dark:text-white dark:hover:text-[#80CAEE] p-2 rounded-full transition duration-150 ease-in-out"
+            className="text-text hover:text-primary  p-2 rounded-full transition duration-150 ease-in-out"
             data-action-button="true"
           >
             <HiDotsVertical size={20} />
@@ -108,25 +108,25 @@ const SortableItem = ({
           {/*  Action Dropdown Menu  */}
           {openPlanActionId === plan.plan_id && (
             <div
-              className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#1d2a39] rounded-md shadow-xl ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 dark:divide-gray-700"
+              className="absolute right-0 mt-2 w-48 bg-surface border-2 border-border p-1 rounded-md shadow-xl ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 dark:divide-gray-700"
               onClick={(e) => e.stopPropagation()}
             >
               {/*  Edit Plan */}
               <div
-                className="py-1 cursor-pointer text-blue-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-[#24303F]"
+                className="py-1 cursor-pointer text-text hover:bg-primary "
                 onClick={() => {
                   handleEditPlan(plan.plan_id);
                 }}
               >
                 <div className="flex items-center px-4 gap-2 py-2 text-sm">
-                  <HiPencil size={16} className="mr-2 text-blue-500" />
+                  <HiPencil size={16} className="mr-2 text-text" />
                   Edit Plan
                 </div>
               </div>
 
               {/* Delete Plan */}
               <div
-                className="py-1 cursor-pointer text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-[#24303F]"
+                className="py-1 cursor-pointer text-text hover:bg-primary"
                 onClick={() => {
                   handleDeletePlan(plan.plan_id);
                 }}
@@ -134,7 +134,7 @@ const SortableItem = ({
                 {isLoading ? (
                   <LoadingSpinner />
                 ) : (
-                  <div className="flex items-center px-4 py-2 gap-4 text-sm text-red-500">
+                  <div className="flex items-center px-4 py-2 gap-4 text-sm text-text">
                     <HiTrash size={16} className="mr-2 ml-4" />
                     Delete Plan
                   </div>
@@ -145,29 +145,29 @@ const SortableItem = ({
         </div>
       </div>
 
-      <div className="mb-4 mx-2 border-l-4 border-l-[#032e43] dark:border-l-[#80CAEE] pl-4 py-2 bg-neutral-100 dark:bg-[#2e3a47] rounded-md">
-        <h2 className="text-[#090d0f] dark:text-white mb-2 text-3xl font-bold">
+      <div className="mb-4 mx-2 border-l-4 border-l-border pl-4 py-2 bg-surface shadow-lg rounded-md">
+        <h2 className="text-text mb-2 text-3xl font-bold">
           {new Intl.NumberFormat(window.navigator.language, {
             style: "currency",
             currency: currencyCode,
             minimumFractionDigits: 0,
           }).format(currentPricing?.price_value)}
-          <span className="ml-3 text-base font-semibold text-purple-700 dark:text-purple-400">
+          <span className="ml-3 text-base font-semibold text-primary">
             per {isYearly ? 'year' : 'month'}
           </span>
         </h2>
-        <p className="text-gray-600 dark:text-gray-300 mb-2 font-medium text-md">
+        <p className="text-text mb-2 font-medium text-md">
           Duration: {currentPricing.duration_days} Days
         </p>
-        <p className="text-gray-600 dark:text-gray-300 mb-2 font-medium text-md">
+        <p className="text-text mb-2 font-medium text-md">
           Credits Allocated: {displayCredits}
         </p>
       </div>
       <div>
-        <h4 className="text-sm font-semibold text-[#313D4A] dark:text-white mb-2 mt-4">
+        <h4 className="text-sm font-semibold text-text mb-2 mt-4">
           Features:
         </h4>
-        <ul className="list-disc list-inside text-[#313D4A] dark:text-white space-y-1">
+        <ul className="list-disc list-inside text-text space-y-1">
           {displayFeatures?.map((feature, featureIndex) => (
             <li key={featureIndex} className="text-md">
               {feature}
@@ -236,15 +236,15 @@ const PricingPlanCard = ({ isStripeConnected, plans, handleEditPlan, stripeStatu
   }
 
   const ToggleSwitch = () => (
-    <div className="flex items-center justify-center space-x-4 mb-8 bg-white dark:bg-[#1d2a39] p-2 rounded-full shadow-inner w-fit mx-auto">
-      <span className={`text-sm font-semibold transition-colors duration-200 ${!isYearly ? 'text-[#0284c7] dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
+    <div className="flex items-center justify-center space-x-4 mb-8 bg-background p-2 rounded-full shadow-inner w-fit mx-auto">
+      <span className={`text-sm font-semibold transition-colors duration-200 ${!isYearly ? 'text-primary' : 'text-surface '}`}>
         Monthly
       </span>
       <label className="relative inline-flex items-center cursor-pointer">
         <input type="checkbox" value="" className="sr-only peer" checked={isYearly} onChange={handleToggle} />
-        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#80CAEE] dark:peer-focus:ring-[#0284c7] rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-[#0284c7]"></div>
+        <div className="w-11 h-6 bg-surface peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary :ring-primary rounded-full peer  peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
       </label>
-      <span className={`text-sm font-semibold transition-colors duration-200 ${isYearly ? 'text-[#0284c7] dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
+      <span className={`text-sm font-semibold transition-colors duration-200 ${isYearly ? 'text-primary' : 'text-secondary'}`}>
         Yearly
       </span>
     </div>
@@ -258,7 +258,7 @@ const PricingPlanCard = ({ isStripeConnected, plans, handleEditPlan, stripeStatu
 
   if (!isStripeConnected) {
     return (
-      <p className="flex justify-center items-center text-[#758aae] mt-20">Connect Stripe to Add New Plans</p>
+      <p className="flex justify-center items-center text-text mt-20">Connect Stripe to Add New Plans</p>
     )
   }
 

@@ -78,12 +78,12 @@ const PricingSettings = () => {
 
         return (
             <div>
-                <h1 className="m-5 text-lg md:text-2xl text-[#8A99AF]">Pricing Plan Settings</h1>
+                <h1 className="m-5 text-lg md:text-2xl text-text">Pricing Plan Settings</h1>
                 <div className="flex justify-end items-end mb-2">
                     {isStripeConnected ? (
                         <button
-                            className=" bg-[#758aae] text-white active:bg-[#80CAEE] 
-            font-medium rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 px-2 py-2 md:px-3 "
+                            className=" bg-surface text-text active:bg-primary 
+            font-medium rounded shadow hover:bg-primary hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 px-2 py-2 md:px-3 "
                             type="button"
                             disabled={!entityId}
                             onClick={() => setShowModal(true)}
@@ -95,7 +95,7 @@ const PricingSettings = () => {
                     ) : (
                         <Link
                             to="/dashboard/profile"
-                            className=" bg-[#000] text-white active:bg-[#333] 
+                            className="  bg-surface text-text active:bg-primary
             font-medium rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 px-2 py-2 md:px-3 "
                         >
                             <span className="flex justify-center items-center gap-1 lg:gap-2">

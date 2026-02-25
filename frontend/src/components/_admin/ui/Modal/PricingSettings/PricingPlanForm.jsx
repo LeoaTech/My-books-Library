@@ -174,8 +174,8 @@ const DualPricingPlanForm = ({ entityId, setOpenModal, plan }) => {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#64748B]/75 dark:bg-slate-300/65 lg:left-[18rem]">
-      <div className="relative bg-neutral-50 dark:border-[#2E3A47] dark:bg-[#24303F] p-10 rounded-md shadow-lg ">
+    <div className="fixed inset-0 overflow-y-auto h-full w-full flex items-center justify-center bg-[#64748B] bg-opacity-75 transition-opacity z-50">
+      <div className="relative bg-surface border border-border p-5 rounded-md w-full mx-auto my-auto max-w-2xl ">
         {/* Modal Close button */}
         <div className="absolute top-4 right-4">
           <RxCross1
@@ -183,7 +183,7 @@ const DualPricingPlanForm = ({ entityId, setOpenModal, plan }) => {
               height: 18,
               width: 23,
               cursor: "pointer",
-              color: "#777",
+              color: "var(--color-text)",
               strokeWidth: 2,
             }}
             onClick={() => setOpenModal(prev => !prev)}
@@ -191,11 +191,11 @@ const DualPricingPlanForm = ({ entityId, setOpenModal, plan }) => {
         </div>
 
         <div className="flex flex-col justify-between items-center gap-5  overflow-hidden">
-          <h3 className="mb-5 font-bold text-[#313D4A] dark:text-white">
+          <h3 className="mb-5 font-bold text-text">
             {plan ? "Edit Dual Plan" : "Add Dual Price Plan"}
           </h3>
 
-          <div className="flex justify-between h-[500px] md:h-full overflow-hidden rounded-sm border-b border-[#E2E8F0] py-4 px-6.5 dark:border-[#2E3A47] ">
+          <div className="flex justify-between h-[500px] md:h-full overflow-hidden rounded-sm border-b border-border py-4 px-6.5">
             <div className="flex-1 overflow-y-auto p-5">
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 
@@ -203,12 +203,12 @@ const DualPricingPlanForm = ({ entityId, setOpenModal, plan }) => {
                 <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
 
                   <div className="w-full" autoFocus>
-                    <label htmlFor="plan_name" className="mb-2.5 block text-[#0284c7] dark:text-white">
+                    <label htmlFor="plan_name" className="mb-2.5 block text-text">
                       Plan Name <span className="text-red-600">*</span>
                     </label>
                     <input
                       id="plan_name" {...register('plan_name')}
-                      className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                      className="w-full rounded-sm border-[1.5px] text-text border-border bg-background py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-[#F5F7FD]"
                     />
                     {errors.plan_name && <p className="text-red-500 text-xs mt-1">{errors.plan_name.message}</p>}
                   </div>
@@ -219,20 +219,20 @@ const DualPricingPlanForm = ({ entityId, setOpenModal, plan }) => {
                 {/*  Prices */}
                 <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
                   <div className="w-full">
-                    <label htmlFor="monthly_price" className="mb-2.5 block text-[#0284c7] dark:text-white">
+                    <label htmlFor="monthly_price" className="mb-2.5 block text-text">
                       Monthly Price (in {currencyLabel}) <span className="text-red-600">*</span>
                     </label>
                     <input id="monthly_price" type="number" {...register('monthly_price', { valueAsNumber: true })}
-                      className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                      className="w-full rounded-sm border-[1.5px] text-text border-border bg-background py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-[#F5F7FD]"
                     />
                     {errors.monthly_price && <p className="text-red-500 text-xs mt-1">{errors.monthly_price.message}</p>}
                   </div>
                   <div className="w-full">
-                    <label htmlFor="yearly_price" className="mb-2.5 block text-[#0284c7] dark:text-white">
+                    <label htmlFor="yearly_price" className="mb-2.5 block text-text">
                       Yearly Price (in {currencyLabel}) <span className="text-red-600">*</span>
                     </label>
                     <input id="yearly_price" type="number" {...register('yearly_price', { valueAsNumber: true })}
-                      className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                      className="w-full rounded-sm border-[1.5px] text-text border-border bg-background py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-[#F5F7FD]"
                     />
                     {errors.yearly_price && <p className="text-red-500 text-xs mt-1">{errors.yearly_price.message}</p>}
                   </div>
@@ -241,19 +241,19 @@ const DualPricingPlanForm = ({ entityId, setOpenModal, plan }) => {
                 {/*  Credits Allocations */}
                 <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
                   <div className="w-full">
-                    <label htmlFor="monthly_credits_allocated" className="mb-2.5 block text-[#0284c7] dark:text-white">
+                    <label htmlFor="monthly_credits_allocated" className="mb-2.5 block text-text">
                       Monthly Credits Allocated
                     </label>
                     <input id="monthly_credits_allocated" type="number" {...register('monthly_credits_allocated', { valueAsNumber: true })}
-                      className="w-full mb-4 rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]" />
+                      className="w-full mb-4 rounded-sm border-[1.5px] text-text border-border bg-background py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-[#F5F7FD]" />
                     {errors.monthly_credits_allocated && <p className="text-red-500 text-xs mt-1">{errors.monthly_credits_allocated.message}</p>}
                   </div>
                   <div className="w-full">
-                    <label htmlFor="yearly_credits_allocated" className="mb-2.5 block text-[#0284c7] dark:text-white">
+                    <label htmlFor="yearly_credits_allocated" className="mb-2.5 block text-text">
                       Yearly Credits Allocated
                     </label>
                     <input id="yearly_credits_allocated" type="number" {...register('yearly_credits_allocated', { valueAsNumber: true })}
-                      className="w-full mb-4 rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]" />
+                      className="w-full mb-4 rounded-sm border-[1.5px] text-text border-border bg-background py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-[#F5F7FD]" />
                     {errors.yearly_credits_allocated && <p className="text-red-500 text-xs mt-1">{errors.yearly_credits_allocated.message}</p>}
                   </div>
                 </div>
@@ -261,7 +261,7 @@ const DualPricingPlanForm = ({ entityId, setOpenModal, plan }) => {
                 {/* Features */}
                 <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
                   <div className="w-full mb-4">
-                    <label className="mb-2.5 block text-[#0284c7] dark:text-white">
+                    <label className="mb-2.5 block text-text">
                       Features <span className="text-red-600">*</span>
                     </label>
                     <div className="flex gap-2">
@@ -270,13 +270,13 @@ const DualPricingPlanForm = ({ entityId, setOpenModal, plan }) => {
                         value={newFeature}
                         onChange={(e) => setNewFeature(e.target.value)}
                         placeholder="Enter a feature"
-                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                        className="w-full rounded-sm border-[1.5px] text-text border-border bg-background py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary"
                       />
                       <button
                         type="button"
                         onClick={addFeature}
                         disabled={!newFeature.trim()}
-                        className="px-4 py-2 bg-[#454b75] text-white rounded-sm disabled:bg-gray-400"
+                        className="px-4 py-2 border border-border hover:bg-secondary text-text rounded-sm disabled:bg-transparent disabled:text-gray-400 disabled:border-none"
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -291,7 +291,7 @@ const DualPricingPlanForm = ({ entityId, setOpenModal, plan }) => {
                             type="text"
                             value={feature}
                             onChange={(e) => updateFeature(index, e.target.value)}
-                            className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-2 px-3 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                            className="w-full rounded-sm border-[1.5px] text-text border-border bg-background py-2 px-3 font-medium outline-none transition focus:border-primary active:border-primary"
                           />
 
                           <button
@@ -333,9 +333,10 @@ const DualPricingPlanForm = ({ entityId, setOpenModal, plan }) => {
 
 
                 <button type="submit" disabled={!entityId || isLoading || !isDirty}
-                  className="w-full mt-4  bg-[#758aae] text-white active:bg-[#80CAEE] 
-            font-medium rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 px-2 py-2 md:px-3 "
-                >
+                  className={` w-full border-2 border-border gap-2 bg-background text-text px-4 py-2 rounded-md 
+                hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary 
+                transition-colors duration-200 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}>
                   {isLoading ? <LoadingSpinner /> : plan ? "Update Plan" : 'Create Plan'}
                 </button>
 
