@@ -2,39 +2,43 @@
 export const getCustomSelectStyles = (theme) => ({
   control: (base, state) => ({
     ...base,
-    backgroundColor: theme === "dark" ? "#1d2a39" : "#fff",
-    borderColor: theme === "dark" ? "rgb(61 77 96)" : "#E2E8F0",
-    // borderColor: state.isFocused ? "#3C50E0" : "rgb(61 77 96)" || "#E2E8F0",
-
-    boxShadow: state.isFocused ? "0 0 0 1px #3C50E0" : "none",
-    color: theme === "dark" ? "#fff" : "#000",
+    backgroundColor: "var(--color-background)",
+    borderColor: "var(--color-border)",
+    boxShadow: state.isFocused ? "0 0 0 1px var(--color-primary)" : "none",
+    color: "var(--color-text)",
     padding: "6px",
   }),
   menu: (base) => ({
     ...base,
-    backgroundColor: theme === "dark" ? "#1d2a39" : "#fff",
+    backgroundColor: "var(--color-surface)",
     zIndex: 9999,
-    color: theme === "dark" ? "#fff" : "#000",
+    color: "var(--color-text)",
   }),
   singleValue: (base) => ({
     ...base,
-    color: theme === "dark" ? "#fff" : "#000",
+    color: "var(--color-text)",
   }),
   input: (base) => ({
     ...base,
-    color: theme === "dark" ? "#fff" : "#000",
-    borderColor: "#E2E8F0"
+    color: "var(--color-text)",
+    borderColor: "var(--color-border)",
+
   }),
   option: (base, state) => ({
     ...base,
     backgroundColor: state.isFocused
-      ? theme === "dark" ? "#2c3e50" : "#e2e8f0"
-      : theme === "dark" ? "#1d2a39" : "#fff",
-    color: theme === "dark" ? "#fff" : "#000",
+      ? "var(--color-background)"
+      : "var(--color-surface)",
+    color: "var(--color-text)",
   }),
   placeholder: (base) => ({
     ...base,
-    color: theme === "dark" ? "#ccc" : "#666",
+    // color: "var(--color-text)",
+    whiteSpace: "nowrap",      /* Prevents text from wrapping to a new line */
+    overflow: "hidden",          /* Hides the text that extends outside the box */
+    textOverflow: "ellipsis",
+    color: theme === "dark" ? "#ccc" : "#595151",
+
   }),
 });
 
@@ -44,33 +48,33 @@ export const getCustomSelectStyles = (theme) => ({
 export const countryCustomSelectStyles = (theme) => ({
   control: (base, state) => ({
     ...base,
-    backgroundColor: theme === "dark" ? "#374151" : "#f9fafb",
-    borderColor: theme === "dark" ? "#4b5563" : "#E2E8F0",
+    backgroundColor: "var(--color-background)",
+    borderColor: "var(--color-border)",
     borderRadius: "0.5rem",
-    boxShadow: state.isFocused ? "0 0 0 1px #3C50E0" : "none",
-    color: theme === "dark" ? "#fff" : "#000",
+    boxShadow: state.isFocused ? "0 0 0 1px var(--color-primary)" : "none",
+    color: "var(--color-text)",
     padding: "2px",
   }),
   menu: (base) => ({
     ...base,
-    backgroundColor: theme === "dark" ? "#1d2a39" : "#fff",
+    backgroundColor: "var(--color-surface)",
     zIndex: 9999,
-    color: theme === "dark" ? "#fff" : "#000",
+    color: "var(--color-text)",
   }),
   singleValue: (base) => ({
     ...base,
-    color: theme === "dark" ? "#fff" : "#000",
+    color: "var(--color-text)",
   }),
   input: (base) => ({
     ...base,
-    color: theme === "dark" ? "#fff" : "#000",
-    borderColor: "#E2E8F0"
+    color: "var(--color-text)",
+    borderColor: "var(--color-border)"
   }),
   option: (base, state) => ({
     ...base,
     backgroundColor: state.isFocused
-      ? theme === "dark" ? "#2c3e50" : "#e2e8f0"
-      : theme === "dark" ? "#1d2a39" : "#fff",
+      ?  "var(--color-background)"
+      : "var(--color-surface)",
     color: theme === "dark" ? "#fff" : "#000",
   }),
   placeholder: (base) => ({
