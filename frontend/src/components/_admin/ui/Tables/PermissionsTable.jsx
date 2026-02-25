@@ -61,52 +61,52 @@ const PermissionsTable = ({ openModal, setOpenModal,searchTerm }) => {
   // Change page
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
   return (
-    <div className="rounded-sm border border-stroke bg-white shadow-default p-8 border-b border-[#eee]  dark:border-[#2E3A47] dark:bg-[#24303F]">
+    <div className="rounded-sm border border-stroke bg-background shadow-default p-8 border-b border-border">
       <div className="max-w-full overflow-x-auto">
-        <table className="w-full table-auto">
+        <table className="w-full table-auto divide-y divide-primary">
           <thead>
-            <tr className="bg-[#F7F9FC] text-left dark:bg-[#313D4A]">
-              <th className="min-w-[200px] py-4 px-4 font-medium text-gray-600 dark:text-white xl:pl-11">
+            <tr className="bg-secondary text-left ">
+              <th className="min-w-[200px] py-4 px-4 font-medium text-text xl:pl-11">
                 Permission ID
               </th>
-              <th className="min-w-[250px] py-4 px-4 font-medium text-gray-600 dark:text-white xl:pl-11">
+              <th className="min-w-[250px] py-4 px-4 font-medium text-text xl:pl-11">
                 Permission Name
               </th>
-              <th className="min-w-[80px] py-4 px-4 font-medium text-gray-600 dark:text-white xl:pl-11">
+              <th className="min-w-[80px] py-4 px-4 font-medium text-text xl:pl-11">
                 Default
               </th>
-              <th className="min-w-[230px] py-4 px-4 font-medium text-gray-600 dark:text-white xl:pl-11">
+              <th className="min-w-[230px] py-4 px-4 font-medium text-text xl:pl-11">
                 Created At
               </th>
-              <th className="min-w-[220px] py-4 px-4 font-medium text-gray-600 dark:text-white xl:pl-11">
+              <th className="min-w-[220px] py-4 px-4 font-medium text-text xl:pl-11">
                 Actions
               </th>
             </tr>
           </thead>
-          <tbody>
+          <tbody  className="divide-y divide-primary">
             {currentRows?.map((permission) => (
               <tr key={permission?.permission_id}>
-                <td className="border-b border-[#eee] py-5 px-4 pl-5 dark:border-[#2E3A47] xl:pl-11">
+                <td className="border-b border-border py-5 px-4 pl-5 xl:pl-11">
                   {permission?.permission_id}
                 </td>
-                <td className="border-b border-[#eee] py-5 px-4 pl-5 dark:border-[#2E3A47] xl:pl-11">
-                  <p className="inline-flex rounded-full bg-[#FF6766] bg-opacity-10 py-1 px-3 text-sm font-medium text-[#F0950C]">
+                <td className="border-b border-border py-5 px-4 pl-5 xl:pl-11">
+                  <p className="inline-flex rounded-full bg-opacity-10 py-1 px-3 text-sm font-medium text-primary">
                     {permission?.name}
                   </p>
                 </td>
-                <td className="border-b border-[#eee] py-5 px-4 pl-5 dark:border-[#2E3A47] xl:pl-11">
-                  <p className={`inline-flex rounded-full bg-[#8fd32a] bg-opacity-10 py-1 px-3 text-sm font-medium ${permission?.is_default ? "text-[#05e105]" : "text-[#db1f41]"}`}>
+                <td className="border-b border-border py-5 px-4 pl-5 xl:pl-11">
+                  <p className={`inline-flex rounded-full bg-surface  bg-opacity-10 py-1 px-3 text-sm font-medium ${permission?.is_default ? "text-primary" : "text-text"}`}>
                     {permission?.is_default == true ? "true" : "false"}
                   </p>
                 </td>
-                <td className="border-b border-[#eee] py-5 px-4 pl-5 dark:border-[#2E3A47] xl:pl-11">
+                <td className="border-b border-border py-5 px-4 pl-5 xl:pl-11">
                   {new Date(permission?.created_at).toDateString()} {" "} - {" "}
                   {new Date(permission?.created_at).toLocaleTimeString()}
                 </td>
-                <td className="border-b border-[#eee] py-5 px-8 dark:border-[#2E3A47]">
+                <td className="border-b border-border py-5 px-8">
                   <div className="flex items-center space-x-3.5">
                     <button
-                      disabled={permission?.is_default}
+                      // disabled={permission?.is_default}
 
                       className="text-green-400 hover:text-green-600  disabled:text-gray-500 disabled:hover:text-gray-500"
                       onClick={() => UpdateRole(permission?.permission_id)}
@@ -116,7 +116,7 @@ const PermissionsTable = ({ openModal, setOpenModal,searchTerm }) => {
                       </span>
                     </button>
                     <button
-                      disabled={permission?.is_default}
+                      // disabled={permission?.is_default}
 
                       onClick={() => {
                         roleDelete(permission?.permission_id);
