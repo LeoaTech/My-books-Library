@@ -39,14 +39,14 @@ const Profile = () => {
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Account Settings</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">
+        <h1 className="text-3xl font-bold text-text">Account Settings</h1>
+        <p className="text-text mt-2">
           Manage your profile, payment methods, and billing information.
         </p>
       </div>
 
       {/* Tab Navigation */}
-      <div className="border-b border-gray-200 dark:border-gray-700 mb-8">
+      <div className="border-b border-border mb-8">
         <nav className="flex space-x-8" aria-label="Tabs">
           {tabs.map((tab) => (
             <button
@@ -55,8 +55,8 @@ const Profile = () => {
               className={`
                 py-4 px-1 border-b-2 font-medium text-sm transition-colors
                 ${activeTab === tab.id
-                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                  ? 'border-border text-secondary'
+                  : 'border-transparent text-text hover:text-secondary hover:border-primary'
                 }
               `}
             >
@@ -78,7 +78,7 @@ const Profile = () => {
 
         {activeTab === 'payment' && (
           <section>
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Payment Method</h2>
+            <h2 className="text-lg font-semibold text-text mb-4">Payment Method</h2>
             <Suspense fallback={<Loader />}>
               <StripeConnect entityId={entityId} /></Suspense>
           </section>
@@ -86,7 +86,7 @@ const Profile = () => {
 
         {activeTab === 'billing' && (
           <section>
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Subscription Overview</h2>
+            <h2 className="text-lg font-semibold text-text mb-4">Subscription Overview</h2>
 
             <div className="grid grid-cols-1 mb-10">
               <Suspense fallback={<Loader />}>
