@@ -17,11 +17,11 @@ function TabGroup() {
 
   return (
     <>
-      <ul className="flex flex-wrap text-md font-medium text-center text-[#64748B] border-gray-200">
+      <ul className="flex flex-wrap text-md font-medium text-center text-text border-border">
         {types.map((type) => (
-          <li className="mr-1 border-b mx-1 border-[#80CAEE] mb-2" key={type}>
+          <li className="mr-1 border-b mx-1 border-border mb-2" key={type}>
             <Link
-              className={`inline-block p-2 mx-3 bg-transparent rounded-t-lg ${active === type ? "text-[#3C50E0] " : "text-[#8A99AF]"
+              className={`inline-block p-2 mx-3 bg-transparent rounded-t-lg ${active === type ? "text-primary " : "text-text"
                 }`}
               key={type}
               active={active === type}
@@ -35,6 +35,11 @@ function TabGroup() {
           </li>
         ))}
       </ul>
+
+      <div className="p-2 mt-5 mb-5 text-md text-text border-b border-background rounded-lg bg-surface" role="alert">
+
+        <span className="font-medium text-secondary pr-2">Important!</span>Default {active} cannot be modified.
+      </div>
       <RenderTable active={active} searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
     </>
   );
@@ -53,13 +58,18 @@ const RenderTable = ({ active, searchTerm, setSearchTerm }) => {
   if (active === "Roles") {
     return (
       <>
-        <div className="mt-3 flex flex-col md:flex-row justify-between items-start md:items-center mb-2 ">
-          <div className="p-4 mb-4 text-md text-blue-800 rounded-lg bg-blue-50 dark:bg-gray-800 dark:text-blue-400" role="alert">
-            <span className="font-medium text-orange-500">Important!</span> Default Roles cannot be modified.
-          </div>
+
+        <div className=" m-3 flex justify-between items-center">
+          <input
+            type="text"
+            placeholder="Search by role name"
+            className="ml-4 w-1/2 shadow-lg hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary px-4 py-2 text-sm border-b border-border bg-background text-text rounded-md "
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
           <button
             onClick={() => setOpenRoleModal(true)}
-            className="flex p-2 px-4 bg-[#758aae] hover:bg-[#2f3c52] text-white border m-2 rounded-md"
+            className="flex p-2 px-4 bg-surface text-text hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary active:bg-secondary border m-2 rounded-md"
           >
             <span className="flex justify-center items-center gap-2">
               <HiPlus />
@@ -67,15 +77,6 @@ const RenderTable = ({ active, searchTerm, setSearchTerm }) => {
             </span>
           </button>
         </div>
-
-        <div className=" m-3 flex justify-between items-center">
-          <input
-            type="text"
-            placeholder="Search by role name"
-            className="ml-4 w-1/2  focus:outline-none px-4 py-2 text-sm border-b border-gray-300 bg-neutral-100 rounded-md dark:border-gray-600 dark:bg-[#1d2a39] dark:text-white"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          /></div>
         <Suspense fallback={<SkeletonTable rows={7} columns={4} />}>
           <RolesTable
             searchTerm={searchTerm}
@@ -87,13 +88,18 @@ const RenderTable = ({ active, searchTerm, setSearchTerm }) => {
   } else if (active === "Permissions") {
     return (
       <>
-        <div className="mt-3 flex flex-col md:flex-row  justify-between  items-start md:items-center mb-2 ">
-          <div className="p-4 mb-4 text-md text-blue-800 rounded-lg bg-blue-50 dark:bg-gray-800 dark:text-blue-400" role="alert">
-            <span className="font-medium text-orange-500">Important!</span> Default Permissions cannot be modified.
-          </div>
+        <div className=" m-3 flex justify-between items-center">
+          {/* Search Input */}
+          <input
+            type="text"
+            placeholder="Search by permission name"
+            className="ml-4 w-1/2  focus:outline-none px-4 py-2 text-sm border-b border-border bg-background text-text rounded-md hover:bg-secondary focus:ring-2 focus:ring-primary"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
           <button
             onClick={() => setOpenModal(true)}
-            className="flex p-2 px-4 bg-[#758aae] hover:bg-[#2f3c52] text-white border m-2 rounded-md "
+            className="flex p-2 px-4 bg-surface text-text hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary active:bg-secondary border m-2 rounded-md "
           >
             <span className="flex justify-center items-center gap-2">
               <HiPlus />
@@ -101,16 +107,6 @@ const RenderTable = ({ active, searchTerm, setSearchTerm }) => {
             </span>
           </button>
         </div>
-        <div className=" m-3 flex justify-between items-center">
-          {/* Search Input */}
-
-          <input
-            type="text"
-            placeholder="Search by permission name"
-            className="ml-4 w-1/2  focus:outline-none px-4 py-2 text-sm border-b border-gray-300 bg-neutral-100 rounded-md dark:border-gray-600 dark:bg-[#1d2a39] dark:text-white"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          /></div>
         <Suspense fallback={<SkeletonTable rows={7} columns={4} />}>
           <PermissionsTable openModal={openModal} setOpenModal={setOpenModal} searchTerm={searchTerm} />
         </Suspense> </>
@@ -118,14 +114,10 @@ const RenderTable = ({ active, searchTerm, setSearchTerm }) => {
   } else if (active === "Roles Permissions") {
     return (
       <>
-        <div className="mt-3 flex flex-col md:flex-row justify-between items-start md:items-center mb-2 ">
-          <div className="p-4 mb-4 text-md text-blue-800 rounded-lg bg-blue-50 dark:bg-gray-800 dark:text-blue-400" role="alert">
-            <span className="font-medium text-orange-500">Important!</span> Owner&apos;s Permissions cannot be modified
-          </div>
-          <div className="flex flex-col md:flex-row gap-3">
-            <button
+        <div className="mt-3 flex justify-end items-end mb-2 ">
+         <button
               onClick={() => setOpenModal(true)}
-              className="flex p-2 px-4 bg-[#758aae] hover:bg-[#2f3c52] text-white border m-2 rounded-md "
+              className="flex p-2 px-4 bg-surface text-text hover:bg-secondary active:bg-secondary border m-2 rounded-md "
             >
               <span className="flex justify-center items-center gap-2">
                 <HiPlus />
@@ -135,25 +127,26 @@ const RenderTable = ({ active, searchTerm, setSearchTerm }) => {
 
             <button
               onClick={() => setShowDetails(true)}
-              className="flex p-2 px-4 bg-[#758aae] hover:bg-[#2f3c52] text-white border m-2 rounded-md "
+              className="flex p-2 px-4 bg-surface hover:bg-secondary text-text border m-2 rounded-md "
             >
               <span className="flex justify-center items-center gap-2">
                 <HiMinusCircle />
                 Permissions
               </span>
             </button>
-          </div>
-        </div>
-        <div className=" m-3 flex justify-between items-center">
-          {/* Search Input */}
 
+        </div>
+        <div className=" m-3 flex w-full  justify-between items-center">
+          {/* Search Input */}
           <input
             type="text"
             placeholder="Search by permission name"
-            className="ml-4 w-1/2  focus:outline-none px-4 py-2 text-sm border-b border-gray-300 bg-neutral-100 rounded-md dark:border-gray-600 dark:bg-[#1d2a39] dark:text-white"
+            className="ml-4 w-1/2 md:w-2/3 focus:outline-none px-4 py-2 text-sm border-b border-border bg-background text-text  rounded-md "
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-          /></div>
+          />
+
+        </div>
         <Suspense fallback={<SkeletonTable rows={7} columns={5} />}>
           <RolesPermissionsTable
             openModal={openModal}
@@ -172,7 +165,7 @@ const RenderTable = ({ active, searchTerm, setSearchTerm }) => {
 const Permissions = () => {
   return (
     <div>
-      <h2 className="m-5 text-lg md:text-2xl text-[#8A99AF]">
+      <h2 className="m-5 text-lg md:text-2xl text-text">
         Roles and Permissions Details{" "}
       </h2>
       <TabGroup />
