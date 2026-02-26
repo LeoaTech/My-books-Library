@@ -9,6 +9,7 @@ import {
     FaTrash,
     FaTimes,
 } from 'react-icons/fa';
+import { MdUploadFile } from 'react-icons/md';
 
 export default function FileUpload({ imagesList, setImagesList }) {
     const inputRef = useRef(null);
@@ -94,8 +95,8 @@ export default function FileUpload({ imagesList, setImagesList }) {
 
     return (
         <div className="flex flex-col gap-4">
-            <h2 className="text-xl font-bold text-[#2c3745] dark:text-white">Select Media</h2>
-            <div className="flex gap-2">
+            <h2 className="text-xl font-bold text-text">Select Media</h2>
+            <div className="flex flex-col gap-2 sm:flex-row">
                 <FileInput
                     maxImages={maxImages}
                     imagesList={imagesList}
@@ -103,7 +104,7 @@ export default function FileUpload({ imagesList, setImagesList }) {
                 <button
                     type="button"
                     onClick={() => setImagesList([])}
-                    className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded disabled:opacity-50"
+                    className="flex items-center gap-2 bg-background border border-border hover:bg-secondary text-text px-4 py-2 rounded disabled:opacity-50"
                 >
                     <FaTrash size={16} />
                     Clear All
@@ -117,7 +118,7 @@ export default function FileUpload({ imagesList, setImagesList }) {
 
             {imagesList?.length > 0 && (
                 <div className="space-y-3">
-                    <h3 className="font-semibold text-[#2c3745] dark:text-white">Selected Media:</h3>
+                    <h3 className="font-semibold text-text">Selected Media:</h3>
                     {imagesList?.map((file, idx) => {
                         const icon = getFileIcon(
                             file?.type || (file?.secure_url && 'image/') || ''
@@ -127,7 +128,7 @@ export default function FileUpload({ imagesList, setImagesList }) {
                         return (
                             <div
                                 key={idx}
-                                className="flex items-center justify-between bg-gray-800 text-white p-3 rounded-md"
+                                className="flex items-center justify-between bg-background text-text p-3 rounded-md"
                             >
                                 <div className="flex items-center gap-3">
                                     {previewUrl ? (
@@ -144,7 +145,7 @@ export default function FileUpload({ imagesList, setImagesList }) {
                                     )}
                                     <div>
                                         <div className="font-medium">{getFileName(file)}</div>
-                                        <div className="text-sm text-gray-400">
+                                        <div className="text-sm text-text">
                                             {getFileSize(file)}
                                         </div>
                                     </div>
@@ -152,7 +153,7 @@ export default function FileUpload({ imagesList, setImagesList }) {
                                 <button
                                     type='button'
                                     onClick={() => removeFile(idx)}
-                                    className="text-white hover:text-red-400"
+                                    className="text-primary hover:text-secondary"
                                 >
                                     <FaTimes />
                                 </button>
@@ -181,10 +182,10 @@ function FileInput({ inputRef, onFileSelect, maxImages, imagesList }) {
             />
             <label
                 htmlFor="file-upload"
-                className="flex cursor-pointer items-center gap-2 rounded-md bg-gray-500 hover:bg-gray-600 px-6 py-2 text-white hover:opacity-90"
+                className="flex cursor-pointer items-center gap-2 rounded-md bg-secondary hover:bg-primary hover:text-background px-6 py-2 text-text hover:opacity-90"
             >
-                <FaPlus size={16} />
-                Select Files
+                <MdUploadFile size={16} />
+                Upload Files
             </label>
         </>
     );
