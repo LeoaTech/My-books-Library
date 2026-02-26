@@ -1,9 +1,12 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { BASE_URL } from '../utils/baseAPIURL';
+import { useAuthContext } from '../hooks/useAuthContext';
 
 const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
+
+    const { auth } = useAuthContext();
 
     const [colorMode, setColorMode] = useState(() => {
         try {
@@ -79,18 +82,37 @@ export const ThemeProvider = ({ children }) => {
             const isAdminRoute = pathSegments.includes('admin');
             const excludedRoutes = ['admin', 'signin', 'signup', 'auth', 'dashboard'];
 
-            if (isAdminRoute) {
-                try {
-                    const authData = localStorage.getItem('user');
-                    if (authData) {
-                        const { entityId } = JSON.parse(authData);
-                        if (entityId) {
+            if (isAdminRoute || auth?.entityId) {
+                // Prioritize auth context over local storage if available
+                currentLibraryId = auth?.entityId;
+
+                if (!currentLibraryId) {
+                    try {
+                        const authData = localStorage.getItem('user');
+                        if (authData) {
+                            const { entityId } = JSON.parse(authData);
                             currentLibraryId = entityId;
                         }
+                    } catch (error) {
+                        console.error("error for user data:", error);
                     }
-                } catch (error) {
-                    console.error("error for user data:", error);
                 }
+
+                if (currentLibraryId) {
+                    // Fetch theme_config using the generic library endpoint (which returns theme_config too)
+                    try {
+                        const response = await fetch(`${BASE_URL}/library/${currentLibraryId}`);
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (data?.theme_config) {
+                                setThemeConfig(data.theme_config);
+                            }
+                        }
+                    } catch (error) {
+                        console.error("Admin theme_config fetch error:", error);
+                    }
+                }
+
             } else {
                 let identifier = pathSegments?.length > 0 ? pathSegments[0] : null;
                 if (identifier && !excludedRoutes.includes(identifier)) {
@@ -135,7 +157,7 @@ export const ThemeProvider = ({ children }) => {
         };
 
         fetchThemes();
-    }, []);
+    }, [auth]);
 
     return (
         <ThemeContext.Provider value={{ themeConfig, setThemeConfig, colorMode, setColorMode, customThemes, setCustomThemes }}>
