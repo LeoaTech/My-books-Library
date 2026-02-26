@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from "react";
+import React, { lazy, Suspense, useState } from "react";
 import { HiPlus } from "react-icons/hi";
 import { useAuthContext } from "../../hooks/useAuthContext";
 import { MdWarning } from "react-icons/md";
@@ -52,7 +52,7 @@ const Listing = () => {
     <>
       <div className="flex justify-between items-center mx-4 overflow-hidden">
         {/* Page Heading */}
-        <h2 className="m-5 text-2xl md:text-3xl text-[#8A99AF] font-medium">
+        <h2 className="m-5 text-2xl md:text-3xl text-text font-medium">
           Listings
         </h2>
       </div>
@@ -61,23 +61,23 @@ const Listing = () => {
       {hasPermission("READ") ? (
         <>
           {/* Search from Listing ----  and ----  Create New Book Button */}
-          <div className=" m-3 flex justify-between items-center">
+          <div className=" m-3 flex flex-col gap-4 md:flex-row md:justify-between items-center">
             {/* Search Input Shows for Read Books Authorixed roles */}
 
             <input
               type="text"
               placeholder="Search by title, author, genre..."
-              className="ml-4 w-1/2  focus:outline-none px-4 py-2 text-sm border-b border-gray-300 bg-neutral-100 rounded-md dark:border-gray-600 dark:bg-[#1d2a39] dark:text-white"
+              className="ml-4 w-full md:w-1/2 focus:outline-none px-4 py-2 text-sm border-b border-border bg-background rounded-md"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
             {/* Authhorized roles can access Create Book Form  */}
             {/* Restrict the Users to Create Books based the Plan */}
-            <div >
+            <div className="flex justify-end items-end gap-4" >
               {hasPermission("CREATE") && hasLimitToAddBook ? (
                 <>
                   <button
-                    className="bg-[#758aae] text-white active:bg-[#80CAEE] 
+                    className="bg-surface text-text hover:bg-secondary active:bg-secondary 
       font-medium rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 px-2 py-2 md:px-3 "
                     type="button"
                     onClick={() => setShowModal(true)}
@@ -89,7 +89,7 @@ const Listing = () => {
                   </button>
 
                   <button
-                    className="bg-[#758aae] text-white active:bg-[#80CAEE] 
+                    className="bg-surface text-text hover:bg-secondary active:bg-secondary 
       font-medium rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 px-2 py-2 md:px-3 "
                     type="button"
                     onClick={() => setUploadFileModal(true)}
@@ -102,17 +102,17 @@ const Listing = () => {
                 </>
 
               ) : (
-                <>
+                <React.Fragment >
                   <div className="group relative m-2 flex justify-center">
 
-                    <span className="absolute -top-10 scale-0 transition-all rounded bg-gray-800 p-2 text-xs text-red-500 group-hover:scale-100">
+                    <span className="absolute -top-10 scale-0 transition-all rounded bg-surface p-2 text-xs text-red-500 group-hover:scale-100">
                       <span className="flex gap-2 items-center">
                         {" "}
                         <MdWarning /> Access Denied!
                       </span>{" "}
                     </span>
                     <button
-                      className="bg-[#758aae] text-white 
+                      className="bg-background text-text 
       font-medium rounded outline-none cursor-not-allowed focus:outline-none mr-1 mb-2 px-2 py-2 lg:px-3 "
                       type="button"
                       disabled
@@ -122,7 +122,7 @@ const Listing = () => {
                       </span>
                     </button>
                   </div>
-                </>
+                </React.Fragment>
               )}
             </div>
           </div>

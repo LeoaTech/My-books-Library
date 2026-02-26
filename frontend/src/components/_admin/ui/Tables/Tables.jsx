@@ -70,7 +70,7 @@ const Tables = ({ hasPermission, searchQuery }) => {
                   />
                 )}
               </div>
-              <p className="text-sm text-slate-600 dark:text-white break-words">
+              <p className="text-sm text-text break-words">
                 {title}
               </p>
             </div>
@@ -134,12 +134,12 @@ const Tables = ({ hasPermission, searchQuery }) => {
                 </div>
               )}
 
-              <button
+              {/* <button
                 onClick={() => viewBookDetails(book)}
                 className="text-green-600"
               >
                 <MdOutlineRemoveRedEye />
-              </button>
+              </button> */}
               {hasPermission("DELETE") ? (
                 <button
                   onClick={() => deleteBookDetails(bookId, bookTitle)}
@@ -228,21 +228,21 @@ const Tables = ({ hasPermission, searchQuery }) => {
   if (error) return "An error has occurred: " + error.message; // Add error Component
 
   return (
-    <div className="rounded-sm h-[500px]border border-[#E2E8F0] bg-neutral-100 shadow-default max-w-full overflow-x-auto overflow-y-auto dark:border-[#2E3A47] dark:bg-[#24303F]">
+    <div className="rounded-md  border border-background bg-surface shadow-default max-w-full overflow-x-auto overflow-y-auto ">
       {/* React Table */}
-      <div className="max-w-full  overflow-x-auto dark:border-[#2E3A47]">
+      <div className="max-w-full   overflow-x-auto border-background">
         {booksData?.books && booksData?.books?.length > 0 ? (
-          <table className="w-full  table-auto border">
-            <thead>
+          <table className="w-full bg-background border-primary table-auto border">
+            <thead className="bg-secondary">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr
                   key={headerGroup.id}
-                  className="border-b text-slate-700 uppercase bg-[#f7fcfc] text-center text-md dark:bg-[#313D4A]"
+                  className="border-b border-primary text-text uppercase text-center text-md "
                 >
                   {headerGroup.headers.map((header) => (
                     <th
                       key={header.id}
-                      className="px-4 pr-2 font-medium py-4 text-slate-700 dark:text-white"
+                      className="px-4 pr-2 font-medium py-4 text-text"
                     >
                       {header.isPlaceholder
                         ? null
@@ -255,15 +255,15 @@ const Tables = ({ hasPermission, searchQuery }) => {
                 </tr>
               ))}
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-primary border-b border-primary">
               {table?.getRowModel()?.rows?.map((row) => (
-                <tr key={row.id} className="border-b">
+                <tr key={row.id} className="border-b border-primary divide-y divide-primary hover:bg-surface hover:text-text transition-colors">
                   {row?.getVisibleCells()?.map((cell) => (
                     <td
                       key={cell.id}
-                      className="text-center pt-[14px] pb-[18px] border-b border-[#eee] py-5 px-4 pl-9 dark:border-[#2E3A47] xl:pl-7 w-[200px]" // add fixed width here
+                      className="divide-y divide-primary text-center pt-[14px] pb-[18px] border-b border-primary py-5 px-4 pl-9  xl:pl-7 w-[200px]" 
                     >
-                      <p className="font-medium text-slate-600 dark:text-white whitespace-normal break-words">
+                      <p className="font-medium text-text whitespace-normal break-words">
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </p>
                     </td>
@@ -283,7 +283,7 @@ const Tables = ({ hasPermission, searchQuery }) => {
         {booksData?.books && booksData?.books?.length > 0 && (
 
           <nav
-            className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 px-4 border-t border-[#E2E8F0] dark:border-[#2E3A47]"
+            className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 px-4 border-t border-border"
             aria-label="Table navigation"
           >
             {/* Pagination Buttons */}
@@ -293,13 +293,13 @@ const Tables = ({ hasPermission, searchQuery }) => {
                 disabled={!table.getCanPreviousPage()}
                 className={`rounded px-4 py-2 text-sm font-medium border 
         ${table.getCanPreviousPage()
-                    ? "text-slate-600 bg-white border-[#E2E8F0] hover:bg-slate-100 dark:text-white dark:bg-[#1d2a39] dark:border-[#2E3A47] hover:dark:bg-[#2b3a4a]"
-                    : "cursor-not-allowed text-gray-400 bg-gray-100 border-gray-200 dark:bg-[#1d2a39] dark:text-gray-500"}`}
+                    ? "text-text bg-primary border-border hover:bg-surface "
+                    : "cursor-not-allowed text-secondary bg-gray-100 border-border" }`}
               >
                 Previous
               </button>
 
-              <span className="text-sm text-slate-600 dark:text-white">
+              <span className="text-sm text-text">
                 Page <strong>{table.getState().pagination.pageIndex + 1}</strong> of{" "}
                 <strong>{table.getPageCount()}</strong>
               </span>
@@ -309,8 +309,8 @@ const Tables = ({ hasPermission, searchQuery }) => {
                 disabled={!table.getCanNextPage()}
                 className={`rounded px-4 py-2 text-sm font-medium border 
         ${table.getCanNextPage()
-                    ? "text-slate-600 bg-white border-[#E2E8F0] hover:bg-slate-100 dark:text-white dark:bg-[#1d2a39] dark:border-[#2E3A47] hover:dark:bg-[#2b3a4a]"
-                    : "cursor-not-allowed text-gray-400 bg-gray-100 border-gray-200 dark:bg-[#1d2a39] dark:text-gray-500"}`}
+                    ? "text-text bg-primary border-border hover:bg-surface "
+                    : "cursor-not-allowed text-secondary bg-gray-100 border-border "}`}
               >
                 Next
               </button>
@@ -320,13 +320,13 @@ const Tables = ({ hasPermission, searchQuery }) => {
             <div className="flex items-center gap-2">
               <label
                 htmlFor="pageSize"
-                className="text-sm text-slate-600 dark:text-white"
+                className="text-sm text-text "
               >
                 Rows per page:
               </label>
               <select
                 id="pageSize"
-                className="rounded border border-[#E2E8F0] bg-white px-3 py-2 text-sm text-slate-700 outline-none dark:border-[#2E3A47] dark:bg-[#1d2a39] dark:text-white"
+                className="rounded border border-border bg-secondary px-3 py-2 text-sm text-text outline-none "
                 value={table.getState().pagination.pageSize}
                 onChange={(e) => table.setPageSize(Number(e.target.value))}
               >
