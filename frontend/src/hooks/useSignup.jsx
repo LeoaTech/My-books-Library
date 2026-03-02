@@ -1,32 +1,52 @@
 import { useState } from "react";
 import { BASE_URL } from "../utils/baseAPIURL";
+import { toast } from "react-toastify";
 
+const SignupFailed = () => toast.error("Failed to Signup Try again", {
+  hideProgressBar: true,
+  closeOnClick: false,
+  pauseOnHover: true,
+  draggable: true,
+  progress: undefined,
+  theme: "dark",
+})
+
+const SignupSuccess = () => toast.success("Library Created Successfully!", {
+  hideProgressBar: true,
+  closeOnClick: false,
+  pauseOnHover: false,
+  draggable: true,
+  progress: undefined,
+  theme: "dark",
+})
 // Sign up Form Hook
 export const useSignup = () => {
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(false);
   const [isLoading, setIsLoading] = useState(null);
 
-  const signup = async (email, password, name,subdomain) => {
+  const signup = async (email, password, name, subdomain) => {
     setIsLoading(true);
     setError(null);
 
     const response = await fetch(`${BASE_URL}/auth/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password, name,subdomain }),
+      body: JSON.stringify({ email, password, name, subdomain }),
     });
     const result = await response.json();
 
     // console.log("Response: " ,response, "Result", result);
-    
+
     if (!response.ok) {
+      SignupFailed()
       setIsLoading(false);
       setError(result.message || result.error);
       setMessage(true);
     }
 
     if (response.ok) {
+      SignupSuccess()
       setIsLoading(false);
       setMessage(true);
     }
@@ -44,14 +64,16 @@ export const useSignup = () => {
     const result = await response.json();
 
     // console.log(result, "Registered user as an Admin");
-    
+
     if (!response.ok) {
+      SignupFailed()
       setIsLoading(false);
       setError(result.message || result.error);
       setMessage(true);
     }
 
     if (response.ok) {
+      SignupSuccess();
       setIsLoading(false);
       setMessage(true);
     }
