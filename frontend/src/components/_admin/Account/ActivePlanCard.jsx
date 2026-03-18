@@ -5,6 +5,18 @@ const ActivePlanCard = ({ currentPlan }) => {
   const isActive = currentPlan?.isActive;
 
   const { subdomain } = useParams();
+  const amount = subscription?.amount;
+  const currency = subscription?.currency || 'usd';
+
+  const formatPrice = (value, curr) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: curr,
+      minimumFractionDigits: 0
+    }).format(value);
+  };
+
+  const displayPrice = amount > 0 ? formatPrice(amount, currency) : "Free";
 
   return (
     <div className="bg-surface shadow-md rounded-lg p-6 border border-border h-full flex flex-col justify-between">
@@ -15,8 +27,8 @@ const ActivePlanCard = ({ currentPlan }) => {
             {subscription?.planName || "Free Plan"}
           </span>
           <div className='flex items-end gap-1'>
-            <h3 className="text-3xl font-bold text-text">$29</h3>
-            <span className="text-primary font-medium mb-1">/ Month</span>
+            <h3 className="text-3xl font-bold text-text">{displayPrice}</h3>
+            {amount > 0 && <span className="text-primary font-medium mb-1">/ Month</span>}
           </div>
         </div>
       </div>
