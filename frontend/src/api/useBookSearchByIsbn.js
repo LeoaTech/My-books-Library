@@ -6,16 +6,16 @@ const fetchBookDataByIsbn = async (isbn) => {
     return null;
   }
 
-  const response = await fetch(
-    `https://www.googleapis.com/books/v1/volumes?q=isbn:${encodeURIComponent(
-      isbn
-    )}`
-  );
+  const apiKey = import.meta.env.VITE_GOOGLE_BOOKS_API_KEY;
+  const baseUrl = `https://www.googleapis.com/books/v1/volumes?q=isbn:${encodeURIComponent(isbn)}`;
+  const url = apiKey ? `${baseUrl}&key=${apiKey}` : baseUrl;
+
+  const response = await fetch(url);
 
   if (!response.ok) {
     throw new Error("Network response was not ok");
   }
- 
+
 
   const data = await response.json();
   return data;
