@@ -10,7 +10,7 @@ const router = express.Router();
 
 router.use(checkAuth);
 
-async function getPlanNameFromPriceId(priceId) {
+async function getPlanDetailsFromPriceId(priceId) {
   if (!priceId) {
     throw new Error("Price ID is undefined, cannot fetch plan details.");
   }
@@ -20,7 +20,11 @@ async function getPlanNameFromPriceId(priceId) {
   });
 
   const product = price?.product;
-  return product?.name || undefined;
+  return {
+    name: product?.name || undefined,
+    amount: price?.unit_amount ? price.unit_amount / 100 : 0,
+    currency: price?.currency || "usd",
+  };
 }
 
 //Get Current Plan:
@@ -67,6 +71,8 @@ router.get("/", async (req, res) => {
       const isActive = ["active"].includes(currentSubscription?.status);
 
       let planName;
+      let amount = 0;
+      let currency = "usd";
 
       if (userType === "customer" && currentSubscription?.plan_id) {
         const planResult = await db.query(
@@ -74,13 +80,26 @@ router.get("/", async (req, res) => {
           [currentSubscription.plan_id],
         );
         planName = planResult?.rows[0]?.plan_name || "Unknown Plan";
+
+        try {
+          if (currentSubscription?.stripe_price_id) {
+            const details = await getPlanDetailsFromPriceId(currentSubscription.stripe_price_id);
+            amount = details.amount;
+            currency = details.currency;
+          }
+        } catch (error) {
+          console.error("Error fetching plan price details from Stripe:", error);
+        }
       } else {
         try {
-          planName = await getPlanNameFromPriceId(
+          const details = await getPlanDetailsFromPriceId(
             currentSubscription.stripe_price_id,
           );
+          planName = details.name || "Unknown Plan";
+          amount = details.amount;
+          currency = details.currency;
         } catch (error) {
-          console.error("Error fetching plan name from Stripe:", error);
+          console.error("Error fetching plan details from Stripe:", error);
           planName = "Unknown Plan";
         }
       }
@@ -90,6 +109,8 @@ router.get("/", async (req, res) => {
         userType: userType, // 'client' or 'customer'
         subscription: {
           planName: planName,
+          amount,
+          currency,
           stripeSubscriptionId: currentSubscription?.stripe_subscription_id,
           status: currentSubscription?.status,
           currentPeriodEnd: currentSubscription?.current_period_end,
