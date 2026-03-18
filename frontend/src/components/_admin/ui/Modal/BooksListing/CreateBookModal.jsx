@@ -43,6 +43,7 @@ const CreateBookModal = ({ setShowModal }) => {
 
   // Add these new state variables at the top of your component
   const [bookSearchResults, setBookSearchResults] = useState([]);
+  const [showBookSearchResults, setShowBookSearchResults] = useState(true);
   const [selectedBook, setSelectedBook] = useState(null);
   const theme = localStorage.getItem("color-theme")?.replace(/"/g, '') || "light";
   console.log(theme, "theme");
@@ -643,7 +644,7 @@ const CreateBookModal = ({ setShowModal }) => {
                 <div className="p-6.5 m-5.5 sm:overflow-auto sm:p-2 sm:m-2">
                   {/* Display the matched book title results to select and populate the Form fields  */}
                   <div>
-                    {bookSearchResults?.length > 0 && (
+                    {bookSearchResults?.length > 0 && showBookSearchResults && (
                       <div className="mt-4 mb-4.5 p-4 border border-gray-300 rounded-md max-h-48 overflow-y-auto">
                         <h4 className="text-sm font-bold mb-2 dark:text-white">Suggested Results</h4>
                         <ul>
@@ -664,12 +665,21 @@ const CreateBookModal = ({ setShowModal }) => {
                         </ul>
                         <button
                           type="button"
-                          onClick={() => setBookSearchResults([])}
+                          onClick={() => setShowBookSearchResults(false)}
                           className="w-full text-md bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded-sm text-slate-700 dark:text-white hover:bg-slate-300 dark:hover:text-slate-400"
                         >
-                          Close
+                          Hide
                         </button>
                       </div>
+                    )}
+                    {bookSearchResults?.length > 0 && !showBookSearchResults && (
+                      <button
+                        type="button"
+                        onClick={() => setShowBookSearchResults(true)}
+                        className="w-full text-md bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded-sm text-slate-700 dark:text-white hover:bg-slate-300 dark:hover:text-slate-400"
+                      >
+                        Show
+                      </button>
                     )}
                   </div>
 
