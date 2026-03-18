@@ -86,8 +86,8 @@ const RolesPermissionModal = ({ close }) => {
                       {" "}
                       <option value="">Select Role</option>
                       {allRoles?.roles?.map((role) => (
-                        <option key={role?.role_id} value={role?.role_id}>
-                          {/*  disabled={role?.name == "owner"}> */}
+                        <option key={role?.role_id} value={role?.role_id} disabled={role?.name == "owner"}> 
+                         
                           {role?.name?.toUpperCase()}
                         </option>
                       ))}
