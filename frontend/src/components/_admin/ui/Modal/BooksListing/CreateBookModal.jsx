@@ -528,7 +528,7 @@ const CreateBookModal = ({ setShowModal }) => {
 
       createAuthorAndSet();
     }
-  }, [setValue, selectedBook, addAuthorMutation, addCategoryMutation, findOrCreateAndSet, addPublisherMutation]);
+  }, [selectedBook, setValue]);
 
   //By Default Main Branch is selected for a New Book
   useEffect(() => {
