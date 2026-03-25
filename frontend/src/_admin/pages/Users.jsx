@@ -14,12 +14,16 @@ const UserTable = lazy(() => import("../../components/_admin/ui/Tables/UserTable
 
 /* Users Page */
 const Users = () => {
-  const {auth}= useAuthContext();
+  const { auth } = useAuthContext();
   const [showModal, setShowModal] = useState(false)
   const [searchTerm, setSearchTerm] = useState("");
   const { data: currentPlan, isLoading } = useFetchCurrentPlan(auth)
-  const hasPermissionToAddUser = !isLoading ? ! currentPlan?.isActive ? true : currentPlan?.userCounts?.count <= 5:false;
-  
+
+  const userCount = Number(currentPlan?.userCounts?.count || 0);
+  const isActive = currentPlan?.isActive;
+
+  const canAddUser = !isLoading && (isActive || userCount < 5);
+
   /* Fetch:/ Users in Library */
   const { isPending, error, data } = useFetchUserRoles();
 
@@ -31,7 +35,7 @@ const Users = () => {
       <h1 className="m-5 text-lg md:text-2xl text-text">Users</h1>
       <div className="flex justify-end items-end mb-2">
         <button
-        disabled={hasPermissionToAddUser}
+          disabled={!canAddUser}
           className=" bg-surface text-text hover:bg-primary active:bg-secondary
             font-medium rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 px-2 py-2 md:px-3 "
           type="button"
