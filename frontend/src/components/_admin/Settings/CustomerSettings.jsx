@@ -35,10 +35,10 @@ const settingsSchema = z.object({
 // Initial settings
 const dummySettings = [
     { label: 'Allow User to Select Booking Date', dbKey: 'allow_select_booking_date', value: true, type: 'toggle' },
-    { label: 'Default Booking Date', dbKey: 'default_booking_duration', value: 14, type: 'number', min: 0 },
+    { label: 'Default Booking Duration', dbKey: 'default_booking_duration', value: 14, type: 'number', min: 0 },
     { label: 'Allow to Purchase', dbKey: 'allow_purchase', value: true, type: 'toggle' },
     { label: 'Allow to Borrow', dbKey: 'allow_borrow', value: true, type: 'toggle' },
-    { label: 'Fine for late returns', dbKey: 'late_returns_fine', value: 0, type: 'number', min: 0 },
+    { label: 'Fine for late returns books', dbKey: 'late_returns_fine', value: 0, type: 'number', min: 0 },
     {
         label: 'Consecutive Renewal Returns Date',
         dbKey: 'consecutive_renewals',
