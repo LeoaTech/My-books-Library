@@ -400,7 +400,7 @@ const SignupUser = asyncHandler(async (req, res) => {
 
     // check if user with email exists in DB
     const userExists = await db.query(
-      "SELECT id,name,email,phone,city,country address FROM users Where email = $1",
+      "SELECT id,name,email,password,phone,city,country,address FROM users Where email = $1",
       [email],
     );
     let userData;
@@ -434,14 +434,44 @@ const SignupUser = asyncHandler(async (req, res) => {
         subdomain,
       };
     } else {
-      userId = userExists?.rows[0]?.id;
+      const existingUser = userExists?.rows[0];
+      userId = existingUser?.id;
+
+      if (existingUser.password) {
+        const isPasswordMatch = await bcrypt.compare(password, existingUser.password);
+        if (!isPasswordMatch) {
+          await client.query("ROLLBACK");
+          return res.status(401).json({
+            message: "This email is already registered. Please use your existing password to join this library.",
+          });
+        }
+      } else {
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+        await client.query(
+          "UPDATE users SET password = $1 WHERE id = $2",
+          [hashedPassword, userId],
+        );
+      }
+
+      const existingMembership = await client.query(
+        "SELECT id FROM user_entity_roles WHERE user_id = $1 AND entity_id = $2",
+        [userId, entityId],
+      );
+      if (existingMembership.rows.length > 0) {
+        await client.query("ROLLBACK");
+        return res.status(409).json({
+          message: "You are already a member of this library. Please login instead.",
+        });
+      }
+
       userData = {
-        name: userExists?.rows[0]?.name,
-        email: userExists?.rows[0]?.email,
-        city: userExists?.rows[0]?.city || "",
-        country: userExists?.rows[0]?.country || "",
-        address: userExists?.rows[0]?.address || "",
-        phone: userExists?.rows[0]?.phone || "",
+        name: existingUser?.name,
+        email: existingUser?.email,
+        city: existingUser?.city || "",
+        country: existingUser?.country || "",
+        address: existingUser?.address || "",
+        phone: existingUser?.phone || "",
         subdomain,
       };
     }
