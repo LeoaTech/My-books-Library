@@ -21,6 +21,7 @@ const PricingSettings = () => {
     const [localPlans, setLocalPlans] = useState([]);
     const { updatePlanOrder } = usePricingApi();
     const queryClient = useQueryClient();
+    const subdomain = auth?.subdomain;
 
     const { data: stripeStatus, isLoading: isStripeLoading } = useFetchUserPaymentMethod(entityId);
 
@@ -94,7 +95,7 @@ const PricingSettings = () => {
                         </button>
                     ) : (
                         <Link
-                            to="/dashboard/profile"
+                            to={`/${subdomain}/dashboard/profile`}
                             className="  bg-surface text-text active:bg-primary
             font-medium rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 px-2 py-2 md:px-3 "
                         >
