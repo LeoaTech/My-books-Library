@@ -63,7 +63,7 @@ const RenderTable = ({ active, searchTerm, setSearchTerm }) => {
           <input
             type="text"
             placeholder="Search by role name"
-            className="ml-4 w-1/2 shadow-lg hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary px-4 py-2 text-sm border-b border-border bg-background text-text rounded-md "
+            className="ml-4 w-1/2 shadow-lg focus:outline-none focus:ring-2 focus:ring-border px-4 py-2 text-sm border-b border-primary bg-background text-text rounded-md "
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -93,7 +93,7 @@ const RenderTable = ({ active, searchTerm, setSearchTerm }) => {
           <input
             type="text"
             placeholder="Search by permission name"
-            className="ml-4 w-1/2  focus:outline-none px-4 py-2 text-sm border-b border-border bg-background text-text rounded-md hover:bg-secondary focus:ring-2 focus:ring-primary"
+            className="ml-4 w-1/2  focus:outline-none px-4 py-2 text-sm border-b border-primary bg-background text-text rounded-md focus:ring-2 focus:ring-border"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -115,25 +115,25 @@ const RenderTable = ({ active, searchTerm, setSearchTerm }) => {
     return (
       <>
         <div className="mt-3 flex justify-end items-end mb-2 ">
-         <button
-              onClick={() => setOpenModal(true)}
-              className="flex p-2 px-4 bg-surface text-text hover:bg-secondary active:bg-secondary border m-2 rounded-md "
-            >
-              <span className="flex justify-center items-center gap-2">
-                <HiPlus />
-                Add New
-              </span>
-            </button>
+          <button
+            onClick={() => setOpenModal(true)}
+            className="flex p-2 px-4 bg-surface text-text hover:bg-secondary active:bg-secondary border m-2 rounded-md "
+          >
+            <span className="flex justify-center items-center gap-2">
+              <HiPlus />
+              Add New
+            </span>
+          </button>
 
-            <button
-              onClick={() => setShowDetails(true)}
-              className="flex p-2 px-4 bg-surface hover:bg-secondary text-text border m-2 rounded-md "
-            >
-              <span className="flex justify-center items-center gap-2">
-                <HiMinusCircle />
-                Permissions
-              </span>
-            </button>
+          <button
+            onClick={() => setShowDetails(true)}
+            className="flex p-2 px-4 bg-surface text-text border m-2 rounded-md "
+          >
+            <span className="flex justify-center items-center gap-2">
+              <HiMinusCircle />
+              Permissions
+            </span>
+          </button>
 
         </div>
         <div className=" m-3 flex w-full  justify-between items-center">
@@ -141,7 +141,7 @@ const RenderTable = ({ active, searchTerm, setSearchTerm }) => {
           <input
             type="text"
             placeholder="Search by permission name"
-            className="ml-4 w-1/2 md:w-2/3 focus:outline-none px-4 py-2 text-sm border-b border-border bg-background text-text  rounded-md "
+            className="ml-4 w-1/2 md:w-2/3 focus:outline-none px-4 py-2 text-sm border-b border-primary bg-background text-text  rounded-md focus:ring-2 focus:ring-border "
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
