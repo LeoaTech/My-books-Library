@@ -60,8 +60,7 @@ export const AuthContextProvider = ({ children }) => {
         }
       }
     } catch (error) {
-      <Navigate to="/signin" replace />
-
+      window.location.href = "/signin";
     }
   };
 
