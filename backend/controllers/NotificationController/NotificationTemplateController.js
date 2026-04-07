@@ -29,7 +29,7 @@ const fetchTemplates = async (req, res) => {
       const alreadyExists = dbSavedTemplates.find(
         (dbTpl) =>
           dbTpl.event === defaultTpl.event &&
-          dbTpl.channel === defaultTpl.channel
+          dbTpl.channel === defaultTpl.channel,
       );
 
       if (!alreadyExists) {
@@ -37,9 +37,11 @@ const fetchTemplates = async (req, res) => {
       }
     });
 
-    dbSavedTemplates.sort((a, b) => a.event.localeCompare(b.event));
+    const finalTemplates = dbSavedTemplates
+      .filter((template) => !template.event.startsWith("saas"))
+      .sort((a, b) => a.event.localeCompare(b.event));
 
-    res.json(dbSavedTemplates);
+    res.json(finalTemplates);
   } catch (error) {
     console.error("Fetch Template Error:", error);
     res.status(500).json({ message: "Server Error" });
