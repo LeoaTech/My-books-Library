@@ -248,7 +248,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
   const globalReturnDate = watch("global_return_date");
 
 
-  const allReturned = bookItems.every(item => item.status === 'returned');
+  const allReturned = bookItems?.every(item => item.status === 'returned');
 
   // To Update the Status and Return Due 
   useEffect(() => {
@@ -425,7 +425,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
           if (newRenewalCount < RENEWAL_LIMIT) {
             newRenewalCount += 1;
           } else {
-            // console.warn(`Renewal skipped for item ${item.id}: Renewal limit reached.`);
+            // console.log(`Renewal skipped for item ${item.id}: Renewal limit reached.`);
           }
         }
 
@@ -529,8 +529,9 @@ const BookIssue = ({ mode, onClose, booking }) => {
   };
 
   return (
-    <div className="fixed left-0 top-0  inset-0 bg-[#64748B] bg-opacity-75 transition-opacity dark:bg-slate-300 dark:bg-opacity-75 lg:left-[18rem]">
-      <div className="relative p-5 rounded-md">
+    <div className="fixed inset-0 overflow-y-auto h-full w-full flex items-center justify-center bg-[#64748B] bg-opacity-75 transition-opacity z-50">
+      <div className=" relative p-5 rounded-md">
+
         {/* Modal Close Button */}
         <div className="flex justify-end p-5 md:p-10  ">
           <RxCross1
@@ -538,28 +539,28 @@ const BookIssue = ({ mode, onClose, booking }) => {
               height: 18,
               width: 23,
               cursor: "pointer",
-              color: "#FFF",
+              color: "var(--color-text)",
               strokeWidth: 2,
             }}
             onClick={onClose}
           />
         </div>
         <div className=" md:mx-20">
-          <div className=" p-10 relative rounded-md border border-[#E2E8F0] bg-white shadow-lg dark:border-[#2E3A47] dark:bg-[#24303F] md:px-8 md:py-8 ">
-            <div className=" flex justify-between items-center rounded-sm p-3 bg-slate-100 border border-[#E2E8F0] py-4 px-6.5 dark:border-[#2E3A47] dark:bg-[#2E3A47]">
-              <h3 className="font-bold text-[#313D4A] dark:text-white">
+          <div className=" p-10 relative rounded-md border border-border bg-surface shadow-lg md:px-8 md:py-8 ">
+            <div className=" flex justify-between items-center rounded-sm p-3 py-4 px-6.5 ">
+              <h3 className="font-bold text-text ">
                 {mode == "edit" ? "Edit Booking" : "Issue Books"}
               </h3>
             </div>
 
-            <div className="max-h-[600px] px-12 w-full overflow-hidden overflow-y-auto text-slate-800">
+            <div className="max-h-[600px] px-12 w-full overflow-hidden overflow-y-auto text-text">
               <form onSubmit={handleSubmit(onSubmit)}>
                 <div className="p-6.5 m-5.5 sm:overflow-auto sm:p-2 sm:m-2">
 
                   {/* Select User or (student_id) */}
                   <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
                     <div className="w-full xl:w-1/2">
-                      <label className="mb-2.5 block text-[#259AE6] dark:text-white">
+                      <label className="mb-2.5 block text-text">
                         Select User
                         <span className="text-red-600">*</span>
                         {mode == "edit" &&
@@ -568,7 +569,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
                           </span>
                         }
                       </label>
-                      <div className="relative z-20 bg-transparent dark:bg-[#1d2a39]">
+                      <div className="relative z-20 bg-background text-text  ">
                         <Controller
                           name="user_id"
                           control={control}
@@ -597,7 +598,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
                     </div>
                     {/* Select Books items for students */}
                     <div className="w-full xl:w-1/2">
-                      <label className="mb-2.5 block text-[#259AE6] dark:text-white">
+                      <label className="mb-2.5 block text-text">
                         Select Books
                         <span className="text-red-600">*</span>
                         {mode == "edit" &&
@@ -606,7 +607,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
                           </span>
                         }
                       </label>
-                      <div className="relative z-20 bg-transparent dark:bg-[#1d2a39]">
+                      <div className="relative z-20 bg-background text-text  ">
                         <Controller
                           name="items"
                           control={control}
@@ -643,22 +644,22 @@ const BookIssue = ({ mode, onClose, booking }) => {
                   {/* Booked Items List */}
                   {bookItems?.length > 0 && (
                     <div className="flex flex-col md:gap-5 my-5">
-                      <fieldset className="border mt-4 border-gray-300 dark:border-gray-600 rounded p-4">
-                        <legend className="font-semibold text-md text-[#259AE6] dark:text-gray-300">Selected Items List</legend>
+                      <fieldset className="border mt-4 border-border  rounded p-4">
+                        <legend className="font-semibold text-md text-text ">Selected Items List</legend>
                         {mode === "edit" && bookItems?.length > 0 && (
                           <>
                             {/* Return ALL */}
-                            <div className="mb-6 p-4 border border-gray-300 dark:border-gray-600 rounded bg-slate-50 dark:bg-gray-800">
+                            <div className="mb-6 p-4 border border-border rounded bg-surface">
                               <div className="flex items-center justify-between">
                                 <label className="inline-flex items-center">
                                   <input
                                     type="checkbox"
-                                    disabled={allReturned}
+                                    // disabled={allReturned}
                                     checked={returnAllChecked}
                                     onChange={(e) => handleReturnAllChange(e, bookItems, booking.items)} // Define this handler below
-                                    className="rounded border-transparent h-5 w-5 text-blue-600 focus:ring-blue-500"
+                                    className="rounded border-transparent h-5 w-5 text-primary accent-primary focus:ring-primary"
                                   />
-                                  <span className="ml-3 text-md font-semibold text-blue-600 dark:text-blue-400">
+                                  <span className="ml-3 text-md font-semibold text-primary ">
                                     Return All Books
                                   </span>
                                 </label>
@@ -666,7 +667,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
 
                               {returnAllChecked && (
                                 <div className="mt-4 w-1/2">
-                                  <label className="mb-2.5 block text-blue-600 dark:text-white text-sm">Select Global Return Date</label>
+                                  <label className="mb-2.5 block text-primary  text-sm">Select Global Return Date</label>
                                   <Controller
                                     name="global_return_date"
                                     control={control}
@@ -680,7 +681,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
                                           handleGlobalDateChange(sanitizedDate, bookItems);
                                         }}
                                         placeholderText="Select Return Date"
-                                        className="w-full rounded-sm border-[1.5px] text-gray-700 dark:text-blue-100  border-gray-400 dark:border-gray-600 bg-transparent py-2 px-3 text-sm font-medium outline-none"
+                                        className="w-full rounded-sm border-[1.5px] text-text  border-border bg-background text-text  py-2 px-3 text-sm font-medium outline-none"
                                         dateFormat="yyyy-MM-dd"
                                         minDate={borrowDate || new Date()}
                                       // maxDate={addDays(ReturnDueDate, bookingSettings?.default_booking_duration || 15)}
@@ -692,7 +693,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
                             </div>
 
                             {/* Renew ALL */}
-                            <div className="mb-6 p-4 border border-gray-300 dark:border-gray-600 rounded bg-slate-50 dark:bg-gray-800">
+                            <div className="mb-6 p-4 border border-border  rounded bg-surface">
                               <div className="flex items-center justify-between">
                                 <label className="inline-flex items-center">
                                   <input
@@ -700,9 +701,9 @@ const BookIssue = ({ mode, onClose, booking }) => {
                                     checked={renewAllChecked}
                                     disabled={booksAvailableForRenew === 0 || returnAllChecked || allReturned}
                                     onChange={handleRenewAllChange} // Define this handler below
-                                    className="rounded border-transparent h-5 w-5 text-blue-600 dark:text-white focus:ring-blue-500"
+                                    className="rounded border-transparent h-5 w-5 text-primary accent-primary focus:ring-primary"
                                   />
-                                  <span className="ml-3 text-md font-semibold text-blue-600 dark:text-blue-400">
+                                  <span className="ml-3 text-md font-semibold text-primary ">
                                     Renew All Books
                                   </span>
                                 </label>
@@ -710,7 +711,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
 
                               {renewAllChecked && (
                                 <div className="mt-4 w-1/2">
-                                  <label className="mb-2.5 block text-blue-600 dark:text-white text-sm">
+                                  <label className="mb-2.5 block text-primary  text-sm">
                                     Select New Return Due Date
                                   </label>
                                   <Controller
@@ -725,7 +726,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
                                           handleGlobalRenewDateChange(sanitizedDate, bookItems);
                                         }}
                                         placeholderText="Select New Due Date"
-                                        className="w-full rounded-sm border-[1.5px] text-gray-700  dark:text-blue-100  border-gray-400 dark:border-gray-600 bg-transparent py-2 px-3 text-sm font-medium outline-none"
+                                        className="w-full rounded-sm border-[1.5px] text-text  border-border bg-background py-2 px-3 text-sm font-medium outline-none"
                                         dateFormat="yyyy-MM-dd"
                                         minDate={addDays(new Date(), 1)}
                                         maxDate={addDays(new Date(), (bookingSettings?.default_booking_duration || 15))}
@@ -745,15 +746,15 @@ const BookIssue = ({ mode, onClose, booking }) => {
                             const originalItem = booking?.items?.find(item => item.id === book.id);
 
                             return (
-                              <li key={book?.id || index + 1} className="mb-6 border-b pb-4 border-gray-200 dark:border-gray-700">
+                              <li key={book?.id || index + 1} className="mb-6 border-b pb-4 border-border">
                                 <div className="flex justify-between items-start">
                                   <div>
-                                    <span className="font-semibold flex items-center gap-2 text-slate-500 dark:text-neutral-100">
+                                    <span className="font-semibold flex items-center gap-2 text-text">
                                       <MdShoppingBag />
                                       Book {index + 1}
                                     </span>
-                                    <p className="text-blue-500 ml-8 mt-2 text-lg">{book.title}</p>
-                                    <p className="text-sm ml-8 text-gray-500 dark:text-gray-400">
+                                    <p className="text-primary ml-8 mt-2 text-lg">{book.title}</p>
+                                    <p className="text-sm ml-8 text-secondary">
                                       Current Status: <strong className={`font-bold ${book.status === 'returned' ? 'text-green-500' : book.status === 'overdue' ? 'text-red-500' : 'text-yellow-500'}`}>{mode === "create" ? "issued"?.toUpperCase() : book?.status?.toUpperCase()}</strong>
                                     </p>
 
@@ -766,18 +767,19 @@ const BookIssue = ({ mode, onClose, booking }) => {
                                   </div>
                                   <button
                                     type="button"
+                                    disabled={mode == "edit"}
                                     onClick={() => {
-                                      const filteredIds = bookItems.filter(b => b.id != book.id);
+                                      const filteredIds = bookItems?.filter(b => b.id != book.id);
                                       setValue("items", filteredIds, { shouldValidate: true });
                                     }}
-                                    className="text-red-500"
+                                    className="text-red-500 disabled:text-gray-400 disabled:cursor-not-allowed"
                                   >
                                     <MdOutlineDeleteOutline size={25} />
                                   </button>
                                 </div>
 
                                 {mode === "edit" && (
-                                  <div className="ml-8 mt-4 p-3 border rounded border-dashed border-gray-300 dark:border-gray-600">
+                                  <div className="ml-8 mt-4 p-3 border rounded border-dashed border-border ">
 
 
                                     {/* RENEW Book Checkbox */}
@@ -788,7 +790,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
                                           {...register(`items.${index}.renewed`)}
                                           disabled={book.status === 'returned' ||
                                             book.renewal_count >= RENEWAL_LIMIT || returnAllChecked || renewAllChecked}
-                                          className="rounded bg-gray-200 border-transparent h-4 w-4 focus:ring-1 focus:ring-offset-2 focus:ring-gray-500"
+                                          className="rounded accent-primary bg-gray-200 border-transparent h-4 w-4 focus:ring-1 focus:ring-offset-2 focus:ring-gray-500"
                                           onChange={(e) => {
                                             const isChecked = e.target.checked;
                                             setValue(`items.${index}.renewed`, isChecked, { shouldValidate: true });
@@ -820,7 +822,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
                                             }
                                           }}
                                         />
-                                        <span className="ml-2 text-[#0284c7] dark:text-white">
+                                        <span className="ml-2 text-text ">
                                           Renew this book (Count: {book.renewal_count} / {RENEWAL_LIMIT})
                                         </span>
                                       </label>
@@ -835,7 +837,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
                                       {/* Renew Return Date */}
                                       {book.renewed && (book.renewal_count !== RENEWAL_LIMIT) && book.status !== 'returned' ? (
                                         <div className="w-1/2">
-                                          <label className="mb-2.5 block text-[#0284c7] dark:text-white text-sm">New Due Date</label>
+                                          <label className="mb-2.5 block text-text  text-sm">New Due Date</label>
                                           <Controller
                                             name={`items.${index}.renew_return_date`}
                                             control={control}
@@ -854,7 +856,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
                                                   }
                                                 }}
                                                 placeholderText="New Due Date"
-                                                className="w-full rounded-sm border-[1.5px] dark:text-white border-gray-300 dark:border-gray-600  bg-transparent py-2 px-3 text-sm font-medium outline-none"
+                                                className="w-full rounded-sm border-[1.5px]  border-border   bg-background text-text  py-2 px-3 text-sm font-medium outline-none"
                                                 dateFormat="yyyy-MM-dd"
                                                 // minDate={new Date(book.return_due || new Date())}
                                                 minDate={addDays(new Date(book.return_due), 1)}
@@ -870,7 +872,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
                                         // Regular Return Date
                                         (
                                           <div className="w-1/2">
-                                            <label className="mb-2.5 block text-[#0284c7] dark:text-white text-sm">
+                                            <label className="mb-2.5 block text-text  text-sm">
                                               {/* Return Date */}
                                               {book.renewal_count >= RENEWAL_LIMIT ? 'Final Return Date' : 'Return Date'}
                                             </label>
@@ -900,7 +902,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
 
                                                   }}
                                                   placeholderText="Return Date"
-                                                  className="w-full rounded-sm border-[1.5px] dark:text-white border-gray-300 dark:border-gray-600 bg-transparent py-2 px-3 text-sm font-medium outline-none"
+                                                  className="w-full rounded-sm border-[1.5px]  border-border  bg-background text-text  py-2 px-3 text-sm font-medium outline-none"
                                                   dateFormat="yyyy-MM-dd"
                                                   minDate={borrowDate || new Date()}
                                                 />
@@ -914,7 +916,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
                                         )}
                                       {/* Book Status (Based on renew or return date selection) */}
                                       <div className="w-1/2">
-                                        <label className="mb-2.5 block text-[#0284c7] dark:text-white text-sm">Return Due</label>
+                                        <label className="mb-2.5 block text-text  text-sm">Return Due</label>
                                         <Controller
                                           name={`items.${index}.return_due`}
                                           control={control}
@@ -923,7 +925,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
                                               selected={field.value}
                                               disabled
                                               placeholderText="Due Date"
-                                              className="w-full rounded-sm border-[1.5px] dark:text-white border-gray-300 dark:border-gray-600 bg-transparent py-2 px-3 text-sm font-medium outline-none"
+                                              className="w-full rounded-sm border-[1.5px]  border-border  bg-background text-text  py-2 px-3 text-sm font-medium outline-none"
                                               dateFormat="yyyy-MM-dd"
                                             />
                                           )}
@@ -944,11 +946,11 @@ const BookIssue = ({ mode, onClose, booking }) => {
                   )}
 
                   {/* Booking Dates  */}
-                  <fieldset className="border mt-4 border-gray-300 dark:border-gray-600 rounded p-4">
-                    <legend className="font-semibold text-md text-[#259AE6] dark:text-gray-300">Booking Info</legend>
+                  <fieldset className="border mt-4 border-border rounded p-4">
+                    <legend className="font-semibold text-md text-text">Booking Info</legend>
                     <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
                       <div className="w-full xl:w-1/2">
-                        <label className="mb-2.5 block text-[#0284c7] dark:text-white">
+                        <label className="mb-2.5 block text-text">
                           Borrow Date
                           <span className="text-red-600">*</span>
                         </label>
@@ -973,7 +975,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
                                 }
                               }}
                               placeholderText="Borrow Date"
-                              className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                              className="w-full rounded-sm border-[1.5px] border-border bg-background text-text  py-3 px-5 font-medium outline-none transition focus:border-border active:border-primary disabled:cursor-default disabled:bg-background "
                               dateFormat="yyyy-MM-dd"
                               minDate={new Date()}
                               isClearable
@@ -985,7 +987,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
                         )}
                       </div>
                       <div className="w-full xl:w-1/2">
-                        <label className="mb-2.5 block text-[#0284c7] dark:text-white">
+                        <label className="mb-2.5 block text-text ">
                           Return Due Date {mode == "edit" && "Global"}
                           <span className="text-red-600">*</span>
                         </label>
@@ -1010,7 +1012,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
                               }
                               minDate={new Date() || addDays(borrowDate, 1)}
                               placeholderText="Return Due Date"
-                              className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                              className="w-full rounded-sm border-[1.5px]  border-border bg-background text-text  py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-background "
                               dateFormat="yyyy-MM-dd"
                               isClearable
                               maxDate={addDays(borrowDate, (bookingSettings?.default_booking_duration || 15))}
@@ -1028,17 +1030,17 @@ const BookIssue = ({ mode, onClose, booking }) => {
                   </fieldset>
 
                   {/* Booking Status  */}
-                  <fieldset className="border mt-8 border-gray-300 dark:border-gray-600 rounded p-4">
-                    <legend className="font-semibold text-md text-[#259AE6] dark:text-gray-300">Booking Status</legend>
+                  <fieldset className="border mt-8 border-border rounded p-4">
+                    <legend className="font-semibold text-md text-text ">Booking Status</legend>
                     <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
                       <div className="w-full xl:w-1/2">
-                        <label className="mb-2.5 block text-[#259AE6] dark:text-white">
+                        <label className="mb-2.5 block text-text">
                           Booking Status {mode == "edit" && "Global"}
                           <span className="text-red-600">*</span>
                         </label>
-                        <div className="relative z-20 bg-transparent dark:bg-[#1d2a39]">
+                        <div className="relative z-20 bg-background text-text  ">
                           <select
-                            className="relative z-20 w-full appearance-none dark:text-white rounded-sm border border-[#E2E8F0] bg-transparent py-3 px-5 outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                            className="relative z-20 w-full appearance-none  rounded-sm border border-border  bg-background text-text  py-3 px-5 outline-none transition focus:border-primary active:border-primary "
                             {...register("status")}
                             disabled
                             style={{
@@ -1065,7 +1067,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
                           </select>
                           <span className="absolute top-1/2 right-4 z-30 -translate-y-1/2">
                             <svg
-                              className="fill-[#64748B] hover:fill-[#3C50E0] dark:fill-[#AEB7C0] dark:hover:fill-[#3C50E0]"
+                              className="fill-[#64748B] hover:fill-primary"
                               width="24"
                               height="24"
                               viewBox="0 0 24 24"
@@ -1094,11 +1096,11 @@ const BookIssue = ({ mode, onClose, booking }) => {
                   </fieldset>
 
                   {/* Shipping Info */}
-                  <fieldset className="border mt-4 border-gray-300 dark:border-gray-600 rounded p-4">
-                    <legend className="font-semibold text-md text-[#259AE6] dark:text-gray-300">Shipping Details</legend>
+                  <fieldset className="border mt-4 border-border  rounded p-4">
+                    <legend className="font-semibold text-md text-text ">Shipping Details</legend>
                     <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
                       <div className="w-full xl:w-1/2">
-                        <label className="mb-2.5 block text-[#0284c7] dark:text-white">
+                        <label className="mb-2.5 block text-text">
                           Shipping Address
                           {/* <span className="text-red-600">*</span> */}
                         </label>
@@ -1106,13 +1108,13 @@ const BookIssue = ({ mode, onClose, booking }) => {
                           type="text"
                           name="shipping_address"
                           {...register("shipping_address")}
-                          className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                          className="w-full rounded-sm border-[1.5px] border-border  bg-background text-text  py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-background "
                         />
                         {errors?.shipping_address &&
                           <p className="text-red-500 text-xs mt-1">{errors?.shipping_address?.message}</p>}
                       </div>
                       <div className="w-full xl:w-1/2">
-                        <label className="mb-2.5 block text-[#0284c7] dark:text-white">
+                        <label className="mb-2.5 block text-text ">
                           Shipping City
                           {/* <span className="text-red-600">*</span> */}
                         </label>
@@ -1120,14 +1122,14 @@ const BookIssue = ({ mode, onClose, booking }) => {
                           type="text"
                           name="shipping_city"
                           {...register("shipping_city")}
-                          className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                          className="w-full rounded-sm border-[1.5px]  border-border  bg-background text-text  py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-background "
                         />
                         {errors?.shipping_city && <p className="text-red-500 text-xs mt-1">{errors?.shipping_city?.message}</p>}
                       </div>
                     </div>
                     <div className="mt-4 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
                       <div className="w-full xl:w-1/2">
-                        <label className="mb-2.5 block text-[#0284c7] dark:text-white">
+                        <label className="mb-2.5 block text-text ">
                           Shipping Country
                           {/* <span className="text-red-600">*</span> */}
                         </label>
@@ -1135,12 +1137,12 @@ const BookIssue = ({ mode, onClose, booking }) => {
                           type="text"
                           name="shipping_country"
                           {...register("shipping_country")}
-                          className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                          className="w-full rounded-sm border-[1.5px]  border-border  bg-background text-text  py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-background "
                         />
                         {errors?.shipping_country && <p className="text-red-500 text-xs mt-1">{errors?.shipping_country?.message}</p>}
                       </div>
                       <div className="w-full xl:w-1/2">
-                        <label className="mb-2.5 block text-[#0284c7] dark:text-white">
+                        <label className="mb-2.5 block text-text ">
                           Phone Number
                           {/* <span className="text-red-600">*</span> */}
                         </label>
@@ -1148,7 +1150,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
                           type="text"
                           name="shipping_phone"
                           {...register("shipping_phone")}
-                          className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                          className="w-full rounded-sm border-[1.5px]  border-border  bg-background text-text  py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-background "
                         />
                         {errors?.shipping_phone && <p className="text-red-500 text-xs mt-1">{errors?.shipping_phone?.message}</p>}
                       </div>
@@ -1159,7 +1161,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
                   <div className="mt-8 mb-4.5 flex flex-col gap-2 sm:flex-row md:gap-9">
 
                     <div className="w-full ">
-                      <label className="mb-2.5 block text-[#0284c7] dark:text-white">
+                      <label className="mb-2.5 block text-text ">
                         Credits Used
                         <span className="text-orange-600 pl-2">(Read Only)</span>
                       </label>
@@ -1168,7 +1170,7 @@ const BookIssue = ({ mode, onClose, booking }) => {
                         name="credits_used"
                         readOnly
                         value={watch('credits_used') || 0}
-                        className="w-full rounded-sm border-[1.5px] dark:text-white border-[#E2E8F0] bg-transparent py-3 px-5 font-medium outline-none transition focus:border-[#3C50E0] active:border-[#3C50E0] disabled:cursor-default disabled:bg-[#F5F7FD] dark:border-[#3d4d60] dark:bg-[#1d2a39] dark:focus:border-[#3C50E0]"
+                        className="w-full rounded-sm border-[1.5px]  border-border  bg-background text-text  py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-background "
                       />
                     </div>
                   </div>
@@ -1184,8 +1186,10 @@ const BookIssue = ({ mode, onClose, booking }) => {
                     <button
                       disabled={!isDirty || isSubmitting || isLoading}
                       type="submit"
-                      className="bg-orange-400 text-white font-medium text-md cursor-pointer disabled:cursor-not-allowed p-2 px-5 rounded-md "
-                    >
+                      className={`flex items-center border-2 border-border gap-2 bg-background text-text px-4 py-2 rounded-md 
+                hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary 
+                transition-colors duration-200 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}>
                       {isLoading ? <LoadingSpinner /> : mode === "edit" ? "Update Booking" : "Issue Book"}
                     </button>
                   </div>

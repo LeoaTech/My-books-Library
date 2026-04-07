@@ -54,7 +54,12 @@ const Bookings = () => {
 
   if (isPending) {
     return (
-      <Loader />
+      <div className="fixed inset-0 overflow-y-auto h-full w-full flex items-center justify-center bg-[#64748B] bg-opacity-75 transition-opacity z-50">
+        <div className="relative bg-surface shadow-lg p-5 rounded-md w-full mx-auto my-auto max-w-2xl ">
+
+          <Loader />
+        </div>
+      </div>
     )
   }
 
@@ -78,23 +83,23 @@ const Bookings = () => {
           <input
             type="text"
             placeholder="Search bookings by status and user name ..."
-            className="w-full sm:w-1/2 px-4 py-2 text-sm border-b border-border bg-background rounded-md 
-              focus:outline-none focus:ring-2 focus:ring-primary "
+            className="ml-4 w-1/2  focus:outline-none px-4 py-2 text-sm border-b border-border bg-background rounded-md "
             onChange={handleSearch}
             aria-label="Search booking"
           />
         )}
 
         {hasPermission("CREATE") ? (
-        <button
-          className="flex items-center gap-2 bg-surface text-text px-4 py-2 rounded-md 
-              hover:bg-primary focus:outline-none focus:ring-2 focus:ring-primary 
-              transition-colors duration-200"
-          onClick={() => setShowModal(true)}
-          aria-label="issue books"
-        >
-          <HiPlus />Issue Books
-        </button>
+          <button
+            className="bg-surface text-text hover:bg-primary active:bg-secondary
+            font-medium rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 px-2 py-2 md:px-3 "
+            onClick={() => setShowModal(true)}
+            aria-label="issue books"
+          >
+            <span className="flex justify-center items-center gap-1 lg:gap-2">
+
+              <HiPlus />Issue Books</span>
+          </button>
         ) : (
           <div className="relative group">
             <button
