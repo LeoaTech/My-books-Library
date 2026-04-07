@@ -98,15 +98,18 @@ const NewPermission = ({ setOpenModal }) => {
                 <p className="format-message error">{errors.name.message}</p>
               )}
             </div>
-            <div className="mt-5 flex gap-2 md:gap-4 p-5">
+            <div className="mt-5 flex float-right gap-2 md:gap-4 p-5">
               <button
                 onClick={onClose}
-                className="rounded-md w-full bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                className="rounded-md flex items-center border-2 border-gray-200 justify-center bg-transparent px-6 py-2 text-md text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:border-primary"
               >Close</button>
               <button
-                className="rounded-md w-full border-border gap-2 bg-background text-text px-4 py-2 text-sm font-semibold shadow-sm disabled:opacity-50  hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary"
+                className={`flex items-center border-2 border-border gap-2 bg-background text-text px-4 py-2 rounded-md 
+                hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary 
+                transition-colors duration-200 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
                 disabled={!isDirty || !z.isValid || isSubmitting}
-              >Create</button>
+              >Add Permission</button>
             </div>
             {errors && (
               <span className="text-meta-1 text-sm">

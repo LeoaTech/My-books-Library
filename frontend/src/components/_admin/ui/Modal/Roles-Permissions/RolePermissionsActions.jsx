@@ -39,8 +39,9 @@ const RolesPermissionModal = ({ close }) => {
     },
   });
 
-  console.log(data);
-  
+  // console.log(data);
+
+
 
 
   const onSubmit = async (data) => {
@@ -73,7 +74,7 @@ const RolesPermissionModal = ({ close }) => {
                   className="mb-2.5 block text-text"
                   htmlFor="role_id"
                 >
-                  Role Name
+                  Choose Role
                 </label>
                 <div className="relative z-20 bg-background">
                   {allRoles && (
@@ -86,8 +87,8 @@ const RolesPermissionModal = ({ close }) => {
                       {" "}
                       <option value="">Select Role</option>
                       {allRoles?.roles?.map((role) => (
-                        <option key={role?.role_id} value={role?.role_id} disabled={role?.name == "owner"}> 
-                         
+                        <option key={role?.role_id} value={role?.role_id} disabled={role?.name == "owner"}>
+
                           {role?.name?.toUpperCase()}
                         </option>
                       ))}
@@ -115,11 +116,11 @@ const RolesPermissionModal = ({ close }) => {
                 </div>
               </div>
             </div>
-            <label className="mt-2.5 mb-2.5 block text-text">
+            <label className="mt-3 mb-2.5 block text-text">
               Permissions
             </label>
 
-            <div className="h-[250px] bg-background rounded-md shadow-2xl w-full mt-4 m-1 px-4 overflow-hidden overflow-y-auto">
+            <div className="h-[250px] bg-background rounded-md shadow-xl w-full mt-4 m-1 px-4 overflow-hidden overflow-y-auto">
               {selectedRole && isLoading && <LoadingSpinner />}
               {data?.permissions ? (
                 <div className="py-5 grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -141,20 +142,23 @@ const RolesPermissionModal = ({ close }) => {
                     ))}
                 </div>
               ) : (
-                <p className="flex justify-center items-center text-text">
+                <p className="h-[200px] flex justify-center items-center text-text">
                   Please Select the Role ID to View Permissions
                 </p>
               )}
 
-              {selectedRole && data?.permissions?.length == 0 ? `No Permissions Found for ${selectedRole} Role` : ""}
+              {selectedRole && data?.permissions?.length == 0 ? `No Permissions assigned to ${allRoles?.roles?.find((role) => role?.role_id == selectedRole)?.name} Role` : ""}
             </div>
-            <div className="mt-5 flex gap-2 px-2 py-5 xs:flex-col">
+            <div className="mt-5 flex float-right gap-2 px-2 py-5 xs:flex-col">
               <button
                 onClick={close}
-                className="rounded-md w-full bg-white px-2 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                className="rounded-md border-2 border-gray-200 bg-neutral-50 px-5 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
               >Close</button>
               <button
-                className="rounded-md w-full border-border bg-background text-text px-2 py-2 text-sm font-semibold shadow-sm disabled:opacity-50  hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary"
+                className={`flex items-center border-2 border-border bg-background text-text px-2 py-2 rounded-md 
+                hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary 
+                transition-colors duration-200 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
                 disabled={!isDirty || isSubmitting}
               >Remove Permissions</button>
             </div>

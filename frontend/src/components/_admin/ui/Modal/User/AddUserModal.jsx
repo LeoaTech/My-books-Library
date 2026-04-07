@@ -98,8 +98,8 @@ const AddUserModal = ({ setOpenModal }) => {
   if (isPending) {
     return (
       <div className="fixed inset-0 overflow-y-auto h-full w-full flex items-center justify-center bg-[#64748B] bg-opacity-75 transition-opacity z-50">
-      <div className="relative bg-background shadow-lg p-5 rounded-md w-full mx-auto my-auto max-w-2xl ">
-       {/* Modal Close button */}
+        <div className="relative bg-background shadow-lg p-5 rounded-md w-full mx-auto my-auto max-w-2xl ">
+          {/* Modal Close button */}
           <div className="absolute top-4 right-4">
             <RxCross1
               style={{
@@ -114,7 +114,7 @@ const AddUserModal = ({ setOpenModal }) => {
           </div>
 
           <div className="flex flex-col justify-between items-center gap-5  overflow-hidden">
-            <h3 className="mb-5 font-bold text-[#313D4A] dark:text-white">
+            <h3 className="mb-5 font-bold text-text">
               Add New User
             </h3>
 
@@ -130,9 +130,9 @@ const AddUserModal = ({ setOpenModal }) => {
 
   if (error) {
     return (
-       <div className="fixed inset-0 overflow-y-auto h-full w-full flex items-center justify-center bg-[#64748B] bg-opacity-75 transition-opacity z-50">
-      <div className="relative bg-background shadow-lg p-5 rounded-md w-full mx-auto my-auto max-w-2xl ">
-      {/* Modal Close button */}
+      <div className="fixed inset-0 overflow-y-auto h-full w-full flex items-center justify-center bg-[#64748B] bg-opacity-75 transition-opacity z-50">
+        <div className="relative bg-surface shadow-lg p-5 rounded-md w-full mx-auto my-auto max-w-2xl ">
+          {/* Modal Close button */}
           <div className="absolute top-4 right-4">
             <RxCross1
               style={{
@@ -147,7 +147,7 @@ const AddUserModal = ({ setOpenModal }) => {
           </div>
 
           <div className="flex flex-col justify-between items-center gap-5  overflow-hidden">
-            <h3 className="mb-5 font-bold text-[#313D4A] dark:text-white">
+            <h3 className="mb-5 font-bold text-text">
               Add New User
             </h3>
           </div>
@@ -192,7 +192,7 @@ const AddUserModal = ({ setOpenModal }) => {
                     <input
 
                       id="name" {...register('name')}
-                      className="w-full rounded-sm border-[1.5px] text-white border-border bg-background py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-[#F5F7FD] "
+                      className="w-full rounded-sm border-[1.5px] text-text border-border bg-background py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-[#F5F7FD] "
                     />
                     {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
                   </div>
@@ -202,7 +202,7 @@ const AddUserModal = ({ setOpenModal }) => {
                       Email                        <span className="text-red-600">*</span>
 
                     </label>
-                    <input id="email" type="email" {...register('email')} className="w-full rounded-sm border-[1.5px] text-white border-border bg-background py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-[#F5F7FD] "                    />
+                    <input id="email" type="email" {...register('email')} className="w-full rounded-sm border-[1.5px] text-text border-border bg-background py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-[#F5F7FD] " />
                     {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
                   </div>
                 </div>
@@ -214,7 +214,7 @@ const AddUserModal = ({ setOpenModal }) => {
                       Password                        <span className="text-red-600">*</span>
 
                     </label>
-                    <input id="password" type="password" {...register('password')} className="w-full rounded-sm border-[1.5px] text-white border-border bg-background py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-[#F5F7FD] "                    />
+                    <input id="password" type="password" {...register('password')} className="w-full rounded-sm border-[1.5px] text-text border-border bg-background py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-[#F5F7FD] " />
                     {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
                   </div>
                   <div className="w-full">
@@ -233,7 +233,7 @@ const AddUserModal = ({ setOpenModal }) => {
                     className="mb-2.5 block text-text">
                     Address
                   </label>
-                  <textarea id="address" {...register('address')} className="w-full rounded-sm border-[1.5px] text-white border-border bg-background py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-[#F5F7FD] "                  />
+                  <textarea id="address" {...register('address')} className="w-full rounded-sm border-[1.5px] text-text border-border bg-background py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-[#F5F7FD] " />
                   {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address.message}</p>}
                 </div>
 
@@ -244,7 +244,7 @@ const AddUserModal = ({ setOpenModal }) => {
                       City
                     </label>
                     <input id="city" {...register('city')}
-                      className="w-full rounded-sm border-[1.5px] text-white border-border bg-background py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-[#F5F7FD] "
+                      className="w-full rounded-sm border-[1.5px] text-text border-border bg-background py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-[#F5F7FD] "
                     />
                     {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city.message}</p>}
                   </div>
@@ -254,7 +254,7 @@ const AddUserModal = ({ setOpenModal }) => {
                       Country
                     </label>
                     <input id="country" {...register('country')}
-                      className="w-full rounded-sm border-[1.5px] text-white border-border bg-background py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-[#F5F7FD] "
+                      className="w-full rounded-sm border-[1.5px] text-text border-border bg-background py-3 px-5 font-medium outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-[#F5F7FD] "
                     />
                     {errors.country && <p className="text-red-500 text-xs mt-1">{errors.country.message}</p>}
                   </div>
@@ -265,9 +265,10 @@ const AddUserModal = ({ setOpenModal }) => {
                     Roles                        <span className="text-red-600">*</span>
 
                   </label>
-                  <div className="relative z-20 bg-transparent dark:bg-[#1d2a39]">
+                  <div className="relative z-20 bg-transparent ">
                     <select
-                      className="relative z-20 w-full appearance-none rounded-sm border border-border text-text bg-background py-3 px-5 outline-none transition focus:border-primary active:border-primary "                      {...register("role_id")}
+                      className="relative z-20 w-full appearance-none rounded-sm border border-border text-text bg-background py-3 px-5 outline-none transition focus:border-primary active:border-primary "
+                      {...register("role_id")}
                     >
                       <option disabled value="">Select</option>
                       {data &&
@@ -303,13 +304,15 @@ const AddUserModal = ({ setOpenModal }) => {
                 </div>
 
 
-                 <button type="submit" disabled={isSubmitting}
-
-                  className="w-full bg-primary text-text active:bg-secondary
-            font-medium rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 px-2 py-2 md:px-3 "
-                >
-                  {isSubmitting ? <LoadingSpinner /> : 'Create User'}
-                </button>
+                <div className="mt-20 flex items-end justify-end">
+                  <button type="submit" disabled={isSubmitting}
+                    className={` border-2 border-border gap-2 bg-background text-text px-4 py-2 rounded-md 
+                hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary 
+                transition-colors duration-200 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}>
+                    {isSubmitting ? <LoadingSpinner /> : 'Create User'}
+                  </button>
+                </div>
               </form>
             </div>
           </div>

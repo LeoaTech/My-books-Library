@@ -4,7 +4,7 @@ import { MdEdit } from "react-icons/md";
 import { AddPermission, PermissionModal } from "../Modal";
 import { HiChevronDoubleLeft, HiChevronDoubleRight } from "react-icons/hi";
 
-const PermissionsTable = ({ openModal, setOpenModal,searchTerm }) => {
+const PermissionsTable = ({ openModal, setOpenModal, searchTerm }) => {
   const { isPending, data } = useFetchPermissions();
   const [isEdit, setIsEdit] = useState(false);
   const [isDelete, setIsDelete] = useState(false);
@@ -83,7 +83,7 @@ const PermissionsTable = ({ openModal, setOpenModal,searchTerm }) => {
               </th>
             </tr>
           </thead>
-          <tbody  className="divide-y divide-primary">
+          <tbody className="divide-y divide-primary">
             {currentRows?.map((permission) => (
               <tr key={permission?.permission_id}>
                 <td className="border-b border-border py-5 px-4 pl-5 xl:pl-11">
@@ -106,8 +106,7 @@ const PermissionsTable = ({ openModal, setOpenModal,searchTerm }) => {
                 <td className="border-b border-border py-5 px-8">
                   <div className="flex items-center space-x-3.5">
                     <button
-                      // disabled={permission?.is_default}
-
+                      disabled={permission?.is_default}
                       className="text-green-400 hover:text-green-600  disabled:text-gray-500 disabled:hover:text-gray-500"
                       onClick={() => UpdateRole(permission?.permission_id)}
                     >
@@ -116,8 +115,7 @@ const PermissionsTable = ({ openModal, setOpenModal,searchTerm }) => {
                       </span>
                     </button>
                     <button
-                      // disabled={permission?.is_default}
-
+                      disabled={permission?.is_default}
                       onClick={() => {
                         roleDelete(permission?.permission_id);
                       }}

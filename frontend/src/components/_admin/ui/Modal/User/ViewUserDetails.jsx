@@ -138,7 +138,10 @@ const ViewUserDetails = ({ setDetails, userData }) => {
                     </button> */}
                 <button
                   type="button"
-                  className="mt-3 inline-flex w-full justify-center rounded-md bg-primary px-3 py-2 text-sm font-semibold text-text shadow-sm ring-1 ring-inset ring-border hover:bg-border sm:mt-0 sm:w-auto"
+                  className={`flex items-end justify-end border-2 border-border gap-2 bg-background text-text px-4 py-2 rounded-md 
+                hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary 
+                transition-colors duration-200 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
                   onClick={() => setDetails(false)}
                 >
                   Close
